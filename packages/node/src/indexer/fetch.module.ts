@@ -12,7 +12,6 @@ import {
   ConnectionPoolStateManager,
   NodeConfig,
   IProjectUpgradeService,
-  ProjectUpgradeService,
   InMemoryCacheService,
   MonitorService,
   CoreModule,

@@ -1,22 +1,27 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { SorobanRpc } from '@stellar/stellar-sdk';
+import { rpc } from '@stellar/stellar-sdk';
 import { SorobanRpcEventResponse } from '@subql/types-stellar';
 import { compact, groupBy, last } from 'lodash';
 
 const DEFAULT_PAGE_SIZE = 100;
 
-export class SorobanServer extends SorobanRpc.Server {
-  private eventsCache: { [key: number]: SorobanRpc.Api.GetEventsResponse } = {};
+type CachedEventsResponse = Pick<
+  rpc.Api.GetEventsResponse,
+  'events' | 'latestLedger'
+>;
+
+export class SorobanServer extends rpc.Server {
+  private eventsCache: { [key: number]: rpc.Api.GetEventsResponse } = {};
 
   private async fetchEventsForSequence(
     sequence: number,
-    request: SorobanRpc.Server.GetEventsRequest,
+    request: rpc.Server.GetEventsRequest,
     accEvents: SorobanRpcEventResponse[] = [],
   ): Promise<{
-    events: SorobanRpc.Api.GetEventsResponse;
-    eventsToCache: SorobanRpc.Api.GetEventsResponse;
+    events: CachedEventsResponse;
+    eventsToCache: CachedEventsResponse;
   }> {
     const response = await super.getEvents(request);
 
@@ -65,7 +70,7 @@ export class SorobanServer extends SorobanRpc.Server {
   }
 
   private updateEventCache(
-    response: SorobanRpc.Api.GetEventsResponse,
+    response: CachedEventsResponse,
     ignoreHeight?: number,
   ): void {
     response.events.forEach((event) => {
@@ -75,7 +80,7 @@ export class SorobanServer extends SorobanRpc.Server {
         this.eventsCache[ledger] = {
           events: [],
           latestLedger: response.latestLedger,
-        } as SorobanRpc.Api.GetEventsResponse;
+        } as unknown as rpc.Api.GetEventsResponse;
       }
       const eventExists = this.eventsCache[ledger].events.some(
         (existingEvent) => existingEvent.id === event.id,
@@ -87,8 +92,8 @@ export class SorobanServer extends SorobanRpc.Server {
   }
 
   async getEvents(
-    request: SorobanRpc.Server.GetEventsRequest,
-  ): Promise<SorobanRpc.Api.GetEventsResponse> {
+    request: rpc.Server.GetEventsRequest,
+  ): Promise<rpc.Api.GetEventsResponse> {
     const sequence = request.startLedger;
 
     if (sequence === undefined) {
@@ -104,6 +109,6 @@ export class SorobanServer extends SorobanRpc.Server {
     const response = await this.fetchEventsForSequence(sequence, request);
     this.updateEventCache(response.eventsToCache, sequence);
 
-    return response.events;
+    return response.events as rpc.Api.GetEventsResponse;
   }
 }

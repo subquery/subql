@@ -3,7 +3,6 @@
 
 import { Horizon } from '@stellar/stellar-sdk';
 import { getLogger } from '@subql/node-core';
-import URI from 'urijs';
 
 const logger = getLogger('stellar-server');
 
@@ -16,7 +15,7 @@ export interface StellarNetwork {
 export class StellarServer extends Horizon.Server {
   async getNetwork(): Promise<StellarNetwork> {
     const network: StellarNetwork = (
-      await Horizon.AxiosClient.get(URI(this.serverURL as any).toString())
+      await Horizon.AxiosClient.get(new URL(this.serverURL as any).toString())
     ).data;
     return network;
   }

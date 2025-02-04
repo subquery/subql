@@ -2606,6 +2606,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stellar/stellar-base@npm:^13.0.1":
+  version: 13.0.1
+  resolution: "@stellar/stellar-base@npm:13.0.1"
+  dependencies:
+    "@stellar/js-xdr": ^3.1.2
+    base32.js: ^0.1.0
+    bignumber.js: ^9.1.2
+    buffer: ^6.0.3
+    sha.js: ^2.3.6
+    sodium-native: ^4.3.0
+    tweetnacl: ^1.0.3
+  dependenciesMeta:
+    sodium-native:
+      optional: true
+  checksum: b4a4d049c332ab63aa112c183ffed706dac4236b369a1b53eac86e8efcbba228693be5550e39762bc3c13c9c2e56dc76f611454191d54a1c740832059adb52bd
+  languageName: node
+  linkType: hard
+
 "@stellar/stellar-sdk@npm:^12.2.0":
   version: 12.2.0
   resolution: "@stellar/stellar-sdk@npm:12.2.0"
@@ -2618,6 +2636,22 @@ __metadata:
     toml: ^3.0.0
     urijs: ^1.19.1
   checksum: 47fc8e0f26b71aa22af27bffa8b4ce6be6579005c875dae9e2f9a721def4028c520a9675d005f03db079922e115ce12c9d61c5fae4b491b9aeb55bf6c53dcc35
+  languageName: node
+  linkType: hard
+
+"@stellar/stellar-sdk@npm:^13.1.0":
+  version: 13.1.0
+  resolution: "@stellar/stellar-sdk@npm:13.1.0"
+  dependencies:
+    "@stellar/stellar-base": ^13.0.1
+    axios: ^1.7.9
+    bignumber.js: ^9.1.2
+    eventsource: ^2.0.2
+    feaxios: ^0.0.23
+    randombytes: ^2.1.0
+    toml: ^3.0.0
+    urijs: ^1.19.1
+  checksum: c189623ff4f0cef1d1cb0473e926c40bcc19ce50228c067b3d4ee4f46d1cc2f1a0b2553bdbb7c1407f15c214846bdda23932fc68a0ab6942c06526c8e5f95f72
   languageName: node
   linkType: hard
 
@@ -2699,7 +2733,7 @@ __metadata:
     "@nestjs/schedule": ^3.0.1
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
-    "@stellar/stellar-sdk": ^12.2.0
+    "@stellar/stellar-sdk": ^13.1.0
     "@subql/common": ^5.3.0
     "@subql/common-stellar": "workspace:*"
     "@subql/node-core": ^16.2.0
@@ -2763,7 +2797,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/types-stellar@workspace:packages/types"
   dependencies:
-    "@stellar/stellar-sdk": ^12.2.0
+    "@stellar/stellar-sdk": ^13.1.0
     "@subql/types-core": ^2.0.0
   languageName: unknown
   linkType: soft
@@ -3868,6 +3902,17 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: 0c17039a9acfe6a566fca8431ba5c1b455c83d30ea6157fec68a6722878fcd30f3bd32d172f6bee0c51fe75ca98e6414ddcd968a87b5606b573731629440bfaf
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.7.9":
+  version: 1.7.9
+  resolution: "axios@npm:1.7.9"
+  dependencies:
+    follow-redirects: ^1.15.6
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: cb8ce291818effda09240cb60f114d5625909b345e10f389a945320e06acf0bc949d0f8422d25720f5dd421362abee302c99f5e97edec4c156c8939814b23d19
   languageName: node
   linkType: hard
 
@@ -5746,6 +5791,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"feaxios@npm:^0.0.23":
+  version: 0.0.23
+  resolution: "feaxios@npm:0.0.23"
+  dependencies:
+    is-retry-allowed: ^3.0.0
+  checksum: 22034c7a9c32a0d9fc036f79fc58f360afd33c2a5aaa92f3311021acac76f669b784e1a90cf319d46453c4f6055bbb236cf50d9c6f2df328ff369b67367721fe
+  languageName: node
+  linkType: hard
+
 "figures@npm:^2.0.0":
   version: 2.0.0
   resolution: "figures@npm:2.0.0"
@@ -6850,6 +6904,13 @@ __metadata:
     call-bind: ^1.0.2
     has-tostringtag: ^1.0.0
   checksum: 362399b33535bc8f386d96c45c9feb04cf7f8b41c182f54174c1a45c9abbbe5e31290bbad09a458583ff6bf3b2048672cdb1881b13289569a7c548370856a652
+  languageName: node
+  linkType: hard
+
+"is-retry-allowed@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "is-retry-allowed@npm:3.0.0"
+  checksum: 12d17b44410484c6b0292ca38127b2ad026b65d1c1ead40f055effb2498c1a65b28ac5bc8f0383d0d091f84c1f791c3e09da32219fc3a745c3b1bab106db6cfb
   languageName: node
   linkType: hard
 
@@ -10274,6 +10335,15 @@ __metadata:
     node-gyp: latest
     node-gyp-build: ^4.8.0
   checksum: 45941133773d70d20feb688e98023dcdc6b9fa33084ecd34f4fca66661c9e63587daf761d1ba9d46570564712613a567fd4b4934c6be6445bc49a0afc863c232
+  languageName: node
+  linkType: hard
+
+"sodium-native@npm:^4.3.0":
+  version: 4.3.1
+  resolution: "sodium-native@npm:4.3.1"
+  dependencies:
+    node-gyp-build: ^4.8.0
+  checksum: b0d64155d06e0a6bb3c63768eb1371314b260611086cc2200dc56c82a7c8f1fd45b6ff557359a530577f3bce27f109f909443f0038e609a40fa50b67c0ca3935
   languageName: node
   linkType: hard
 

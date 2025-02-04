@@ -111,7 +111,7 @@ export class IndexerManager extends BaseIndexerManager<
   }
 
   protected async indexBlockData(
-    { block, effects, operations, transactions }: StellarBlockWrapper,
+    { block, transactions }: StellarBlockWrapper,
     dataSources: SubqlDatasource[],
     getVM: (d: SubqlDatasource) => Promise<IndexerSandbox>,
   ): Promise<void> {

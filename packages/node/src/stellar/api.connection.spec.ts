@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ApiConnectionError,
   ApiErrorType,
@@ -41,7 +40,7 @@ describe('StellarApiConnection', () => {
 
   beforeEach(async () => {
     sorobanApi = new SorobanServer(SOROBAN_ENDPOINT);
-    unsafeApi = new StellarApi(HTTP_ENDPOINT, new EventEmitter2(), sorobanApi);
+    unsafeApi = new StellarApi(HTTP_ENDPOINT, sorobanApi);
     await unsafeApi.init();
     apiConnection = new StellarApiConnection(unsafeApi, fetchBlockBatches);
   });
@@ -51,7 +50,6 @@ describe('StellarApiConnection', () => {
       await StellarApiConnection.create(
         HTTP_ENDPOINT,
         fetchBlockBatches,
-        new EventEmitter2(),
         sorobanApi,
       ),
     ).toBeInstanceOf(StellarApiConnection);

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Horizon } from '@stellar/stellar-sdk';
 import { getLogger, IBlock } from '@subql/node-core';
 import {
@@ -22,9 +21,6 @@ import { SorobanServer } from './soroban.server';
 import { StellarServer } from './stellar.server';
 import { formatBlockUtil } from './utils.stellar';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: packageVersion } = require('../../package.json');
-
 const logger = getLogger('api.Stellar');
 
 export class StellarApi implements ApiWrapper {
@@ -35,9 +31,8 @@ export class StellarApi implements ApiWrapper {
 
   constructor(
     private endpoint: string,
-    private eventEmitter: EventEmitter2,
     private _sorobanClient?: SorobanServer,
-    private config?: IStellarEndpointConfig,
+    config?: IStellarEndpointConfig,
   ) {
     const { hostname, protocol, searchParams } = new URL(this.endpoint);
 
@@ -140,18 +135,6 @@ export class StellarApi implements ApiWrapper {
     return effects;
   }
 
-  private getTransactionApplicationOrder(eventId: string) {
-    // Right shift the ID by 12 bits to exclude the Operation Index
-    const shiftedId = BigInt(eventId.split('-')[0]) >> BigInt(12);
-
-    // Create a mask for 20 bits to ignore the Ledger Sequence Number
-    const mask = BigInt((1 << 20) - 1);
-
-    // Apply bitwise AND operation with the mask to get the Transaction Application Order
-    const transactionApplicationOrder = shiftedId & mask;
-    return Number(transactionApplicationOrder);
-  }
-
   private getOperationIndex(id: string) {
     // Pick the first part of the ID before the '-' character
     const idPart = id.split('-')[0];
@@ -198,8 +181,6 @@ export class StellarApi implements ApiWrapper {
 
   private wrapOperationsForTx(
     transactionId: string,
-    applicationOrder: number,
-    sequence: number,
     operationsForSequence: Horizon.ServerApi.OperationRecord[],
     effectsForSequence: Horizon.ServerApi.EffectRecord[],
     eventsForSequence: SorobanEvent[],
@@ -208,13 +189,19 @@ export class StellarApi implements ApiWrapper {
       (op) => op.transaction_hash === transactionId,
     );
 
+    const events = eventsForSequence.filter(
+      (evt) => evt.txHash === transactionId,
+    );
+
+    // If there are soroban events then there should only be a single operation.
+    // This check is here in case there are furture changes to the network.
+    assert(
+      events.length > 0 ? operations.length === 1 : true,
+      'Unable to assign events to multiple operations',
+    );
+
     return operations.map((op, index) => {
       const effects = this.wrapEffectsForOperation(index, effectsForSequence);
-
-      const events = eventsForSequence.filter(
-        (event) =>
-          this.getTransactionApplicationOrder(event.id) === applicationOrder,
-      );
 
       const wrappedOp: StellarOperation = {
         ...op,
@@ -242,7 +229,7 @@ export class StellarApi implements ApiWrapper {
     effectsForSequence: Horizon.ServerApi.EffectRecord[],
     eventsForSequence: SorobanEvent[],
   ): StellarTransaction[] {
-    return transactions.map((tx, index) => {
+    return transactions.map((tx) => {
       const wrappedTx: StellarTransaction = {
         ...tx,
         ledger: null,
@@ -256,8 +243,6 @@ export class StellarApi implements ApiWrapper {
         // TODO, this include other attribute from HorizonApi.TransactionResponse, but type assertion incorrect
         // TransactionRecord extends Omit<HorizonApi.TransactionResponse, "created_at">
         (tx as any).id,
-        index + 1,
-        sequence,
         operationsForSequence,
         effectsForSequence,
         eventsForSequence,

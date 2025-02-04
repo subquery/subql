@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { StellarApi } from './api.stellar';
 import { SorobanServer } from './soroban.server';
 
@@ -12,7 +11,7 @@ jest.setTimeout(60000);
 
 const prepareStellarApi = async function () {
   const soroban = new SorobanServer(SOROBAN_ENDPOINT);
-  const api = new StellarApi(HTTP_ENDPOINT, new EventEmitter2(), soroban);
+  const api = new StellarApi(HTTP_ENDPOINT, soroban);
   await api.init();
   return api;
 };

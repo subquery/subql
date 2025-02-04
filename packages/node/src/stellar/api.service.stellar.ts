@@ -3,15 +3,11 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import {
-  StellarProjectNetwork,
-  StellarProjectNetworkConfig,
-} from '@subql/common-stellar';
+import { StellarProjectNetworkConfig } from '@subql/common-stellar';
 import {
   ApiService,
   ConnectionPoolService,
   getLogger,
-  ProjectUpgradeService,
   IBlock,
   exitWithError,
   NodeConfig,
@@ -92,7 +88,6 @@ export class StellarApiService extends ApiService<
       StellarApiConnection.create(
         endpoint,
         this.fetchBlockBatches,
-        this.eventEmitter,
         sorobanClient,
         config,
       ),

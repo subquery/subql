@@ -1,7 +1,6 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ApiConnectionError,
   ApiErrorType,
@@ -50,11 +49,10 @@ export class StellarApiConnection
   static async create(
     endpoint: string,
     fetchBlockBatches: FetchFunc,
-    eventEmitter: EventEmitter2,
     soroban?: SorobanServer,
     config?: IStellarEndpointConfig,
   ): Promise<StellarApiConnection> {
-    const api = new StellarApi(endpoint, eventEmitter, soroban, config);
+    const api = new StellarApi(endpoint, soroban, config);
 
     await api.init();
 

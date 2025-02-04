@@ -5,14 +5,13 @@ import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { scValToNative } from '@stellar/stellar-sdk';
-import { ConnectionPoolService, delay, NodeConfig } from '@subql/node-core';
+import { ConnectionPoolService, NodeConfig } from '@subql/node-core';
 import { ConnectionPoolStateManager } from '@subql/node-core/dist';
 import { GraphQLSchema } from 'graphql';
-import { range, some } from 'lodash';
+import { range } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { StellarApiService } from './api.service.stellar';
 import { StellarApi } from './api.stellar';
-import { StellarBlockWrapped } from './block.stellar';
 
 const HTTP_ENDPOINT = 'https://horizon-futurenet.stellar.org';
 const SOROBAN_ENDPOINT = 'https://rpc-futurenet.stellar.org';

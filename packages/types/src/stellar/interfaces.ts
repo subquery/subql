@@ -1,7 +1,7 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Contract, xdr, Horizon} from '@stellar/stellar-sdk';
+import {Contract, xdr, Horizon, rpc} from '@stellar/stellar-sdk';
 import {BlockWrapper} from '../interfaces';
 
 export type StellarBlock = Omit<Horizon.ServerApi.LedgerRecord, 'effects' | 'operations' | 'self' | 'transactions'> & {
@@ -37,23 +37,8 @@ export type StellarEffect<T extends Horizon.ServerApi.EffectRecord = Horizon.Ser
   transaction: StellarTransaction | null;
   ledger: StellarBlock | null;
 };
-// COPIED FROM SOROBAN, due to no longer export
-export interface SorobanRpcEventResponse extends SorobanRpcBaseEventResponse {
-  contractId?: Contract;
-  topic: xdr.ScVal[];
-  value: xdr.ScVal;
-}
-export type EventType = 'contract' | 'system' | 'diagnostic';
 
-interface SorobanRpcBaseEventResponse {
-  id: string;
-  type: EventType;
-  ledger: number;
-  ledgerClosedAt: string;
-  pagingToken: string;
-  inSuccessfulContractCall: boolean;
-  txHash: string;
-}
+export type SorobanRpcEventResponse = rpc.Api.EventResponse;
 
 export type SorobanEvent = Omit<SorobanRpcEventResponse, 'ledger'> & {
   ledger: StellarBlock | null;
