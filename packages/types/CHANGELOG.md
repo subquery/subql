@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.1.0] - 2025-02-05
 ### Changed
 - Update stellar sdk to v13 and use type from the sdk rather than redefining (#101)
+- Update header year to 2025
+- Update `@subql/types-core`
 
 ## [4.0.2] - 2024-10-22
 ### Changed
@@ -60,7 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use @subql/types-core (#18)
 
 ## [2.3.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/types-stellar/4.0.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/types-stellar/4.1.0...HEAD
+[4.1.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/4.0.2...types-stellar/4.1.0
 [4.0.2]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.6.0...types-stellar/4.0.2
 [3.6.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.5.0...types-stellar/3.6.0
 [3.5.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/3.4.0...types-stellar/3.5.0

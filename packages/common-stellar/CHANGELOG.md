@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.2] - 2025-02-05
+### Changed
+- Update `@subql/common`
+- Update header year to 2025
+
 ## [4.2.1] - 2025-01-28
 ### Changed
 - Update `@subql/common` dependency
@@ -90,7 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.3.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/common-stellar/4.2.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/common-stellar/4.2.2...HEAD
+[4.2.2]: https://github.com/subquery/subql-stellar/compare/common-stellar/4.2.1...common-stellar/4.2.2
 [4.2.1]: https://github.com/subquery/subql-stellar/compare/common-stellar/4.2.0...common-stellar/4.2.1
 [4.2.0]: https://github.com/subquery/subql-stellar/compare/common-stellar/4.1.5...common-stellar/4.2.0
 [4.1.5]: https://github.com/subquery/subql-stellar/compare/common-stellar/4.1.4...common-stellar/4.1.5
