@@ -61,11 +61,11 @@ module.exports = {
         accessibility: 'no-public',
       },
     ],
-    '@typescript-eslint/no-namespace': ['error', {allowDeclarations: true}],
+    '@typescript-eslint/no-namespace': ['error', { allowDeclarations: true }],
     // "@typescript-eslint/member-ordering": "error",
     // "@typescript-eslint/naming-convention": "error",
     // "@typescript-eslint/no-param-reassign": "error",
-    '@typescript-eslint/promise-function-async': ['error', {checkArrowFunctions: false}],
+    '@typescript-eslint/promise-function-async': ['error', { checkArrowFunctions: false }],
     // "arrow-body-style": "error",
     complexity: ['error', 20],
     curly: ['error', 'multi-line'],
@@ -85,8 +85,8 @@ module.exports = {
       2,
       'line',
       [
-        //Copyright 2020-2023 SubQuery Pte Ltd authors & contributors
-        {pattern: ' Copyright \\d{4}(-\\d{4})? SubQuery Pte Ltd authors & contributors'},
+        // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
+        { pattern: ' Copyright \\d{4}(-\\d{4})? SubQuery Pte Ltd authors & contributors' },
         ' SPDX-License-Identifier: GPL-3.0',
       ],
       2,
