@@ -15,10 +15,7 @@ class TestDynamicDsService extends DynamicDsService<BaseDataSource, ISubqueryPro
   }
 
   // Make it public
-  getTemplate<T extends Omit<NonNullable<ISubqueryProject['templates']>[number], 'name'> & {startBlock?: number}>(
-    templateName: string,
-    startBlock?: number | undefined
-  ): T {
+  getTemplate(templateName: string, startBlock?: number | undefined): BaseDataSource {
     return super.getTemplate(templateName, startBlock);
   }
 }
