@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Update copyright header to 2025
+- Implement new BlockchainService architecture for easier integration of other blockchains (#2517)
 
 ### Fixed
 - Various typos
