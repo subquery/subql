@@ -87,7 +87,7 @@ describe('Runtime service', () => {
     dictionaryService = getDictionaryService();
     apiService = getApiService();
 
-    runtimeService = new RuntimeService(apiService, dictionaryService);
+    runtimeService = new RuntimeService(apiService);
   });
 
   it('doesnt refetch metadata when spec version doesnt change', async () => {
@@ -116,8 +116,9 @@ describe('Runtime service', () => {
   it('use dictionary and specVersionMap to get block specVersion', async () => {
     (dictionaryService as any).useDictionary = (height: number) => true;
 
-    // This is called in fetchService.preLoopHook
-    await runtimeService.syncDictionarySpecVersions(29233);
+    // This is called in init.ts to bootsrap the application
+    await runtimeService.init(0, 29233, dictionaryService);
+    await runtimeService.syncDictionarySpecVersions();
 
     const metaSpy = jest.spyOn(apiService.api.rpc.state, 'getRuntimeVersion');
 
@@ -128,6 +129,7 @@ describe('Runtime service', () => {
 
   it('getSpecVersion will fetch the spec version if its not in the map', async () => {
     (dictionaryService as any).useDictionary = (height: number) => true;
+    (runtimeService as any).dictionaryService = dictionaryService;
 
     const height = 3967204;
 

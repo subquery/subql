@@ -29,7 +29,7 @@ export class TestRunner<A, SA, B, DS> {
   private passedTests = 0;
   private failedTests = 0;
   constructor(
-    @Inject('IApi') protected readonly apiService: IApi<A, SA, IBlock<B>[]>,
+    @Inject('APIService') protected readonly apiService: IApi<A, SA, IBlock<B>[]>,
     protected readonly storeService: StoreService,
     protected readonly sequelize: Sequelize,
     protected readonly nodeConfig: NodeConfig,

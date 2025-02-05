@@ -5,18 +5,15 @@ import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ConnectionPoolService,
-  WorkerDynamicDsService,
   NodeConfig,
-  WorkerUnfinalizedBlocksService,
   WorkerCoreModule,
+  ProjectService,
+  DsProcessorService,
 } from '@subql/node-core';
+import { BlockchainService } from '../../blockchain.service';
 import { ApiService } from '../api.service';
-import { DsProcessorService } from '../ds-processor.service';
-import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
-import { ProjectService } from '../project.service';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
-import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { WorkerService } from './worker.service';
 
 /**
@@ -26,9 +23,10 @@ import { WorkerService } from './worker.service';
 @Module({
   imports: [WorkerCoreModule],
   providers: [
+    DsProcessorService,
     IndexerManager,
     {
-      provide: ApiService,
+      provide: 'APIService',
       useFactory: ApiService.init,
       inject: [
         'ISubqueryProject',
@@ -37,22 +35,20 @@ import { WorkerService } from './worker.service';
         NodeConfig,
       ],
     },
-    DsProcessorService,
-    {
-      provide: DynamicDsService,
-      useFactory: () => new WorkerDynamicDsService((global as any).host),
-    },
     {
       provide: 'IProjectService',
       useClass: ProjectService,
     },
+    // This is alised so it satisfies the BlockchainService, other services are updated to reflect this
     {
-      provide: UnfinalizedBlocksService,
-      useFactory: () =>
-        new WorkerUnfinalizedBlocksService((global as any).host),
+      provide: 'RuntimeService',
+      useClass: WorkerRuntimeService,
+    },
+    {
+      provide: 'IBlockchainService',
+      useClass: BlockchainService,
     },
     WorkerService,
-    WorkerRuntimeService,
   ],
   exports: [],
 })

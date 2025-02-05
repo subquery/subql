@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { getLogger, profiler } from '@subql/node-core';
 import { ApiService } from '../api.service';
 import { SubstrateDictionaryService } from '../dictionary';
@@ -14,15 +14,27 @@ const logger = getLogger('RuntimeService');
 
 @Injectable()
 export class RuntimeService extends BaseRuntimeService {
-  constructor(
-    protected apiService: ApiService,
-    protected dictionaryService?: SubstrateDictionaryService,
-  ) {
+  protected dictionaryService?: SubstrateDictionaryService;
+  constructor(@Inject('APIService') protected apiService: ApiService) {
     super(apiService);
   }
 
+  async init(
+    startHeight: number,
+    latestFinalizedHeight: number,
+    dictionaryService: SubstrateDictionaryService,
+  ): Promise<void> {
+    this.latestFinalizedHeight = latestFinalizedHeight;
+    this.dictionaryService = dictionaryService;
+
+    await this.syncDictionarySpecVersions();
+
+    await this.specChanged(startHeight);
+    await this.prefetchMeta(startHeight);
+  }
+
   // get latest specVersions from dictionary
-  async syncDictionarySpecVersions(height: number): Promise<void> {
+  async syncDictionarySpecVersions(): Promise<void> {
     try {
       // must check useDictionary before get SpecVersion, this will give the right dictionary to fetch SpecVersions
       const response = await this.dictionaryService?.getSpecVersions();
@@ -54,7 +66,7 @@ export class RuntimeService extends BaseRuntimeService {
         blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight
       ) {
         // Ask to sync local specVersionMap with dictionary
-        await this.syncDictionarySpecVersions(blockHeight);
+        await this.syncDictionarySpecVersions();
         syncedDictionary = true;
       }
     }

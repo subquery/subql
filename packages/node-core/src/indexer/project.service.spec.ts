@@ -3,18 +3,20 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {buildSchemaFromString} from '@subql/utils';
+import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig, ProjectUpgradeService} from '../configure';
-import {BaseDsProcessorService} from './ds-processor.service';
-import {DynamicDsService} from './dynamic-ds.service';
-import {BaseProjectService} from './project.service';
-import {Header, ISubqueryProject} from './types';
+import {DsProcessorService} from './ds-processor.service';
+import {DatasourceParams, DynamicDsService} from './dynamic-ds.service';
+import {ProjectService} from './project.service';
+import {Header, IBlock, ISubqueryProject} from './types';
 import {
-  BaseUnfinalizedBlocksService,
   METADATA_LAST_FINALIZED_PROCESSED_KEY,
   METADATA_UNFINALIZED_BLOCKS_KEY,
+  UnfinalizedBlocksService,
 } from './unfinalizedBlocks.service';
+import {IBaseIndexerWorker} from './worker';
 
-class TestProjectService extends BaseProjectService<any, any> {
+class TestProjectService extends ProjectService<any, any> {
   packageVersion = '1.0.0';
 
   async getBlockTimestamp(height: number): Promise<Date> {
@@ -30,9 +32,58 @@ class TestProjectService extends BaseProjectService<any, any> {
   }
 }
 
-class TestUnfinalizedBlocksService extends BaseUnfinalizedBlocksService<any> {
+class TestBlockchainService implements IBlockchainService {
+  packageVersion = '0.0.0';
+  blockHandlerKind = '';
+
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  fetchBlocks(blockNums: number[]): Promise<IBlock<any>[]> {
+    throw new Error('Method fetchBlocks not implemented.');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  fetchBlockWorker(
+    worker: IBaseIndexerWorker,
+    blockNum: number,
+    context: {workers: IBaseIndexerWorker[]}
+  ): Promise<Header> {
+    throw new Error('Method not implemented.');
+  }
+
+  onProjectChange(project: ISubqueryProject): Promise<void> | void {
+    // throw new Error('Method onProjectChange not implemented.');
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  getBlockTimestamp(height: number): Promise<Date | undefined> {
+    return Promise.resolve(undefined);
+  }
+  getBlockSize(block: IBlock): number {
+    return 0;
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  getBestHeight(): Promise<number> {
+    throw new Error('Method getBestHeight not implemented.');
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  getChainInterval(): Promise<number> {
+    throw new Error('Method getChainInterval not implemented.');
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  updateDynamicDs(params: DatasourceParams, template: any): Promise<void> {
+    throw new Error('Method updateDynamicDs not implemented.');
+  }
+  isCustomDs(x: any): x is any {
+    return false;
+  }
+  isRuntimeDs(x: any): x is any {
+    return false;
+  }
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  getSafeApi(block: any): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
   // eslint-disable-next-line @typescript-eslint/require-await
-  protected async getFinalizedHead(): Promise<Header> {
+  async getFinalizedHeader(): Promise<Header> {
     return {
       blockHash: 'asdf',
       blockHeight: 1000,
@@ -42,7 +93,7 @@ class TestUnfinalizedBlocksService extends BaseUnfinalizedBlocksService<any> {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  protected async getHeaderForHash(hash: string): Promise<Header> {
+  async getHeaderForHash(hash: string): Promise<Header> {
     const num = parseInt(hash.slice(1), 10);
     return {
       blockHeight: num,
@@ -68,7 +119,7 @@ describe('BaseProjectService', () => {
 
   beforeEach(() => {
     service = new TestProjectService(
-      null as unknown as BaseDsProcessorService,
+      null as unknown as DsProcessorService,
       null as unknown as any,
       null as unknown as any,
       null as unknown as any,
@@ -79,7 +130,8 @@ describe('BaseProjectService', () => {
       {unsafe: false} as unknown as NodeConfig,
       {getDynamicDatasources: jest.fn()} as unknown as DynamicDsService<any>,
       null as unknown as any,
-      null as unknown as any
+      null as unknown as any,
+      new TestBlockchainService()
     );
   });
 
@@ -346,10 +398,12 @@ describe('BaseProjectService', () => {
         rewind: jest.fn(),
       } as unknown as any;
 
+      const blockchainService = new TestBlockchainService();
+
       service = new TestProjectService(
         {
           validateProjectCustomDatasources: jest.fn(),
-        } as unknown as BaseDsProcessorService, // dsProcessorService
+        } as unknown as DsProcessorService, // dsProcessorService
         {networkMeta: {}} as unknown as any, //apiService
         null as unknown as any, // poiService
         null as unknown as any, // poiSyncService
@@ -369,12 +423,15 @@ describe('BaseProjectService', () => {
           resetDynamicDatasource: jest.fn(),
         } as unknown as DynamicDsService<any>, // dynamicDsService
         new EventEmitter2(), // eventEmitter
-        new TestUnfinalizedBlocksService(nodeConfig, storeService.modelProvider) // unfinalizedBlocksService
+        new UnfinalizedBlocksService(nodeConfig, storeService.modelProvider, blockchainService), // unfinalizedBlocksService
+        blockchainService
       );
     };
 
     it('succeeds with no rewinds', async () => {
       await setupProject();
+
+      await service.init();
 
       await expect(service.init()).resolves.not.toThrow();
     });

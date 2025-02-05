@@ -2,12 +2,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { isCustomDs } from '@subql/common-substrate';
 
-import { NodeConfig } from '@subql/node-core';
+import {
+  NodeConfig,
+  DsProcessorService,
+  IBlockchainService,
+} from '@subql/node-core';
 import axios from 'axios';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../../configure/SubqueryProject';
-import { DsProcessorService } from '../ds-processor.service';
 import { SubstrateDictionaryService } from './substrateDictionary.service';
 import { SubstrateDictionaryV1 } from './v1';
 import { SubstrateDictionaryV2 } from './v2';
@@ -50,7 +54,11 @@ describe('Substrate Dictionary service', function () {
       ['wss://polkadot.api.onfinality.io/public-ws'],
       '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     );
-    const dsProcessor = new DsProcessorService(project, nodeConfig);
+    const dsProcessor = new DsProcessorService(
+      project,
+      { isCustomDs } as IBlockchainService,
+      nodeConfig,
+    );
 
     dictionaryService = new SubstrateDictionaryService(
       project,

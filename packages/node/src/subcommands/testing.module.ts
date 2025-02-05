@@ -3,53 +3,33 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
   ConnectionPoolService,
-  ConnectionPoolStateManager,
   DbModule,
-  InMemoryCacheService,
-  PoiService,
-  PoiSyncService,
-  StoreService,
   TestRunner,
-  SandboxService,
   NodeConfig,
-  storeModelFactory,
+  ProjectService,
+  TestingCoreModule,
+  DsProcessorService,
+  DynamicDsService,
+  UnfinalizedBlocksService,
 } from '@subql/node-core';
-import { Sequelize } from '@subql/x-sequelize';
+import { BlockchainService } from '../blockchain.service';
 import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';
-import { DsProcessorService } from '../indexer/ds-processor.service';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { IndexerManager } from '../indexer/indexer.manager';
-import { ProjectService } from '../indexer/project.service';
-import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
+import { RuntimeService } from '../indexer/runtime/runtimeService';
 
 @Module({
+  imports: [TestingCoreModule],
   providers: [
-    InMemoryCacheService,
-    StoreService,
-    {
-      provide: 'IStoreModelProvider',
-      useFactory: storeModelFactory,
-      inject: [NodeConfig, EventEmitter2, Sequelize],
-    },
-    EventEmitter2,
-    PoiService,
-    PoiSyncService,
-    SandboxService,
-    DsProcessorService,
-    DynamicDsService,
-    UnfinalizedBlocksService,
-    ConnectionPoolStateManager,
-    ConnectionPoolService,
     {
       provide: 'IProjectService',
       useClass: ProjectService,
     },
     {
-      provide: ApiService,
+      provide: 'APIService',
       useFactory: ApiService.init,
       inject: [
         'ISubqueryProject',
@@ -58,16 +38,25 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
         NodeConfig,
       ],
     },
-    SchedulerRegistry,
-    TestRunner,
     {
-      provide: 'IApi',
-      useExisting: ApiService,
+      provide: 'IUnfinalizedBlocksService',
+      useClass: UnfinalizedBlocksService,
     },
+    {
+      provide: 'RuntimeService',
+      useClass: RuntimeService,
+    },
+    {
+      provide: 'IBlockchainService',
+      useClass: BlockchainService,
+    },
+    TestRunner,
     {
       provide: 'IIndexerManager',
       useClass: IndexerManager,
     },
+    DsProcessorService,
+    DynamicDsService,
   ],
   controllers: [],
   exports: [TestRunner],

@@ -117,8 +117,7 @@ export class ApiService
     ApiPromiseConnection,
     IEndpointConfig
   >
-  implements OnApplicationShutdown
-{
+  implements OnApplicationShutdown {
   private _fetchBlocksFunction?: FetchFunc;
   private fetchBlocksBatches: GetFetchFunc = () => this.fetchBlocksFunction;
   private _currentBlockHash?: string;
@@ -285,8 +284,8 @@ export class ApiService
     header: Header,
     runtimeVersion?: RuntimeVersion,
   ): Promise<ApiAt> {
-    this.currentBlockHash = header.hash.toString();
-    this.currentBlockNumber = header.number.toNumber();
+    this._currentBlockHash = header.hash.toString();
+    this._currentBlockNumber = header.number.toNumber();
 
     const api = this.api;
     const apiAt = (await api.at(

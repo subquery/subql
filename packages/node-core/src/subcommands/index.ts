@@ -6,3 +6,4 @@ export * from './forceClean.module';
 export * from './foreceClean.init';
 export * from './reindex.init';
 export * from './reindex.service';
+export * from './testing.core.module';
