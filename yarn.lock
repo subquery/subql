@@ -7844,6 +7844,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^22.12.0":
+  version: 22.12.0
+  resolution: "@types/node@npm:22.12.0"
+  dependencies:
+    undici-types: ~6.20.0
+  checksum: 2f6dd04abebc456900f7dab2311f63ab361818cd3ecf5078b72c63ed416a38a3e72711669a26cec070e0d2e09d7661976f7d1fa3fc029eb9383f0f7e421a1d55
+  languageName: node
+  linkType: hard
+
 "@types/normalize-package-data@npm:^2.4.0":
   version: 2.4.1
   resolution: "@types/normalize-package-data@npm:2.4.1"
@@ -20601,7 +20610,7 @@ __metadata:
     "@babel/preset-env": ^7.16.11
     "@geut/chan": ^3.2.9
     "@octokit/request": ^8.4.0
-    "@types/node": ^18.19.42
+    "@types/node": ^22.12.0
     "@types/node-fetch": 2.6.11
     "@typescript-eslint/eslint-plugin": 5
     "@typescript-eslint/parser": 5
@@ -21546,6 +21555,13 @@ __metadata:
   version: 6.11.1
   resolution: "undici-types@npm:6.11.1"
   checksum: d7fc11bded93bc55ef3b88464e856ab061a747cf50ef2eff5df5ba3be18b9fcafe60e1b36a8c99e28aac2eade12891d32a504f2a32422452c44662e598e3b188
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.20.0":
+  version: 6.20.0
+  resolution: "undici-types@npm:6.20.0"
+  checksum: b7bc50f012dc6afbcce56c9fd62d7e86b20a62ff21f12b7b5cbf1973b9578d90f22a9c7fe50e638e96905d33893bf2f9f16d98929c4673c2480de05c6c96ea8b
   languageName: node
   linkType: hard
 

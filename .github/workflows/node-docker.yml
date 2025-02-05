@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
     inputs:
       isLatest:
-        description: 'Add latest tag'
-        default: 'true'
+        description: "Add latest tag"
+        default: "true"
         required: true
 
 jobs:
@@ -35,7 +35,6 @@ jobs:
           else
             echo "changes_found=true" >> "$GITHUB_OUTPUT"
           fi
-
 
   node-build-push-docker-onfinality:
     needs: check
