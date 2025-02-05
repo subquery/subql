@@ -1,14 +1,12 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { BaseCustomDataSource, BaseDataSource, IProjectNetworkConfig } from '@subql/types-core';
-import { DatasourceParams, Header, IBaseIndexerWorker, IBlock, ISubqueryProject } from './indexer';
-
-// TODO probably need to split this in 2 to have a worker specific subset
+import {BaseCustomDataSource, BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
+import {DatasourceParams, Header, IBaseIndexerWorker, IBlock, ISubqueryProject} from './indexer';
 
 export interface ICoreBlockchainService<
   DS extends BaseDataSource = BaseDataSource,
-  SubQueryProject extends ISubqueryProject<IProjectNetworkConfig, DS> = ISubqueryProject<IProjectNetworkConfig, DS>
+  SubQueryProject extends ISubqueryProject<IProjectNetworkConfig, DS> = ISubqueryProject<IProjectNetworkConfig, DS>,
 > {
   /* The semver of the node */
   packageVersion: string;
@@ -26,18 +24,15 @@ export interface IBlockchainService<
   SafeAPI = any,
   LightBlock = any,
   FullBlock = any,
-  Worker extends IBaseIndexerWorker = IBaseIndexerWorker
+  Worker extends IBaseIndexerWorker = IBaseIndexerWorker,
 > extends ICoreBlockchainService<DS, SubQueryProject> {
   blockHandlerKind: string;
-  // TODO SubqueryProject methods
 
   // Block dispatcher service
   fetchBlocks(blockNums: number[]): Promise<IBlock<LightBlock>[] | IBlock<FullBlock>[]>; // TODO this probably needs to change to get light block type correct
   /* This is the worker equivalent of fetchBlocks, it provides a context to allow syncing anything between workers */
-  fetchBlockWorker(worker: Worker, blockNum: number, context: { workers: Worker[] }): Promise<Header>;
+  fetchBlockWorker(worker: Worker, blockNum: number, context: {workers: Worker[]}): Promise<Header>;
 
-  // Project service
-  // onProjectChange(project: SubQueryProject): Promise<void> | void;
   // /* Not all networks have a block timestamp, e.g. Shiden */
   // getBlockTimestamp(height: number): Promise<Date | undefined>;
 

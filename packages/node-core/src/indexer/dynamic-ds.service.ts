@@ -1,15 +1,15 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Inject, Injectable } from '@nestjs/common';
-import { BaseDataSource } from '@subql/types-core';
-import { Transaction } from '@subql/x-sequelize';
-import { cloneDeep } from 'lodash';
-import { IBlockchainService } from '../blockchain.service';
-import { getLogger } from '../logger';
-import { exitWithError } from '../process';
-import { IMetadata } from './storeModelProvider';
-import { ISubqueryProject } from './types';
+import {Inject, Injectable} from '@nestjs/common';
+import {BaseCustomDataSource, BaseDataSource, BaseTemplateDataSource} from '@subql/types-core';
+import {Transaction} from '@subql/x-sequelize';
+import {cloneDeep} from 'lodash';
+import {IBlockchainService} from '../blockchain.service';
+import {getLogger} from '../logger';
+import {exitWithError} from '../process';
+import {IMetadata} from './storeModelProvider';
+import {ISubqueryProject} from './types';
 
 const logger = getLogger('dynamic-ds');
 
@@ -29,7 +29,8 @@ export interface IDynamicDsService<DS> {
 
 @Injectable()
 export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P extends ISubqueryProject = ISubqueryProject>
-  implements IDynamicDsService<DS> {
+  implements IDynamicDsService<DS>
+{
   private _metadata?: IMetadata;
   private _datasources?: DS[];
   private _datasourceParams?: DatasourceParams[];
@@ -86,7 +87,7 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
 
       return ds;
     } catch (e: any) {
-      exitWithError(new Error(`Failed to create dynamic ds`, { cause: e }), logger);
+      exitWithError(new Error(`Failed to create dynamic ds`, {cause: e}), logger);
     }
   }
 
@@ -118,20 +119,17 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
    *
    * Inserts the startBlock into the template.
    * */
-  protected getTemplate<T extends Omit<NonNullable<P['templates']>[number], 'name'> & { startBlock?: number }>(
-    templateName: string,
-    startBlock?: number
-  ): T {
+  protected getTemplate(templateName: string, startBlock?: number): DS {
     const t = (this.project.templates ?? []).find((t) => t.name === templateName);
     if (!t) {
       throw new Error(`Unable to find matching template in project for name: "${templateName}"`);
     }
-    const { name, ...template } = cloneDeep(t);
-    return { ...template, startBlock } as T;
+    const {name, ...template} = cloneDeep(t);
+    return {...template, startBlock} as DS;
   }
 
   private async getDatasource(params: DatasourceParams): Promise<DS> {
-    const dsObj = this.getTemplate<any /*TODO DS*/>(params.templateName, params.startBlock);
+    const dsObj = this.getTemplate(params.templateName, params.startBlock);
 
     try {
       await this.blockchainService.updateDynamicDs(params, dsObj);

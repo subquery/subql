@@ -53,9 +53,7 @@ describe('DynamicDsService', () => {
   it('loads all datasources and params when init', async () => {
     await service.init(mockMetadata([testParam1]));
 
-    await expect(service.getDynamicDatasources()).resolves.toEqual([
-      {/*name: 'Test',*/ startBlock: testParam1.startBlock},
-    ]);
+    await expect(service.getDynamicDatasources()).resolves.toEqual([{startBlock: testParam1.startBlock}]);
 
     expect((service as any)._datasourceParams).toEqual([testParam1]);
   });

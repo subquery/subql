@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -47,18 +47,19 @@ const { version: packageVersion } = require('../package.json');
 @Injectable()
 export class BlockchainService
   implements
-  IBlockchainService<
-    SubstrateDatasource,
-    SubstrateCustomDatasource<
-      string,
-      SubstrateMapping<SubstrateCustomHandler>
-    >,
-    SubqueryProject,
-    ApiAt,
-    LightBlockContent,
-    BlockContent,
-    IIndexerWorker
-  > {
+    IBlockchainService<
+      SubstrateDatasource,
+      SubstrateCustomDatasource<
+        string,
+        SubstrateMapping<SubstrateCustomHandler>
+      >,
+      SubqueryProject,
+      ApiAt,
+      LightBlockContent,
+      BlockContent,
+      IIndexerWorker
+    >
+{
   constructor(
     @Inject('APIService') private apiService: ApiService,
     @Inject('RuntimeService') private runtimeService: RuntimeService,
@@ -126,9 +127,8 @@ export class BlockchainService
   async getFinalizedHeader(): Promise<Header> {
     const finalizedHash =
       await this.apiService.unsafeApi.rpc.chain.getFinalizedHead();
-    const finalizedHeader = await this.apiService.unsafeApi.rpc.chain.getHeader(
-      finalizedHash,
-    );
+    const finalizedHeader =
+      await this.apiService.unsafeApi.rpc.chain.getHeader(finalizedHash);
     return substrateHeaderToHeader(finalizedHeader);
   }
 
