@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -17,12 +17,7 @@ import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
-import {
-  BlockContent,
-  getBlockSize,
-  isFullBlock,
-  LightBlockContent,
-} from '../types';
+import { BlockContent, getBlockSize, LightBlockContent } from '../types';
 
 export type FetchBlockResponse = Header & { specVersion?: number };
 
@@ -34,8 +29,9 @@ export class WorkerService extends BaseWorkerService<
   { specVersion: number }
 > {
   constructor(
-    private apiService: ApiService,
+    @Inject('APIService') private apiService: ApiService,
     private indexerManager: IndexerManager,
+    @Inject('RuntimeService')
     private workerRuntimeService: WorkerRuntimeService,
     @Inject('IProjectService')
     projectService: IProjectService<SubstrateDatasource>,
@@ -83,11 +79,7 @@ export class WorkerService extends BaseWorkerService<
     block: IBlock<BlockContent | LightBlockContent>,
     dataSources: SubstrateDatasource[],
   ): Promise<ProcessBlockResponse> {
-    const runtimeVersion = !isFullBlock(block.block)
-      ? undefined
-      : await this.workerRuntimeService.getRuntimeVersion(block.block.block);
-
-    return this.indexerManager.indexBlock(block, dataSources, runtimeVersion);
+    return this.indexerManager.indexBlock(block, dataSources);
   }
 
   getSpecFromMap(height: number): number | undefined {

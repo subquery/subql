@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { Module } from '@nestjs/common';
@@ -14,20 +14,22 @@ import {
   NodeConfig,
   ConnectionPoolStateManager,
   storeModelFactory,
+  DsProcessorService,
+  UnfinalizedBlocksService,
+  DynamicDsService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
+import { BlockchainService } from '../blockchain.service';
 import { ConfigureModule } from '../configure/configure.module';
 import { ApiService } from '../indexer/api.service';
-import { DsProcessorService } from '../indexer/ds-processor.service';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
-import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
+import { RuntimeService } from '../indexer/runtime/runtimeService';
 
 @Module({
   providers: [
     {
       provide: 'IStoreModelProvider',
       useFactory: storeModelFactory,
-      inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
+      inject: [NodeConfig, EventEmitter2, Sequelize],
     },
     StoreService,
     ReindexService,
@@ -46,7 +48,7 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
     ConnectionPoolService,
     {
       // Used to work with DI for unfinalizedBlocksService but not used with reindex
-      provide: ApiService,
+      provide: 'APIService',
       useFactory: ApiService.init,
       inject: [
         'ISubqueryProject',
@@ -54,6 +56,14 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
         EventEmitter2,
         NodeConfig,
       ],
+    },
+    {
+      provide: 'RuntimeService',
+      useClass: RuntimeService,
+    },
+    {
+      provide: 'IBlockchainService',
+      useClass: BlockchainService,
     },
     SchedulerRegistry,
   ],

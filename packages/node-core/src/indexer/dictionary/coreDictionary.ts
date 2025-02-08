@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {NodeConfig} from '../../configure';
@@ -15,7 +15,10 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   protected _metadata?: M;
   metadataValid: boolean | undefined;
 
-  constructor(protected chainId: string, protected readonly nodeConfig: NodeConfig) {}
+  constructor(
+    protected chainId: string,
+    protected readonly nodeConfig: NodeConfig
+  ) {}
 
   abstract getData(
     startBlock: number,

@@ -3,43 +3,43 @@ on:
   workflow_dispatch:
     inputs:
       cpus:
-        description: 'docker cpus '
+        description: "docker cpus "
         default: 2
         require: true
       memory:
-        description: 'docker memory'
-        default: '4g'
+        description: "docker memory"
+        default: "4g"
         require: true
       benchmark-time:
-        description: 'Benchmark time(h/m/s)'
+        description: "Benchmark time(h/m/s)"
         default: 30m
         require: true
       indexerVersion:
-        description: 'indexer version'
-        default: 'latest'
+        description: "indexer version"
+        default: "latest"
         require: true
       deployment:
-        description: 'Deployment'
-        default: 'QmakYyTWzTxaDU842CczyDWV51Ay9E55k7kbRRXTB3f395'
+        description: "Deployment"
+        default: "QmakYyTWzTxaDU842CczyDWV51Ay9E55k7kbRRXTB3f395"
         require: false
       network-endpoint:
-        description: 'Network endpoint'
-        default: 'wss://rpc-polkadot.luckyfriday.io'
+        description: "Network endpoint"
+        default: "wss://rpc-polkadot.luckyfriday.io"
         require: true
       disableHistorical:
-        description: 'Disable historical'
-        default: 'true'
+        description: "Disable historical"
+        default: "true"
         require: false
       batch-size:
-        description: 'batch-size'
+        description: "batch-size"
         default: 30
         require: false
       workers:
-        description: 'workers'
+        description: "workers"
         default: 4
         require: false
       others:
-        description: 'Other flags'
+        description: "Other flags"
         require: false
 
 jobs:
@@ -48,7 +48,7 @@ jobs:
     # Containers must run in Linux based operating systems
     runs-on: ubuntu-latest
     # Docker Hub image that `container-job` executes in
-    container: node:18
+    container: node:lts
     services:
       # Label used to access the service container
       postgres:
@@ -73,7 +73,7 @@ jobs:
       - name: Install Docker inside the container
         run: |
           apt-get update
-          apt-get install -y docker.io  
+          apt-get install -y docker.io
 
       - name: Install PostgreSQL client
         run: |
@@ -161,7 +161,6 @@ jobs:
           name: benchmark-${{steps.current-time.outputs.formattedTime}}-${{steps.query_meta.outputs.indexer_version}}
           path: output/benchmark/
 
-
       - name: Post to a Slack channel
         id: slack
         uses: slackapi/slack-github-action@v1.24.0
@@ -169,7 +168,7 @@ jobs:
           # Slack channel id, channel name, or user id to post message.
           # See also: https://api.slack.com/methods/chat.postMessage#channels
           # channel for sq-benchmark
-          channel-id: 'C05JF51F1MJ'
+          channel-id: "C05JF51F1MJ"
           # For posting a rich message using Block Kit
           payload: |
             {
@@ -186,4 +185,3 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-

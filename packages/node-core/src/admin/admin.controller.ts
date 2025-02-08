@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -70,16 +70,6 @@ export class AdminController {
   @Get('poi/')
   async getPoisByRange(@Query(ValidationPipe) blockRange: BlockRangeDto): Promise<ProofOfIndexHuman[]> {
     const {endBlock, startBlock} = blockRange;
-    // TODO, class validator seems not work properly, need to complete in future
-    if (endBlock && Number(startBlock) > Number(endBlock)) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: 'startBlock must be greater than endBlock',
-        },
-        HttpStatus.BAD_REQUEST
-      );
-    }
     logger.info(`[POI] Getting poi history for blocks from ${startBlock} to ${endBlock}`);
     return handleServiceCall(async () => {
       const pois = await this.poiService.plainPoiRepo.getPoiBlocksByRange(

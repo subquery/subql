@@ -68,6 +68,7 @@ export class <%= props.className %> implements CompatEntity {
         }
     }
     <% } else { %>static async getBy<%=helper.upperFirst(field.name) %>(<%=field.name %>: <%=field.type %>, options: GetOptions<Compat<%=props.className %>Props>): Promise<<%=props.className %>[]> {
+        // Inputs must be cast as the store interface has not been updated to support alternative ID types
         const records = await store.getByField<Compat<%=props.className %>Props>('<%=props.entityName %>', '<%=field.name %>', <%=field.name %>, options);
         return records.map(record => this.create(record as unknown as <%= props.className %>Props));
     }
@@ -79,8 +80,8 @@ export class <%= props.className %> implements CompatEntity {
      *
      * ⚠️ This function will first search cache data followed by DB data. Please consider this when using order and offset options.⚠️
      * */
-    static async getByFields(filter: FieldsExpression<<%= props.className %>Props>[], options: GetOptions<Compat<%= props.className %>Props>): Promise<<%=props.className %>[]> {
-        const records = await store.getByFields<Compat<%=props.className %>Props>('<%=props.entityName %>', filter, options);
+    static async getByFields(filter: FieldsExpression<<%= props.className %>Props>[], options: GetOptions<<%= props.className %>Props>): Promise<<%=props.className %>[]> {
+        const records = await store.getByFields<Compat<%=props.className %>Props>('<%=props.entityName %>', filter  as unknown as FieldsExpression<Compat<%=props.className %>Props>[], options as unknown as GetOptions<Compat<%=props.className %>Props>);
         return records.map(record => this.create(record as unknown as <%= props.className %>Props));
     }
 

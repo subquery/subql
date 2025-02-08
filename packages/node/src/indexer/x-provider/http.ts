@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 // overwrite the official Polkadot HttpProvider: https://github.com/polkadot-js/api/blob/master/packages/rpc-provider/src/http/index.ts
@@ -28,7 +28,7 @@ const l = getLogger('http-provider');
  *
  * @name HttpProvider
  *
- * @description The HTTP Provider allows sending requests using HTTP to a HTTP RPC server TCP port. It does not support subscriptions so you won't be able to listen to events such as new blocks or balance changes. It is usually preferable using the [[WsProvider]].
+ * @description The HTTP Provider allows sending requests using HTTP to an HTTP RPC server TCP port. It does not support subscriptions so you won't be able to listen to events such as new blocks or balance changes. It is usually preferable using the [[WsProvider]].
  *
  * @example
  * <BR>

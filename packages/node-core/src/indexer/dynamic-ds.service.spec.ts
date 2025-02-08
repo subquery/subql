@@ -1,19 +1,21 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {BaseDataSource} from '@subql/types-core';
+import {IBlockchainService} from '../blockchain.service';
 import {DatasourceParams, DynamicDsService} from './dynamic-ds.service';
 import {CacheMetadataModel} from './storeModelProvider';
 import {ISubqueryProject} from './types';
 
-class TestDynamicDsService extends DynamicDsService<DatasourceParams, ISubqueryProject> {
-  protected async getDatasource(params: DatasourceParams): Promise<DatasourceParams> {
-    return Promise.resolve(params);
+class TestDynamicDsService extends DynamicDsService<BaseDataSource, ISubqueryProject> {
+  constructor(project: ISubqueryProject) {
+    super(project, {
+      updateDynamicDs: () => Promise.resolve(undefined), // Return the same value
+    } as unknown as IBlockchainService);
   }
 
-  getTemplate<T extends Omit<NonNullable<ISubqueryProject['templates']>[number], 'name'> & {startBlock?: number}>(
-    templateName: string,
-    startBlock?: number | undefined
-  ): T {
+  // Make it public
+  getTemplate(templateName: string, startBlock?: number | undefined): BaseDataSource {
     return super.getTemplate(templateName, startBlock);
   }
 }
@@ -38,7 +40,7 @@ const mockMetadata = (initData: DatasourceParams[] = []) => {
 describe('DynamicDsService', () => {
   let service: TestDynamicDsService;
   const project = {
-    templates: [{name: 'TestTemplate'}],
+    templates: [{name: 'Test'}],
   } as any as ISubqueryProject;
 
   beforeEach(() => {
@@ -48,7 +50,7 @@ describe('DynamicDsService', () => {
   it('loads all datasources and params when init', async () => {
     await service.init(mockMetadata([testParam1]));
 
-    await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1]);
+    await expect(service.getDynamicDatasources()).resolves.toEqual([{startBlock: testParam1.startBlock}]);
 
     expect((service as any)._datasourceParams).toEqual([testParam1]);
   });
@@ -62,7 +64,10 @@ describe('DynamicDsService', () => {
     expect((service as any)._datasourceParams).toEqual([testParam1, testParam2]);
 
     await expect(meta.find('dynamicDatasources')).resolves.toEqual([testParam1, testParam2]);
-    await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1, testParam2]);
+    await expect(service.getDynamicDatasources()).resolves.toEqual([
+      {startBlock: testParam1.startBlock},
+      {startBlock: testParam2.startBlock},
+    ]);
   });
 
   it('resets dynamic datasources', async () => {
@@ -72,7 +77,10 @@ describe('DynamicDsService', () => {
     await service.resetDynamicDatasource(2, null as any);
 
     await expect(meta.find('dynamicDatasources')).resolves.toEqual([testParam1, testParam2]);
-    await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1, testParam2]);
+    await expect(service.getDynamicDatasources()).resolves.toEqual([
+      {startBlock: testParam1.startBlock},
+      {startBlock: testParam2.startBlock},
+    ]);
   });
 
   it('getDynamicDatasources with force reloads from metadata', async () => {
@@ -81,19 +89,27 @@ describe('DynamicDsService', () => {
 
     await meta.set('dynamicDatasources', [testParam1, testParam2, testParam3, testParam4]);
 
-    await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1, testParam2]);
-    await expect(service.getDynamicDatasources(true)).resolves.toEqual([
-      testParam1,
-      testParam2,
-      testParam3,
-      testParam4,
+    await expect(service.getDynamicDatasources()).resolves.toEqual([
+      {startBlock: testParam1.startBlock},
+      {startBlock: testParam2.startBlock},
     ]);
-    await expect(service.getDynamicDatasources()).resolves.toEqual([testParam1, testParam2, testParam3, testParam4]);
+    await expect(service.getDynamicDatasources(true)).resolves.toEqual([
+      {startBlock: testParam1.startBlock},
+      {startBlock: testParam2.startBlock},
+      {startBlock: testParam3.startBlock},
+      {startBlock: testParam4.startBlock},
+    ]);
+    await expect(service.getDynamicDatasources()).resolves.toEqual([
+      {startBlock: testParam1.startBlock},
+      {startBlock: testParam2.startBlock},
+      {startBlock: testParam3.startBlock},
+      {startBlock: testParam4.startBlock},
+    ]);
   });
 
   it('can find a template and cannot mutate the template', () => {
-    const template1 = service.getTemplate('TestTemplate', 1);
-    const template2 = service.getTemplate('TestTemplate', 2);
+    const template1 = service.getTemplate('Test', 1);
+    const template2 = service.getTemplate('Test', 2);
 
     expect(template1.startBlock).toEqual(1);
     expect((template1 as any).name).toBeUndefined();
@@ -102,6 +118,6 @@ describe('DynamicDsService', () => {
     expect((template2 as any).name).toBeUndefined();
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    expect(project.templates![0]).toEqual({name: 'TestTemplate'});
+    expect(project.templates![0]).toEqual({name: 'Test'});
   });
 });

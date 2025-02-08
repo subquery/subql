@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
@@ -220,7 +220,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         path: WS_ROUTE,
       });
 
-      this.wsCleanup = useServer({schema}, wsServer);
+      this.wsCleanup = useServer({schema, context: {pgClient: this.pgPool}}, wsServer);
     }
 
     app.use(PinoLogger(PinoConfig));

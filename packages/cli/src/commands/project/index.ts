@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {select} from '@inquirer/prompts';
@@ -28,7 +28,7 @@ export default class Project extends Command {
 
     if (!option) {
       userOptions = await select({
-        message: 'Select an project option',
+        message: 'Select a project option',
         choices: [{value: 'create'}, {value: 'delete'}],
       });
     } else {

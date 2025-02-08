@@ -5,9 +5,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Update nestjs dependencies (#2667)
+
+## [16.2.1] - 2025-02-04
+### Changed
+- Update copyright header to 2025
+- Implement new BlockchainService architecture for easier integration of other blockchains (#2517)
+
+### Fixed
+- Various typos
+
+### Removed
+- Id type check on plain model set method (#2662)
+
+## [16.2.0] - 2025-01-28
+### Changed
+- Updated send_notification PG function to include `_block height` and entity `_id` (#2626)
 
 ### Added
 - Add `TextEncoder` in sandbox, some network package util method is depended on it
+- Added the `--monitor-object-max-depth` flag to mitigate OOM issues when encountering large chunks.(#2644)
+- Configuration options for PG pool connections (#2646)
+
+### Fixed
+- Fixed the inconsistency between the `monitor-file-size` flag and the expected behavior.(#2644)
+- Improved block range validation in POI endpoint with custom class-validator decorator
+- When setting a smaller batch size and the current processing height reaches latestFinalizedHeight, it causes the program to exit unexpectedly.
+- Store flush interval having a chance of trying to flush with invalid metadata (#2650)
 
 ## [16.1.0] - 2024-12-11
 ### Changed
@@ -45,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add an `--enable-cache` flag, allowing you to choose between DB or cache for IO operations.
 
 ### Fixed
-- When using a GET query to retrieve an entity, it will include a “store” field.
+- When using a GET query to retrieve an entity, it will include a "store" field.
 - Support for historical indexing by timestamp as well as block height (#2584)
 - Subscriptions not emitting deleted mutation type with historical (#2600)
 
@@ -637,7 +662,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for block hashes with base64 format for POI (#1761)
 
 ### Changed
-- Update vm2 past problimatic version (#1770)
+- Update vm2 past problematic version (#1770)
 - Add optional root option to config (#1771)
 
 ## [2.3.1] - 2023-05-26
@@ -890,7 +915,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/16.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/16.2.1...HEAD
+[16.2.1]: https://github.com/subquery/subql/compare/node-core/16.2.0...node-core/16.2.1
+[16.2.0]: https://github.com/subquery/subql/compare/node-core/16.1.0...node-core/16.2.0
 [16.1.0]: https://github.com/subquery/subql/compare/node-core/16.0.0...node-core/16.1.0
 [16.0.0]: https://github.com/subquery/subql/compare/node-core/15.0.3...node-core/16.0.0
 [15.0.3]: https://github.com/subquery/subql/compare/node-core/15.0.2...node-core/15.0.3

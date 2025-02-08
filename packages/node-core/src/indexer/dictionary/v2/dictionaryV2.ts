@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {hexStripZeros, hexToNumber, numberToHex} from '@subql/utils';
@@ -75,11 +75,15 @@ async function subqlFilterBlocksCapabilities(
 export abstract class DictionaryV2<
   FB,
   DS,
-  QE extends DictionaryV2QueryEntry = DictionaryV2QueryEntry
+  QE extends DictionaryV2QueryEntry = DictionaryV2QueryEntry,
 > extends CoreDictionary<DS, FB, DictionaryV2Metadata, QE> {
   protected dictionaryApi: AxiosInstance;
 
-  constructor(readonly dictionaryEndpoint: string, chainId: string, nodeConfig: NodeConfig) {
+  constructor(
+    readonly dictionaryEndpoint: string,
+    chainId: string,
+    nodeConfig: NodeConfig
+  ) {
     super(chainId, nodeConfig);
     this.dictionaryApi = axios.create({
       baseURL: dictionaryEndpoint,

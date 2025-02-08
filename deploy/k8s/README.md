@@ -1,5 +1,5 @@
 # K8s Deploy
-This [deploy.yaml](deploy.yaml) demonstrate how to run subquery in k8s.
+This [deploy.yaml](deploy.yaml) demonstrates how to run SubQuery in k8s.
 
 You will need to run 
 ### 1. a subql-node to index data
@@ -30,7 +30,7 @@ spec:
       initContainers:
         - name: prepare
           imagePullPolicy: IfNotPresent
-          image: node:18-alpine
+          image: node:lts-alpine
           command:
             - sh
             - -c
@@ -179,7 +179,7 @@ spec:
       terminationGracePeriodSeconds: 300
 ```
 
-To gain further security, an archieve node should be used in the same k8s cluster, and a NetworkPolicy be added to limit all network communication within the internal network.
+To gain further security, an archive node should be used in the same k8s cluster, and a NetworkPolicy be added to limit all network communication within the internal network.
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

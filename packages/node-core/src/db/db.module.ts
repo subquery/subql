@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {DynamicModule, Global} from '@nestjs/common';
@@ -72,6 +72,13 @@ const buildSequelizeOptions = (nodeConfig: NodeConfig, option: DbOption): Sequel
         key: nodeConfig.postgresClientKey,
         cert: nodeConfig.postgresClientCert,
       },
+    },
+    pool: {
+      max: nodeConfig.pgPoolMax,
+      min: nodeConfig.pgPoolMin,
+      acquire: nodeConfig.pgPoolAqcuire,
+      idle: nodeConfig.pgPoolIdle,
+      evict: nodeConfig.pgPoolEvict,
     },
     logging: (sql: string, timing?: number) => {
       logger.debug(sql);

@@ -1,6 +1,6 @@
 {
   "name": "@subql/testing",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist && tsc -b",

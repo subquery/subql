@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {INestApplication} from '@nestjs/common';
@@ -172,15 +172,15 @@ describe('sync helper test', () => {
       // For that reason the behaviour is kept the same as before delete was fixed.
       expect(listener).toHaveBeenNthCalledWith(
         1,
-        `{"id": "1", "_entity": {"id": "1", "block_number": 1}, "mutation_type": "UPDATE"}`
+        `{"id": "1", "_entity": {"id": "1", "_id": "adde2f8c-cb87-4e84-9600-77f434556e6d", "block_number": 1}, "_block_height": 1, "mutation_type": "UPDATE"}`
       );
       expect(listener).toHaveBeenNthCalledWith(
         2,
-        `{"id": "1", "_entity": {"id": "1", "block_number": 2}, "mutation_type": "UPDATE"}`
+        `{"id": "1", "_entity": {"id": "1", "_id": "9396aca4-cef2-4b52-98a7-c5f1ed3edb81", "block_number": 2}, "_block_height": 2, "mutation_type": "UPDATE"}`
       );
       expect(listener).toHaveBeenNthCalledWith(
         3,
-        `{"id": "1", "_entity": {"id": "1", "block_number": 2}, "mutation_type": "DELETE"}`
+        `{"id": "1", "_entity": {"id": "1", "_id": "9396aca4-cef2-4b52-98a7-c5f1ed3edb81", "block_number": 2}, "_block_height": 2, "mutation_type": "DELETE"}`
       );
     }, 10_000);
   });

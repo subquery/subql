@@ -1,8 +1,7 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {SchedulerRegistry} from '@nestjs/schedule';
 import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {delay} from '../../utils';
@@ -43,11 +42,18 @@ jest.mock('@subql/x-sequelize', () => {
       destroy: jest.fn(),
     }),
     sync: jest.fn(),
-    transaction: () => ({
-      commit: jest.fn(() => delay(1)), // Delay of 1s is used to test whether we wait for cache to flush
-      rollback: jest.fn(),
-      afterCommit: jest.fn(),
-    }),
+    transaction: () => {
+      let afterCommits: Array<() => void> = [];
+      return {
+        commit: jest.fn(() => {
+          afterCommits.forEach((fn) => fn());
+          afterCommits = [];
+          return delay(1);
+        }), // Delay of 1s is used to test whether we wait for cache to flush
+        rollback: jest.fn(),
+        afterCommit: (fn: () => void) => afterCommits.push(fn),
+      };
+    },
     // createSchema: jest.fn(),
   };
   const actualSequelize = jest.requireActual('@subql/x-sequelize');
@@ -66,7 +72,7 @@ describe('Store Cache Service historical', () => {
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
   });
 
   it('could init store cache service and init cache for models', () => {
@@ -152,7 +158,7 @@ describe('Store Cache flush with order', () => {
   const nodeConfig: NodeConfig = {} as any;
 
   beforeEach(() => {
-    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
     storeCacheService.init(false, {} as any, undefined);
   });
 
@@ -189,7 +195,7 @@ describe('Store Cache flush with non-historical', () => {
   const nodeConfig: NodeConfig = {disableHistorical: true} as any;
 
   beforeEach(() => {
-    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
     storeCacheService.init(false, {} as any, undefined);
   });
 
@@ -247,7 +253,7 @@ describe('Store cache upper threshold', () => {
   } as NodeConfig;
 
   beforeEach(() => {
-    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
     storeCacheService.init(false, {findByPk: () => Promise.resolve({toJSON: () => 1})} as any, undefined);
   });
 
@@ -303,7 +309,7 @@ describe('Store cache with exporters', () => {
   const nodeConfig = {} as NodeConfig;
 
   beforeEach(() => {
-    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter, new SchedulerRegistry());
+    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
     storeCacheService.init(false, {findByPk: () => Promise.resolve({toJSON: () => 1})} as any, undefined);
   });
 
@@ -332,5 +338,42 @@ describe('Store cache with exporters', () => {
     (entity1Model as unknown as CachedModel).addExporter(errorExporter);
 
     await expect(() => storeCacheService.flushData(true)).rejects.toThrow('Cant export');
+  });
+});
+
+describe('Store cache with flush interval', () => {
+  let storeCacheService: StoreCacheService;
+
+  const sequelize = new Sequelize();
+  const nodeConfig = {storeFlushInterval: 2} as NodeConfig;
+
+  beforeEach(() => {
+    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
+    storeCacheService.init(false, {findByPk: () => Promise.resolve({toJSON: () => 1})} as any, undefined);
+  });
+
+  it('force flushes at an interval', async () => {
+    // Setup initial data that is flushed so we have a last flushed time
+    const entity1Model = storeCacheService.getModel<TestEntity>('entity1');
+    await entity1Model.set(
+      'entity1_id_0x01',
+      {
+        id: 'entity1_id_0x01',
+        field1: 'set at block 1',
+      },
+      1
+    );
+    await storeCacheService.flushData(true);
+
+    const flushSpy = jest.spyOn(storeCacheService, 'flushData');
+
+    let x = 0;
+    while (x <= 12) {
+      await storeCacheService.applyPendingChanges(x, false);
+      await delay(0.1);
+      x++;
+    }
+
+    expect(flushSpy).toHaveBeenCalledWith(true);
   });
 });

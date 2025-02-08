@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import fs from 'fs';
@@ -8,7 +8,7 @@ import {createTestProject} from '../createProject.fixtures';
 import Publish from './publish';
 
 jest.setTimeout(300_000); // 300s
-describe('Intergration test - Publish', () => {
+describe('Integration test - Publish', () => {
   let projectDir: string;
 
   beforeAll(async () => {
@@ -43,7 +43,7 @@ describe('Intergration test - Publish', () => {
   });
 
   // Run this last because it modifies the project
-  it('file name consistent with manfiest file name, if -f <manifest path> is used', async () => {
+  it('file name consistent with manifest file name, if -f <manifest path> is used', async () => {
     const manifestPath = path.resolve(projectDir, 'project.yaml');
     const testManifestPath = path.resolve(projectDir, 'test.yaml');
     fs.renameSync(manifestPath, testManifestPath);

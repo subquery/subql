@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.3] - 2025-02-04
+### Changed
+- Update copyright header to 2025
+
 ## [2.2.2] - 2024-10-23
 ### Fixed
 - Bump version `@subql/types-core`
@@ -42,7 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Major release 2.0.0, align with other package versions
 
-[Unreleased]: https://github.com/subquery/subql/compare/testing/2.2.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/testing/2.2.3...HEAD
+[2.2.3]: https://github.com/subquery/subql/compare/testing/2.2.2...testing/2.2.3
 [2.2.2]: https://github.com/subquery/subql/compare/testing/2.2.1...testing/2.2.2
 [2.2.1]: https://github.com/subquery/subql/compare/testing/2.2.0...testing/2.2.1
 [2.2.0]: https://github.com/subquery/subql/compare/testing/2.1.2...testing/2.2.0

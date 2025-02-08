@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import './utils/bigint';
@@ -17,3 +17,4 @@ export * from './indexer';
 export * from './subcommands';
 export * from './yargs';
 export * from './admin';
+export * from './blockchain.service';

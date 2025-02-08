@@ -1,14 +1,14 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Sequelize } from '@subql/x-sequelize';
-import { TestRunner } from './test.runner';
+import {Sequelize} from '@subql/x-sequelize';
+import {TestRunner} from './test.runner';
 
 jest.mock('@subql/x-sequelize');
 
 const mockStoreCache = {
   flushCache: jest.fn().mockResolvedValue(undefined),
-  metadata: { set: jest.fn() },
+  metadata: {set: jest.fn()},
 };
 
 describe('TestRunner', () => {
@@ -21,7 +21,7 @@ describe('TestRunner', () => {
   beforeEach(() => {
     sequelizeMock = new Sequelize() as any;
     apiServiceMock = {
-      fetchBlocks: jest.fn().mockResolvedValue([{ getHeader: jest.fn() }]),
+      fetchBlocks: jest.fn().mockResolvedValue([{getHeader: jest.fn()}]),
     };
 
     storeServiceMock = {

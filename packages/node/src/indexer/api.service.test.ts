@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { INestApplication } from '@nestjs/common';
@@ -88,8 +88,7 @@ describe('ApiService', () => {
 
     app = module.createNestApplication();
     await app.init();
-    const apiService = app.get(ApiService);
-    return apiService;
+    return app.get(ApiService);
   };
 
   it('can instantiate api', async () => {
@@ -507,8 +506,7 @@ describe('Load chain type hasher', () => {
 
     app = module.createNestApplication();
     await app.init();
-    const apiService = app.get(ApiService);
-    return apiService;
+    return app.get(ApiService);
   };
 
   it('should use new hasher function, types hasher string should be replaced with function', async () => {

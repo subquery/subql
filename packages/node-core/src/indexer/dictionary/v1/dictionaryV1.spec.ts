@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
@@ -10,7 +10,7 @@ import {BlockHeightMap} from '../../../utils/blockHeightMap';
 import {dsMap, mockDS, TestDictionaryV1, HAPPY_PATH_CONDITIONS} from '../dictionary.fixtures';
 import {getGqlType} from './utils';
 
-const DICTIONARY_ENDPOINT = `https://gateway.subquery.network/query/QmUGBdhQKnzE8q6x6MPqP6LNZGa8gzXf5gkdmhzWjdFGfL`;
+const DICTIONARY_ENDPOINT = `https://gateway.subquery.network/query/QmSxAgGGpaMrYzooWpydmwzutREwomL5nupLZqxURzuJTo`;
 const DICTIONARY_CHAINID = `0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3`;
 
 const nodeConfig = new NodeConfig({

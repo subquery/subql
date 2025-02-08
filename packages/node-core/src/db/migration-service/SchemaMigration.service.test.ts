@@ -1,10 +1,9 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {readFileSync} from 'fs';
 import * as path from 'path';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {SchedulerRegistry} from '@nestjs/schedule';
 import {buildSchemaFromString} from '@subql/utils';
 import {IndexesOptions, QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
@@ -37,7 +36,7 @@ async function setup(
     },
   } as unknown as ISubqueryProject;
 
-  const storeCache = new StoreCacheService(sequelize, config, new EventEmitter2(), new SchedulerRegistry());
+  const storeCache = new StoreCacheService(sequelize, config, new EventEmitter2());
 
   const storeService = new StoreService(sequelize, config, storeCache, project);
 

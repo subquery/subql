@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.17.2] - 2025-02-04
+### Changed
+- Update copyright header to 2025
+- Update error message to include allowed dbType types (#2662)
+
+### Fixed
+- Various typos
+
+## [2.17.1] - 2025-01-28
+### Fixed
+- Graphql entitiy relations not resolving the id type from the `@dbType` directive (#2649)
+
 ## [2.17.0] - 2024-12-11
 ### Added
 - @dbType graphql directive (#2622)
@@ -43,8 +55,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.12.0] - 2024-06-21
 ### Added
 - Better error messages for invalid graphql schemas (#2458)
-
-### Added
 - enable ts strict mode
 - TS check reports errors when debugging Query
 
@@ -185,7 +195,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.17.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.17.2...HEAD
+[2.17.2]: https://github.com/subquery/subql/compare/utils/2.17.1...utils/2.17.2
+[2.17.1]: https://github.com/subquery/subql/compare/utils/2.17.0...utils/2.17.1
 [2.17.0]: https://github.com/subquery/subql/compare/utils/2.16.0...utils/2.17.0
 [2.16.0]: https://github.com/subquery/subql/compare/utils/2.15.0...utils/2.16.0
 [2.15.0]: https://github.com/subquery/subql/compare/utils/2.14.0...utils/2.15.0

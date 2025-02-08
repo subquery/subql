@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import gql from 'graphql-tag';
@@ -530,7 +530,7 @@ describe('utils that handle schema.graphql', () => {
       for (const type of ['JSON', 'Date', 'Bytes', 'Boolean', 'StarterEntity']) {
         const schema = makeSchema(type);
         expect(() => getAllEntitiesRelations(schema)).toThrow(
-          `${type} is not a defined scalar type, please use another type in the dbType directive`
+          `${type} is not a defined scalar type, please use another type in the dbType directive.\nAvailable types: BigInt, Float, ID, Int, String`
         );
       }
     });

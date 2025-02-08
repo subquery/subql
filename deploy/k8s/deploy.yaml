@@ -24,14 +24,14 @@ spec:
       initContainers:
         - name: prepare
           imagePullPolicy: IfNotPresent
-          image: node:18-alpine
+          image: node:lts-alpine
           command:
             - sh
             - -c
             - apk add git && git clone https://github.com/OnFinality-io/subql-examples /subquery && cd /subquery/block-timestamp && npm i -g @subql/cli && yarn && subql codegen && yarn build
           volumeMounts:
             - name: project-dir
-              mountPath: '/subquery'
+              mountPath: "/subquery"
       containers:
         - name: indexer
           imagePullPolicy: IfNotPresent
@@ -53,7 +53,7 @@ spec:
               value: postgres
           volumeMounts:
             - name: project-dir
-              mountPath: '/subquery'
+              mountPath: "/subquery"
           securityContext:
             runAsUser: 1000
 
@@ -176,5 +176,5 @@ spec:
             - name: HASURA_GRAPHQL_DATABASE_URL
               value: postgres://postgres:postgres@subquery-db-svc:5432/postgres
             - name: HASURA_GRAPHQL_ENABLE_CONSOLE
-              value: 'true'
+              value: "true"
       terminationGracePeriodSeconds: 300

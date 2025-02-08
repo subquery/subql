@@ -1,9 +1,9 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { Inject, Injectable } from '@nestjs/common';
-import { IProjectNetworkConfig } from '@subql/types-core';
+import {Inject, Injectable} from '@nestjs/common';
+import {IProjectNetworkConfig} from '@subql/types-core';
 import {
   GraphQLModelsRelationsEnums,
   hashName,
@@ -22,8 +22,8 @@ import {
   Transaction,
   Deferrable,
 } from '@subql/x-sequelize';
-import { camelCase, flatten, last, upperFirst } from 'lodash';
-import { NodeConfig } from '../configure';
+import {camelCase, flatten, last, upperFirst} from 'lodash';
+import {NodeConfig} from '../configure';
 import {
   BTREE_GIST_EXTENSION_EXIST_QUERY,
   createSchemaTrigger,
@@ -32,14 +32,14 @@ import {
   getTriggers,
   SchemaMigrationService,
 } from '../db';
-import { getLogger } from '../logger';
-import { exitWithError } from '../process';
-import { camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit } from '../utils';
-import { MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo } from './entities';
-import { Store } from './store';
-import { IMetadata, IStoreModelProvider, PlainStoreModelService } from './storeModelProvider';
-import { StoreOperations } from './StoreOperations';
-import { Header, HistoricalMode, ISubqueryProject } from './types';
+import {getLogger} from '../logger';
+import {exitWithError} from '../process';
+import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit} from '../utils';
+import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
+import {Store} from './store';
+import {IMetadata, IStoreModelProvider, PlainStoreModelService} from './storeModelProvider';
+import {StoreOperations} from './StoreOperations';
+import {Header, HistoricalMode, ISubqueryProject} from './types';
 
 const logger = getLogger('StoreService');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
@@ -204,7 +204,7 @@ export class StoreService {
         await this.metadataModel.setIncrement('schemaMigrationCount');
       }
     } catch (e: any) {
-      exitWithError(new Error(`Having a problem when syncing schema`, { cause: e }), logger);
+      exitWithError(new Error(`Having a problem when syncing schema`, {cause: e}), logger);
     }
   }
 
@@ -233,7 +233,7 @@ export class StoreService {
     try {
       this._modelIndexedFields = await this.getAllIndexFields(schema);
     } catch (e: any) {
-      exitWithError(new Error(`Having a problem when getting indexed fields`, { cause: e }), logger);
+      exitWithError(new Error(`Having a problem when getting indexed fields`, {cause: e}), logger);
     }
   }
 
@@ -285,17 +285,17 @@ export class StoreService {
 
   private async useDeprecatePoi(schema: string): Promise<boolean> {
     const sql = `SELECT * FROM information_schema.columns WHERE table_schema = ? AND table_name = '_poi' AND column_name = 'projectId'`;
-    const [result] = await this.sequelize.query(sql, { replacements: [schema] });
+    const [result] = await this.sequelize.query(sql, {replacements: [schema]});
     return !!result.length;
   }
 
   async getHistoricalStateEnabled(schema: string): Promise<HistoricalMode> {
-    const { historical, multiChain } = this.config;
+    const {historical, multiChain} = this.config;
 
     try {
       const tableRes = await this.sequelize.query<Array<string>>(
         `SELECT table_name FROM information_schema.tables where table_schema='${schema}'`,
-        { type: QueryTypes.SELECT }
+        {type: QueryTypes.SELECT}
       );
 
       const metadataTableNames = flatten(tableRes).filter(
@@ -306,9 +306,9 @@ export class StoreService {
         throw new Error('Metadata table does not exist');
       }
 
-      const res = await this.sequelize.query<{ key: string; value: boolean | string }>(
+      const res = await this.sequelize.query<{key: string; value: boolean | string}>(
         `SELECT key, value FROM "${schema}"."${metadataTableNames[0]}" WHERE (key = 'historicalStateEnabled')`,
-        { type: QueryTypes.SELECT }
+        {type: QueryTypes.SELECT}
       );
 
       if (res[0]?.key !== 'historicalStateEnabled') {
@@ -495,33 +495,33 @@ async function batchDeleteAndThenUpdate(
         destroyCompleted
           ? 0
           : model.destroy({
-            transaction,
-            hooks: false,
-            limit: batchSize,
-            where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockUnit),
-          }),
+              transaction,
+              hooks: false,
+              limit: batchSize,
+              where: sequelize.where(sequelize.fn('lower', sequelize.col('_block_range')), Op.gt, targetBlockUnit),
+            }),
         updateCompleted
           ? [0]
           : model.update(
-            {
-              __block_range: sequelize.fn('int8range', sequelize.fn('lower', sequelize.col('_block_range')), null),
-            },
-            {
-              transaction,
-              limit: batchSize,
-              hooks: false,
-              where: {
-                [Op.and]: [
-                  {
-                    __block_range: {
-                      [Op.contains]: targetBlockUnit,
-                    },
-                  },
-                  sequelize.where(sequelize.fn('upper', sequelize.col('_block_range')), Op.not, null),
-                ],
+              {
+                __block_range: sequelize.fn('int8range', sequelize.fn('lower', sequelize.col('_block_range')), null),
               },
-            }
-          ),
+              {
+                transaction,
+                limit: batchSize,
+                hooks: false,
+                where: {
+                  [Op.and]: [
+                    {
+                      __block_range: {
+                        [Op.contains]: targetBlockUnit,
+                      },
+                    },
+                    sequelize.where(sequelize.fn('upper', sequelize.col('_block_range')), Op.not, null),
+                  ],
+                },
+              }
+            ),
       ]);
       logger.debug(`${model.name} deleted ${numDestroyRows} records, updated ${numUpdatedRows} records`);
       if (numDestroyRows === 0) {

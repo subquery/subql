@@ -1,10 +1,9 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
 import {Injectable} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
-import {SchedulerRegistry} from '@nestjs/schedule';
 import {DatabaseError, Deferrable, Sequelize} from '@subql/x-sequelize';
 import {sum} from 'lodash';
 import {NodeConfig} from '../../configure';
@@ -12,8 +11,6 @@ import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {exitWithError} from '../../process';
 import {profiler} from '../../profiler';
-import {MetadataRepo, PoiRepo} from '../entities';
-import {HistoricalMode} from '../types';
 import {BaseCacheService} from './baseCache.service';
 import {CsvExporter, Exporter} from './exporters';
 import {CacheMetadataModel} from './metadata';
@@ -30,11 +27,12 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
   private readonly cacheUpperLimit: number;
   private _storeOperationIndex = 0;
 
+  #lastFlushed: Date | undefined;
+
   constructor(
     private sequelize: Sequelize,
     private config: NodeConfig,
-    protected eventEmitter: EventEmitter2,
-    private schedulerRegistry: SchedulerRegistry
+    protected eventEmitter: EventEmitter2
   ) {
     super('StoreCache');
     this.storeCacheThreshold = config.storeCacheThreshold;
@@ -43,28 +41,6 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
     if (this.storeCacheThreshold > this.cacheUpperLimit) {
       exitWithError('Store cache threshold must be less than the store cache upper limit', logger);
     }
-  }
-
-  init(historical: HistoricalMode, meta: MetadataRepo, poi?: PoiRepo): void {
-    super.init(historical, meta, poi);
-
-    if (this.config.storeFlushInterval > 0) {
-      this.schedulerRegistry.addInterval(
-        'storeFlushInterval',
-        setInterval(() => {
-          this.flushData(true).catch((e) => logger.warn(`storeFlushInterval failed ${e.message}`));
-        }, this.config.storeFlushInterval * 1000)
-      );
-    }
-  }
-
-  async beforeApplicationShutdown(): Promise<void> {
-    try {
-      this.schedulerRegistry.deleteInterval('storeFlushInterval');
-    } catch (e) {
-      /* Do nothing, an interval might not have been created */
-    }
-    await super.beforeApplicationShutdown();
   }
 
   getNextStoreOperationIndex(): number {
@@ -117,6 +93,7 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
 
   @profiler()
   async _flushCache(): Promise<void> {
+    this.#lastFlushed = new Date();
     this.logger.debug('Flushing cache');
     // With historical disabled we defer the constraints check so that it doesn't matter what order entities are modified
     const tx = await this.sequelize.transaction({
@@ -171,19 +148,24 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
   }
 
   async applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void> {
+    const force =
+      this.#lastFlushed &&
+      this.config.storeFlushInterval > 0 &&
+      Date.now() >= this.#lastFlushed.getTime() + this.config.storeFlushInterval * 1000;
+
     if (this.config.storeCacheAsync) {
       // Flush all completed block data and don't wait
-      await this.flushAndWaitForCapacity(false)?.catch((e) => {
+      await this.flushAndWaitForCapacity(force)?.catch((e) => {
         exitWithError(new Error(`Flushing cache failed`, {cause: e}), logger);
       });
     } else {
       // Flush all data from cache and wait
-      await this.flushData(false);
+      await this.flushData(force);
     }
 
     if (dataSourcesCompleted) {
       const msg = `All data sources have been processed up to block number ${height}. Exiting gracefully...`;
-      await this.flushData(false);
+      await this.flushData(force);
       exitWithError(msg, logger, 0);
     }
   }

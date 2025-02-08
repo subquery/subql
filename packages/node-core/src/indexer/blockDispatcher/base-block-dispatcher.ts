@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
@@ -26,6 +26,7 @@ export type ProcessBlockResponse = {
 };
 
 export interface IBlockDispatcher<B> {
+  init(onDynamicDsCreated: (height: number) => void): Promise<void>;
   // now within enqueueBlock should handle getLatestBufferHeight
   enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight: number): void | Promise<void>;
   queueSize: number;

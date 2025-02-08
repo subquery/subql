@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'node:assert';
@@ -156,6 +156,8 @@ export function createWorkerHost<
   );
 }
 
+export type TerminateableWorker<T extends IBaseIndexerWorker> = T & {terminate: () => Promise<number>};
+
 export async function createIndexerWorker<
   T extends IBaseIndexerWorker,
   ApiConnection extends IApiConnectionSpecific<any, any, any> /*ApiPromiseConnection*/ /*ApiPromiseConnection*/,
@@ -173,7 +175,7 @@ export async function createIndexerWorker<
   startHeight: number,
   monitorService?: MonitorServiceInterface,
   workerData?: any
-): Promise<T & {terminate: () => Promise<number>}> {
+): Promise<TerminateableWorker<T>> {
   const indexerWorker = Worker.create<
     T & {initWorker: (startHeight: number) => Promise<void>},
     DefaultWorkerFunctions<ApiConnection, DS>

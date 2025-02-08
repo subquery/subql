@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import fs from 'fs';
@@ -9,7 +9,7 @@ import {DEFAULT_SUBQL_MANIFEST} from '../constants';
 import Migrate from './migrate';
 
 jest.setTimeout(300_000); // 300s
-describe('Intergration test - Migrate', () => {
+describe('Integration test - Migrate', () => {
   let projectDir: string;
 
   beforeAll(async () => {

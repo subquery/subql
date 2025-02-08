@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { INestApplication } from '@nestjs/common';
@@ -8,11 +8,11 @@ import {
   DbOption,
   getFunctions,
   getTriggers,
+  ProjectService,
 } from '@subql/node-core';
 import { QueryTypes, Sequelize } from '@subql/x-sequelize';
 import { rimraf } from 'rimraf';
 import { prepareApp } from '../utils/test.utils';
-import { ProjectService } from './project.service';
 
 const option: DbOption = {
   host: process.env.DB_HOST ?? '127.0.0.1',

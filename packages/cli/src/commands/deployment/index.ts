@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import {select} from '@inquirer/prompts';
@@ -32,7 +32,7 @@ export default class Deployment extends Command {
 
     if (!option) {
       userOptions = await select({
-        message: 'Select an deployment option',
+        message: 'Select a deployment option',
         choices: [{value: 'deploy'}, {value: 'promote'}, {value: 'delete'}],
       });
     } else {

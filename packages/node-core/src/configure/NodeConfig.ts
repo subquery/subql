@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
@@ -46,6 +46,11 @@ export interface IConfig {
   readonly pgCa?: string;
   readonly pgKey?: string;
   readonly pgCert?: string;
+  readonly pgPoolMin?: number;
+  readonly pgPoolMax?: number;
+  readonly pgPoolIdle?: number;
+  readonly pgPoolAqcuire?: number;
+  readonly pgPoolEvict?: number;
   readonly storeCacheThreshold: number;
   readonly storeCacheUpperLimit: number;
   readonly storeGetCacheSize: number;
@@ -57,6 +62,7 @@ export interface IConfig {
   readonly csvOutDir?: string;
   readonly monitorOutDir: string;
   readonly monitorFileSize?: number;
+  readonly monitorObjectMaxDepth: number;
   readonly enableCache?: boolean;
 }
 
@@ -86,6 +92,7 @@ const DEFAULT_CONFIG = {
   storeFlushInterval: 5,
   allowSchemaMigration: false,
   monitorOutDir: './.monitor',
+  monitorObjectMaxDepth: 5,
 };
 
 export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
@@ -318,6 +325,26 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     }
   }
 
+  get pgPoolMax(): number | undefined {
+    return this._config.pgPoolMax;
+  }
+
+  get pgPoolMin(): number | undefined {
+    return this._config.pgPoolMin;
+  }
+
+  get pgPoolAqcuire(): number | undefined {
+    return this._config.pgPoolAqcuire;
+  }
+
+  get pgPoolIdle(): number | undefined {
+    return this._config.pgPoolIdle;
+  }
+
+  get pgPoolEvict(): number | undefined {
+    return this._config.pgPoolEvict;
+  }
+
   get root(): string | undefined {
     return this._config.root;
   }
@@ -334,7 +361,11 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
     const defaultMonitorFileSize = 200;
     // If user passed though yarg, we will record monitor file by this size, no matter poi or not
     // if user didn't pass through yarg, we will record monitor file by this default size only when poi is enabled
-    return (this._config.monitorFileSize ?? this._config.proofOfIndex) ? defaultMonitorFileSize : 0;
+    return this._config.monitorFileSize ?? (this._config.proofOfIndex ? defaultMonitorFileSize : 0);
+  }
+
+  get monitorObjectMaxDepth(): number {
+    return this._config.monitorObjectMaxDepth;
   }
 
   get enableCache(): boolean {

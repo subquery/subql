@@ -1,7 +1,7 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import yargs from 'yargs';
+import yargs, {demandOption} from 'yargs';
 import {hideBin} from 'yargs/helpers';
 import {initLogger} from './logger';
 
@@ -266,6 +266,10 @@ export function yargsBuilder<
                 describe: 'monitor file size limit in MB ',
                 type: 'number',
               },
+              'monitor-object-max-depth': {
+                describe: 'The maximum depth of an object recorded by a monitor. Default is 5, 0 is no limit',
+                type: 'number',
+              },
               'enable-cache': {
                 describe: 'cache enable or disable',
                 type: 'boolean',
@@ -336,6 +340,31 @@ export function yargsBuilder<
           describe:
             'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
           type: 'string',
+        },
+        'pg-pool-min': {
+          demandOption: false,
+          type: 'number',
+          describe: 'Postgres connection pool min number of connections',
+        },
+        'pg-pool-max': {
+          demandOption: false,
+          type: 'number',
+          describe: 'Postgres connection pool max number of connections',
+        },
+        'pg-pool-acquire': {
+          demandOption: false,
+          type: 'number',
+          describe: 'Postgres connection pool max time to acquire a connection, in milliseconds',
+        },
+        'pg-pool-idle': {
+          demandOption: false,
+          type: 'number',
+          describe: 'Posgres connection pool maximum idle time before a connection is released, in milliseconds',
+        },
+        'pg-pool-evict': {
+          demandOption: false,
+          type: 'number',
+          describe: 'Postgres connection pool interval after which idle connections are removed, in milliseconds',
         },
         subquery: {
           alias: 'f',

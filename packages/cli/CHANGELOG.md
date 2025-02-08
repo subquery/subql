@@ -9,8 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Project names containing uppercase letters cannot be deployed.
 
+## [5.5.1] - 2025-02-04
+### Changed
+- Update copyright header to 2025
+
+### Fixed
+- Various typos
+- Codegen producing invalid typescript with dbType directive (#2662)
+
+## [5.5.0] - 2025-01-28
 ### Added
-- Add some constants for Starknet 
+- Add some constants for Starknet
+
+### Changed
+- Added internal note relating to some tests
+
+### Fixed
+- Codegen: getByFields being invalid code (#2649)
 
 ## [5.4.0] - 2024-12-11
 ### Changed
@@ -189,7 +204,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Publish command output flag not working (#2270)
 
 ### Changed
-- Update deployemnt flags to match managed service (#2274)
+- Update deployment flags to match managed service (#2274)
 
 ## [4.2.7] - 2024-02-23
 ### Changed
@@ -712,7 +727,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.5.1...HEAD
+[5.5.1]: https://github.com/subquery/subql/compare/cli/5.5.0...cli/5.5.1
+[5.5.0]: https://github.com/subquery/subql/compare/cli/5.4.0...cli/5.5.0
 [5.4.0]: https://github.com/subquery/subql/compare/cli/5.3.3...cli/5.4.0
 [5.3.3]: https://github.com/subquery/subql/compare/cli/5.3.2...cli/5.3.3
 [5.3.2]: https://github.com/subquery/subql/compare/cli/5.3.1...cli/5.3.2

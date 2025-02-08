@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'path';
@@ -30,7 +30,7 @@ describe('configure utils', () => {
     expect(mockArgv.unsafe).toBeFalsy();
   });
 
-  it('should rebase historical manfiest options', () => {
+  it('should rebase historical manifest options', () => {
     const mock = {
       historical: 'height',
     } as any;

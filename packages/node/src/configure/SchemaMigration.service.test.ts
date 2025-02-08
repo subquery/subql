@@ -1,11 +1,10 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { INestApplication } from '@nestjs/common';
-import { DbOption, StoreCacheService } from '@subql/node-core';
+import { DbOption, StoreCacheService, ProjectService } from '@subql/node-core';
 import { QueryTypes, Sequelize } from '@subql/x-sequelize';
 import { rimraf } from 'rimraf';
-import { ProjectService } from '../indexer/project.service';
 import { prepareApp } from '../utils/test.utils';
 
 const option: DbOption = {
@@ -52,7 +51,6 @@ describe('SchemaMigration integration tests', () => {
     schemaName = 'test-migrations-6';
 
     app = await prepareApp(schemaName, cid);
-
     projectService = app.get('IProjectService');
     await projectService.init(1);
 
@@ -129,7 +127,6 @@ describe('SchemaMigration integration tests', () => {
     projectService = app.get('IProjectService');
     const projectUpgradeService = app.get('IProjectUpgradeService');
     const storeCache = app.get<StoreCacheService>('IStoreModelProvider');
-
     await projectService.init(1);
     tempDir = (projectService as any).project.root;
 

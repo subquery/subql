@@ -1,7 +1,6 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {SchedulerRegistry} from '@nestjs/schedule';
 import {Sequelize} from '@subql/x-sequelize';
 import {CacheMetadataModel, IStoreModelProvider, ISubqueryProject, StoreCacheService, StoreService} from '../indexer';
 import {NodeConfig} from './NodeConfig';
@@ -292,7 +291,7 @@ describe('Project Upgrades', () => {
     let storeCache: IStoreModelProvider;
 
     beforeEach(async () => {
-      storeCache = new StoreCacheService({} as any, {} as any, {} as any, new SchedulerRegistry());
+      storeCache = new StoreCacheService({} as any, {} as any, {} as any);
       // eslint-disable-next-line @typescript-eslint/dot-notation
       (storeCache as any).cachedModels['_metadata'] = mockMetadata();
 

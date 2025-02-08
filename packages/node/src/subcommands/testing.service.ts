@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -9,13 +9,10 @@ import {
   TestingService as BaseTestingService,
   NestLogger,
   TestRunner,
-  IBlock,
+  ProjectService,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { ApiService } from '../indexer/api.service';
-import { IndexerManager } from '../indexer/indexer.manager';
-import { ProjectService } from '../indexer/project.service';
 import { ApiAt, BlockContent, LightBlockContent } from '../indexer/types';
 import { TestingModule } from './testing.module';
 
@@ -50,27 +47,8 @@ export class TestingService extends BaseTestingService<
 
     const projectService: ProjectService = testContext.get('IProjectService');
 
-    // Initialise async services, we do this here rather than in factories, so we can capture one off events
     await projectService.init();
 
     return [testContext.close.bind(testContext), testContext.get(TestRunner)];
-  }
-
-  async indexBlock(
-    block: IBlock<BlockContent | LightBlockContent>,
-    handler: string,
-    indexerManager: IndexerManager,
-    apiService: ApiService,
-  ): Promise<void> {
-    const runtimeVersion =
-      await apiService.unsafeApi.rpc.state.getRuntimeVersion(
-        block.getHeader().blockHash,
-      );
-
-    await indexerManager.indexBlock(
-      block,
-      this.getDsWithHandler(handler),
-      runtimeVersion,
-    );
   }
 }

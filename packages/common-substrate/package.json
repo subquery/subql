@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-substrate",
-  "version": "4.3.5",
+  "version": "4.3.7",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",

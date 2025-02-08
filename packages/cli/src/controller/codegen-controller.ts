@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
@@ -161,6 +161,7 @@ export function processFields(
       switch (field.type) {
         default: {
           const typeClass = getTypeByScalarName(field.type);
+
           assert(
             typeClass && typeClass.tsType,
             `Schema: undefined type "${field.type.toString()}" on field "${field.name}" in "type ${className} @${type}"`
@@ -246,7 +247,9 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
       datasources as CosmosRuntimeDatasource[]
     );
   }
+  // TODO what about custom datasource processors, e.g. FrontierEvmProcessor, EthermintProcessor
   const ethManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.ethereum);
+
   // Todo, starknet codegen not supported yet
   const starknetManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.starknet);
 

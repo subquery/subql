@@ -1,8 +1,13 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { NodeConfig } from '@subql/node-core';
+import { isCustomDs } from '@subql/common-substrate';
+import {
+  NodeConfig,
+  DsProcessorService,
+  IBlockchainService,
+} from '@subql/node-core';
 import {
   SubstrateBlockHandler,
   SubstrateCallHandler,
@@ -13,7 +18,6 @@ import {
 } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../../../configure/SubqueryProject';
-import { DsProcessorService } from '../../ds-processor.service';
 import { SubstrateDictionaryService } from '../substrateDictionary.service';
 import { buildDictionaryV1QueryEntries } from './substrateDictionaryV1';
 
@@ -44,7 +48,11 @@ describe('Substrate DictionaryService', () => {
       project,
       nodeConfig,
       new EventEmitter2(),
-      new DsProcessorService(project, nodeConfig),
+      new DsProcessorService(
+        project,
+        { isCustomDs } as IBlockchainService,
+        nodeConfig,
+      ),
     );
 
     // prepare dictionary service

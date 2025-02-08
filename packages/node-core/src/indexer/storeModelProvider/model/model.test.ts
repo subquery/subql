@@ -1,6 +1,7 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Entity} from '@subql/types-core';
 import {DataTypes, Sequelize} from '@subql/x-sequelize';
 import _ from 'lodash';
 import {NodeConfig} from '../../../configure';
@@ -115,6 +116,48 @@ describe('Model provider consistency test', () => {
       const cacheResult3 = await cacheModel.getByFields([], {limit: 10});
       expect(result3.length).toEqual(2);
       expect(cacheResult3).toEqual(result3);
+    });
+  });
+
+  describe('alternative id types', () => {
+    it('can store an entity with a numeric ID type', async () => {
+      const modelFactory = sequelize.define(
+        'testModel2',
+        {
+          id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+          },
+          field1: DataTypes.INTEGER,
+        },
+        {timestamps: false, schema: schema}
+      );
+      const model2 = await modelFactory.sync();
+
+      let i = 0;
+
+      const plainModel = new PlainModel(model2 as any, false);
+      const cacheModel = new CachedModel(model2 as any, false, new NodeConfig({} as any), () => i++);
+
+      const numericData = {
+        id: 1,
+        field1: 1,
+      } as unknown as Entity;
+
+      await plainModel.set(numericData.id.toString(), numericData, 1);
+      await cacheModel.set(numericData.id.toString(), numericData, 1);
+
+      const result = await plainModel.get(numericData.id, undefined as any);
+      expect(result).toEqual(numericData);
+
+      const cacheResult = await cacheModel.get(numericData.id);
+      expect(cacheResult).toEqual(numericData);
+
+      const [getByResult] = await plainModel.getByFields([['field1', '=', 1] as any], {limit: 1}, undefined as any);
+      expect(getByResult).toEqual(numericData);
+
+      const [getByCachedResult] = await cacheModel.getByFields([['field1', '=', 1] as any], {limit: 1});
+      expect(getByCachedResult).toEqual(numericData);
     });
   });
 });

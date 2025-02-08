@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { Injectable } from '@nestjs/common';
@@ -22,7 +22,7 @@ export class WorkerRuntimeService extends BaseRuntimeService {
     }
   }
 
-  // Worker runtime does not syncDictionary by its self
+  // Worker runtime does not syncDictionary by itself
   // syncDictionary is done by main runtime
   async getSpecVersion(
     blockHeight: number,

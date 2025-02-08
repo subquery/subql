@@ -1,27 +1,29 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { isMainThread } from 'worker_threads';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { BaseDataSource, IProjectNetworkConfig } from '@subql/types-core';
-import { Sequelize } from '@subql/x-sequelize';
-import { IApi } from '../api.service';
-import { IProjectUpgradeService, NodeConfig } from '../configure';
-import { IndexerEvent } from '../events';
-import { getLogger } from '../logger';
-import { exitWithError, monitorWrite } from '../process';
-import { getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, mainThreadOnly, reindex } from '../utils';
-import { BlockHeightMap } from '../utils/blockHeightMap';
-import { BaseDsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
-import { MetadataKeys } from './entities';
-import { PoiSyncService } from './poi';
-import { PoiService } from './poi/poi.service';
-import { StoreService } from './store.service';
-import { cacheProviderFlushData } from './storeModelProvider';
-import { ISubqueryProject, IProjectService, BypassBlocks, HistoricalMode, Header } from './types';
-import { IUnfinalizedBlocksService } from './unfinalizedBlocks.service';
+import {isMainThread} from 'worker_threads';
+import {Inject} from '@nestjs/common';
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
+import {Sequelize} from '@subql/x-sequelize';
+import {IApi} from '../api.service';
+import {ICoreBlockchainService} from '../blockchain.service';
+import {IProjectUpgradeService, NodeConfig} from '../configure';
+import {IndexerEvent} from '../events';
+import {getLogger} from '../logger';
+import {exitWithError, monitorWrite} from '../process';
+import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, mainThreadOnly, reindex} from '../utils';
+import {BlockHeightMap} from '../utils/blockHeightMap';
+import {DsProcessorService} from './ds-processor.service';
+import {DynamicDsService} from './dynamic-ds.service';
+import {MetadataKeys} from './entities';
+import {PoiSyncService} from './poi';
+import {PoiService} from './poi/poi.service';
+import {StoreService} from './store.service';
+import {cacheProviderFlushData} from './storeModelProvider';
+import {ISubqueryProject, IProjectService, BypassBlocks, HistoricalMode, Header} from './types';
+import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
 const logger = getLogger('Project');
 
@@ -31,41 +33,38 @@ class NotInitError extends Error {
   }
 }
 
-export abstract class BaseProjectService<
-  API extends IApi,
-  DS extends BaseDataSource,
+export class ProjectService<
+  DS extends BaseDataSource = BaseDataSource,
+  API extends IApi = IApi,
   UnfinalizedBlocksService extends IUnfinalizedBlocksService<any> = IUnfinalizedBlocksService<any>,
-> implements IProjectService<DS> {
+> implements IProjectService<DS>
+{
   private _schema?: string;
   private _startHeight?: number;
   private _blockOffset?: number;
 
-  protected abstract packageVersion: string;
-  protected abstract getBlockTimestamp(height: number): Promise<Date | undefined>;
-  protected abstract onProjectChange(project: ISubqueryProject<IProjectNetworkConfig, DS>): void | Promise<void>;
-
   constructor(
-    private readonly dsProcessorService: BaseDsProcessorService,
-    protected readonly apiService: API,
-    private readonly poiService: PoiService,
-    private readonly poiSyncService: PoiSyncService,
-    protected readonly sequelize: Sequelize,
-    protected readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
-    protected readonly projectUpgradeService: IProjectUpgradeService<ISubqueryProject>,
-    protected readonly storeService: StoreService,
-    protected readonly nodeConfig: NodeConfig,
-    protected readonly dynamicDsService: DynamicDsService<DS>,
+    private readonly dsProcessorService: DsProcessorService,
+    @Inject('APIService') protected readonly apiService: API,
+    @Inject(isMainThread ? PoiService : 'Null') private readonly poiService: PoiService,
+    @Inject(isMainThread ? PoiSyncService : 'Null') private readonly poiSyncService: PoiSyncService,
+    @Inject(isMainThread ? Sequelize : 'Null') private readonly sequelize: Sequelize,
+    @Inject('ISubqueryProject') private readonly project: ISubqueryProject<IProjectNetworkConfig, DS>,
+    @Inject('IProjectUpgradeService') private readonly projectUpgradeService: IProjectUpgradeService<ISubqueryProject>,
+    @Inject(isMainThread ? StoreService : 'Null') private readonly storeService: StoreService,
+    private readonly nodeConfig: NodeConfig,
+    private readonly dynamicDsService: DynamicDsService<DS>,
     private eventEmitter: EventEmitter2,
-    protected readonly unfinalizedBlockService: UnfinalizedBlocksService
+    @Inject('IUnfinalizedBlocksService') private readonly unfinalizedBlockService: UnfinalizedBlocksService,
+    @Inject('IBlockchainService') private blockchainService: ICoreBlockchainService<DS>
   ) {
+    if (this.nodeConfig.unfinalizedBlocks && this.nodeConfig.allowSchemaMigration) {
+      throw new Error('Unfinalized Blocks and Schema Migration cannot be enabled at the same time');
+    }
     if (this.nodeConfig.unsafe) {
       logger.warn(
         'UNSAFE MODE IS ENABLED. This is not recommended for most projects and will not be supported by our hosted service'
       );
-    }
-
-    if (this.nodeConfig.unfinalizedBlocks && this.nodeConfig.allowSchemaMigration) {
-      throw new Error('Unfinalized Blocks and Schema Migration cannot be enabled at the same time');
     }
   }
 
@@ -99,7 +98,7 @@ export abstract class BaseProjectService<
     this.ensureTimezone();
 
     for await (const [, project] of this.projectUpgradeService.projects) {
-      await project.applyCronTimestamps(this.getBlockTimestamp.bind(this));
+      await project.applyCronTimestamps(this.blockchainService.getBlockTimestamp.bind(this));
     }
 
     // Do extra work on main thread to setup stuff
@@ -155,7 +154,7 @@ export abstract class BaseProjectService<
       this.projectUpgradeService.initWorker(startHeight, this.handleProjectChange.bind(this));
 
       // Called to allow handling the first project
-      await this.onProjectChange(this.project);
+      await this.blockchainService.onProjectChange(this.project);
     }
 
     // Used to load assets into DS-processor, has to be done in any thread
@@ -218,16 +217,16 @@ export abstract class BaseProjectService<
 
     const existing = await metadata.findMany(keys);
 
-    const { chain, genesisHash, specName } = this.apiService.networkMeta;
+    const {chain, genesisHash, specName} = this.apiService.networkMeta;
 
     if (this.project.runner) {
-      const { node, query } = this.project.runner;
+      const {node, query} = this.project.runner;
 
       await metadata.setBulk([
-        { key: 'runnerNode', value: node.name },
-        { key: 'runnerNodeVersion', value: node.version },
-        { key: 'runnerQuery', value: query.name },
-        { key: 'runnerQueryVersion', value: query.version },
+        {key: 'runnerNode', value: node.name},
+        {key: 'runnerNodeVersion', value: node.version},
+        {key: 'runnerQuery', value: query.name},
+        {key: 'runnerQueryVersion', value: query.version},
       ]);
     }
     if (!existing.genesisHash) {
@@ -251,9 +250,8 @@ export abstract class BaseProjectService<
     if (!existing.processedBlockCount && !existing.lastProcessedHeight) {
       await metadata.set('processedBlockCount', 0);
     }
-
-    if (existing.indexerNodeVersion !== this.packageVersion) {
-      await metadata.set('indexerNodeVersion', this.packageVersion);
+    if (existing.indexerNodeVersion !== this.blockchainService.packageVersion) {
+      await metadata.set('indexerNodeVersion', this.blockchainService.packageVersion);
     }
     if (!existing.schemaMigrationCount) {
       await metadata.set('schemaMigrationCount', 0);
@@ -340,7 +338,7 @@ export abstract class BaseProjectService<
         const nextProject = projects[i + 1][1];
         nextMinStartHeight = Math.max(
           nextProject.dataSources
-            .filter((ds): ds is DS & { startBlock: number } => !!ds.startBlock)
+            .filter((ds): ds is DS & {startBlock: number} => !!ds.startBlock)
             .sort((a, b) => a.startBlock - b.startBlock)[0].startBlock,
           projects[i + 1][0]
         );
@@ -355,12 +353,12 @@ export abstract class BaseProjectService<
       }[] = [];
 
       [...project.dataSources, ...dynamicDs]
-        .filter((ds): ds is DS & { startBlock: number } => {
+        .filter((ds): ds is DS & {startBlock: number} => {
           return !!ds.startBlock && (!nextMinStartHeight || nextMinStartHeight > ds.startBlock);
         })
         .forEach((ds) => {
-          events.push({ block: Math.max(height, ds.startBlock), start: true, ds });
-          if (ds.endBlock) events.push({ block: ds.endBlock + 1, start: false, ds });
+          events.push({block: Math.max(height, ds.startBlock), start: true, ds});
+          if (ds.endBlock) events.push({block: ds.endBlock + 1, start: false, ds});
         });
 
       // sort events by block in ascending order, start events come before end events
@@ -405,7 +403,7 @@ export abstract class BaseProjectService<
     );
 
     // Called to allow handling the first project
-    await this.onProjectChange(this.project);
+    await this.blockchainService.onProjectChange(this.project);
 
     if (isMainThread) {
       const lastProcessedHeight = await this.getLastProcessedHeight();
@@ -430,7 +428,7 @@ export abstract class BaseProjectService<
           logger.info(msg);
           monitorWrite(msg);
 
-          const timestamp = await this.getBlockTimestamp(upgradePoint);
+          const timestamp = await this.blockchainService.getBlockTimestamp(upgradePoint);
           // Only timestamp and blockHeight are used with reindexing so its safe to convert to a header
           await this.reindex({
             blockHeight: upgradePoint,
@@ -451,7 +449,7 @@ export abstract class BaseProjectService<
     // Reload the dynamic ds with new project
     await this.dynamicDsService.getDynamicDatasources(true);
 
-    await this.onProjectChange(this.project);
+    await this.blockchainService.onProjectChange(this.project);
   }
 
   async reindex(targetBlockHeader: Header): Promise<void> {
@@ -467,7 +465,7 @@ export abstract class BaseProjectService<
     return reindex(
       this.getStartBlockFromDataSources(),
       targetBlockHeader,
-      { height, timestamp },
+      {height, timestamp},
       this.storeService,
       this.unfinalizedBlockService,
       this.dynamicDsService,

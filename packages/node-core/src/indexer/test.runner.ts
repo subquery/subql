@@ -1,18 +1,18 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Inject, Injectable } from '@nestjs/common';
-import { SubqlTest } from '@subql/testing';
-import { Sequelize } from '@subql/x-sequelize';
+import {Inject, Injectable} from '@nestjs/common';
+import {SubqlTest} from '@subql/testing';
+import {Sequelize} from '@subql/x-sequelize';
 import chalk from 'chalk';
-import { isEqual } from 'lodash';
-import { IApi } from '../api.service';
-import { NodeConfig } from '../configure/NodeConfig';
-import { getLogger } from '../logger';
-import { TestSandbox } from './sandbox';
-import { StoreService } from './store.service';
-import { cacheProviderFlushData } from './storeModelProvider';
-import { IBlock, IIndexerManager } from './types';
+import {isEqual} from 'lodash';
+import {IApi} from '../api.service';
+import {NodeConfig} from '../configure/NodeConfig';
+import {getLogger} from '../logger';
+import {TestSandbox} from './sandbox';
+import {StoreService} from './store.service';
+import {cacheProviderFlushData} from './storeModelProvider';
+import {IBlock, IIndexerManager} from './types';
 
 const logger = getLogger('test-runner');
 
@@ -29,7 +29,7 @@ export class TestRunner<A, SA, B, DS> {
   private passedTests = 0;
   private failedTests = 0;
   constructor(
-    @Inject('IApi') protected readonly apiService: IApi<A, SA, IBlock<B>[]>,
+    @Inject('APIService') protected readonly apiService: IApi<A, SA, IBlock<B>[]>,
     protected readonly storeService: StoreService,
     protected readonly sequelize: Sequelize,
     protected readonly nodeConfig: NodeConfig,

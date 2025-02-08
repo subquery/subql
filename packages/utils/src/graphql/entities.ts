@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
@@ -133,7 +133,16 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
       }
       // If is a foreign key
       else if (entityNameSet.includes(typeString) && !derivedFromDirectValues) {
-        newModel.fields.push(packEntityField(typeString, field, true));
+        let relatedTypeString = FieldScalar.String;
+
+        // Check to see if the relation ID type is modified with the @dbType directive
+        const relatedIdField = entities.find((e) => e.name === typeString)?.getFields().id;
+        const dbIdType = relatedIdField?.astNode ? getDirectiveValues(idDbType, relatedIdField.astNode) : undefined;
+        if (dbIdType) {
+          relatedTypeString = dbIdType.type;
+        }
+
+        newModel.fields.push(packEntityField(relatedTypeString, field, true));
         modelRelations.relations.push({
           from: entity.name,
           type: 'belongsTo',
@@ -201,7 +210,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
           });
         }
       } else {
-        throw new Error(`${typeString} is not an valid type`);
+        throw new Error(`${typeString} is not a valid type`);
       }
       // handle indexes
       if (indexDirectiveVal) {
@@ -238,8 +247,11 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
         const t = getTypeByScalarName(dbType);
 
         // Allowlist of types that can be used.
-        if (!t || !['BigInt', 'Float', 'ID', 'Int', 'String'].includes(t.name)) {
-          throw new Error(`${dbType} is not a defined scalar type, please use another type in the dbType directive`);
+        const allowedTypes = ['BigInt', 'Float', 'ID', 'Int', 'String'];
+        if (!t || !allowedTypes.includes(t.name)) {
+          throw new Error(
+            `${dbType} is not a defined scalar type, please use another type in the dbType directive.\nAvailable types: ${allowedTypes.join(', ')}`
+          );
         }
 
         const f = newModel.fields.find((f) => f.name === 'id');
@@ -350,7 +362,7 @@ function packEntityField(
 ): GraphQLEntityField {
   return {
     name: isForeignKey ? `${field.name}Id` : field.name,
-    type: isForeignKey ? FieldScalar.String : typeString,
+    type: typeString,
     description: field.description ?? undefined,
     isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
     nullable: !isNonNullType(field.type),

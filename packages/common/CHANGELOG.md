@@ -6,8 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.1] - 2025-02-04
+### Changed
+- Update copyright header to 2025
+
+## [5.3.0] - 2025-01-28
 ### Added
-- Add starknet to network family constants 
+- Add starknet to network family constants
 
 ## [5.2.2] - 2024-12-11
 ### Fixed
@@ -82,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.6.0] - 2024-05-22
 ### Changed
-- Improve error message when project manfiest is invalid (#2408)
+- Improve error message when project manifest is invalid (#2408)
 
 ## [3.5.1] - 2024-04-24
 ### Added
@@ -437,7 +442,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/5.2.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/5.3.1...HEAD
+[5.3.1]: https://github.com/subquery/subql/compare/common/5.3.0...common/5.3.1
+[5.3.0]: https://github.com/subquery/subql/compare/common/5.2.2...common/5.3.0
 [5.2.2]: https://github.com/subquery/subql/compare/common/5.2.1...common/5.2.2
 [5.2.1]: https://github.com/subquery/subql/compare/common/5.2.0...common/5.2.1
 [5.2.0]: https://github.com/subquery/subql/compare/common/5.1.4...common/5.2.0
