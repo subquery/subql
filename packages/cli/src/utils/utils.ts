@@ -83,7 +83,7 @@ export function errorHandle(e: any, msg: string): Error {
 }
 
 export function buildProjectKey(org: string, projectName: string): string {
-  return encodeURIComponent(`${org}/${projectName}`);
+  return encodeURIComponent(`${org}/${projectName.toLowerCase()}`);
 }
 
 export async function renderTemplate(templatePath: string, outputPath: string, templateData: ejs.Data): Promise<void> {

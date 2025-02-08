@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Project names containing uppercase letters cannot be deployed.
+
 ## [5.5.1] - 2025-02-04
 ### Changed
 - Update copyright header to 2025
