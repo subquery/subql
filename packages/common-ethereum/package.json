@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-ethereum",
-  "version": "4.6.1",
+  "version": "4.6.2-0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -35,5 +35,6 @@
     "@types/rimraf": "3.0.2",
     "ejs": "3.1.10",
     "lodash": "4.17.21"
-  }
+  },
+  "stableVersion": "4.6.1"
 }
