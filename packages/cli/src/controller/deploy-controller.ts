@@ -121,7 +121,7 @@ export async function projectsInfo(
   url: string,
   type: string
 ): Promise<ProjectDataType | undefined> {
-  const key = `${org}/${projectName}`;
+  const key = `${org}/${projectName.toLowerCase()}`;
   try {
     const res = await getAxiosInstance(url, authToken).get<ProjectDataType[]>(
       `v3/subqueries/${buildProjectKey(org, projectName)}/deployments`
