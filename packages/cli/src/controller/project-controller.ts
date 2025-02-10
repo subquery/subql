@@ -66,7 +66,7 @@ export async function deleteProject(
   project_name: string,
   url: string
 ): Promise<string> {
-  const key = `${organization}/${project_name}`;
+  const key = `${organization}/${project_name.toLowerCase()}`;
   try {
     await axios({
       headers: {

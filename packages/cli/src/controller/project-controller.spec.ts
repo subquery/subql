@@ -7,7 +7,7 @@ import {createProject, deleteProject} from './project-controller';
 
 const projectSpec = {
   org: process.env.SUBQL_ORG_TEST,
-  projectName: 'mocked_project',
+  projectName: 'mocked_Project',
   ipfs: 'QmaVh8DGzuRCJZ5zYEDxXQsXYqP9HihjjeuxNNteSDq8xX',
   subtitle: '',
   description: '',
