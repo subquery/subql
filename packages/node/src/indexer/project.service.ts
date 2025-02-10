@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { isMainThread } from 'worker_threads';
@@ -68,6 +68,7 @@ export class ProjectService extends BaseProjectService<
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   @profiler()
   async init(startHeight?: number): Promise<void> {
     return super.init(startHeight);
@@ -84,6 +85,7 @@ export class ProjectService extends BaseProjectService<
     this.apiService.updateBlockFetching();
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   protected async initUnfinalized(): Promise<Header | undefined> {
     return this.unfinalizedBlockService.init(
       this.reindex.bind(this),

@@ -1,4 +1,4 @@
-// Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -37,6 +37,7 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
    * @param reindex - the function to reindex back before a fork
    * @param supportsFinalization - If the chain supports the 'finalized' block tag this should be true.
    * */
+  // eslint-disable-next-line @typescript-eslint/require-await
   async init(
     reindex: (targetHeight: Header) => Promise<void>,
     supportsFinalisation?: boolean,
