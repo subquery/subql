@@ -166,7 +166,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
                 return resolveName(type.type);
               default:
                 // Any case in case future adds new kind
-                throw new Error(`Unandled node kind: ${(type as any).kind}`);
+                throw new Error(`Unhandled node kind: ${(type as any).kind}`);
             }
           };
 
@@ -326,26 +326,26 @@ function getJoinIndexFields(
   entity: GraphQLObjectType<any, any>,
   entityFields: GraphQLField<any, any, {[p: string]: any}>[],
   fkNameSet: string[],
-  IndexArgFields: string[]
+  indexArgFields: string[]
 ): string[] {
-  if (IndexArgFields.length === 1) {
-    logger.warn(`Composite index expected to be more than 1 field , entity ${entity} [${IndexArgFields}]`);
+  if (indexArgFields.length === 1) {
+    logger.warn(`Composite index expected to be more than 1 field , entity ${entity} [${indexArgFields}]`);
   }
-  if (IndexArgFields.length > 3) {
+  if (indexArgFields.length > 3) {
     throw new Error(
-      `Composite index on entity ${entity} expected not more than 3 fields, index [${IndexArgFields}] got ${IndexArgFields.length} fields`
+      `Composite index on entity ${entity} expected not more than 3 fields, index [${indexArgFields}] got ${indexArgFields.length} fields`
     );
   }
   // check duplicate fields
-  const duplicateFields = IndexArgFields.filter((name, index, arr) => arr.indexOf(name) !== index);
+  const duplicateFields = indexArgFields.filter((name, index, arr) => arr.indexOf(name) !== index);
   if (duplicateFields.length) {
-    throw new Error(`Composite index ${entity}.${IndexArgFields} got duplicated fields: ${duplicateFields}`);
+    throw new Error(`Composite index ${entity}.${indexArgFields} got duplicated fields: ${duplicateFields}`);
   }
-  return IndexArgFields.map((j) => {
+  return indexArgFields.map((j) => {
     const fieldInEntity = entityFields.find((f) => f.name === j);
     // check whether these fields are exist in the entity
     if (fieldInEntity === undefined) {
-      throw new Error(`Composite index [${IndexArgFields}], field ${j} not found within entity ${entity} `);
+      throw new Error(`Composite index [${indexArgFields}], field ${j} not found within entity ${entity} `);
     }
     // check is fk
     if (fkNameSet.includes(fieldInEntity.name)) {
