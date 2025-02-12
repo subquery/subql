@@ -3,6 +3,7 @@
 
 import {DynamicModule, Global} from '@nestjs/common';
 import {Sequelize, Options as SequelizeOption} from '@subql/x-sequelize';
+import {PoolConfig} from 'pg';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
@@ -88,6 +89,19 @@ const buildSequelizeOptions = (nodeConfig: NodeConfig, option: DbOption): Sequel
 
 export async function establishNewSequelize(nodeConfig: NodeConfig): Promise<Sequelize> {
   return sequelizeFactory(buildSequelizeOptions(nodeConfig, DEFAULT_DB_OPTION))();
+}
+
+export function getPgPoolConfig(nodeConfig: NodeConfig): PoolConfig {
+  const sequelizeOptions = buildSequelizeOptions(nodeConfig, DEFAULT_DB_OPTION);
+  return {
+    user: sequelizeOptions.username,
+    password: sequelizeOptions.password,
+    host: sequelizeOptions.host,
+    port: sequelizeOptions.port,
+    database: sequelizeOptions.database,
+    max: 1,
+    ssl: sequelizeOptions.ssl,
+  };
 }
 
 @Global()

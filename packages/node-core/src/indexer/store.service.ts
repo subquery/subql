@@ -34,8 +34,17 @@ import {
 } from '../db';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
-import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit} from '../utils';
-import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
+import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit, hasValue} from '../utils';
+import {
+  generateRewindTimestampKey,
+  GlobalDataFactory,
+  GlobalDataRepo,
+  MetadataFactory,
+  MetadataRepo,
+  PoiFactory,
+  PoiFactoryDeprecate,
+  PoiRepo,
+} from './entities';
 import {Store} from './store';
 import {IMetadata, IStoreModelProvider, PlainStoreModelService} from './storeModelProvider';
 import {StoreOperations} from './StoreOperations';
@@ -63,6 +72,7 @@ export class StoreService {
   poiRepo?: PoiRepo;
   private _modelIndexedFields?: IndexField[];
   private _modelsRelations?: GraphQLModelsRelationsEnums;
+  private _globalDataRepo?: GlobalDataRepo;
   private _metaDataRepo?: MetadataRepo;
   private _historical?: HistoricalMode;
   private _metadataModel?: IMetadata;
@@ -102,6 +112,11 @@ export class StoreService {
 
   get operationStack(): StoreOperations | undefined {
     return this._operationStack;
+  }
+
+  get globalDataRepo(): GlobalDataRepo {
+    assert(this._globalDataRepo, new NoInitError());
+    return this._globalDataRepo;
   }
 
   get blockHeader(): Header {
@@ -158,6 +173,10 @@ export class StoreService {
       this.subqueryProject.network.chainId
     );
 
+    if (this.historical === 'timestamp') {
+      this._globalDataRepo = GlobalDataFactory(this.sequelize, schema);
+    }
+
     this._schema = schema;
 
     await this.sequelize.sync();
@@ -172,6 +191,8 @@ export class StoreService {
     await this.initHotSchemaReloadQueries(schema);
 
     await this.metadataModel.set('historicalStateEnabled', this.historical);
+
+    await this.initChainRewindTimestamp();
   }
 
   async init(schema: string): Promise<void> {
@@ -476,6 +497,31 @@ group by
   getHistoricalUnit(): number {
     // Cant throw here because even with historical disabled the current height is used by the store
     return getHistoricalUnit(this.historical, this.blockHeader);
+  }
+
+  private async getRewindTimestamp(): Promise<number | undefined> {
+    const rewindTimestampKey = generateRewindTimestampKey(this.subqueryProject.network.chainId);
+    const record = await this.globalDataRepo.findByPk(rewindTimestampKey);
+    if (hasValue(record)) {
+      return record.toJSON().value as number;
+    }
+  }
+
+  private async initChainRewindTimestamp() {
+    if (this.historical !== 'timestamp') return;
+    if (await this.getRewindTimestamp()) return;
+
+    const rewindTimestampKey = generateRewindTimestampKey(this.subqueryProject.network.chainId);
+    await this.globalDataRepo.create({key: rewindTimestampKey, value: 0});
+  }
+
+  async getLastProcessedBlock(): Promise<{height: number; timestamp?: number}> {
+    const {lastProcessedBlockTimestamp: timestamp, lastProcessedHeight: height} = await this.metadataModel.findMany([
+      'lastProcessedHeight',
+      'lastProcessedBlockTimestamp',
+    ]);
+
+    return {height: height || 0, timestamp};
   }
 }
 

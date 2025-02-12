@@ -11,6 +11,7 @@ import {ConnectionPoolService} from './connectionPool.service';
 import {ConnectionPoolStateManager} from './connectionPoolState.manager';
 import {InMemoryCacheService} from './inMemoryCache.service';
 import {MonitorService} from './monitor.service';
+import {MultiChainRewindService} from './multiChainRewind.service';
 import {PoiService, PoiSyncService} from './poi';
 import {SandboxService} from './sandbox.service';
 import {StoreService} from './store.service';
@@ -33,6 +34,7 @@ import {storeModelFactory} from './storeModelProvider';
       useFactory: storeModelFactory,
       inject: [NodeConfig, EventEmitter2, Sequelize],
     },
+    MultiChainRewindService,
     AdminListener,
   ],
   controllers: [AdminController],

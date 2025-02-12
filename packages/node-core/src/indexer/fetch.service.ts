@@ -3,19 +3,20 @@
 
 import assert from 'assert';
 import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
-import {EventEmitter2} from '@nestjs/event-emitter';
+import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {BaseDataSource} from '@subql/types-core';
 import {range} from 'lodash';
 import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
-import {IndexerEvent} from '../events';
+import {EventPayload, IndexerEvent, MultiChainRewindEvent, MultiChainRewindPayload} from '../events';
 import {getLogger} from '../logger';
 import {delay, filterBypassBlocks, getModulos} from '../utils';
 import {IBlockDispatcher} from './blockDispatcher';
 import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {mergeNumAndBlocks} from './dictionary/utils';
+import {IMultiChainHandler, MultiChainRewindService, RewindStatus} from './multiChainRewind.service';
 import {IStoreModelProvider} from './storeModelProvider';
 import {BypassBlocks, IBlock, IProjectService} from './types';
 import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
@@ -24,7 +25,7 @@ const logger = getLogger('FetchService');
 
 @Injectable()
 export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<FB>, FB>
-  implements OnApplicationShutdown
+  implements OnApplicationShutdown, IMultiChainHandler
 {
   private _latestBestHeight?: number;
   private _latestFinalizedHeight?: number;
@@ -39,7 +40,8 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
     private schedulerRegistry: SchedulerRegistry,
     @Inject('IUnfinalizedBlocksService') private unfinalizedBlocksService: IUnfinalizedBlocksServiceUtil,
     @Inject('IStoreModelProvider') private storeModelProvider: IStoreModelProvider,
-    @Inject('IBlockchainService') private blockchainSevice: IBlockchainService<DS>
+    @Inject('IBlockchainService') private blockchainSevice: IBlockchainService<DS>,
+    private multiChainRewindService: MultiChainRewindService
   ) {}
 
   private get latestBestHeight(): number {
@@ -195,6 +197,14 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
 
       // Update the target height, this happens here to stay in sync with the rest of indexing
       void this.storeModelProvider.metadata.set('targetHeight', latestHeight);
+
+      // If we're rewinding, we should wait until it's done
+      const multiChainStatus = this.multiChainRewindService.getStatus();
+      if (RewindStatus.Normal !== multiChainStatus) {
+        logger.info(`Wait for all chains to complete rewind, current chainId: ${this.multiChainRewindService.chainId}`);
+        await delay(3);
+        continue;
+      }
 
       // This could be latestBestHeight, dictionary should never include finalized blocks
       // TODO add buffer so dictionary not used when project synced
@@ -382,5 +392,12 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
   resetForIncorrectBestBlock(blockHeight: number): void {
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
+  }
+
+  @OnEvent(MultiChainRewindEvent.Rewind)
+  @OnEvent(MultiChainRewindEvent.RewindTimestampDecreased)
+  handleMultiChainRewindEvent(payload: MultiChainRewindPayload) {
+    logger.info(`Received rewind event, height: ${payload.height}`);
+    this.resetForNewDs(payload.height);
   }
 }
