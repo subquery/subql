@@ -173,7 +173,7 @@ export class StoreService {
       this.subqueryProject.network.chainId
     );
 
-    if (this.historical === 'timestamp') {
+    if (this.config.historical === 'timestamp') {
       this._globalDataRepo = GlobalDataFactory(this.sequelize, schema);
     }
 
@@ -509,8 +509,7 @@ group by
 
   private async initChainRewindTimestamp() {
     if (this.historical !== 'timestamp') return;
-    if (await this.getRewindTimestamp()) return;
-
+    if ((await this.getRewindTimestamp()) !== undefined) return;
     const rewindTimestampKey = generateRewindTimestampKey(this.subqueryProject.network.chainId);
     await this.globalDataRepo.create({key: rewindTimestampKey, value: 0});
   }
