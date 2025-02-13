@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.5.2] - 2025-02-13
 ### Fixed
 - Project names containing uppercase letters cannot be deployed.
 
@@ -727,7 +728,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.5.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.5.2...HEAD
+[5.5.2]: https://github.com/subquery/subql/compare/cli/5.5.1...cli/5.5.2
 [5.5.1]: https://github.com/subquery/subql/compare/cli/5.5.0...cli/5.5.1
 [5.5.0]: https://github.com/subquery/subql/compare/cli/5.4.0...cli/5.5.0
 [5.4.0]: https://github.com/subquery/subql/compare/cli/5.3.3...cli/5.4.0
