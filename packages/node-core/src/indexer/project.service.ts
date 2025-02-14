@@ -138,15 +138,11 @@ export class ProjectService<
         void this.poiSyncService.syncPoi(undefined);
       }
 
-      const reindexMultiChain = await this.initMultiChainRewindService();
-
       const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
       // Unfinalized is dependent on POI in some cases, it needs to be init after POI is init
       const reindexedUnfinalized = await this.initUnfinalizedInternal();
 
-      if (reindexMultiChain !== undefined) {
-        this._startHeight = reindexMultiChain.blockHeight;
-      }
+      const reindexMultiChain = await this.initMultiChainRewindService();
 
       if (reindexedUnfinalized !== undefined) {
         this._startHeight = reindexedUnfinalized.blockHeight;
@@ -154,6 +150,10 @@ export class ProjectService<
 
       if (reindexedUpgrade !== undefined) {
         this._startHeight = reindexedUpgrade;
+      }
+
+      if (reindexMultiChain !== undefined) {
+        this._startHeight = reindexMultiChain.blockHeight;
       }
 
       // Flush any pending operations to set up DB

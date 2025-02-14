@@ -17,7 +17,6 @@ import {
 } from '@subql/x-sequelize';
 import {ModelAttributeColumnReferencesOptions, ModelIndexesOptions} from '@subql/x-sequelize/types/model';
 import {MultiChainRewindEvent} from '../events';
-import {RewindLockKey} from '../indexer';
 import {EnumType} from '../utils';
 import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -307,8 +306,8 @@ export function createRewindTrigger(schema: string): string {
     AFTER INSERT OR UPDATE OR DELETE
     ON "${schema}"."_global"
     FOR EACH ROW
-    WHEN ( new.key = '${RewindLockKey}')
-    EXECUTE FUNCTION "${schema}".rewind_notification();`;
+    EXECUTE FUNCTION "${schema}".rewind_notification();
+    `;
 }
 
 export function createRewindTriggerFunction(schema: string): string {
@@ -323,7 +322,7 @@ export function createRewindTriggerFunction(schema: string): string {
       END IF;
       
       -- During a rollback, there is a chain that needs to be rolled back to an earlier height.
-      IF TG_OP = 'UPDATE' AND (NEW.value ->> 'timestamp')::int < (OLD.value ->> 'timestamp')::int THEN
+      IF TG_OP = 'UPDATE' AND (NEW.value ->> 'timestamp')::BIGINT < (OLD.value ->> 'timestamp')::BIGINT THEN
         PERFORM pg_notify('${triggerName}', '${MultiChainRewindEvent.RewindTimestampDecreased}');
       END IF;
 

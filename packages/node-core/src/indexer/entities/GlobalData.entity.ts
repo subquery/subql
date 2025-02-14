@@ -11,8 +11,7 @@ export type RewindTimestampKey = `${typeof RewindTimestampKeyPrefix}_${string}`;
 export type RewindLockInfo = {
   /** Timestamp to rewind to. */
   timestamp: number;
-  /** Number of additional chains to rewind. */
-  rewindNum: number;
+  chainNum: number;
 };
 export interface GlobalDataKeys {
   rewindLock: RewindLockInfo;

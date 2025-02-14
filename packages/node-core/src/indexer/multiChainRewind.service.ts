@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import {Pool, PoolClient} from 'pg';
 import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
-import {getPgPoolConfig} from '../db';
+import {createRewindTrigger, createRewindTriggerFunction, getPgPoolConfig, getTriggers} from '../db';
 import {MultiChainRewindEvent, MultiChainRewindPayload} from '../events';
 import {getLogger} from '../logger';
 import {
@@ -62,8 +62,9 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   private _status: RewindStatus = RewindStatus.Normal;
   private _chainId?: string;
   private _dbSchema?: string;
-  waitRewindHeader?: Header;
+  private _rewindTriggerName?: string;
   private pgListener?: PoolClient;
+  waitRewindHeader?: Required<Header>;
   constructor(
     private nodeConfig: NodeConfig,
     private eventEmitter: EventEmitter2,
@@ -89,6 +90,14 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   private set dbSchema(dbSchema: string) {
     this._dbSchema = dbSchema;
   }
+  private set rewindTriggerName(rewindTriggerName: string) {
+    this._rewindTriggerName = rewindTriggerName;
+  }
+
+  get rewindTriggerName(): string {
+    assert(this._rewindTriggerName, 'rewindTriggerName is not set');
+    return this._rewindTriggerName;
+  }
 
   private set status(status: RewindStatus) {
     this._status = status;
@@ -105,8 +114,16 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   async init(chainId: string, dbSchema: string, reindex: (targetHeader: Header) => Promise<void>) {
     this.chainId = chainId;
     this.dbSchema = dbSchema;
+    this.rewindTriggerName = hashName(this.dbSchema, 'rewind_trigger', '_global');
 
     if (this.storeService.historical === 'timestamp') {
+      await this.sequelize.query(`${createRewindTriggerFunction(this.dbSchema)}`);
+
+      const rewindTriggers = await getTriggers(this.sequelize, this.rewindTriggerName);
+      if (rewindTriggers.length === 0) {
+        await this.sequelize.query(`${createRewindTrigger(this.dbSchema)}`);
+      }
+
       // Register a listener and create a schema notification sending function.
       await this.registerPgListener();
 
@@ -155,7 +172,8 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       });
     });
 
-    await this.pgListener.query(`LISTEN "${hashName(this.dbSchema, 'rewind_trigger', '_global')}"`);
+    await this.pgListener.query(`LISTEN "${this.rewindTriggerName}"`);
+    logger.info(`Register rewind listener success, chainId: ${this.chainId}`);
 
     // Check whether the current state is in rollback.
     const {rewindLock, rewindTimestamp} = await this.getGlobalRewindStatus();
@@ -222,7 +240,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
         SET "key" = EXCLUDED."key",
             "value" = EXCLUDED."value",
             "updatedAt" = EXCLUDED."updatedAt" 
-        WHERE "key" = '${RewindLockKey}' AND ("value"->>'timestamp')::int > ${rewindTimestamp}`,
+        WHERE "${globalTable}"."key" = '${RewindLockKey}' AND ("${globalTable}"."value"->>'timestamp')::BIGINT > ${rewindTimestamp}`,
         {
           type: QueryTypes.INSERT,
           transaction: tx,
@@ -262,10 +280,10 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       SET value = jsonb_set(
         value, 
         '{chainNum}', 
-        to_jsonb(COALESCE((value ->> 'chainNum')::int, 0) - 1), 
+        to_jsonb(COALESCE(("${globalTable}"."value" ->> 'chainNum')::BIGINT, 0) - 1), 
         false
       )
-      WHERE "key" = '${RewindLockKey}' AND ("value"->>'timestamp')::int = ${rewindTimestamp}
+      WHERE "${globalTable}"."key" = '${RewindLockKey}' AND ("${globalTable}"."value"->>'timestamp')::BIGINT = ${rewindTimestamp}
       RETURNING value`,
       {
         type: QueryTypes.SELECT,
@@ -280,7 +298,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       );
       return 0;
     }
-    const rewindNum = results[0].value.rewindNum;
+    const chainNum = results[0].value.chainNum;
 
     const rewindTimestampKey = generateRewindTimestampKey(this.chainId);
     const [affectedCount] = await this.storeService.globalDataRepo.update(
@@ -298,32 +316,32 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       `not found rewind timestamp key in global data, chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`
     );
 
-    if (rewindNum === 0) {
+    if (chainNum === 0) {
       await this.storeService.globalDataRepo.destroy({where: {key: RewindLockKey}, transaction: tx});
     }
 
     // The current chain has completed the rewind, and we still need to wait for other chains to finish.
     // When fully synchronized, set the status back to normal by pgListener.
     this.status = RewindStatus.WaitOtherChain;
-    logger.info(`Rewind success chainId: ${JSON.stringify({rewindNum, chainId: this.chainId, rewindTimestamp})}`);
-    return rewindNum;
+    logger.info(`Rewind success chainId: ${JSON.stringify({chainNum, chainId: this.chainId, rewindTimestamp})}`);
+    return chainNum;
   }
 
   /**
    * Get the block header closest to the given timestamp
    * @param timestamp To find the block closest to a given timestamp
-   * @returns undefined if the timestamp is less than the first block timestamp
+   * @returns
    */
-  async getHeaderByBinarySearch(timestamp: Header['timestamp']): Promise<Header> {
+  async getHeaderByBinarySearch(timestamp: Header['timestamp']): Promise<Required<Header>> {
     assert(timestamp, 'getHeaderByBinarySearch `timestamp` is required');
 
     let left = 0;
     let {height: right} = await this.storeService.getLastProcessedBlock();
-
+    let searchNum = 0;
     while (left < right) {
+      searchNum++;
       const mid = Math.floor((left + right) / 2);
-      const header = await this.blockchainService.getHeaderForHeight(mid);
-      assert(header.timestamp, 'getHeader return `timestamp` is undfined');
+      const header = await this.blockchainService.getRequiredHeaderForHeight(mid);
 
       if (header.timestamp === timestamp) {
         return header;
@@ -334,6 +352,16 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       }
     }
 
-    return left ? this.blockchainService.getHeaderForHeight(left) : ({blockHeight: 0} as Header);
+    const targetHeader = left
+      ? await this.blockchainService.getRequiredHeaderForHeight(left)
+      : {
+          blockHash: '',
+          blockHeight: 0,
+          parentHash: '',
+          timestamp,
+        };
+    logger.info(`Binary search times: ${searchNum}, target Header: ${JSON.stringify(targetHeader)}`);
+
+    return targetHeader;
   }
 }
