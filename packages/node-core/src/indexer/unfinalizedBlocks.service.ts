@@ -63,7 +63,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
   constructor(
     protected readonly nodeConfig: NodeConfig,
     @Inject('IStoreModelProvider') protected readonly storeModelProvider: IStoreModelProvider,
-    @Inject('IBlockchainService') private blockchainService: IBlockchainService
+    @Inject('IBlockchainService') protected blockchainService: IBlockchainService
   ) {}
 
   async init(reindex: (tagetHeader: Header) => Promise<void>): Promise<Header | undefined> {

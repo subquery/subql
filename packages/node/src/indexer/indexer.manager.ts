@@ -22,7 +22,6 @@ import {
   IBlock,
   getLogger,
   UnfinalizedBlocksService,
-  IBlockchainService,
   DynamicDsService,
 } from '@subql/node-core';
 import {
@@ -34,10 +33,8 @@ import {
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
-import {
-  SubqueryProject,
-  SubstrateProjectDs,
-} from '../configure/SubqueryProject';
+import { BlockchainService } from '../blockchain.service';
+import { SubstrateProjectDs } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService as SubstrateApiService } from './api.service';
 import { ApiAt, BlockContent, isFullBlock, LightBlockContent } from './types';
@@ -70,14 +67,7 @@ export class IndexerManager extends BaseIndexerManager<
       BlockContent | LightBlockContent
     >,
     @Inject('IBlockchainService')
-    blockchainService: IBlockchainService<
-      SubstrateDatasource,
-      SubstrateCustomDatasource,
-      SubqueryProject,
-      ApiAt,
-      LightBlockContent,
-      BlockContent
-    >,
+    blockchainService: BlockchainService,
   ) {
     super(
       apiService,
@@ -141,7 +131,11 @@ export class IndexerManager extends BaseIndexerManager<
 
       // Run initialization events
       for (const event of groupedEvents.init) {
-        await this.indexContent(SubstrateHandlerKind.Event)(event, dataSources, getVM);
+        await this.indexContent(SubstrateHandlerKind.Event)(
+          event,
+          dataSources,
+          getVM,
+        );
       }
 
       for (const extrinsic of extrinsics) {
@@ -167,7 +161,11 @@ export class IndexerManager extends BaseIndexerManager<
 
       // Run finalization events
       for (const event of groupedEvents.finalize) {
-        await this.indexContent(SubstrateHandlerKind.Event)(event, dataSources, getVM);
+        await this.indexContent(SubstrateHandlerKind.Event)(
+          event,
+          dataSources,
+          getVM,
+        );
       }
     } else {
       for (const event of blockContent.events) {
