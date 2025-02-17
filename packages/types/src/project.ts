@@ -225,20 +225,13 @@ export interface SubstrateMapping<T extends SubstrateHandler = SubstrateHandler>
 }
 
 /**
- * Represents a Substrate datasource interface with generic parameters.
- * @interface
- * @template M - The mapping type for the datasource.
- */
-type ISubstrateDatasource<M extends SubstrateMapping> = BaseDataSource<SubstrateHandler, M>;
-
-/**
  * Represents a runtime datasource for Substrate.
  * @interface
  * @template M - The mapping type for the datasource (default: SubstrateMapping<SubstrateRuntimeHandler>).
  */
 export interface SubstrateRuntimeDatasource<
   M extends SubstrateMapping<SubstrateRuntimeHandler> = SubstrateMapping<SubstrateRuntimeHandler>,
-> extends ISubstrateDatasource<M> {
+> extends BaseDataSource<SubstrateHandler, M> {
   /**
    * The kind of the datasource, which is `substrate/Runtime`.
    * @type {SubstrateDatasourceKind.Runtime}
