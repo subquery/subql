@@ -6754,7 +6754,7 @@ __metadata:
     "@subql/common-algorand": ^4.0.0
     "@subql/common-concordium": ^4.0.1
     "@subql/common-cosmos": ^5.0.1
-    "@subql/common-ethereum": ^4.5.0
+    "@subql/common-ethereum": ^4.6.1
     "@subql/common-near": ^4.0.0
     "@subql/common-stellar": ^4.0.0
     "@subql/common-substrate": "workspace:*"
@@ -6856,12 +6856,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-ethereum@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "@subql/common-ethereum@npm:4.5.0"
+"@subql/common-ethereum@npm:^4.6.1":
+  version: 4.6.1
+  resolution: "@subql/common-ethereum@npm:4.6.1"
   dependencies:
-    "@subql/common": ^5.0.0
-    "@subql/types-ethereum": 3.13.0
+    "@subql/common": ^5.3.0
+    "@subql/types-ethereum": 4.0.0
     "@typechain/ethers-v5": ^11.1.1
     "@zilliqa-js/crypto": ^3.5.0
     js-yaml: ^4.1.0
@@ -6871,7 +6871,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 07f1f34734cb136a6ef107a263c99893683dfd6f75e372b6d29cf818518e1a4e5d7007283284ddb0efe9765cea52a6f872147f17c068f9615557a1ae3d5eb314
+  checksum: da6fd916f8298620481ca8dff48f2f26b1091aefccb7f66cb2e91f350dd4788ab9f64866c8d922583749f8e2306c5590200665e0b1aa8a67b21be825787c1caa
   languageName: node
   linkType: hard
 
@@ -6919,7 +6919,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@^5.0.0, @subql/common@workspace:*, @subql/common@workspace:packages/common":
+"@subql/common@^5.3.0, @subql/common@workspace:*, @subql/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
@@ -7096,6 +7096,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/types-core@^2.0.0, @subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
+  version: 0.0.0-use.local
+  resolution: "@subql/types-core@workspace:packages/types-core"
+  dependencies:
+    package-json-type: ^1.0.3
+  languageName: unknown
+  linkType: soft
+
 "@subql/types-core@npm:0.10.0, @subql/types-core@npm:^0.10.0":
   version: 0.10.0
   resolution: "@subql/types-core@npm:0.10.0"
@@ -7114,21 +7122,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:^1.0.0":
-  version: 1.1.1
-  resolution: "@subql/types-core@npm:1.1.1"
-  checksum: d804ba8f9a9a8bbce36e98ef3dd03e33602495e96ca8e04438c38b6631de102772b5f209de17d78657bcacc9c91f9af02dabd68edb8e6e24a2ca6e681e4636fc
-  languageName: node
-  linkType: hard
-
-"@subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
-  version: 0.0.0-use.local
-  resolution: "@subql/types-core@workspace:packages/types-core"
-  dependencies:
-    package-json-type: ^1.0.3
-  languageName: unknown
-  linkType: soft
-
 "@subql/types-cosmos@npm:3.5.1":
   version: 3.5.1
   resolution: "@subql/types-cosmos@npm:3.5.1"
@@ -7141,14 +7134,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-ethereum@npm:3.13.0":
-  version: 3.13.0
-  resolution: "@subql/types-ethereum@npm:3.13.0"
+"@subql/types-ethereum@npm:4.0.0":
+  version: 4.0.0
+  resolution: "@subql/types-ethereum@npm:4.0.0"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
     "@ethersproject/providers": ^5.7.2
-    "@subql/types-core": ^1.0.0
-  checksum: 7fed345835191bdb3fda14f60f9bd7559967033541f45e4dffe420f59252f1ad4d688ca03e55474875ccc26aecfb803067712e6beba0f031db313e6900b25e72
+    "@subql/types-core": ^2.0.0
+  checksum: e721c083de340b22aeae4d7dfb2be333dd129f66015768cdc3118938e6594702d4b0e9d411d0cbd9e9ec523e3e639b4f3724bc4b0412ea959728cde6cf26027a
   languageName: node
   linkType: hard
 
