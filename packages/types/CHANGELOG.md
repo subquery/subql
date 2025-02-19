@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update polkadot api to 15 (#2680)
 ### Removed
 - Redundant internal type (#2677)
+### Changed
+- Update polkadot api to 15 (#2680)
 
 ## [3.11.5] - 2025-02-04
 ### Changed

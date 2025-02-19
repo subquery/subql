@@ -584,7 +584,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.0.0] - 2023-07-17
 ### Changed
-- **Breaking**: Inti DB schema manually during test run (#1870)
+- **Breaking**: Init DB schema manually during test run (#1870)
 
 ### Fixed
 - Updated `@subql/apollo-links` to 0.5.3 for bug fixes. (#1886)
@@ -592,7 +592,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.1.2] - 2023-07-11
 ### Fixed
-- Fix `TestingService` to run tests in seperate application contexts (#1870)
+- Fix `TestingService` to run tests in separate application contexts (#1870)
 - Cache race condition when flushing cache and getting data (#1873)
 - Various improvements for POI feature: (#1869)
   - Benchmarking mmr processing
@@ -654,7 +654,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fix jump buffer height issue (#1781)
-- Error if testing entitiy not found (#1766)
+- Error if testing entity not found (#1766)
 
 ## [2.4.1] - 2023-05-31
 ### Fixed
@@ -686,7 +686,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.2.2] - 2023-05-19
 ### Fixed
 - Fix project service init failing due to start height being 0 (#1735)
-- No longer intialize store and indexer inside testing service (#1734)
+- No longer initialize store and indexer inside testing service (#1734)
 - Fix poi read leaf height error under cockroach (#1733)
 - Ensure min start height to be 1, even if set to 0 (#1737)
 - Upgrade apollo link package (#1739)

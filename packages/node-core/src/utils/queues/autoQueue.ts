@@ -27,7 +27,7 @@ type Action<T> = {
 };
 
 /*
- * AutoQueue processes asnyc funcitons in order with a level of concurrency
+ * AutoQueue processes asnyc functions in order with a level of concurrency
  * When concurrency is used it will be running many functions concurrently,
  * but the promisies for this will still resolve in order they were inserted in the queue
  */

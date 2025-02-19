@@ -4,7 +4,7 @@
 import {AutoQueue} from './autoQueue';
 
 describe('AutoQueue', () => {
-  it('resovles promises in the order they are pushed', async () => {
+  it('resolves promises in the order they are pushed', async () => {
     const autoQueue = new AutoQueue<number>(10, 5);
     const results: number[] = [];
 

@@ -24,6 +24,5 @@
   },
   "devDependencies": {
     "@polkadot/api": "^15.6.1"
-  },
-  "stableVersion": "3.11.6-0"
+  }
 }
