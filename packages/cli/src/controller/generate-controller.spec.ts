@@ -213,11 +213,11 @@ describe('CLI codegen:generate', () => {
     await expect(
       prepareInputFragments<FunctionFragment>(
         'function',
-        'transFerfrom(address,address,uint256)',
+        'transferFrom(address,address,uint256)',
         functionFragments,
         abiName
       )
-    ).rejects.toThrow("'transFerfrom(address' is not a valid function on Erc721");
+    ).rejects.toThrow("'transferFrom(address' is not a valid function on Erc721");
     await expect(
       prepareInputFragments<FunctionFragment>(
         'function',
