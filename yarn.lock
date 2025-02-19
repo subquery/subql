@@ -3260,6 +3260,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cosmjs/amino@npm:0.33.0, @cosmjs/amino@npm:^0.33.0":
+  version: 0.33.0
+  resolution: "@cosmjs/amino@npm:0.33.0"
+  dependencies:
+    "@cosmjs/crypto": ^0.33.0
+    "@cosmjs/encoding": ^0.33.0
+    "@cosmjs/math": ^0.33.0
+    "@cosmjs/utils": ^0.33.0
+  checksum: 71057b799378788046b9112586454a0e14465293014fb43902de2216d8ace76459273c965cfcb77ca07b361e524cb02cfa3c66a4d31ed44184ce3da4c167850b
+  languageName: node
+  linkType: hard
+
 "@cosmjs/amino@npm:^0.32.4":
   version: 0.32.4
   resolution: "@cosmjs/amino@npm:0.32.4"
@@ -3290,7 +3302,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cosmjs/crypto@npm:^0.32.4":
+"@cosmjs/crypto@npm:0.32.4, @cosmjs/crypto@npm:^0.32.4":
   version: 0.32.4
   resolution: "@cosmjs/crypto@npm:0.32.4"
   dependencies:
@@ -3305,7 +3317,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cosmjs/encoding@npm:^0.32.4":
+"@cosmjs/crypto@npm:^0.33.0":
+  version: 0.33.0
+  resolution: "@cosmjs/crypto@npm:0.33.0"
+  dependencies:
+    "@cosmjs/encoding": ^0.33.0
+    "@cosmjs/math": ^0.33.0
+    "@cosmjs/utils": ^0.33.0
+    "@noble/hashes": ^1
+    bn.js: ^5.2.0
+    elliptic: ^6.5.4
+    libsodium-wrappers-sumo: ^0.7.11
+  checksum: 8d4ffe75f244202f86692bed67a361db94031b32a607b76e8b818281e20696edb7d4d80ca636d039532c54e89d2681f2f3273d4ce767a79ba0308190c2b40185
+  languageName: node
+  linkType: hard
+
+"@cosmjs/encoding@npm:0.32.4, @cosmjs/encoding@npm:^0.32.4":
   version: 0.32.4
   resolution: "@cosmjs/encoding@npm:0.32.4"
   dependencies:
@@ -3316,7 +3343,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cosmjs/json-rpc@npm:^0.32.4":
+"@cosmjs/encoding@npm:0.33.0, @cosmjs/encoding@npm:^0.33.0":
+  version: 0.33.0
+  resolution: "@cosmjs/encoding@npm:0.33.0"
+  dependencies:
+    base64-js: ^1.3.0
+    bech32: ^1.1.4
+    readonly-date: ^1.0.0
+  checksum: cfbd41a859e0acffdce685e2daa73ad8ccdb9fd8753fc1a427e19a2733e3768e4fcc99ad967abc6cd8d1256acf70e0fb1227603ae6f61affea0010f936bd52a7
+  languageName: node
+  linkType: hard
+
+"@cosmjs/json-rpc@npm:0.32.4, @cosmjs/json-rpc@npm:^0.32.4":
   version: 0.32.4
   resolution: "@cosmjs/json-rpc@npm:0.32.4"
   dependencies:
@@ -3326,12 +3364,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cosmjs/math@npm:^0.32.4":
+"@cosmjs/math@npm:0.32.4, @cosmjs/math@npm:^0.32.4":
   version: 0.32.4
   resolution: "@cosmjs/math@npm:0.32.4"
   dependencies:
     bn.js: ^5.2.0
   checksum: 1269ad0c33a78b05c9f7c1bc7a7222d3b4504263ade3a15b07f95eb18c2620c96e4c79beeab66d7053294828b32cf04d0cc5a71610f755e1d1da06b04d462043
+  languageName: node
+  linkType: hard
+
+"@cosmjs/math@npm:0.33.0, @cosmjs/math@npm:^0.33.0":
+  version: 0.33.0
+  resolution: "@cosmjs/math@npm:0.33.0"
+  dependencies:
+    bn.js: ^5.2.0
+  checksum: d5f868c51b293b5b057429e64968a2c4d6ded36267595a61fbee13487397c3357d40c4a7d09a01010d71f08e41106f7f74a9059dac8979f2613b1167c27342c2
+  languageName: node
+  linkType: hard
+
+"@cosmjs/proto-signing@npm:0.33.0":
+  version: 0.33.0
+  resolution: "@cosmjs/proto-signing@npm:0.33.0"
+  dependencies:
+    "@cosmjs/amino": ^0.33.0
+    "@cosmjs/crypto": ^0.33.0
+    "@cosmjs/encoding": ^0.33.0
+    "@cosmjs/math": ^0.33.0
+    "@cosmjs/utils": ^0.33.0
+    cosmjs-types: ^0.9.0
+  checksum: 60e892bce9b821271d4a25ad32baa547fa0ad2c128e0635b69f204adade687360bbee575dded933358c8caafbbd5f1abb4bf4846732803bc7d0b3c66f02b5934
   languageName: node
   linkType: hard
 
@@ -3349,7 +3410,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cosmjs/socket@npm:^0.32.4":
+"@cosmjs/socket@npm:0.32.4, @cosmjs/socket@npm:^0.32.4":
   version: 0.32.4
   resolution: "@cosmjs/socket@npm:0.32.4"
   dependencies:
@@ -3358,6 +3419,22 @@ __metadata:
     ws: ^7
     xstream: ^11.14.0
   checksum: 26125bbf261d5d77bec3c5340a9c60c1e512bee747984b3333521491aa4f4d2a3e2cba7f1e412013b38835eff875066e645d86f752d7936f19f9eae18b9d97e5
+  languageName: node
+  linkType: hard
+
+"@cosmjs/stargate@npm:@subql/x-cosmjs-stargate@0.33.0":
+  version: 0.33.0
+  resolution: "@subql/x-cosmjs-stargate@npm:0.33.0"
+  dependencies:
+    "@cosmjs/amino": 0.33.0
+    "@cosmjs/encoding": 0.33.0
+    "@cosmjs/math": 0.33.0
+    "@cosmjs/proto-signing": 0.33.0
+    "@cosmjs/stream": 0.33.0
+    "@cosmjs/tendermint-rpc": "npm:@subql/x-cosmos-tendermint-rpc@0.32.4"
+    "@cosmjs/utils": 0.33.0
+    cosmjs-types: ^0.9.0
+  checksum: b936cda1bd13d04f2d15ea1cd4f3616d8005fd8405275e97378c96e4a00732d9bdd2d56289ab4593ed5e95d11ec40bf6e027aeb6052388d981ff0438f43c46c7
   languageName: node
   linkType: hard
 
@@ -3379,12 +3456,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cosmjs/stream@npm:^0.32.4":
+"@cosmjs/stream@npm:0.32.4, @cosmjs/stream@npm:^0.32.4":
   version: 0.32.4
   resolution: "@cosmjs/stream@npm:0.32.4"
   dependencies:
     xstream: ^11.14.0
   checksum: fa55d3f29e8a7c56d5da4128989709f0b02fcee5319efa2504f62e4f2b0c64725ccb603d88f435f6fbe308dc6ef76b1fd3ea5aecfcb877a871c111366ddd3489
+  languageName: node
+  linkType: hard
+
+"@cosmjs/stream@npm:0.33.0":
+  version: 0.33.0
+  resolution: "@cosmjs/stream@npm:0.33.0"
+  dependencies:
+    xstream: ^11.14.0
+  checksum: e95e7cc214e83c8fd0008dad0b8c05c143531e1fee727eb20adba0a99b3d228a76421cff4cf93b52258467747f185db261f4753e64356c5ca43b3346cc4e54ba
+  languageName: node
+  linkType: hard
+
+"@cosmjs/tendermint-rpc@npm:@subql/x-cosmos-tendermint-rpc@0.32.4":
+  version: 0.32.4
+  resolution: "@subql/x-cosmos-tendermint-rpc@npm:0.32.4"
+  dependencies:
+    "@cosmjs/crypto": 0.32.4
+    "@cosmjs/encoding": 0.32.4
+    "@cosmjs/json-rpc": 0.32.4
+    "@cosmjs/math": 0.32.4
+    "@cosmjs/socket": 0.32.4
+    "@cosmjs/stream": 0.32.4
+    "@cosmjs/utils": 0.32.4
+    axios: ^1.6.0
+    readonly-date: ^1.0.0
+    xstream: ^11.14.0
+  checksum: f98853e8a38690921adef946cf6bfd35a6ed9906c353700a24a85631c387961d7a2ad93b437a4c95d56d4452b50161075814fc353bd72a29f85bae154c6ff4f7
   languageName: node
   linkType: hard
 
@@ -3406,10 +3510,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cosmjs/utils@npm:^0.32.4":
+"@cosmjs/utils@npm:0.32.4, @cosmjs/utils@npm:^0.32.4":
   version: 0.32.4
   resolution: "@cosmjs/utils@npm:0.32.4"
   checksum: 92f4d0878bedda53d113894ebadd31a6d189fdd45f2f884049ee99c2d7f907703b6dc40c8bc9b88b912443c38f3dbf77a9474183f41b85dec1f9ef3bec9d86c4
+  languageName: node
+  linkType: hard
+
+"@cosmjs/utils@npm:0.33.0, @cosmjs/utils@npm:^0.33.0":
+  version: 0.33.0
+  resolution: "@cosmjs/utils@npm:0.33.0"
+  checksum: 406138332bd5c1b6ace5c6e5cf180c11ca862707ca4be916648ba4f724aba3d7ea5ff0f0d4705e4d3eb53b9aad378d2052b650c4644fce3569c641c2efbaf602
   languageName: node
   linkType: hard
 
@@ -6782,28 +6893,77 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@stellar/js-xdr@npm:^3.1.1":
-  version: 3.1.1
-  resolution: "@stellar/js-xdr@npm:3.1.1"
-  checksum: b17bf89551cb3a2f334ae14aebf8d12c9c601ed54616d6df3b370eacdf87db4114a8d909d46091a8944a4f8a751cfe1e639164fe021336f57c83dd524bce2d7b
+"@stellar/js-xdr@npm:^3.1.2":
+  version: 3.1.2
+  resolution: "@stellar/js-xdr@npm:3.1.2"
+  checksum: 6ecc52402603a1c9e64536bcd5b6348e247655aa662ac383967f48c1c6ac46e84cc48ebdbf3ada416d2c2d75898d1ab28dab6ba65d9018e3eb126ea1b2099f04
   languageName: node
   linkType: hard
 
-"@stellar/stellar-base@npm:^11.0.1":
-  version: 11.0.1
-  resolution: "@stellar/stellar-base@npm:11.0.1"
+"@stellar/stellar-base@npm:^12.1.1":
+  version: 12.1.1
+  resolution: "@stellar/stellar-base@npm:12.1.1"
   dependencies:
-    "@stellar/js-xdr": ^3.1.1
+    "@stellar/js-xdr": ^3.1.2
     base32.js: ^0.1.0
     bignumber.js: ^9.1.2
     buffer: ^6.0.3
     sha.js: ^2.3.6
-    sodium-native: ^4.0.10
+    sodium-native: ^4.1.1
     tweetnacl: ^1.0.3
   dependenciesMeta:
     sodium-native:
       optional: true
-  checksum: 1653dcf59e47d71d8eb0a6fd226b50ecef7134414611d5cf62875394f0d54497ff247b42dd2aee5b45eca36364757c4ae44422e03e51a032ab023c5db772ece5
+  checksum: c2819bcf73e3411a7259726242f645450f130654b8abbcd608bb033baf896ccfaf563b29bfd7f9c0186af4a766c61f3c2881d7d4ab6c2af404e87b9d2362ac96
+  languageName: node
+  linkType: hard
+
+"@stellar/stellar-base@npm:^13.0.1":
+  version: 13.0.1
+  resolution: "@stellar/stellar-base@npm:13.0.1"
+  dependencies:
+    "@stellar/js-xdr": ^3.1.2
+    base32.js: ^0.1.0
+    bignumber.js: ^9.1.2
+    buffer: ^6.0.3
+    sha.js: ^2.3.6
+    sodium-native: ^4.3.0
+    tweetnacl: ^1.0.3
+  dependenciesMeta:
+    sodium-native:
+      optional: true
+  checksum: b4a4d049c332ab63aa112c183ffed706dac4236b369a1b53eac86e8efcbba228693be5550e39762bc3c13c9c2e56dc76f611454191d54a1c740832059adb52bd
+  languageName: node
+  linkType: hard
+
+"@stellar/stellar-sdk@npm:^12.2.0":
+  version: 12.3.0
+  resolution: "@stellar/stellar-sdk@npm:12.3.0"
+  dependencies:
+    "@stellar/stellar-base": ^12.1.1
+    axios: ^1.7.7
+    bignumber.js: ^9.1.2
+    eventsource: ^2.0.2
+    randombytes: ^2.1.0
+    toml: ^3.0.0
+    urijs: ^1.19.1
+  checksum: 5e7b9a62335135d04688a8f9cf7a34c69ef1ae1e87d011e0acb2ec04740b5335b85860588460279ff01d49b8c6fb4341e17538471e8ba951322d7c350a30873e
+  languageName: node
+  linkType: hard
+
+"@stellar/stellar-sdk@npm:^13.1.0":
+  version: 13.1.0
+  resolution: "@stellar/stellar-sdk@npm:13.1.0"
+  dependencies:
+    "@stellar/stellar-base": ^13.0.1
+    axios: ^1.7.9
+    bignumber.js: ^9.1.2
+    eventsource: ^2.0.2
+    feaxios: ^0.0.23
+    randombytes: ^2.1.0
+    toml: ^3.0.0
+    urijs: ^1.19.1
+  checksum: c189623ff4f0cef1d1cb0473e926c40bcc19ce50228c067b3d4ee4f46d1cc2f1a0b2553bdbb7c1407f15c214846bdda23932fc68a0ab6942c06526c8e5f95f72
   languageName: node
   linkType: hard
 
@@ -6814,12 +6974,12 @@ __metadata:
     "@inquirer/prompts": ^5.3.6
     "@oclif/core": ^2.16.0
     "@subql/common": "workspace:*"
-    "@subql/common-algorand": ^4.0.0
+    "@subql/common-algorand": ^4.3.1
     "@subql/common-concordium": ^4.0.1
-    "@subql/common-cosmos": ^5.0.1
-    "@subql/common-ethereum": ^4.5.0
-    "@subql/common-near": ^4.0.0
-    "@subql/common-stellar": ^4.0.0
+    "@subql/common-cosmos": ^5.2.0
+    "@subql/common-ethereum": ^4.6.1
+    "@subql/common-near": ^4.2.1
+    "@subql/common-stellar": ^4.2.2
     "@subql/common-substrate": "workspace:*"
     "@subql/utils": "workspace:*"
     "@types/ejs": ^3.1.5
@@ -6861,18 +7021,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-algorand@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "@subql/common-algorand@npm:4.0.0"
+"@subql/common-algorand@npm:^4.3.1":
+  version: 4.3.1
+  resolution: "@subql/common-algorand@npm:4.3.1"
   dependencies:
-    "@subql/common": ^4.0.0
-    "@subql/types-algorand": 3.4.0
+    "@subql/common": ^5.3.0
+    "@subql/types-algorand": 4.0.1
   peerDependencies:
     algosdk: "*"
     class-transformer: "*"
     class-validator: "*"
     js-yaml: "*"
-  checksum: d7d23e8abaeab5805e78fe7178a3d42492d817a618d7a47e4016b50f153610605ebf09eb82fb89711f0abbb1555ef2d63b727c802d0370efc389392b44e68be4
+  checksum: 043b6d51faa11b20ea8ceae5263bb86ea48f061a19a5ae583987f47289609f8b8aa3532918f310da6c9e50dd0c1c858d7aa7c49a896b71d418bf1f62f4261678
   languageName: node
   linkType: hard
 
@@ -6893,9 +7053,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-cosmos@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "@subql/common-cosmos@npm:5.0.1"
+"@subql/common-cosmos@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "@subql/common-cosmos@npm:5.2.0"
   dependencies:
     "@cosmwasm/ts-codegen": ^1.11.1
     "@protobufs/cosmos": ^0.1.0
@@ -6905,8 +7065,8 @@ __metadata:
     "@protobufs/google": ^0.0.10
     "@protobufs/ibc": ^0.1.0
     "@protobufs/tendermint": ^0.0.10
-    "@subql/common": ^4.1.1
-    "@subql/types-cosmos": 3.5.1
+    "@subql/common": ^5.3.1
+    "@subql/types-cosmos": 4.1.0
     "@subql/x-cosmology-telescope": ^1.4.14
     fs-extra: ^11.1.1
     js-yaml: ^4.1.0
@@ -6915,16 +7075,16 @@ __metadata:
     class-transformer: "*"
     class-validator: "*"
     ejs: "*"
-  checksum: 7aa28b485cd82ed4065eaff4248653b3ee7a604fa37530b0af0fa270226bb26d780c76fdd1dbceabda5e8528eba6ec72e3aabb6c3dec136103fefa96fb162334
+  checksum: b63c9b4df88691ed47196110bbf8f743da65f44879ab1977a514817329daa52ff5b0ed97c3b8e5e8de4c55367a3433eb47df9a9241ef9d5ca48b926c86e498c8
   languageName: node
   linkType: hard
 
-"@subql/common-ethereum@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "@subql/common-ethereum@npm:4.5.0"
+"@subql/common-ethereum@npm:^4.6.1":
+  version: 4.6.1
+  resolution: "@subql/common-ethereum@npm:4.6.1"
   dependencies:
-    "@subql/common": ^5.0.0
-    "@subql/types-ethereum": 3.13.0
+    "@subql/common": ^5.3.0
+    "@subql/types-ethereum": 4.0.0
     "@typechain/ethers-v5": ^11.1.1
     "@zilliqa-js/crypto": ^3.5.0
     js-yaml: ^4.1.0
@@ -6934,39 +7094,39 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: 07f1f34734cb136a6ef107a263c99893683dfd6f75e372b6d29cf818518e1a4e5d7007283284ddb0efe9765cea52a6f872147f17c068f9615557a1ae3d5eb314
+  checksum: da6fd916f8298620481ca8dff48f2f26b1091aefccb7f66cb2e91f350dd4788ab9f64866c8d922583749f8e2306c5590200665e0b1aa8a67b21be825787c1caa
   languageName: node
   linkType: hard
 
-"@subql/common-near@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "@subql/common-near@npm:4.0.0"
+"@subql/common-near@npm:^4.2.1":
+  version: 4.2.1
+  resolution: "@subql/common-near@npm:4.2.1"
   dependencies:
-    "@subql/common": ^4.0.0
-    "@subql/types-near": 3.4.0
+    "@subql/common": ^5.3.0
+    "@subql/types-near": 4.0.2
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: ad78921b2142abfff1604d86fff385bbfffb16c8d2e3790c1a006dedfeff0d29f31771e4ea6faa2af21f341838c983c07be73d6830ac69b4cf188c6627c0c56e
+  checksum: 9780ae36db29758b9e7a40c33c795cf769c0f3ea8ccff9ef9723fa96b9c714fd2c53000beacb69550f2ba003228f701105456547df2572f4308ca25b43f3b112
   languageName: node
   linkType: hard
 
-"@subql/common-stellar@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "@subql/common-stellar@npm:4.0.0"
+"@subql/common-stellar@npm:^4.2.2":
+  version: 4.2.2
+  resolution: "@subql/common-stellar@npm:4.2.2"
   dependencies:
-    "@subql/common": ^4.0.0
-    "@subql/types-stellar": 3.5.0
+    "@stellar/stellar-sdk": ^12.2.0
+    "@subql/common": ^5.3.1
+    "@subql/types-stellar": 4.1.0
     js-yaml: ^4.1.0
     pino: ^6.13.3
     reflect-metadata: ^0.1.13
-    stellar-sdk: ^11.2.0
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
-  checksum: ffef24e75724926058f880f43a1d2971da512671461a6b51284ee32392d6635725967e23950c2ac081f30ceaf4c07ff200c855be10e30a9d5013899924d847b8
+  checksum: c76614388562679c9351d0515edb966c72eba6cc5a32885c5e1256f40bbaa36b3f6e54b5393484fd4a038c69054a0974bc60eca549ede175750411d24601429b
   languageName: node
   linkType: hard
 
@@ -6982,41 +7142,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:^4.0.0, @subql/common@npm:^4.1.1":
-  version: 4.1.1
-  resolution: "@subql/common@npm:4.1.1"
-  dependencies:
-    "@subql/types-core": 0.10.0
-    axios: ^0.28.0
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.0
-    fs-extra: ^10.1.0
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.5.2
-    update-notifier: 5.1.0
-  checksum: 2f578678b5af8190639ada7e2f22401b3ca7b7c7cab1bfdeb5860365c14e6c6a8724b02c95f1f8fedfcc01205d02d3de45cd486e2c3ee10ff5f898f973d6e0dc
-  languageName: node
-  linkType: hard
-
-"@subql/common@npm:^5.0.0":
-  version: 5.3.1
-  resolution: "@subql/common@npm:5.3.1"
-  dependencies:
-    "@subql/types-core": 2.0.1
-    axios: ^0.28.0
-    class-transformer: ^0.5.1
-    class-validator: ^0.14.1
-    form-data: ^4.0.1
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.14
-    semver: ^7.6.3
-    update-notifier: ^5.1.0
-  checksum: 7b667e57d26434f704e8e1575f7fea3f33bf10562d72aac6b07d818a617ea3c1707c5b475579c05bd4e2f1c0d3c7a28174d03f6137ec2d86a1e445098a0ae829
-  languageName: node
-  linkType: hard
-
-"@subql/common@workspace:*, @subql/common@workspace:packages/common":
+"@subql/common@^5.3.0, @subql/common@^5.3.1, @subql/common@workspace:*, @subql/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
@@ -7034,6 +7160,23 @@ __metadata:
     update-notifier: ^5.1.0
   languageName: unknown
   linkType: soft
+
+"@subql/common@npm:^4.0.0":
+  version: 4.1.1
+  resolution: "@subql/common@npm:4.1.1"
+  dependencies:
+    "@subql/types-core": 0.10.0
+    axios: ^0.28.0
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.0
+    fs-extra: ^10.1.0
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.5.2
+    update-notifier: 5.1.0
+  checksum: 2f578678b5af8190639ada7e2f22401b3ca7b7c7cab1bfdeb5860365c14e6c6a8724b02c95f1f8fedfcc01205d02d3de45cd486e2c3ee10ff5f898f973d6e0dc
+  languageName: node
+  linkType: hard
 
 "@subql/node-core@workspace:*, @subql/node-core@workspace:packages/node-core":
   version: 0.0.0-use.local
@@ -7155,14 +7298,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types-algorand@npm:3.4.0":
-  version: 3.4.0
-  resolution: "@subql/types-algorand@npm:3.4.0"
+"@subql/types-algorand@npm:4.0.1":
+  version: 4.0.1
+  resolution: "@subql/types-algorand@npm:4.0.1"
   dependencies:
-    "@subql/types-core": ^0.9.0
+    "@subql/types-core": ^2.0.0
   peerDependencies:
-    algosdk: ^2.2.0
-  checksum: bf18d63cdd8e8d1da09a3ddaf70bc709036dc8d7facb0153a621532a730f46d1ba108a7da15a7b628419d42ac8ffd686a0d50b5a0a6ef658bfc57917934a4e5e
+    algosdk: ^2.8.0
+  checksum: d745e6504d1a0a42605a287ac6de6eeac2b0015135573741b473cdc79784f3ebbf877cf170c5c4ad11a45442bc95a3bb0458f8be39b0529b6f5d6619a4b59f12
   languageName: node
   linkType: hard
 
@@ -7176,7 +7319,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@2.0.1, @subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
+"@subql/types-core@^2.0.0, @subql/types-core@^2.0.1, @subql/types-core@workspace:*, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core":
   version: 0.0.0-use.local
   resolution: "@subql/types-core@workspace:packages/types-core"
   dependencies:
@@ -7184,7 +7327,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types-core@npm:0.10.0, @subql/types-core@npm:^0.10.0":
+"@subql/types-core@npm:0.10.0":
   version: 0.10.0
   resolution: "@subql/types-core@npm:0.10.0"
   dependencies:
@@ -7202,54 +7345,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:^1.0.0":
-  version: 1.1.1
-  resolution: "@subql/types-core@npm:1.1.1"
-  checksum: d804ba8f9a9a8bbce36e98ef3dd03e33602495e96ca8e04438c38b6631de102772b5f209de17d78657bcacc9c91f9af02dabd68edb8e6e24a2ca6e681e4636fc
-  languageName: node
-  linkType: hard
-
-"@subql/types-cosmos@npm:3.5.1":
-  version: 3.5.1
-  resolution: "@subql/types-cosmos@npm:3.5.1"
+"@subql/types-cosmos@npm:4.1.0":
+  version: 4.1.0
+  resolution: "@subql/types-cosmos@npm:4.1.0"
   dependencies:
     "@cosmjs/cosmwasm-stargate": ^0.32.4
     "@cosmjs/proto-signing": ^0.32.4
-    "@cosmjs/stargate": ^0.32.4
-    "@subql/types-core": ^0.10.0
-  checksum: 6d6e0799ca981ae0457b7a5839950b0ef4a8deea6931923fe4f60642328c51bd0900bc81871dc6b192e9fcf13cf1e59d48f7cbd64007b97e0eeed67708d5ab76
+    "@cosmjs/stargate": "npm:@subql/x-cosmjs-stargate@0.33.0"
+    "@subql/types-core": ^2.0.1
+  checksum: b5fd9b0db1e84335ec508a95abe8fc388bfc87ec6717c4e78ba31fe5caa1907b4173aa0e98fe997c7cd10c89c2c5f5625507b4a8f8d6a701945d3d67f036e687
   languageName: node
   linkType: hard
 
-"@subql/types-ethereum@npm:3.13.0":
-  version: 3.13.0
-  resolution: "@subql/types-ethereum@npm:3.13.0"
+"@subql/types-ethereum@npm:4.0.0":
+  version: 4.0.0
+  resolution: "@subql/types-ethereum@npm:4.0.0"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
     "@ethersproject/providers": ^5.7.2
-    "@subql/types-core": ^1.0.0
-  checksum: 7fed345835191bdb3fda14f60f9bd7559967033541f45e4dffe420f59252f1ad4d688ca03e55474875ccc26aecfb803067712e6beba0f031db313e6900b25e72
+    "@subql/types-core": ^2.0.0
+  checksum: e721c083de340b22aeae4d7dfb2be333dd129f66015768cdc3118938e6594702d4b0e9d411d0cbd9e9ec523e3e639b4f3724bc4b0412ea959728cde6cf26027a
   languageName: node
   linkType: hard
 
-"@subql/types-near@npm:3.4.0":
-  version: 3.4.0
-  resolution: "@subql/types-near@npm:3.4.0"
+"@subql/types-near@npm:4.0.2":
+  version: 4.0.2
+  resolution: "@subql/types-near@npm:4.0.2"
   dependencies:
-    "@subql/types-core": ^0.9.0
+    "@subql/types-core": ^2.0.0
     bn.js: 5.2.1
     near-api-js: ^1.1.0
-  checksum: a688387868b8dfab048a6bb67dfac7e04f281dc9b44323a186b8f176a32f7889a38c487d853403350f91aabbc39eb6cad113bde23ca608c607e4856bfa46fe5a
+  checksum: c67d713ef15d74a1b34abf102e855668c465b44f5933cf97bd99d9b074c15afd0fbb5d543ce97b1c0f8c0b1b74e7a6c480c3bda4dfc8dc793c89d0fe6a0c02ea
   languageName: node
   linkType: hard
 
-"@subql/types-stellar@npm:3.5.0":
-  version: 3.5.0
-  resolution: "@subql/types-stellar@npm:3.5.0"
+"@subql/types-stellar@npm:4.1.0":
+  version: 4.1.0
+  resolution: "@subql/types-stellar@npm:4.1.0"
   dependencies:
-    "@subql/types-core": ^0.9.0
-    stellar-sdk: ^11.2.2
-  checksum: ba9ce9ba61cc67801844fb18dcc38f8f7e02f651cc72bb9305b4e6ffb95e13cf08d8b9d54a36bf6ee598bc67372bc31950fea7cbccffb28c8433c53ebca28cec
+    "@stellar/stellar-sdk": ^13.1.0
+    "@subql/types-core": ^2.0.1
+  checksum: 25846df808d3b688b320e8b6aebc426ccd3f139f71d3353684b96675e2c1f7c40332aa826f5face48a5694fa4360de8ea9bb289c33b48f17a3e1ee61e2388e05
   languageName: node
   linkType: hard
 
@@ -9569,7 +9705,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.6.0, axios@npm:^1.6.8":
+"axios@npm:^1.6.0":
   version: 1.6.8
   resolution: "axios@npm:1.6.8"
   dependencies:
@@ -9577,6 +9713,17 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: bf007fa4b207d102459300698620b3b0873503c6d47bf5a8f6e43c0c64c90035a4f698b55027ca1958f61ab43723df2781c38a99711848d232cad7accbcdfcdd
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.7.7, axios@npm:^1.7.9":
+  version: 1.7.9
+  resolution: "axios@npm:1.7.9"
+  dependencies:
+    follow-redirects: ^1.15.6
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: cb8ce291818effda09240cb60f114d5625909b345e10f389a945320e06acf0bc949d0f8422d25720f5dd421362abee302c99f5e97edec4c156c8939814b23d19
   languageName: node
   linkType: hard
 
@@ -13093,6 +13240,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"feaxios@npm:^0.0.23":
+  version: 0.0.23
+  resolution: "feaxios@npm:0.0.23"
+  dependencies:
+    is-retry-allowed: ^3.0.0
+  checksum: 22034c7a9c32a0d9fc036f79fc58f360afd33c2a5aaa92f3311021acac76f669b784e1a90cf319d46453c4f6055bbb236cf50d9c6f2df328ff369b67367721fe
+  languageName: node
+  linkType: hard
+
 "fetch-h2@npm:3.0.2":
   version: 3.0.2
   resolution: "fetch-h2@npm:3.0.2"
@@ -15130,6 +15286,13 @@ __metadata:
   version: 1.2.0
   resolution: "is-retry-allowed@npm:1.2.0"
   checksum: 50d700a89ae31926b1c91b3eb0104dbceeac8790d8b80d02f5c76d9a75c2056f1bb24b5268a8a018dead606bddf116b2262e5ac07401eb8b8783b266ed22558d
+  languageName: node
+  linkType: hard
+
+"is-retry-allowed@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "is-retry-allowed@npm:3.0.0"
+  checksum: 12d17b44410484c6b0292ca38127b2ad026b65d1c1ead40f055effb2498c1a65b28ac5bc8f0383d0d091f84c1f791c3e09da32219fc3a745c3b1bab106db6cfb
   languageName: node
   linkType: hard
 
@@ -20945,13 +21108,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sodium-native@npm:^4.0.10":
-  version: 4.1.1
-  resolution: "sodium-native@npm:4.1.1"
+"sodium-native@npm:^4.1.1, sodium-native@npm:^4.3.0":
+  version: 4.3.2
+  resolution: "sodium-native@npm:4.3.2"
   dependencies:
-    node-gyp: latest
     node-gyp-build: ^4.8.0
-  checksum: 45941133773d70d20feb688e98023dcdc6b9fa33084ecd34f4fca66661c9e63587daf761d1ba9d46570564712613a567fd4b4934c6be6445bc49a0afc863c232
+  checksum: 4ce0905c76fcb83e5cf1ba4e9cda7185ed21d6c98b5fc035dd71f9f004e54e2cb71316280702efe1d841f78771f5f3b4e0c9c549f3ec0ad824fce0cab7e2619b
   languageName: node
   linkType: hard
 
@@ -21126,21 +21288,6 @@ __metadata:
   version: 1.5.0
   resolution: "statuses@npm:1.5.0"
   checksum: c469b9519de16a4bb19600205cffb39ee471a5f17b82589757ca7bd40a8d92ebb6ed9f98b5a540c5d302ccbc78f15dc03cc0280dd6e00df1335568a5d5758a5c
-  languageName: node
-  linkType: hard
-
-"stellar-sdk@npm:^11.2.0, stellar-sdk@npm:^11.2.2":
-  version: 11.3.0
-  resolution: "stellar-sdk@npm:11.3.0"
-  dependencies:
-    "@stellar/stellar-base": ^11.0.1
-    axios: ^1.6.8
-    bignumber.js: ^9.1.2
-    eventsource: ^2.0.2
-    randombytes: ^2.1.0
-    toml: ^3.0.0
-    urijs: ^1.19.1
-  checksum: 08fdbb738669818a592c71b8d8825f9d26d5da4ab50609ec997067191d7b35aa9abb021e678a6319c3a4d17354f7e517713ca4770e7eb18adedea9993dcbdfee
   languageName: node
   linkType: hard
 

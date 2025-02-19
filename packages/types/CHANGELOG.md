@@ -5,12 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.12.0] - 2025-02-19
 ### Changed
 - Update polkadot api to 15 (#2680)
+
 ### Removed
 - Redundant internal type (#2677)
-### Changed
-- Update polkadot api to 15 (#2680)
 
 ## [3.11.5] - 2025-02-04
 ### Changed
@@ -285,7 +286,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - support block handler
 
-[Unreleased]: https://github.com/subquery/subql/compare/types/3.11.5...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types/3.12.0...HEAD
+[3.12.0]: https://github.com/subquery/subql/compare/types/3.11.5...types/3.12.0
 [3.11.5]: https://github.com/subquery/subql/compare/types/3.11.4...types/3.11.5
 [3.11.4]: https://github.com/subquery/subql/compare/types/3.11.3...types/3.11.4
 [3.11.3]: https://github.com/subquery/subql/compare/types/3.11.2...types/3.11.3

@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.6.0] - 2025-02-19
 ### Changed
 - Update polkadot api to 15 (#2680)
 
@@ -730,7 +732,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.5.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.6.0...HEAD
+[5.6.0]: https://github.com/subquery/subql/compare/cli/5.5.2...cli/5.6.0
 [5.5.2]: https://github.com/subquery/subql/compare/cli/5.5.1...cli/5.5.2
 [5.5.1]: https://github.com/subquery/subql/compare/cli/5.5.0...cli/5.5.1
 [5.5.0]: https://github.com/subquery/subql/compare/cli/5.4.0...cli/5.5.0
