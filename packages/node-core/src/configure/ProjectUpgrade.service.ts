@@ -227,7 +227,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
     let currentId = iterator.next();
     let nextId = iterator.next();
 
-    while (!nextId.done) {
+    while (!currentId.done && !nextId.done) {
       const currentProject = projectsWithinRange.get(currentId.value);
       const nextProject = projectsWithinRange.get(nextId.value);
 
@@ -375,11 +375,13 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
     const sortedProjects = new Map([...projects.entries()].sort((a, b) => a[0] - b[0]));
     const projectIterator = sortedProjects.values();
     let previousProject = projectIterator.next().value;
-    for (const project of projectIterator) {
-      if (!SchemaMigrationService.validateSchemaChanges(previousProject.schema, project.schema)) {
-        return false;
+    if (previousProject) {
+      for (const project of projectIterator) {
+        if (!SchemaMigrationService.validateSchemaChanges(previousProject.schema, project.schema)) {
+          return false;
+        }
+        previousProject = project;
       }
-      previousProject = project;
     }
     return true;
   }
