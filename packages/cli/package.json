@@ -39,7 +39,7 @@
   "devDependencies": {
     "@subql/common-algorand": "^4.0.0",
     "@subql/common-concordium": "^4.0.1",
-    "@subql/common-cosmos": "^5.0.1",
+    "@subql/common-cosmos": "^5.2.0",
     "@subql/common-ethereum": "^4.5.0",
     "@subql/common-near": "^4.0.0",
     "@subql/common-stellar": "^4.0.0",
