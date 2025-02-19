@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Update nestjs dependencies (#2667)
+- Update polkadot api to 15 (#2680)
+
+### Fixed
+- Remove injected TextEncoder into sandbox breaking some dependencies like Polkadot (#2680)
 
 ## [16.2.1] - 2025-02-04
 ### Changed
