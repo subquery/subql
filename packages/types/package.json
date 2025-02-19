@@ -20,9 +20,9 @@
     "@subql/types-core": "workspace:*"
   },
   "peerDependencies": {
-    "@polkadot/api": "^14"
+    "@polkadot/api": "^15"
   },
   "devDependencies": {
-    "@polkadot/api": "^14.3.1"
+    "@polkadot/api": "^15.6.1"
   }
 }
