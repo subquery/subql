@@ -19,7 +19,7 @@ export interface ICoreBlockchainService<
 
 export interface IBlockchainService<
   DS extends BaseDataSource = BaseDataSource,
-  CDS extends DS & BaseCustomDataSource = BaseCustomDataSource & DS,
+  CDS extends DS & BaseCustomDataSource = DS & BaseCustomDataSource,
   SubQueryProject extends ISubqueryProject<IProjectNetworkConfig, DS> = ISubqueryProject<IProjectNetworkConfig, DS>,
   SafeAPI = any,
   LightBlock = any,
