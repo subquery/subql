@@ -58,6 +58,7 @@ export interface IBlockchainService<
   // Unfinalized blocks
   getHeaderForHash(hash: string): Promise<Header>;
   getHeaderForHeight(height: number): Promise<Header>;
+  getRequiredHeaderForHeight(height: number): Promise<Required<Header>>;
 
   // Dynamic Ds sevice
   /**

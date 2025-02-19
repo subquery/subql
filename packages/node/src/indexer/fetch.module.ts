@@ -23,6 +23,7 @@ import {
   WorkerBlockDispatcher,
   FetchService,
   DictionaryService,
+  MultiChainRewindService,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { BlockchainService } from '../blockchain.service';
@@ -67,6 +68,7 @@ import { IIndexerWorker } from './worker/worker';
       useClass: ProjectService,
       provide: 'IProjectService',
     },
+    MultiChainRewindService,
     /* END: Move to node core */
     IndexerManager,
     {

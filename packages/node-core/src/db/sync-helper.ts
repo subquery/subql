@@ -16,6 +16,7 @@ import {
   Utils,
 } from '@subql/x-sequelize';
 import {ModelAttributeColumnReferencesOptions, ModelIndexesOptions} from '@subql/x-sequelize/types/model';
+import {MultiChainRewindEvent} from '../events';
 import {EnumType} from '../utils';
 import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -295,6 +296,44 @@ export function createSchemaTriggerFunction(schema: string): string {
     RETURN NULL;
   END;
   $$ LANGUAGE plpgsql;`;
+}
+
+export function createRewindTrigger(schema: string): string {
+  const triggerName = hashName(schema, 'rewind_trigger', '_global');
+
+  return `
+  CREATE TRIGGER "${triggerName}"
+    AFTER INSERT OR UPDATE OR DELETE
+    ON "${schema}"."_global"
+    FOR EACH ROW
+    EXECUTE FUNCTION "${schema}".rewind_notification();
+    `;
+}
+
+export function createRewindTriggerFunction(schema: string): string {
+  const triggerName = hashName(schema, 'rewind_trigger', '_global');
+
+  return `
+  CREATE OR REPLACE FUNCTION "${schema}".rewind_notification()
+    RETURNS trigger AS $$
+    BEGIN
+      IF TG_OP = 'INSERT' THEN
+        PERFORM pg_notify('${triggerName}', '${MultiChainRewindEvent.Rewind}');
+      END IF;
+      
+      -- During a rollback, there is a chain that needs to be rolled back to an earlier height.
+      IF TG_OP = 'UPDATE' AND (NEW.value ->> 'timestamp')::BIGINT < (OLD.value ->> 'timestamp')::BIGINT THEN
+        PERFORM pg_notify('${triggerName}', '${MultiChainRewindEvent.RewindTimestampDecreased}');
+      END IF;
+
+      IF TG_OP = 'DELETE' THEN
+        PERFORM pg_notify('${triggerName}', '${MultiChainRewindEvent.RewindComplete}');
+      END IF;
+
+      RETURN NULL;
+    END;
+    $$ LANGUAGE plpgsql;
+  `;
 }
 
 export function getExistedIndexesQuery(schema: string): string {

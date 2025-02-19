@@ -184,4 +184,8 @@ describe('sync helper test', () => {
       );
     }, 10_000);
   });
+
+  describe('rewind lock', () => {
+    // TODO
+  });
 });
