@@ -27,7 +27,8 @@ const DEFAULT_OPTION = (unsafe = false): NodeVMOptions => {
   return {
     console: 'redirect',
     wasm: unsafe,
-    sandbox: {atob, TextEncoder},
+    // TextEncoder was added for Starknet but the reason is unknown. This caused issues with Polkadot so has been disabled.
+    sandbox: {atob /*, TextEncoder*/},
     require: {
       builtin: unsafe ? ['*'] : SANDBOX_DEFAULT_BUILTINS,
       external: true,
