@@ -83,7 +83,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
           `Found un-finalized blocks from previous indexing but unverified, rolling back to last finalized block ${rewindHeight}`
         );
         await reindex(rewindHeight);
-        logger.info(`Successful rewind to block ${rewindHeight}!`);
+        logger.info(`Successful rewind to block ${rewindHeight.blockHeight}!`);
         return rewindHeight;
       } else {
         await this.resetUnfinalizedBlocks();
