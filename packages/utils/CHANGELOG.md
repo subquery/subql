@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.17.1] - 2025-01-28
 ### Fixed
-- Graphql entitiy relations not resolving the id type from the `@dbType` directive (#2649)
+- Graphql entity relations not resolving the id type from the `@dbType` directive (#2649)
 
 ## [2.17.0] - 2024-12-11
 ### Added

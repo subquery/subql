@@ -407,7 +407,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.1] - 2023-09-28
 ### Fixed
-- Fix crashes when intialization fails for one of the endpoint (#1970)
+- Fix crashes when initialization fails for one of the endpoint (#1970)
 - Remove `@willsoto/nestjs-prometheus` from dependency as it is already added in node-core (#2012)
 - Project node runner options being overwritten by yargs defaults (#1967)
 - Sync with node-core, fix dictionary resolver failed to get token issue
@@ -451,7 +451,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Sync with node-core 4.1.0:
   - moved `indexBlock` to base `TestingService` (#1913)
-  - Simplify conneciton pool logic (#1915)
+  - Simplify connection pool logic (#1915)
   - Fix poi operationHash and miss poi blocks (#1917)
 
 ## [2.10.0] - 2023-07-31

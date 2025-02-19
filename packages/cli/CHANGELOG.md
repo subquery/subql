@@ -170,7 +170,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.7.0] - 2024-05-02
 ### Added
 - Migrate a subgraph project to subquery project
-  - enble migrate its `subgraph.yaml` to `project.ts`
+  - enbale migrate its `subgraph.yaml` to `project.ts`
 
 ## [4.6.0] - 2024-04-24
 ### Added
@@ -436,7 +436,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.7.0] - 2022-10-27
 ### Added
-- `--dedicatedDB` option to project deployement. (#1355)
+- `--dedicatedDB` option to project deployment. (#1355)
 - Flags for advanced settings. (#1352)
 
 ### Fixed
@@ -722,7 +722,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0] - 2021-01-15
 ### Changed
-- subql init doesn' need --starter by default (#86)
+- subql init doesn't need --starter by default (#86)
 - model template use bigint instead of BigInt (#82)
 
 ## [0.2.0] - 2020-12-22
