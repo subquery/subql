@@ -299,7 +299,11 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
   async getMetadataUnfinalizedBlocks(): Promise<UnfinalizedBlocks> {
     const val = await this.storeModelProvider.metadata.find(METADATA_UNFINALIZED_BLOCKS_KEY);
     if (val) {
-      return JSON.parse(val) as UnfinalizedBlocks;
+      const result: (Header & {timestamp: string})[] = JSON.parse(val);
+      return result.map(({timestamp, ...header}) => ({
+        ...header,
+        timestamp: timestamp ? new Date(timestamp) : undefined,
+      }));
     }
     return [];
   }
