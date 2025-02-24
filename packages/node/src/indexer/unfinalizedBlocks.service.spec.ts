@@ -18,10 +18,15 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 // Adds 0 padding so we can convert to POI block
 const hexify = (input: string) => hexZeroPad(input, 4);
 
+// Mock 1740100000 is the timestamp of the genesis block
+const genBlockTimestamp = (height: number) => (1740100000 + height) * 1000;
+const genBlockDate = (height: number) => new Date(genBlockTimestamp(height));
+
 const makeHeader = (height: number, finalized?: boolean): Header => ({
   blockHeight: height,
   blockHash: hexify(`0xABC${height}${finalized ? 'f' : ''}`),
   parentHash: hexify(`0xABC${height - 1}${finalized ? 'f' : ''}`),
+  timestamp: genBlockDate(height),
 });
 
 const getMockApi = (): ApiService => {
@@ -42,12 +47,14 @@ const getMockApi = (): ApiService => {
           number: num,
           hash: typeof hash === 'number' ? hexify(`0xABC${hash}f`) : hash,
           parentHash: hexify(`0xABC${num - 1}f`),
+          timestamp: genBlockTimestamp(num) / 1000,
         });
       },
       getFinalizedBlock: jest.fn(() => ({
         number: 110,
         hash: '0xABC110f',
         parentHash: '0xABC109f',
+        timestamp: genBlockTimestamp(110) / 1000,
       })),
     },
   } as any;
@@ -164,6 +171,7 @@ describe('UnfinalizedBlockService', () => {
       blockHash: '0x00ABC99f',
       blockHeight: 99,
       parentHash: '0x00ABC98f',
+      timestamp: genBlockDate(99),
     });
   });
 
@@ -188,6 +196,7 @@ describe('UnfinalizedBlockService', () => {
       blockHash: '0x00ABC99f',
       blockHeight: 99,
       parentHash: '0x00ABC98f',
+      timestamp: genBlockDate(99),
     });
   });
 

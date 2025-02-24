@@ -158,5 +158,6 @@ export function ethereumBlockToHeader(block: BlockContent | Block): Header {
     blockHeight: block.number,
     blockHash: block.hash,
     parentHash: block.parentHash,
+    timestamp: new Date(Number(block.timestamp) * 1000),
   };
 }
