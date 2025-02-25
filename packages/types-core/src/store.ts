@@ -19,6 +19,9 @@ export interface Entity {
   save?: () => Promise<void>;
 }
 
+// Used in selective places where @dbType directive is used to change the ID type
+export type CompatEntity<T> = Omit<Entity, 'id'> & {id: T};
+
 export type GetOptions<T> = {
   /**
    * The number of items to return, if this exceeds the query-limit flag it will throw
