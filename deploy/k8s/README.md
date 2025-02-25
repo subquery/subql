@@ -30,7 +30,7 @@ spec:
       initContainers:
         - name: prepare
           imagePullPolicy: IfNotPresent
-          image: node:14-alpine
+          image: node:lts-alpine
           command:
             - sh
             - -c

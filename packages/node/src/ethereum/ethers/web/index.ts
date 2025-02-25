@@ -287,7 +287,7 @@ export function _fetchData<T = Uint8Array>(
   options.headers = flatHeaders;
 
   const runningTimeout = (function () {
-    let timer: NodeJS.Timer | null = null;
+    let timer: NodeJS.Timeout | null = null;
     const promise: Promise<never> = new Promise(function (resolve, reject) {
       if (timeout) {
         timer = setTimeout(() => {
@@ -539,7 +539,7 @@ export function poll<T>(
   }
 
   return new Promise(function (resolve, reject) {
-    let timer: NodeJS.Timer | null = null;
+    let timer: NodeJS.Timeout | null = null;
     let done: boolean = false;
 
     // Returns true if cancel was successful. Unsuccessful cancel means we're already done.

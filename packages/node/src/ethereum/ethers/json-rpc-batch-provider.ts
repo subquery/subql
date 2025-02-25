@@ -27,7 +27,7 @@ export class JsonRpcBatchProvider extends JsonRpcProvider {
   private failedBatchCount = 0;
   private batchSizeAdjustmentInterval = 10; // Adjust batch size after every 10 batches
 
-  _pendingBatchAggregator: NodeJS.Timer | null = null;
+  _pendingBatchAggregator: NodeJS.Timeout | null = null;
   _pendingBatch: Array<{
     request: { method: string; params: Array<any>; id: number; jsonrpc: '2.0' };
     resolve: (result: any) => void;

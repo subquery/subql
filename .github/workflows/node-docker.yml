@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
     inputs:
       isLatest:
-        description: 'Add latest tag'
-        default: 'true'
+        description: "Add latest tag"
+        default: "true"
         required: true
 
 jobs:

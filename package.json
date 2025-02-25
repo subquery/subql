@@ -10,7 +10,7 @@
     "@geut/chan": "^3.2.9",
     "@octokit/request": "^8.4.1",
     "@types/cron-converter": "^1",
-    "@types/node": "^14.18.10",
+    "@types/node": "^22.13.5",
     "@types/node-fetch": "2.6.2",
     "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^5.10.2",
