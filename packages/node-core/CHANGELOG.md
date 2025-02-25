@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [17.0.1] - 2025-02-25
 ### Fixed
 - The UnfinalizedBlock type obtained from metadata is incorrect.
 
@@ -924,7 +925,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/17.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/17.0.1...HEAD
+[17.0.1]: https://github.com/subquery/subql/compare/node-core/17.0.0...node-core/17.0.1
 [17.0.0]: https://github.com/subquery/subql/compare/node-core/16.2.1...node-core/17.0.0
 [16.2.1]: https://github.com/subquery/subql/compare/node-core/16.2.0...node-core/16.2.1
 [16.2.0]: https://github.com/subquery/subql/compare/node-core/16.1.0...node-core/16.2.0
