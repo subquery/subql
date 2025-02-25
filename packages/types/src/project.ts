@@ -159,33 +159,6 @@ export interface SubqlMapping<T extends SubqlHandler = SubqlHandler> extends Fil
   handlers: T[];
 }
 
-/**
- * Represents a Ethereum datasource interface with generic parameters.
- * @interface
- * @template M - The mapping type for the datasource.
- */
-interface ISubqlDatasource<M extends SubqlMapping> extends BaseDataSource {
-  /**
-   * The kind of the datasource.
-   * @type {string}
-   * @example
-   * kind: 'ethereum/Runtime'
-   */
-  kind: string;
-  /**
-   * The starting block number for the datasource. If not specified, 1 will be used (optional).
-   * @type {number}
-   * @default 1
-   */
-  startBlock?: number;
-  /**
-   * The mapping associated with the datasource.
-   * This contains the handlers.
-   * @type {M}
-   */
-  mapping: M;
-}
-
 export interface SubqlEthereumProcessorOptions {
   /**
    * The name of the abi that is provided in the assets
@@ -209,7 +182,7 @@ export interface SubqlEthereumProcessorOptions {
  * @template M - The mapping type for the datasource (default: SubqlMapping<SubqlRuntimeHandler>).
  */
 export interface SubqlRuntimeDatasource<M extends SubqlMapping<SubqlRuntimeHandler> = SubqlMapping<SubqlRuntimeHandler>>
-  extends ISubqlDatasource<M> {
+  extends BaseDataSource<SubqlRuntimeHandler, M> {
   /**
    * The kind of the datasource, which is `ethereum/Runtime`.
    * @type {EthereumDatasourceKind.Runtime}

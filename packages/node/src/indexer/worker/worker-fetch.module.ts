@@ -4,44 +4,25 @@
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  ApiService,
   ConnectionPoolService,
-  WorkerDynamicDsService,
+  DsProcessorService,
   NodeConfig,
-  WorkerUnfinalizedBlocksService,
+  ProjectService,
   WorkerCoreModule,
 } from '@subql/node-core';
-import { SubqueryProject } from '../../configure/SubqueryProject';
+import { BlockchainService } from '../../blockchain.service';
 import { EthereumApiService } from '../../ethereum';
-import { EthereumApiConnection } from '../../ethereum/api.connection';
-import { DsProcessorService } from '../ds-processor.service';
-import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
-import { ProjectService } from '../project.service';
-import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 import { WorkerService } from './worker.service';
 
 @Module({
   imports: [WorkerCoreModule],
   providers: [
+    DsProcessorService,
     IndexerManager,
     {
-      provide: ApiService,
-      useFactory: async (
-        project: SubqueryProject,
-        connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
-        eventEmitter: EventEmitter2,
-        nodeConfig: NodeConfig,
-      ) => {
-        const apiService = new EthereumApiService(
-          project,
-          connectionPoolService,
-          eventEmitter,
-          nodeConfig,
-        );
-        await apiService.init();
-        return apiService;
-      },
+      provide: 'APIService',
+      useFactory: EthereumApiService.init,
       inject: [
         'ISubqueryProject',
         ConnectionPoolService,
@@ -49,19 +30,13 @@ import { WorkerService } from './worker.service';
         NodeConfig,
       ],
     },
-    DsProcessorService,
-    {
-      provide: DynamicDsService,
-      useFactory: () => new WorkerDynamicDsService((global as any).host),
-    },
     {
       provide: 'IProjectService',
       useClass: ProjectService,
     },
     {
-      provide: UnfinalizedBlocksService,
-      useFactory: () =>
-        new WorkerUnfinalizedBlocksService((global as any).host),
+      provide: 'IBlockchainService',
+      useClass: BlockchainService,
     },
     WorkerService,
   ],

@@ -9,7 +9,7 @@ import {
   TestingService as BaseTestingService,
   NestLogger,
   TestRunner,
-  IBlock,
+  ProjectService,
 } from '@subql/node-core';
 import {
   EthereumProjectDs,
@@ -17,8 +17,6 @@ import {
 } from '../configure/SubqueryProject';
 import { EthereumApi } from '../ethereum';
 import SafeEthProvider from '../ethereum/safe-api';
-import { IndexerManager } from '../indexer/indexer.manager';
-import { ProjectService } from '../indexer/project.service';
 import { BlockContent } from '../indexer/types';
 import { TestingModule } from './testing.module';
 
@@ -61,13 +59,5 @@ export class TestingService extends BaseTestingService<
     await projectService.init();
 
     return [testContext.close.bind(testContext), testContext.get(TestRunner)];
-  }
-
-  async indexBlock(
-    block: IBlock<BlockContent>,
-    handler: string,
-    indexerManager: IndexerManager,
-  ): Promise<void> {
-    await indexerManager.indexBlock(block, this.getDsWithHandler(handler));
   }
 }

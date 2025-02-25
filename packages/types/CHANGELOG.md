@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Update header year to 2025 (#362)
+- Update `@subql/types-core` and removed redundant internal type (#363)
 
 ## [4.0.0] - 2024-10-22
 ### Changed

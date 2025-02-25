@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Update header year to 2025 (#362)
+- Update nestjs dependencies (#363)
+- Update node core and implement blockchain service (#363)
 
 ## [5.4.0] - 2025-01-28
 ### Changed

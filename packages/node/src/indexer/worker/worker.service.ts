@@ -37,6 +37,7 @@ export class WorkerService extends BaseWorkerService<
   {}
 > {
   constructor(
+    @Inject('APIService')
     private apiService: ApiService<
       EthereumApi,
       SafeEthProvider,

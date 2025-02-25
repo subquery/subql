@@ -3,71 +3,33 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
-  ApiService,
   ConnectionPoolService,
-  ConnectionPoolStateManager,
   DbModule,
-  InMemoryCacheService,
+  DsProcessorService,
+  DynamicDsService,
   NodeConfig,
-  PoiService,
-  PoiSyncService,
-  StoreService,
+  ProjectService,
   TestRunner,
-  SandboxService,
-  storeModelFactory,
+  TestingCoreModule,
 } from '@subql/node-core';
-import { Sequelize } from '@subql/x-sequelize';
+import { BlockchainService } from '../blockchain.service';
 import { ConfigureModule } from '../configure/configure.module';
-import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiService } from '../ethereum';
-import { EthereumApiConnection } from '../ethereum/api.connection';
-import { DsProcessorService } from '../indexer/ds-processor.service';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { IndexerManager } from '../indexer/indexer.manager';
-import { ProjectService } from '../indexer/project.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 
 @Module({
+  imports: [TestingCoreModule],
   providers: [
-    InMemoryCacheService,
-    StoreService,
-    {
-      provide: 'IStoreModelProvider',
-      useFactory: storeModelFactory,
-      inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
-    },
-    EventEmitter2,
-    PoiService,
-    PoiSyncService,
-    SandboxService,
-    DsProcessorService,
-    DynamicDsService,
-    UnfinalizedBlocksService,
-    ConnectionPoolStateManager,
-    ConnectionPoolService,
     {
       provide: 'IProjectService',
       useClass: ProjectService,
     },
     {
-      provide: ApiService,
-      useFactory: async (
-        project: SubqueryProject,
-        connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
-        eventEmitter: EventEmitter2,
-        nodeConfig: NodeConfig,
-      ) => {
-        const apiService = new EthereumApiService(
-          project,
-          connectionPoolService,
-          eventEmitter,
-          nodeConfig,
-        );
-        await apiService.init();
-        return apiService;
-      },
+      provide: 'APIService',
+      useFactory: EthereumApiService.init,
       inject: [
         'ISubqueryProject',
         ConnectionPoolService,
@@ -75,16 +37,21 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
         NodeConfig,
       ],
     },
-    SchedulerRegistry,
-    TestRunner,
     {
-      provide: 'IApi',
-      useExisting: ApiService,
+      provide: 'IUnfinalizedBlocksService',
+      useClass: UnfinalizedBlocksService,
     },
+    {
+      provide: 'IBlockchainService',
+      useClass: BlockchainService,
+    },
+    TestRunner,
     {
       provide: 'IIndexerManager',
       useClass: IndexerManager,
     },
+    DsProcessorService,
+    DynamicDsService,
   ],
   controllers: [],
   exports: [TestRunner],

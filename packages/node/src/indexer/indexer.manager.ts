@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -22,6 +22,8 @@ import {
   BaseIndexerManager,
   IBlock,
   SandboxService,
+  DsProcessorService,
+  DynamicDsService,
 } from '@subql/node-core';
 import {
   EthereumTransaction,
@@ -33,6 +35,7 @@ import {
   EthereumTransactionFilter,
   LightEthereumLog,
 } from '@subql/types-ethereum';
+import { BlockchainService } from '../blockchain.service';
 import { EthereumProjectDs } from '../configure/SubqueryProject';
 import { EthereumApi } from '../ethereum';
 import {
@@ -42,8 +45,6 @@ import {
   isFullBlock,
 } from '../ethereum/block.ethereum';
 import SafeEthProvider from '../ethereum/safe-api';
-import { DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -63,12 +64,17 @@ export class IndexerManager extends BaseIndexerManager<
   protected isCustomDs = isCustomDs;
 
   constructor(
-    apiService: ApiService,
+    @Inject('APIService') apiService: ApiService,
     nodeConfig: NodeConfig,
     sandboxService: SandboxService<SafeEthProvider, EthereumApi>,
-    dsProcessorService: DsProcessorService,
-    dynamicDsService: DynamicDsService,
+    dsProcessorService: DsProcessorService<
+      SubqlEthereumDataSource,
+      SubqlEthereumCustomDataSource
+    >,
+    dynamicDsService: DynamicDsService<SubqlEthereumDataSource>,
+    @Inject('IUnfinalizedBlocksService')
     unfinalizedBlocksService: UnfinalizedBlocksService,
+    @Inject('IBlockchainService') blockchainService: BlockchainService,
   ) {
     super(
       apiService,
@@ -79,6 +85,7 @@ export class IndexerManager extends BaseIndexerManager<
       unfinalizedBlocksService,
       FilterTypeMap,
       ProcessorTypeMap,
+      blockchainService,
     );
   }
 
@@ -88,13 +95,8 @@ export class IndexerManager extends BaseIndexerManager<
     dataSources: SubqlEthereumDataSource[],
   ): Promise<ProcessBlockResponse> {
     return super.internalIndexBlock(block, dataSources, () =>
-      this.getApi(block.block),
+      this.blockchainService.getSafeApi(block.block),
     );
-  }
-
-  // eslint-disable-next-line @typescript-eslint/require-await
-  private async getApi(block: BlockContent): Promise<SafeEthProvider> {
-    return this.apiService.safeApi(block.number);
   }
 
   protected getDsProcessor(

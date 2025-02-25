@@ -4,12 +4,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NETWORK_FAMILY } from '@subql/common';
-import {
-  NodeConfig,
-  DictionaryService,
-  ApiService,
-  getLogger,
-} from '@subql/node-core';
+import { NodeConfig, DictionaryService, getLogger } from '@subql/node-core';
 import { EthereumBlock, SubqlDatasource } from '@subql/types-ethereum';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import { EthereumApiService } from '../../ethereum';
@@ -27,7 +22,7 @@ export class EthDictionaryService extends DictionaryService<
     @Inject('ISubqueryProject') protected project: SubqueryProject,
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
-    @Inject(ApiService) private apiService: EthereumApiService,
+    @Inject('APIService') private apiService: EthereumApiService,
   ) {
     super(project.network.chainId, nodeConfig, eventEmitter);
   }

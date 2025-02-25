@@ -5,13 +5,13 @@ import { NestFactory } from '@nestjs/core';
 import { notifyUpdates } from '@subql/common';
 import {
   exitWithError,
+  FetchService,
   getLogger,
   getValidPort,
   NestLogger,
+  ProjectService,
 } from '@subql/node-core';
 import { AppModule } from './app.module';
-import { FetchService } from './indexer/fetch.service';
-import { ProjectService } from './indexer/project.service';
 import { yargsOptions } from './yargs';
 const pjson = require('../package.json');
 

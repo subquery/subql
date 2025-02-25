@@ -5,7 +5,6 @@ import { Module } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import {
-  ApiService,
   DbModule,
   ForceCleanService,
   StoreService,
@@ -15,14 +14,13 @@ import {
   storeModelFactory,
   ConnectionPoolService,
   ConnectionPoolStateManager,
+  DynamicDsService,
+  DsProcessorService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
+import { BlockchainService } from '../blockchain.service';
 import { ConfigureModule } from '../configure/configure.module';
-import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiService } from '../ethereum';
-import { EthereumApiConnection } from '../ethereum/api.connection';
-import { DsProcessorService } from '../indexer/ds-processor.service';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 
 @Module({
@@ -30,7 +28,7 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
     {
       provide: 'IStoreModelProvider',
       useFactory: storeModelFactory,
-      inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
+      inject: [NodeConfig, EventEmitter2, Sequelize],
     },
     StoreService,
     ReindexService,
@@ -48,28 +46,18 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
     ConnectionPoolStateManager,
     ConnectionPoolService,
     {
-      provide: ApiService,
-      useFactory: async (
-        project: SubqueryProject,
-        connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
-        eventEmitter: EventEmitter2,
-        nodeConfig: NodeConfig,
-      ) => {
-        const apiService = new EthereumApiService(
-          project,
-          connectionPoolService,
-          eventEmitter,
-          nodeConfig,
-        );
-        await apiService.init();
-        return apiService;
-      },
+      provide: 'APIService',
+      useFactory: EthereumApiService.init,
       inject: [
         'ISubqueryProject',
         ConnectionPoolService,
         EventEmitter2,
         NodeConfig,
       ],
+    },
+    {
+      provide: 'IBlockchainService',
+      useClass: BlockchainService,
     },
     SchedulerRegistry,
   ],

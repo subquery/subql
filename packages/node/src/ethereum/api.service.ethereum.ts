@@ -48,7 +48,7 @@ export class EthereumApiService extends ApiService<
   };
   private nodeConfig: EthereumNodeConfig;
 
-  constructor(
+  private constructor(
     @Inject('ISubqueryProject') private project: SubqueryProject,
     connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
     eventEmitter: EventEmitter2,
@@ -60,31 +60,45 @@ export class EthereumApiService extends ApiService<
     this.updateBlockFetching();
   }
 
-  async init(): Promise<EthereumApiService> {
+  static async init(
+    project: SubqueryProject,
+    connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
+    eventEmitter: EventEmitter2,
+    nodeConfig: NodeConfig,
+  ): Promise<EthereumApiService> {
     let network: EthereumNetworkConfig;
     try {
-      network = this.project.network;
+      network = project.network;
     } catch (e) {
       exitWithError(new Error(`Failed to init api`, { cause: e }), logger);
     }
 
-    if (this.nodeConfig.primaryNetworkEndpoint) {
-      const [endpoint, config] = this.nodeConfig.primaryNetworkEndpoint;
+    if (nodeConfig.primaryNetworkEndpoint) {
+      const [endpoint, config] = nodeConfig.primaryNetworkEndpoint;
       (network.endpoint as Record<string, IEndpointConfig>)[endpoint] = config;
     }
 
-    await this.createConnections(network, (endpoint, config) =>
+    const ethNodeConfig = new EthereumNodeConfig(nodeConfig);
+
+    const apiService = new EthereumApiService(
+      project,
+      connectionPoolService,
+      eventEmitter,
+      nodeConfig,
+    );
+
+    await apiService.createConnections(network, (endpoint, config) =>
       EthereumApiConnection.create(
         endpoint,
-        this.nodeConfig.blockConfirmations,
-        this.fetchBlocksBatches,
-        this.eventEmitter,
-        this.nodeConfig.unfinalizedBlocks,
+        ethNodeConfig.blockConfirmations,
+        apiService.fetchBlocksBatches,
+        eventEmitter,
+        nodeConfig.unfinalizedBlocks,
         config,
       ),
     );
 
-    return this;
+    return apiService;
   }
 
   protected metadataMismatchError(

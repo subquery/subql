@@ -3,7 +3,6 @@
 
 import { hexZeroPad } from '@ethersproject/bytes';
 import {
-  ApiService,
   CacheMetadataModel,
   Header,
   NodeConfig,
@@ -12,7 +11,9 @@ import {
   METADATA_UNFINALIZED_BLOCKS_KEY,
   METADATA_LAST_FINALIZED_PROCESSED_KEY,
 } from '@subql/node-core';
+import { BlockchainService } from '../blockchain.service';
 import { EthereumNodeConfig } from '../configure/NodeConfig';
+import { EthereumApiService } from '../ethereum';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 // Adds 0 padding so we can convert to POI block
@@ -29,7 +30,7 @@ const makeHeader = (height: number, finalized?: boolean): Header => ({
   timestamp: genBlockDate(height),
 });
 
-const getMockApi = (): ApiService => {
+const getMockApi = (): EthereumApiService => {
   return {
     api: {
       getBlockByHeightOrHash: (hash: string | number) => {
@@ -88,13 +89,15 @@ describe('UnfinalizedBlockService', () => {
   beforeEach(() => {
     storeCache = mockStoreCache();
 
+    const blockchainService = new BlockchainService(getMockApi());
+
     unfinalizedBlocks = new UnfinalizedBlocksService(
-      getMockApi(),
       new NodeConfig({
         unfinalizedBlocks: true,
         blockForkReindex: 1000,
       } as any) as EthereumNodeConfig,
       storeCache,
+      blockchainService,
     );
   });
 
@@ -151,7 +154,7 @@ describe('UnfinalizedBlockService', () => {
 
   // The finalized block is after the cached unfinalized blocks, they should be rechecked
   it('startup, correctly checks for forks after cached unfinalized blocks', async () => {
-    storeCache.metadata.set(
+    await storeCache.metadata.set(
       METADATA_UNFINALIZED_BLOCKS_KEY,
       JSON.stringify(<Header[]>[
         makeHeader(99, true),
@@ -160,7 +163,7 @@ describe('UnfinalizedBlockService', () => {
       ]),
     );
 
-    storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 99);
+    await storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 99);
 
     const rewind = jest.fn();
 
@@ -176,7 +179,7 @@ describe('UnfinalizedBlockService', () => {
   });
 
   it('startup, correctly checks for forks within cached unfinalized blocks', async () => {
-    storeCache.metadata.set(
+    await storeCache.metadata.set(
       METADATA_UNFINALIZED_BLOCKS_KEY,
       JSON.stringify(<Header[]>[
         makeHeader(110),
@@ -185,7 +188,7 @@ describe('UnfinalizedBlockService', () => {
       ]),
     );
 
-    storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 109);
+    await storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 109);
 
     const rewind = jest.fn();
 
@@ -201,7 +204,7 @@ describe('UnfinalizedBlockService', () => {
   });
 
   it('doesnt throw if there are no unfinalized blocks on startup', async () => {
-    storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 109);
+    await storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 109);
 
     await expect(unfinalizedBlocks.init(jest.fn())).resolves.not.toThrow();
   });
@@ -210,7 +213,7 @@ describe('UnfinalizedBlockService', () => {
     // Do this to "disable" poi
     (storeCache as any).poi = null;
 
-    storeCache.metadata.set(
+    await storeCache.metadata.set(
       METADATA_UNFINALIZED_BLOCKS_KEY,
       JSON.stringify(<Header[]>[
         makeHeader(110),
@@ -219,7 +222,7 @@ describe('UnfinalizedBlockService', () => {
       ]),
     );
 
-    storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 109);
+    await storeCache.metadata.set(METADATA_LAST_FINALIZED_PROCESSED_KEY, 109);
 
     const rewind = jest.fn();
 

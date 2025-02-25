@@ -1,11 +1,12 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import path from 'node:path';
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SubqlEthereumDataSource } from '@subql/common-ethereum';
 import {
   StoreService,
-  ApiService,
   NodeConfig,
   ConnectionPoolService,
   ConnectionPoolStateManager,
@@ -15,42 +16,28 @@ import {
   MonitorService,
   CoreModule,
   IStoreModelProvider,
+  ProjectService,
+  DynamicDsService,
+  WorkerBlockDispatcher,
+  BlockDispatcher,
+  DsProcessorService,
+  FetchService,
+  DictionaryService,
 } from '@subql/node-core';
+import { BlockchainService } from '../blockchain.service';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiConnection } from '../ethereum/api.connection';
 import { EthereumApiService } from '../ethereum/api.service.ethereum';
-import {
-  BlockDispatcherService,
-  WorkerBlockDispatcherService,
-} from './blockDispatcher';
 import { EthDictionaryService } from './dictionary/ethDictionary.service';
-import { DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
-import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
-import { ProjectService } from './project.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
   imports: [CoreModule],
   providers: [
     {
-      provide: ApiService,
-      useFactory: async (
-        project: SubqueryProject,
-        connectionPoolService: ConnectionPoolService<EthereumApiConnection>,
-        eventEmitter: EventEmitter2,
-        nodeConfig: NodeConfig,
-      ) => {
-        const apiService = new EthereumApiService(
-          project,
-          connectionPoolService,
-          eventEmitter,
-          nodeConfig,
-        );
-        await apiService.init();
-        return apiService;
-      },
+      provide: 'APIService',
+      useFactory: EthereumApiService.init,
       inject: [
         'ISubqueryProject',
         ConnectionPoolService,
@@ -58,46 +45,51 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         NodeConfig,
       ],
     },
+    {
+      provide: 'IBlockchainService',
+      useClass: BlockchainService,
+    },
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
       useFactory: (
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
-        projectService: ProjectService,
+        projectService: ProjectService<SubqlEthereumDataSource>,
         projectUpgradeService: IProjectUpgradeService,
-        apiService: EthereumApiService,
-        indexerManager: IndexerManager,
         cacheService: InMemoryCacheService,
         storeService: StoreService,
         storeModelProvider: IStoreModelProvider,
         poiSyncService: PoiSyncService,
         project: SubqueryProject,
-        dynamicDsService: DynamicDsService,
+        dynamicDsService: DynamicDsService<SubqlEthereumDataSource>,
         unfinalizedBlocks: UnfinalizedBlocksService,
         connectionPoolState: ConnectionPoolStateManager<EthereumApiConnection>,
+        blockchainService: BlockchainService,
+        indexerManager: IndexerManager,
         monitorService?: MonitorService,
       ) =>
         nodeConfig.workers
-          ? new WorkerBlockDispatcherService(
+          ? new WorkerBlockDispatcher(
               nodeConfig,
               eventEmitter,
               projectService,
               projectUpgradeService,
-              cacheService,
               storeService,
               storeModelProvider,
+              cacheService,
               poiSyncService,
-              project,
               dynamicDsService,
               unfinalizedBlocks,
               connectionPoolState,
+              project,
+              blockchainService,
+              path.resolve(__dirname, '../../dist/indexer/worker/worker.js'),
+              [],
               monitorService,
             )
-          : new BlockDispatcherService(
-              apiService,
+          : new BlockDispatcher(
               nodeConfig,
-              indexerManager,
               eventEmitter,
               projectService,
               projectUpgradeService,
@@ -105,34 +97,42 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               storeModelProvider,
               poiSyncService,
               project,
+              blockchainService,
+              indexerManager,
             ),
       inject: [
         NodeConfig,
         EventEmitter2,
         'IProjectService',
         'IProjectUpgradeService',
-        ApiService,
-        IndexerManager,
         InMemoryCacheService,
         StoreService,
         'IStoreModelProvider',
         PoiSyncService,
         'ISubqueryProject',
         DynamicDsService,
-        UnfinalizedBlocksService,
+        'IUnfinalizedBlocksService',
         ConnectionPoolStateManager,
+        'IBlockchainService',
+        IndexerManager,
         MonitorService,
       ],
     },
     FetchService,
-    EthDictionaryService,
+    {
+      provide: DictionaryService,
+      useClass: EthDictionaryService,
+    },
     DsProcessorService,
     DynamicDsService,
     {
       useClass: ProjectService,
       provide: 'IProjectService',
     },
-    UnfinalizedBlocksService,
+    {
+      provide: 'IUnfinalizedBlocksService',
+      useClass: UnfinalizedBlocksService,
+    },
   ],
 })
 export class FetchModule {}

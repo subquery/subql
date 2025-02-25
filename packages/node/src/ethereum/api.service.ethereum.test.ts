@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { INestApplication } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import {
   ConnectionPoolService,
@@ -47,7 +47,16 @@ const prepareApiService = async (
         provide: 'ISubqueryProject',
         useFactory: () => testSubqueryProject(endpoint),
       },
-      EthereumApiService,
+      {
+        provide: EthereumApiService,
+        useFactory: EthereumApiService.init,
+        inject: [
+          'ISubqueryProject',
+          ConnectionPoolService,
+          EventEmitter2,
+          NodeConfig,
+        ],
+      },
     ],
     imports: [EventEmitterModule.forRoot()],
   }).compile();
@@ -55,7 +64,6 @@ const prepareApiService = async (
   const app = module.createNestApplication();
   await app.init();
   const apiService = app.get(EthereumApiService);
-  await apiService.init();
   return [apiService, app];
 };
 

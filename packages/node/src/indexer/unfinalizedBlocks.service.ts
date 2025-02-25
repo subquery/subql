@@ -3,19 +3,18 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  ApiService,
-  BaseUnfinalizedBlocksService,
+  UnfinalizedBlocksService as BaseUnfinalizedBlocksService,
   Header,
-  mainThreadOnly,
   NodeConfig,
   getLogger,
   profiler,
   POI_NOT_ENABLED_ERROR_MESSAGE,
   IStoreModelProvider,
+  IBlockchainService,
 } from '@subql/node-core';
 import { last } from 'lodash';
+import { BlockchainService } from '../blockchain.service';
 import { EthereumNodeConfig } from '../configure/NodeConfig';
-import { ethereumBlockToHeader } from '../ethereum/utils.ethereum';
 import { BlockContent } from './types';
 
 const logger = getLogger('UnfinalizedBlocksService');
@@ -26,11 +25,16 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
   private startupCheck = true;
 
   constructor(
-    private readonly apiService: ApiService,
     nodeConfig: NodeConfig,
     @Inject('IStoreModelProvider') storeModelProvider: IStoreModelProvider,
+    @Inject('IBlockchainService') blockchainService: BlockchainService,
   ) {
-    super(new EthereumNodeConfig(nodeConfig), storeModelProvider);
+    // blockchain service cast is due to unsolvable typescript generic error, it wokrs on the main sdk but not here
+    super(
+      new EthereumNodeConfig(nodeConfig),
+      storeModelProvider,
+      blockchainService as IBlockchainService,
+    );
   }
 
   /**
@@ -60,9 +64,10 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
       this.startupCheck = false;
       const lastUnfinalized = last(this.unfinalizedBlocks);
       if (lastUnfinalized) {
-        const checkUnfinalized = await this.getHeaderForHeight(
-          lastUnfinalized.blockHeight,
-        );
+        const checkUnfinalized =
+          await this.blockchainService.getHeaderForHeight(
+            lastUnfinalized.blockHeight,
+          );
 
         if (lastUnfinalized.blockHash !== checkUnfinalized.blockHash) {
           return checkUnfinalized;
@@ -120,7 +125,9 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
       if (!checkingHeader.parentHash) {
         throw new Error('Unable to get parent hash for header');
       }
-      checkingHeader = await this.getHeaderForHash(checkingHeader.parentHash);
+      checkingHeader = await this.blockchainService.getHeaderForHash(
+        checkingHeader.parentHash,
+      );
     }
 
     try {
@@ -140,23 +147,5 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
       logger.info('Failed to use POI to rewind block');
       throw e;
     }
-  }
-
-  @mainThreadOnly()
-  protected async getFinalizedHead(): Promise<Header> {
-    const finalizedBlock = await this.apiService.api.getFinalizedBlock();
-    return ethereumBlockToHeader(finalizedBlock);
-  }
-
-  @mainThreadOnly()
-  protected async getHeaderForHash(hash: string): Promise<Header> {
-    const block = await this.apiService.api.getBlockByHeightOrHash(hash);
-    return ethereumBlockToHeader(block);
-  }
-
-  @mainThreadOnly()
-  async getHeaderForHeight(height: number): Promise<Header> {
-    const block = await this.apiService.api.getBlockByHeightOrHash(height);
-    return ethereumBlockToHeader(block);
   }
 }

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { EthereumApi, EthereumApiService } from '../ethereum';
-import { ProjectService } from './project.service';
+import { BlockchainService } from './blockchain.service';
+import { EthereumApi, EthereumApiService } from './ethereum';
 
 const HTTP_ENDPOINT = 'https://ethereum.rpc.subquery.network/public';
 
@@ -17,32 +17,17 @@ const mockApiService = (): EthereumApiService => {
   } as any;
 };
 
-describe('ProjectService', () => {
-  let projectService: ProjectService;
+describe('BlockchainService', () => {
+  let blockchainService: BlockchainService;
 
   beforeEach(() => {
     const apiService = mockApiService();
 
-    projectService = new ProjectService(
-      null as any,
-      apiService,
-      null as any,
-      null as any,
-      null as any,
-      null as any,
-      null as any,
-      null as any,
-      {} as any,
-      null as any,
-      null as any,
-      null as any,
-    );
+    blockchainService = new BlockchainService(apiService);
   });
 
   it('can get a block timestamps', async () => {
-    const timestamp = await (projectService as any).getBlockTimestamp(
-      4_000_000,
-    );
+    const timestamp = await blockchainService.getBlockTimestamp(4_000_000);
 
     expect(timestamp).toEqual(new Date('2017-07-09T20:52:47.000Z'));
   });
