@@ -31,3 +31,5 @@ export function formatBlockUtil<
 export function calcInterval(api: ApiWrapper): number {
   return 6000;
 }
+
+export const DEFAULT_PAGE_SIZE = 150;

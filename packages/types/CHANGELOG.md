@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- IStellarEndpointConfig add optional parameter `pageLimit`
+
 ## [4.1.0] - 2025-02-05
 ### Changed
 - Update stellar sdk to v13 and use type from the sdk rather than redefining (#101)

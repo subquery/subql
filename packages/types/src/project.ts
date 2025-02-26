@@ -319,6 +319,11 @@ export interface IStellarEndpointConfig extends IEndpointConfig {
    *  The JSON RPC batch size, if this is set to 0 it will not use batch requests
    * */
   batchSize?: number;
+
+  /**
+   * The page limit for the number of records to fetch per request. Default value is 150
+   */
+  pageLimit?: number;
 }
 
 /**

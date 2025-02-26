@@ -19,7 +19,7 @@ import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from './safe-api';
 import { SorobanServer } from './soroban.server';
 import { StellarServer } from './stellar.server';
-import { formatBlockUtil } from './utils.stellar';
+import { DEFAULT_PAGE_SIZE, formatBlockUtil } from './utils.stellar';
 
 const logger = getLogger('api.Stellar');
 
@@ -28,6 +28,7 @@ export class StellarApi implements ApiWrapper {
   private stellarClient: StellarServer;
 
   private chainId?: string;
+  private pageLimit = DEFAULT_PAGE_SIZE;
 
   constructor(
     private endpoint: string,
@@ -35,10 +36,13 @@ export class StellarApi implements ApiWrapper {
     config?: IStellarEndpointConfig,
   ) {
     const { hostname, protocol, searchParams } = new URL(this.endpoint);
+    this.pageLimit = config?.pageLimit || this.pageLimit;
 
     const protocolStr = protocol.replace(':', '');
 
-    logger.info(`Api host: ${hostname}, method: ${protocolStr}`);
+    logger.info(
+      `Api host: ${hostname}, method: ${protocolStr}, pageLimit: ${this.pageLimit}`,
+    );
     if (protocolStr === 'https' || protocolStr === 'http') {
       const options: Horizon.Server.Options = {
         allowHttp: protocolStr === 'http',
@@ -100,7 +104,11 @@ export class StellarApi implements ApiWrapper {
     sequence: number,
   ): Promise<Horizon.ServerApi.TransactionRecord[]> {
     const txs: Horizon.ServerApi.TransactionRecord[] = [];
-    let txsPage = await this.api.transactions().forLedger(sequence).call();
+    let txsPage = await this.api
+      .transactions()
+      .forLedger(sequence)
+      .limit(this.pageLimit)
+      .call();
     while (txsPage.records.length !== 0) {
       txs.push(...txsPage.records);
       txsPage = await txsPage.next();
@@ -113,7 +121,11 @@ export class StellarApi implements ApiWrapper {
     sequence: number,
   ): Promise<Horizon.ServerApi.OperationRecord[]> {
     const operations: Horizon.ServerApi.OperationRecord[] = [];
-    let operationsPage = await this.api.operations().forLedger(sequence).call();
+    let operationsPage = await this.api
+      .operations()
+      .forLedger(sequence)
+      .limit(this.pageLimit)
+      .call();
     while (operationsPage.records.length !== 0) {
       operations.push(...operationsPage.records);
       operationsPage = await operationsPage.next();
@@ -126,7 +138,11 @@ export class StellarApi implements ApiWrapper {
     sequence: number,
   ): Promise<Horizon.ServerApi.EffectRecord[]> {
     const effects: Horizon.ServerApi.EffectRecord[] = [];
-    let effectsPage = await this.api.effects().forLedger(sequence).call();
+    let effectsPage = await this.api
+      .effects()
+      .forLedger(sequence)
+      .limit(this.pageLimit)
+      .call();
     while (effectsPage.records.length !== 0) {
       effects.push(...effectsPage.records);
       effectsPage = await effectsPage.next();
@@ -152,6 +168,7 @@ export class StellarApi implements ApiWrapper {
     const { events: events } = await this.sorobanClient.getEvents({
       startLedger: height,
       filters: [],
+      limit: this.pageLimit,
     });
     return events.map((event) => {
       const wrappedEvent = {

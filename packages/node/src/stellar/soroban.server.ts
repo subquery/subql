@@ -4,8 +4,7 @@
 import { rpc } from '@stellar/stellar-sdk';
 import { SorobanRpcEventResponse } from '@subql/types-stellar';
 import { compact, groupBy, last } from 'lodash';
-
-const DEFAULT_PAGE_SIZE = 100;
+import { DEFAULT_PAGE_SIZE } from './utils.stellar';
 
 type CachedEventsResponse = Pick<
   rpc.Api.GetEventsResponse,
@@ -23,6 +22,7 @@ export class SorobanServer extends rpc.Server {
     events: CachedEventsResponse;
     eventsToCache: CachedEventsResponse;
   }> {
+    const pageLimit = request.limit ?? DEFAULT_PAGE_SIZE;
     const response = await super.getEvents(request);
 
     // Separate the events for the current sequence and the subsequent sequences
@@ -36,7 +36,7 @@ export class SorobanServer extends rpc.Server {
     const newEvents = accEvents.concat(events);
 
     if (eventsToCache?.length) {
-      if (response.events.length === DEFAULT_PAGE_SIZE) {
+      if (response.events.length === pageLimit) {
         const lastSequence = last(response.events)!.ledger;
         eventsToCache = eventsToCache.filter(
           (event) => event.ledger !== lastSequence,
@@ -51,7 +51,7 @@ export class SorobanServer extends rpc.Server {
       };
     }
 
-    if (response.events.length < DEFAULT_PAGE_SIZE) {
+    if (response.events.length < pageLimit) {
       return {
         events: { events: newEvents, latestLedger: response.latestLedger },
         eventsToCache: { events: [], latestLedger: response.latestLedger },
