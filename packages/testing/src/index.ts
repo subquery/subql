@@ -3,14 +3,14 @@
 
 export * from './interfaces';
 
-import {Entity} from '@subql/types-core';
+import {CompatEntity} from '@subql/types-core';
 
 // Register test functions to a global array
-export function subqlTest(
+export function subqlTest<E extends CompatEntity<any> = CompatEntity<any>>(
   name: string,
   blockHeight: number,
-  dependentEntities: Entity[],
-  expectedEntities: Entity[],
+  dependentEntities: E[],
+  expectedEntities: E[],
   handler: string
 ): void {
   (global as any).subqlTests = (global as any).subqlTests ?? [];
