@@ -8,25 +8,21 @@ import {
   StoreService,
   NodeConfig,
   ConnectionPoolStateManager,
-  IProjectUpgradeService,
   PoiSyncService,
   InMemoryCacheService,
   MonitorService,
   CoreModule,
-  IStoreModelProvider,
   ConnectionPoolService,
   UnfinalizedBlocksService,
-  BlockDispatcher,
   DsProcessorService,
   ProjectService,
   DynamicDsService,
-  WorkerBlockDispatcher,
   FetchService,
   DictionaryService,
+  blockDispatcherFactory,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
 import { BlockchainService } from '../blockchain.service';
-import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { ApiPromiseConnection } from './apiPromise.connection';
 import { SubstrateDictionaryService } from './dictionary/substrateDictionary.service';
@@ -56,7 +52,6 @@ import { IIndexerWorker } from './worker/worker';
       provide: 'IBlockchainService',
       useClass: BlockchainService,
     },
-    /* START: Move to node core */
     DsProcessorService,
     DynamicDsService,
     {
@@ -67,64 +62,18 @@ import { IIndexerWorker } from './worker/worker';
       useClass: ProjectService,
       provide: 'IProjectService',
     },
-    /* END: Move to node core */
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
-      useFactory: (
-        nodeConfig: NodeConfig,
-        eventEmitter: EventEmitter2,
-        projectService: ProjectService<SubstrateDatasource>,
-        projectUpgradeService: IProjectUpgradeService,
-        cacheService: InMemoryCacheService,
-        storeService: StoreService,
-        storeModelProvider: IStoreModelProvider,
-        poiSyncService: PoiSyncService,
-        project: SubqueryProject,
-        dynamicDsService: DynamicDsService<SubstrateDatasource>,
-        unfinalizedBlocks: UnfinalizedBlocksService,
-        connectionPoolState: ConnectionPoolStateManager<ApiPromiseConnection>,
-        blockchainService: BlockchainService,
-        indexerManager: IndexerManager,
-        monitorService?: MonitorService,
-      ) => {
-        return nodeConfig.workers
-          ? new WorkerBlockDispatcher<
-              SubstrateDatasource,
-              IIndexerWorker,
-              BlockContent | LightBlockContent,
-              ApiPromiseConnection
-            >(
-              nodeConfig,
-              eventEmitter,
-              projectService,
-              projectUpgradeService,
-              storeService,
-              storeModelProvider,
-              cacheService,
-              poiSyncService,
-              dynamicDsService,
-              unfinalizedBlocks,
-              connectionPoolState,
-              project,
-              blockchainService,
-              path.resolve(__dirname, '../../dist/indexer/worker/worker.js'),
-              ['syncRuntimeService', 'getSpecFromMap'],
-              monitorService,
-            )
-          : new BlockDispatcher(
-              nodeConfig,
-              eventEmitter,
-              projectService,
-              projectUpgradeService,
-              storeService,
-              storeModelProvider,
-              poiSyncService,
-              project,
-              blockchainService,
-              indexerManager,
-            );
-      },
+      useFactory: blockDispatcherFactory<
+        SubstrateDatasource,
+        BlockContent | LightBlockContent,
+        ApiPromiseConnection,
+        IIndexerWorker
+      >(path.resolve(__dirname, '../../dist/indexer/worker/worker.js'), [
+        'syncRuntimeService',
+        'getSpecFromMap',
+      ]),
       inject: [
         NodeConfig,
         EventEmitter2,

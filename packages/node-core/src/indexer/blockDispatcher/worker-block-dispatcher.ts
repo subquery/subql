@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Interval } from '@nestjs/schedule';
-import { BaseDataSource } from '@subql/types-core';
-import { last } from 'lodash';
-import { IApiConnectionSpecific } from '../../api.service';
-import { IBlockchainService } from '../../blockchain.service';
-import { NodeConfig } from '../../configure';
-import { IProjectUpgradeService } from '../../configure/ProjectUpgrade.service';
-import { IndexerEvent } from '../../events';
+import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {Interval} from '@nestjs/schedule';
+import {BaseDataSource} from '@subql/types-core';
+import {last} from 'lodash';
+import {IApiConnectionSpecific} from '../../api.service';
+import {IBlockchainService} from '../../blockchain.service';
+import {NodeConfig} from '../../configure';
+import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
+import {IndexerEvent} from '../../events';
 import {
   ConnectionPoolStateManager,
   createIndexerWorker,
@@ -23,15 +23,15 @@ import {
   TerminateableWorker,
   UnfinalizedBlocksService,
 } from '../../indexer';
-import { getLogger } from '../../logger';
-import { monitorWrite } from '../../process';
-import { AutoQueue, isTaskFlushedError } from '../../utils';
-import { MonitorServiceInterface } from '../monitor.service';
-import { StoreService } from '../store.service';
-import { IStoreModelProvider } from '../storeModelProvider';
-import { ISubqueryProject, IProjectService } from '../types';
-import { isBlockUnavailableError } from '../worker/utils';
-import { BaseBlockDispatcher } from './base-block-dispatcher';
+import {getLogger} from '../../logger';
+import {monitorWrite} from '../../process';
+import {AutoQueue, isTaskFlushedError} from '../../utils';
+import {MonitorServiceInterface} from '../monitor.service';
+import {StoreService} from '../store.service';
+import {IStoreModelProvider} from '../storeModelProvider';
+import {ISubqueryProject, IProjectService} from '../types';
+import {isBlockUnavailableError} from '../worker/utils';
+import {BaseBlockDispatcher} from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
@@ -47,13 +47,14 @@ function initAutoQueue<T>(
 
 @Injectable()
 export class WorkerBlockDispatcher<
-  DS extends BaseDataSource = BaseDataSource,
-  Worker extends IBaseIndexerWorker = IBaseIndexerWorker,
-  Block = any,
-  ApiConn extends IApiConnectionSpecific = IApiConnectionSpecific
->
+    DS extends BaseDataSource = BaseDataSource,
+    Worker extends IBaseIndexerWorker = IBaseIndexerWorker,
+    Block = any,
+    ApiConn extends IApiConnectionSpecific = IApiConnectionSpecific,
+  >
   extends BaseBlockDispatcher<AutoQueue<void>, DS, Block>
-  implements OnApplicationShutdown {
+  implements OnApplicationShutdown
+{
   protected workers: TerminateableWorker<Worker>[] = [];
   private numWorkers: number;
   private isShutdown = false;
@@ -76,7 +77,8 @@ export class WorkerBlockDispatcher<
     @Inject('IBlockchainService') private blockchainService: IBlockchainService<DS>,
     workerPath: string,
     workerFns: Parameters<typeof createIndexerWorker<Worker, ApiConn, Block, DS>>[1],
-    monitorService?: MonitorServiceInterface
+    monitorService?: MonitorServiceInterface,
+    workerData?: unknown
   ) {
     super(
       nodeConfig,
@@ -102,7 +104,8 @@ export class WorkerBlockDispatcher<
         connectionPoolState,
         project.root,
         projectService.startHeight,
-        monitorService
+        monitorService,
+        workerData
       );
     // initAutoQueue will assert that workers is set. unfortunately we cant do anything before the super call
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -170,7 +173,7 @@ export class WorkerBlockDispatcher<
     // Used to compare before and after as a way to check if queue was flushed
     const bufferedHeight = this.latestBufferedHeight;
 
-    const pendingBlock = this.blockchainService.fetchBlockWorker(worker, height, { workers: this.workers });
+    const pendingBlock = this.blockchainService.fetchBlockWorker(worker, height, {workers: this.workers});
 
     const processBlock = async () => {
       try {
@@ -183,7 +186,7 @@ export class WorkerBlockDispatcher<
         await this.preProcessBlock(header);
 
         monitorWrite(`Processing from worker #${workerIdx}`);
-        const { dynamicDsCreated, reindexBlockHeader } = await worker.processBlock(height);
+        const {dynamicDsCreated, reindexBlockHeader} = await worker.processBlock(height);
 
         await this.postProcessBlock(header, {
           dynamicDsCreated,
