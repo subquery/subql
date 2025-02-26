@@ -1,6 +1,6 @@
 {
   "name": "@subql/types-ethereum",
-  "version": "4.0.1-1",
+  "version": "4.1.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -20,6 +20,5 @@
     "@ethersproject/abstract-provider": "^5.6.1",
     "@ethersproject/providers": "^5.7.2",
     "@subql/types-core": "^2.0.1"
-  },
-  "stableVersion": "4.0.1-0"
+  }
 }
