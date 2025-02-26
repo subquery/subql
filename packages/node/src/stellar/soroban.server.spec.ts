@@ -3,8 +3,7 @@
 
 import { rpc } from '@stellar/stellar-sdk';
 import { SorobanServer } from './soroban.server';
-
-const DEFAULT_PAGE_SIZE = 100;
+import { DEFAULT_PAGE_SIZE } from './utils.stellar';
 
 describe('SorobanServer', () => {
   let server: SorobanServer;
