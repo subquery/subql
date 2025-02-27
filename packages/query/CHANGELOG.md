@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- When using an aggregate query as a query condition, the query results may be incorrect.
+
 ## [2.21.0] - 2025-02-19
 ### Changed
 - Update node version to LTS (#2655)
