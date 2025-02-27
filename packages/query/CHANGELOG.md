@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.21.0] - 2025-02-19
+### Changed
+- Update node version to LTS (#2655)
+
 ## [2.20.1] - 2025-02-04
 ### Changed
 - Update copyright header to 2025
@@ -399,7 +403,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.20.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.21.0...HEAD
+[2.21.0]: https://github.com/subquery/subql/compare/query/2.20.1...query/2.21.0
 [2.20.1]: https://github.com/subquery/subql/compare/query/2.20.0...query/2.20.1
 [2.20.0]: https://github.com/subquery/subql/compare/query/2.19.0...query/2.20.0
 [2.19.0]: https://github.com/subquery/subql/compare/query/2.18.0...query/2.19.0

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.4] - 2025-02-26
+### Changed
+- Update subqlTest to support entities with alternative ID types (#2700)
+
 ## [2.2.3] - 2025-02-04
 ### Changed
 - Update copyright header to 2025
@@ -46,7 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Major release 2.0.0, align with other package versions
 
-[Unreleased]: https://github.com/subquery/subql/compare/testing/2.2.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/testing/2.2.4...HEAD
+[2.2.4]: https://github.com/subquery/subql/compare/testing/2.2.3...testing/2.2.4
 [2.2.3]: https://github.com/subquery/subql/compare/testing/2.2.2...testing/2.2.3
 [2.2.2]: https://github.com/subquery/subql/compare/testing/2.2.1...testing/2.2.2
 [2.2.1]: https://github.com/subquery/subql/compare/testing/2.2.0...testing/2.2.1

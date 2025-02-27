@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "5.5.2-0",
+  "version": "5.7.0",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -28,7 +28,7 @@
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.3",
-    "typescript": "^5.5.4",
+    "typescript": "^5.7.3",
     "update-notifier": "^5.1.0",
     "webpack": "^5.94.0",
     "webpack-merge": "^6.0.1",
@@ -37,12 +37,12 @@
     "yaml-loader": "^0.8.1"
   },
   "devDependencies": {
-    "@subql/common-algorand": "^4.0.0",
+    "@subql/common-algorand": "^4.3.1",
     "@subql/common-concordium": "^4.0.1",
-    "@subql/common-cosmos": "^5.0.1",
-    "@subql/common-ethereum": "^4.5.0",
-    "@subql/common-near": "^4.0.0",
-    "@subql/common-stellar": "^4.0.0",
+    "@subql/common-cosmos": "^5.2.0",
+    "@subql/common-ethereum": "^4.6.1",
+    "@subql/common-near": "^4.2.1",
+    "@subql/common-stellar": "^4.2.2",
     "@subql/common-substrate": "workspace:*",
     "@types/ejs": "^3.1.5",
     "@types/fs-extra": "^11.0.4",
@@ -89,6 +89,5 @@
   "types": "lib/index.d.ts",
   "resolutions": {
     "node-fetch": "2.6.7"
-  },
-  "stableVersion": "5.5.1"
+  }
 }

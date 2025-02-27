@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2025-02-26
+### Added
+- CompatEntity type for when using alternative ID types (#2700)
+
 ## [2.0.1] - 2025-02-04
 ### Changed
 - Update copyright header to 2025
@@ -78,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of new package containing types common to all chains
 
-[Unreleased]: https://github.com/subquery/subql/compare/types-core/2.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types-core/2.0.2...HEAD
+[2.0.2]: https://github.com/subquery/subql/compare/types-core/2.0.1...types-core/2.0.2
 [2.0.1]: https://github.com/subquery/subql/compare/types-core/2.0.0...types-core/2.0.1
 [2.0.0]: https://github.com/subquery/subql/compare/types-core/1.1.1...types-core/2.0.0
 [1.1.1]: https://github.com/subquery/subql/compare/types-core/1.1.0...types-core/1.1.1

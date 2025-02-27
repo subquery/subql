@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "5.7.3-2",
+  "version": "5.9.1",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -24,7 +24,7 @@
     "@nestjs/event-emitter": "^3.0.0",
     "@nestjs/platform-express": "^11.0.7",
     "@nestjs/schedule": "^5.0.1",
-    "@polkadot/api": "^14.3.1",
+    "@polkadot/api": "^15.6.1",
     "@subql/common": "workspace:*",
     "@subql/common-substrate": "workspace:*",
     "@subql/node-core": "workspace:*",
@@ -50,6 +50,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "5.7.3-1"
+  ]
 }

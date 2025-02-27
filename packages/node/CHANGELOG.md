@@ -5,8 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.9.1] - 2025-02-26
+### Changed
+- Use blockDispatcherFactory from node-core (#2701)
+
+## [5.9.0] - 2025-02-25
+### Changed
+- Bump `@subql/node-core`
+
+## [5.8.0] - 2025-02-19
 ### Changed
 - Update nestjs dependencies (#2667)
+- Update polkadot api to 15 (#2680)
 
 ## [5.7.2] - 2025-02-04
 ### Changed
@@ -406,7 +417,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.1] - 2023-09-28
 ### Fixed
-- Fix crashes when intialization fails for one of the endpoint (#1970)
+- Fix crashes when initialization fails for one of the endpoint (#1970)
 - Remove `@willsoto/nestjs-prometheus` from dependency as it is already added in node-core (#2012)
 - Project node runner options being overwritten by yargs defaults (#1967)
 - Sync with node-core, fix dictionary resolver failed to get token issue
@@ -450,7 +461,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Sync with node-core 4.1.0:
   - moved `indexBlock` to base `TestingService` (#1913)
-  - Simplify conneciton pool logic (#1915)
+  - Simplify connection pool logic (#1915)
   - Fix poi operationHash and miss poi blocks (#1917)
 
 ## [2.10.0] - 2023-07-31
@@ -1379,7 +1390,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/5.7.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/5.9.1...HEAD
+[5.9.1]: https://github.com/subquery/subql/compare/node/5.9.0...node/5.9.1
+[5.9.0]: https://github.com/subquery/subql/compare/node/5.8.0...node/5.9.0
+[5.8.0]: https://github.com/subquery/subql/compare/node/5.7.2...node/5.8.0
 [5.7.2]: https://github.com/subquery/subql/compare/node/5.7.1...node/5.7.2
 [5.7.1]: https://github.com/subquery/subql/compare/node/5.7.0...node/5.7.1
 [5.7.0]: https://github.com/subquery/subql/compare/node/5.6.0...node/5.7.0

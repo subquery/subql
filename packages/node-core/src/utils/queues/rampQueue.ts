@@ -17,7 +17,7 @@ const MIN_SIZES = 20;
 const logger = getLogger('RampQueue');
 
 /**
- * The ramp queue is an exension of the AutoQueue which dynamically adjusts the concurrency based on the getSize function.
+ * The ramp queue is an extension of the AutoQueue which dynamically adjusts the concurrency based on the getSize function.
  * It will start at concurrency 1 and ramp up to the max concurrency unless there is a large jump above the median size then it will decrease.
  * */
 export class RampQueue<T> extends AutoQueue<T> {

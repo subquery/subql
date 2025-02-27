@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.7.0] - 2025-02-25
+### Changed
+- Bump `typescript` version
+
+## [5.6.0] - 2025-02-19
+### Changed
+- Update polkadot api to 15 (#2680)
+
+## [5.5.2] - 2025-02-13
 ### Fixed
 - Project names containing uppercase letters cannot be deployed.
 
@@ -167,7 +176,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.7.0] - 2024-05-02
 ### Added
 - Migrate a subgraph project to subquery project
-  - enble migrate its `subgraph.yaml` to `project.ts`
+  - enbale migrate its `subgraph.yaml` to `project.ts`
 
 ## [4.6.0] - 2024-04-24
 ### Added
@@ -433,7 +442,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.7.0] - 2022-10-27
 ### Added
-- `--dedicatedDB` option to project deployement. (#1355)
+- `--dedicatedDB` option to project deployment. (#1355)
 - Flags for advanced settings. (#1352)
 
 ### Fixed
@@ -719,7 +728,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0] - 2021-01-15
 ### Changed
-- subql init doesn' need --starter by default (#86)
+- subql init doesn't need --starter by default (#86)
 - model template use bigint instead of BigInt (#82)
 
 ## [0.2.0] - 2020-12-22
@@ -727,7 +736,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.5.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.7.0...HEAD
+[5.7.0]: https://github.com/subquery/subql/compare/cli/5.6.0...cli/5.7.0
+[5.6.0]: https://github.com/subquery/subql/compare/cli/5.5.2...cli/5.6.0
+[5.5.2]: https://github.com/subquery/subql/compare/cli/5.5.1...cli/5.5.2
 [5.5.1]: https://github.com/subquery/subql/compare/cli/5.5.0...cli/5.5.1
 [5.5.0]: https://github.com/subquery/subql/compare/cli/5.4.0...cli/5.5.0
 [5.4.0]: https://github.com/subquery/subql/compare/cli/5.3.3...cli/5.4.0
