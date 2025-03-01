@@ -132,23 +132,6 @@ export class BlockchainService
     return substrateHeaderToHeader(finalizedHeader);
   }
 
-  // async test(blockHeight: number): Promise<any> {
-  //   // 连接到 Polkadot 节点
-  //   const wsProvider = new WsProvider('wss://rpc.polkadot.io');
-  //   const api = await ApiPromise.create({ provider: wsProvider });
-
-  //   // 获取区块
-  //   const blockHash = await api.rpc.chain.getBlockHash(blockHeight);
-
-  //   // 获取区块的时间戳
-  //   const block = await api.rpc.chain.getBlock(blockHash);
-  //   const timestamp = await api.at(blockHash);
-
-  //   console.log(`Block #${blockHeight} timestamp: ${timestamp.toString()}`);
-  //   api.disconnect();
-  //   return;
-  // }
-
   async getBestHeight(): Promise<number> {
     const bestHeader = await this.apiService.unsafeApi.rpc.chain.getHeader();
     return bestHeader.number.toNumber();
