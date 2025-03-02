@@ -115,9 +115,20 @@ export class BlockchainService
     this.apiService.updateBlockFetching();
   }
 
-  async getBlockTimestamp(height: number): Promise<Date | undefined> {
+  async getBlockTimestamp(height: number): Promise<Date> {
     const block = await getBlockByHeight(this.apiService.api, height);
-    return getTimestamp(block);
+
+    let timestamp = getTimestamp(block);
+    if (!timestamp) {
+      // Not all networks have a block timestamp, e.g. Shiden
+      const blockTimestamp = await (
+        await this.apiService.unsafeApi.at(block.hash)
+      ).query.timestamp.now();
+
+      timestamp = new Date(blockTimestamp.toNumber());
+    }
+
+    return timestamp;
   }
 
   getBlockSize(block: IBlock): number {
@@ -161,7 +172,9 @@ export class BlockchainService
   }
 
   @mainThreadOnly()
-  async getRequiredHeaderForHeight(height: number): Promise<Required<Header>> {
+  async getRequiredHeaderForHeight(
+    height: number,
+  ): Promise<Header & { timestamp: Date }> {
     const blockHeader = await this.getHeaderForHeight(height);
 
     let timestamp: Date | undefined = blockHeader.timestamp;

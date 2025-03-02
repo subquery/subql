@@ -16,7 +16,7 @@ import {IBlockDispatcher} from './blockDispatcher';
 import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {mergeNumAndBlocks} from './dictionary/utils';
-import {IMultiChainHandler, MultiChainRewindService, RewindStatus} from './multiChainRewind.service';
+import {IMultiChainHandler, IMultiChainRewindService, RewindStatus} from './multiChainRewind.service';
 import {IStoreModelProvider} from './storeModelProvider';
 import {BypassBlocks, IBlock, IProjectService} from './types';
 import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
@@ -41,7 +41,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
     @Inject('IUnfinalizedBlocksService') private unfinalizedBlocksService: IUnfinalizedBlocksServiceUtil,
     @Inject('IStoreModelProvider') private storeModelProvider: IStoreModelProvider,
     @Inject('IBlockchainService') private blockchainSevice: IBlockchainService<DS>,
-    private multiChainRewindService: MultiChainRewindService
+    private multiChainRewindService: IMultiChainRewindService
   ) {}
 
   private get latestBestHeight(): number {
@@ -199,9 +199,18 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
       void this.storeModelProvider.metadata.set('targetHeight', latestHeight);
 
       // If we're rewinding, we should wait until it's done
-      const multiChainStatus = this.multiChainRewindService.getStatus();
-      if (RewindStatus.Normal !== multiChainStatus) {
-        logger.info(`Wait for all chains to complete rewind, current chainId: ${this.multiChainRewindService.chainId}`);
+      const multiChainStatus = this.multiChainRewindService.status;
+
+      if (RewindStatus.Rewinding === multiChainStatus) {
+        assert(this.multiChainRewindService.waitRewindHeader, 'Multi chain Rewind header is not set');
+        await this.projectService.reindex(this.multiChainRewindService.waitRewindHeader);
+        continue;
+      }
+
+      if (RewindStatus.WaitOtherChain === multiChainStatus) {
+        logger.info(
+          `Waiting for all chains to complete rewind, current chainId: ${this.multiChainRewindService.chainId}`
+        );
         await delay(3);
         continue;
       }
@@ -389,15 +398,11 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
     return this.latestFinalizedHeight;
   }
 
-  resetForIncorrectBestBlock(blockHeight: number): void {
-    this.updateDictionary();
-    this.blockDispatcher.flushQueue(blockHeight);
-  }
-
   @OnEvent(MultiChainRewindEvent.Rewind)
   @OnEvent(MultiChainRewindEvent.RewindTimestampDecreased)
   handleMultiChainRewindEvent(payload: MultiChainRewindPayload) {
     logger.info(`Received rewind event, height: ${payload.height}`);
     this.resetForNewDs(payload.height);
+    this.blockDispatcher.setLatestProcessedHeight(payload.height);
   }
 }

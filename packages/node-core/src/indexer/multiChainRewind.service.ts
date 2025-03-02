@@ -25,7 +25,7 @@ import {
 import {StoreService} from './store.service';
 import {Header} from './types';
 
-const logger = getLogger('RewindService');
+const logger = getLogger('MultiChainRewindService');
 
 export enum RewindStatus {
   /** The current chain is in normal state. */
@@ -35,10 +35,10 @@ export enum RewindStatus {
   /** The current chain is executing rewind. */
   Rewinding = 'rewinding',
 }
-interface IMultiChainRewindService {
+export interface IMultiChainRewindService {
   chainId: string;
-  dbSchema: string;
-  getStatus(): RewindStatus;
+  status: RewindStatus;
+  waitRewindHeader?: Header;
   getGlobalRewindStatus(): Promise<{
     rewindTimestamp: GlobalDataKeys[RewindTimestampKey];
     rewindLock?: GlobalDataKeys[typeof RewindLockKey];
@@ -57,6 +57,13 @@ export interface IMultiChainHandler {
   handleMultiChainRewindEvent(rewindBlockPayload: MultiChainRewindPayload): void;
 }
 
+/**
+ * Working principle:
+ * multiChainRewindService is primarily responsible for coordinating multi-chain projects.
+ * When global.rewindLock changes, a PG trigger sends a notification, and all subscribed chain projects will receive the rollback notification.
+ * This triggers a rollback process, where the fetch service handles the message by clearing the queue.
+ * During the next fillNextBlockBuffer loop, if it detects the rewinding state, it will execute the rollback.
+ */
 @Injectable()
 export class MultiChainRewindService implements IMultiChainRewindService, OnApplicationShutdown {
   private _status: RewindStatus = RewindStatus.Normal;
@@ -64,7 +71,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   private _dbSchema?: string;
   private _rewindTriggerName?: string;
   private pgListener?: PoolClient;
-  waitRewindHeader?: Required<Header>;
+  waitRewindHeader?: Header;
   constructor(
     private nodeConfig: NodeConfig,
     private eventEmitter: EventEmitter2,
@@ -82,7 +89,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     return this._chainId;
   }
 
-  get dbSchema(): string {
+  private get dbSchema(): string {
     assert(this._dbSchema, 'dbSchema is not set');
     return this._dbSchema;
   }
@@ -94,7 +101,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     this._rewindTriggerName = rewindTriggerName;
   }
 
-  get rewindTriggerName(): string {
+  private get rewindTriggerName(): string {
     assert(this._rewindTriggerName, 'rewindTriggerName is not set');
     return this._rewindTriggerName;
   }
@@ -103,7 +110,8 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     this._status = status;
   }
 
-  getStatus(): RewindStatus {
+  get status() {
+    assert(this._status, 'status is not set');
     return this._status;
   }
 
@@ -116,7 +124,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     this.dbSchema = dbSchema;
     this.rewindTriggerName = hashName(this.dbSchema, 'rewind_trigger', '_global');
 
-    if (this.storeService.historical === 'timestamp') {
+    if (this.nodeConfig.multiChain) {
       await this.sequelize.query(`${createRewindTriggerFunction(this.dbSchema)}`);
 
       const rewindTriggers = await getTriggers(this.sequelize, this.rewindTriggerName);
@@ -140,8 +148,9 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
 
     // Creating a new pgClient is to avoid using the same database connection as the block scheduler,
     // which may prevent real-time listening to rollback events.
-    const pgPool = new Pool(getPgPoolConfig(this.nodeConfig));
-    this.pgListener = await pgPool.connect();
+    this.pgListener = (await this.sequelize.connectionManager.getConnection({
+      type: 'read',
+    })) as PoolClient;
 
     this.pgListener.on('notification', (msg) => {
       Promise.resolve().then(async () => {
@@ -150,9 +159,9 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
         switch (eventType) {
           case MultiChainRewindEvent.Rewind:
           case MultiChainRewindEvent.RewindTimestampDecreased: {
-            this.status = RewindStatus.Rewinding;
             const {rewindTimestamp} = await this.getGlobalRewindStatus();
-            this.waitRewindHeader = await this.getHeaderByBinarySearch(dayjs(rewindTimestamp).toDate());
+            this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
+            this.status = RewindStatus.Rewinding;
 
             // Trigger the rewind event, and let the fetchService listen to the message and handle the queueFlush.
             this.eventEmitter.emit(eventType, {
@@ -162,8 +171,8 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
           }
           case MultiChainRewindEvent.RewindComplete:
             // recover indexing status
-            this.status = RewindStatus.Normal;
             this.waitRewindHeader = undefined;
+            this.status = RewindStatus.Normal;
             break;
           default:
             throw new Error(`Unknown rewind event: ${eventType}`);
@@ -182,8 +191,16 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     }
     if (rewindTimestamp) {
       this.status = RewindStatus.Rewinding;
-      this.waitRewindHeader = await this.getHeaderByBinarySearch(dayjs(rewindTimestamp).toDate());
+      this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
     }
+  }
+
+  private async searchWaitRewindHeader(rewindTimestamp: number): Promise<Header> {
+    const rewindDate = dayjs(rewindTimestamp).toDate();
+    const rewindBlockHeader = await this.getHeaderByBinarySearch(rewindDate);
+    // The blockHeader.timestamp obtained from the query cannot be used directly, as it will cause an infinite loop.
+    // Different chains have timestamp discrepancies, which will result in infinite backward tracing.
+    return {...rewindBlockHeader, timestamp: rewindDate};
   }
 
   /**
