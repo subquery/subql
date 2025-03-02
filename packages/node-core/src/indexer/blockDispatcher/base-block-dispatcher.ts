@@ -34,6 +34,7 @@ export interface IBlockDispatcher<B> {
   latestBufferedHeight: number;
   batchSize: number;
 
+  setLatestProcessedHeight(height: number): void;
   // Remove all enqueued blocks, used when a dynamic ds is created
   flushQueue(height: number): void;
 }

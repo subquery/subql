@@ -29,6 +29,12 @@ export enum PoiEvent {
   PoiTarget = 'poi_target',
 }
 
+export enum MultiChainRewindEvent {
+  Rewind = 'rewind',
+  RewindComplete = 'rewind_complete',
+  RewindTimestampDecreased = 'timestamp_decreased',
+}
+
 export interface RewindPayload {
   success: boolean;
   height: number;
@@ -60,4 +66,8 @@ export interface NetworkMetadataPayload {
   chain: string;
   specName: string;
   genesisHash: string;
+}
+
+export interface MultiChainRewindPayload {
+  height: number;
 }

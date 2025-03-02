@@ -54,8 +54,8 @@ class TestBlockchainService implements IBlockchainService {
     // throw new Error('Method onProjectChange not implemented.');
   }
   // eslint-disable-next-line @typescript-eslint/promise-function-async
-  getBlockTimestamp(height: number): Promise<Date | undefined> {
-    return Promise.resolve(undefined);
+  getBlockTimestamp(height: number): Promise<Date> {
+    return Promise.resolve(new Date());
   }
   getBlockSize(block: IBlock): number {
     return 0;
@@ -112,6 +112,15 @@ class TestBlockchainService implements IBlockchainService {
       timestamp: new Date(),
     };
   }
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getRequiredHeaderForHeight(height: number): Promise<Header & {timestamp: Date}> {
+    return {
+      blockHeight: height,
+      blockHash: `b${height}`,
+      parentHash: `b${height - 1}`,
+      timestamp: new Date(),
+    };
+  }
 }
 
 describe('BaseProjectService', () => {
@@ -131,7 +140,8 @@ describe('BaseProjectService', () => {
       {getDynamicDatasources: jest.fn()} as unknown as DynamicDsService<any>,
       null as unknown as any,
       null as unknown as any,
-      new TestBlockchainService()
+      new TestBlockchainService(),
+      null as unknown as any
     );
   });
 
@@ -424,7 +434,8 @@ describe('BaseProjectService', () => {
         } as unknown as DynamicDsService<any>, // dynamicDsService
         new EventEmitter2(), // eventEmitter
         new UnfinalizedBlocksService(nodeConfig, storeService.modelProvider, blockchainService), // unfinalizedBlocksService
-        blockchainService
+        blockchainService,
+        {init: jest.fn()} as any // MultiChainRewindService
       );
     };
 
