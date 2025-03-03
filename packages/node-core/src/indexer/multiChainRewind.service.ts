@@ -13,16 +13,8 @@ import {NodeConfig} from '../configure';
 import {createRewindTrigger, createRewindTriggerFunction, getPgPoolConfig, getTriggers} from '../db';
 import {MultiChainRewindEvent, MultiChainRewindPayload} from '../events';
 import {getLogger} from '../logger';
-import {
-  generateRewindTimestampKey,
-  GlobalData,
-  GlobalDataKeys,
-  RewindLockInfo,
-  RewindLockKey,
-  RewindTimestampKey,
-  RewindTimestampKeyPrefix,
-} from './entities';
 import {StoreService} from './store.service';
+import {PlainGlobalModel} from './storeModelProvider/global/global';
 import {Header} from './types';
 
 const logger = getLogger('MultiChainRewindService');
@@ -39,10 +31,6 @@ export interface IMultiChainRewindService {
   chainId: string;
   status: RewindStatus;
   waitRewindHeader?: Header;
-  getGlobalRewindStatus(): Promise<{
-    rewindTimestamp: GlobalDataKeys[RewindTimestampKey];
-    rewindLock?: GlobalDataKeys[typeof RewindLockKey];
-  }>;
   setGlobalRewindLock(rewindTimestamp: number): Promise<void>;
   /**
    * Check if the height is consistent before unlocking.
@@ -71,6 +59,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   private _dbSchema?: string;
   private _rewindTriggerName?: string;
   private pgListener?: PoolClient;
+  private _globalModel?: PlainGlobalModel = undefined;
   waitRewindHeader?: Header;
   constructor(
     private nodeConfig: NodeConfig,
@@ -113,6 +102,13 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   get status() {
     assert(this._status, 'status is not set');
     return this._status;
+  }
+
+  get globalModel() {
+    if (!this._globalModel) {
+      this._globalModel = new PlainGlobalModel(this.dbSchema, this.chainId, this.storeService.globalDataRepo);
+    }
+    return this._globalModel;
   }
 
   onApplicationShutdown() {
@@ -159,7 +155,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
         switch (eventType) {
           case MultiChainRewindEvent.Rewind:
           case MultiChainRewindEvent.RewindTimestampDecreased: {
-            const {rewindTimestamp} = await this.getGlobalRewindStatus();
+            const {rewindTimestamp} = await this.globalModel.getGlobalRewindStatus();
             this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
             this.status = RewindStatus.Rewinding;
 
@@ -186,7 +182,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
 
     // Check whether the current state is in rollback.
     // If a global lock situation occurs, prioritize setting it to the WaitOtherChain state. If a rollback is still required, then set it to the rewinding state.
-    const {rewindLock, rewindTimestamp} = await this.getGlobalRewindStatus();
+    const {rewindLock, rewindTimestamp} = await this.globalModel.getGlobalRewindStatus();
     if (rewindLock) {
       this.status = RewindStatus.WaitOtherChain;
     }
@@ -214,130 +210,21 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     return JSON.stringify({timestamp: rewindTimestamp, chainNum: chainTotal});
   }
 
-  async getGlobalRewindStatus() {
-    const rewindTimestampKey = generateRewindTimestampKey(this.chainId);
-
-    const records = await this.storeService.globalDataRepo.findAll({
-      where: {key: {[Op.in]: [rewindTimestampKey, RewindLockKey]}},
-    });
-    const rewindLockInfo: GlobalData<typeof RewindLockKey> | undefined = records
-      .find((r) => r.key === RewindLockKey)
-      ?.toJSON();
-    const rewindTimestampInfo: GlobalData<RewindTimestampKey> | undefined = records
-      .find((r) => r.key === rewindTimestampKey)
-      ?.toJSON();
-
-    assert(
-      rewindTimestampInfo !== undefined,
-      `Not registered rewind timestamp key in global data, chainId: ${this.chainId}`
-    );
-    return {rewindTimestamp: rewindTimestampInfo.value, rewindLock: rewindLockInfo?.value};
-  }
-
   /**
    * If the set rewindTimestamp is greater than or equal to the current blockHeight, we do nothing because we will roll back to an earlier time.
    * If the set rewindTimestamp is less than the current blockHeight, we should roll back to the earlier rewindTimestamp.
    * @param rewindTimestamp rewindTimestamp in milliseconds
    */
   async setGlobalRewindLock(rewindTimestamp: number) {
-    const globalTable = this.storeService.globalDataRepo.tableName;
-    const chainTotal = await this.storeService.globalDataRepo.count({
-      where: {
-        key: {[Op.like]: `${RewindTimestampKeyPrefix}_%`},
-      },
-    });
-
-    const tx = await this.sequelize.transaction();
-    try {
-      const [_, updateRows] = await this.sequelize.query(
-        `INSERT INTO "${this.dbSchema}"."${globalTable}" ( "key", "value", "createdAt", "updatedAt" )
-        VALUES
-        ( '${RewindLockKey}', '${this.serializeRewindLock(rewindTimestamp, chainTotal)}', now(), now()) 
-        ON CONFLICT ( "key" ) 
-        DO UPDATE 
-        SET "key" = EXCLUDED."key",
-            "value" = EXCLUDED."value",
-            "updatedAt" = EXCLUDED."updatedAt" 
-        WHERE "${globalTable}"."key" = '${RewindLockKey}' AND ("${globalTable}"."value"->>'timestamp')::BIGINT > ${rewindTimestamp}`,
-        {
-          type: QueryTypes.INSERT,
-          transaction: tx,
-        }
-      );
-
-      // If there is a rewind lock that is greater than the current rewind timestamp, we should not update the rewind timestamp
-      if (updateRows === 1) {
-        logger.info(`setGlobalRewindLock success chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`);
-        await this.storeService.globalDataRepo.update(
-          {value: rewindTimestamp},
-          {
-            where: {key: {[Op.like]: 'rewindTimestamp_%'}},
-            transaction: tx,
-          }
-        );
-
-        // The current chain is in REWINDING state
-        this.status = RewindStatus.Rewinding;
-      }
-      await tx.commit();
-    } catch (e: any) {
-      logger.error(
-        `setGlobalRewindLock failed chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}, errorMsg: ${e.message}`
-      );
-      await tx.rollback();
-      throw e;
+    const {needRewind} = await this.globalModel.setGlobalRewindLock(rewindTimestamp);
+    if (needRewind) {
+      logger.info(`setGlobalRewindLock success chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`);
+      this.status = RewindStatus.Rewinding;
     }
   }
 
   async releaseChainRewindLock(tx: Transaction, rewindTimestamp: number): Promise<number> {
-    const globalTable = this.storeService.globalDataRepo.tableName;
-
-    // Ensure the first write occurs and prevent deadlock, only update the rewindNum - 1
-    const results = await this.sequelize.query<{value: RewindLockInfo}>(
-      `UPDATE "${this.dbSchema}"."${globalTable}"
-      SET value = jsonb_set(
-        value, 
-        '{chainNum}', 
-        to_jsonb(COALESCE(("${globalTable}"."value" ->> 'chainNum')::BIGINT, 0) - 1), 
-        false
-      )
-      WHERE "${globalTable}"."key" = '${RewindLockKey}' AND ("${globalTable}"."value"->>'timestamp')::BIGINT = ${rewindTimestamp}
-      RETURNING value`,
-      {
-        type: QueryTypes.SELECT,
-        transaction: tx,
-      }
-    );
-
-    // not exist rewind lock in current timestamp
-    if (results.length === 0) {
-      logger.warn(
-        `Release rewind lock failed chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}, the rewind lock does not exist`
-      );
-      return 0;
-    }
-    const chainNum = results[0].value.chainNum;
-
-    const rewindTimestampKey = generateRewindTimestampKey(this.chainId);
-    const [affectedCount] = await this.storeService.globalDataRepo.update(
-      {value: 0},
-      {
-        where: {
-          key: rewindTimestampKey,
-          value: rewindTimestamp,
-        },
-        transaction: tx,
-      }
-    );
-    assert(
-      affectedCount === 1,
-      `not found rewind timestamp key in global data, chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`
-    );
-
-    if (chainNum === 0) {
-      await this.storeService.globalDataRepo.destroy({where: {key: RewindLockKey}, transaction: tx});
-    }
-
+    const chainNum = await this.globalModel.releaseChainRewindLock(tx, rewindTimestamp);
     // The current chain has completed the rewind, and we still need to wait for other chains to finish.
     // When fully synchronized, set the status back to normal by pgListener.
     this.status = RewindStatus.WaitOtherChain;
