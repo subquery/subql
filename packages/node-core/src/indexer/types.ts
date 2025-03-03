@@ -27,7 +27,7 @@ export interface ISubqueryProject<
   C = unknown,
 > extends Omit<CommonSubqueryProject<N, DS, T>, 'schema' | 'version' | 'name' | 'specVersion' | 'description'> {
   readonly schema: GraphQLSchema;
-  applyCronTimestamps: (getBlockTimestamp: (height: number) => Promise<Date | undefined>) => Promise<void>;
+  applyCronTimestamps: (getBlockTimestamp: (height: number) => Promise<Date>) => Promise<void>;
   readonly id: string;
   chainTypes?: C; // The chainTypes after loaded
   readonly root: string;

@@ -115,9 +115,20 @@ export class BlockchainService
     this.apiService.updateBlockFetching();
   }
 
-  async getBlockTimestamp(height: number): Promise<Date | undefined> {
+  async getBlockTimestamp(height: number): Promise<Date> {
     const block = await getBlockByHeight(this.apiService.api, height);
-    return getTimestamp(block);
+
+    let timestamp = getTimestamp(block);
+    if (!timestamp) {
+      // Not all networks have a block timestamp, e.g. Shiden
+      const blockTimestamp = await (
+        await this.apiService.unsafeApi.at(block.hash)
+      ).query.timestamp.now();
+
+      timestamp = new Date(blockTimestamp.toNumber());
+    }
+
+    return timestamp;
   }
 
   getBlockSize(block: IBlock): number {
@@ -158,6 +169,28 @@ export class BlockchainService
   async getHeaderForHeight(height: number): Promise<Header> {
     const hash = await this.apiService.unsafeApi.rpc.chain.getBlockHash(height);
     return this.getHeaderForHash(hash.toHex());
+  }
+
+  @mainThreadOnly()
+  async getRequiredHeaderForHeight(
+    height: number,
+  ): Promise<Header & { timestamp: Date }> {
+    const blockHeader = await this.getHeaderForHeight(height);
+
+    let timestamp: Date | undefined = blockHeader.timestamp;
+
+    if (!timestamp) {
+      const blockTimestamp = await (
+        await this.apiService.unsafeApi.at(blockHeader.blockHash)
+      ).query.timestamp.now();
+
+      timestamp = new Date(blockTimestamp.toNumber());
+    }
+
+    return {
+      ...blockHeader,
+      timestamp,
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await

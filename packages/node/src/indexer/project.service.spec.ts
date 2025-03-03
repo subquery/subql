@@ -12,6 +12,7 @@ import {
   upgradableSubqueryProject,
   DsProcessorService,
   DynamicDsService,
+  MultiChainRewindService,
 } from '@subql/node-core';
 import { SubstrateDatasourceKind, SubstrateHandlerKind } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
@@ -145,6 +146,7 @@ describe('ProjectService', () => {
             apiService: ApiService,
             project: SubqueryProject,
             blockchainService: BlockchainService,
+            multiChainRewindService: MultiChainRewindService,
           ) =>
             new TestProjectService(
               {
@@ -172,14 +174,25 @@ describe('ProjectService', () => {
               null as unknown as any,
               null as unknown as any,
               blockchainService,
+              multiChainRewindService,
             ),
-          inject: ['APIService', 'ISubqueryProject', 'IBlockchainService'],
+          inject: [
+            'APIService',
+            'ISubqueryProject',
+            'IBlockchainService',
+            MultiChainRewindService,
+          ],
         },
         EventEmitter2,
         {
           provide: 'APIService',
           useFactory: ApiService.init,
-          inject: ['ISubqueryProject', ConnectionPoolService, EventEmitter2, NodeConfig]
+          inject: [
+            'ISubqueryProject',
+            ConnectionPoolService,
+            EventEmitter2,
+            NodeConfig,
+          ],
         },
         {
           provide: ProjectUpgradeService,
@@ -194,6 +207,7 @@ describe('ProjectService', () => {
           provide: 'IBlockchainService',
           useClass: BlockchainService,
         },
+        MultiChainRewindService,
       ],
       imports: [EventEmitterModule.forRoot()],
     }).compile();

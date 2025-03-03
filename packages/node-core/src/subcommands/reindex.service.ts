@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { Inject, Injectable } from '@nestjs/common';
-import { BaseDataSource } from '@subql/types-core';
-import { Sequelize } from '@subql/x-sequelize';
-import { IBlockchainService } from '../blockchain.service';
-import { NodeConfig, ProjectUpgradeService } from '../configure';
+import {Inject, Injectable} from '@nestjs/common';
+import {BaseDataSource} from '@subql/types-core';
+import {Sequelize} from '@subql/x-sequelize';
+import {IBlockchainService} from '../blockchain.service';
+import {NodeConfig, ProjectUpgradeService} from '../configure';
 import {
   IUnfinalizedBlocksService,
   StoreService,
@@ -15,19 +15,20 @@ import {
   IMetadata,
   cacheProviderFlushData,
   Header,
+  MultiChainRewindService,
 } from '../indexer';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
-import { getLogger } from '../logger';
-import { exitWithError, monitorWrite } from '../process';
-import { getExistingProjectSchema, initDbSchema, reindex } from '../utils';
-import { ForceCleanService } from './forceClean.service';
+import {DynamicDsService} from '../indexer/dynamic-ds.service';
+import {getLogger} from '../logger';
+import {exitWithError, monitorWrite} from '../process';
+import {getExistingProjectSchema, initDbSchema, reindex} from '../utils';
+import {ForceCleanService} from './forceClean.service';
 
 const logger = getLogger('Reindex');
 
 @Injectable()
 export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSource, B> {
   private _metadataRepo?: IMetadata;
-  private _lastProcessedHeader?: { height: number; timestamp?: number };
+  private _lastProcessedHeader?: {height: number; timestamp?: number};
 
   constructor(
     private readonly sequelize: Sequelize,
@@ -40,6 +41,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     @Inject('UnfinalizedBlocksService') private readonly unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
     @Inject('DynamicDsService') private readonly dynamicDsService: DynamicDsService<DS>,
     @Inject('IBlockchainService') private readonly blockchainService: IBlockchainService<DS>,
+    private readonly multiChainRewindService: MultiChainRewindService
   ) {}
 
   private get metadataRepo(): IMetadata {
@@ -65,10 +67,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
 
     await this.dynamicDsService.init(this.metadataRepo);
 
-    const { lastProcessedBlockTimestamp: timestamp, lastProcessedHeight: height } = await this.metadataRepo.findMany([
-      'lastProcessedHeight',
-      'lastProcessedBlockTimestamp',
-    ]);
+    const {height, timestamp} = await this.storeService.getLastProcessedBlock();
 
     if (height === undefined) {
       throw new Error('lastProcessedHeight is not defined');
@@ -92,7 +91,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     const inputHeader = await this.blockchainService.getHeaderForHeight(inputHeight);
 
     const unfinalizedBlocks = await this.unfinalizedBlocksService.getMetadataUnfinalizedBlocks();
-    const bestBlocks = unfinalizedBlocks.filter(({ blockHeight }) => blockHeight <= inputHeight);
+    const bestBlocks = unfinalizedBlocks.filter(({blockHeight}) => blockHeight <= inputHeight);
     if (bestBlocks.length && inputHeight >= bestBlocks[0].blockHeight) {
       return bestBlocks[0];
     }
@@ -103,7 +102,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
 
-  get lastProcessedHeader(): { height: number; timestamp?: number } {
+  get lastProcessedHeader(): {height: number; timestamp?: number} {
     assert(this._lastProcessedHeader !== undefined, 'Cannot reindex without lastProcessedHeight been initialized');
     return this._lastProcessedHeader;
   }
@@ -137,6 +136,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       this.dynamicDsService,
       this.sequelize,
       this.projectUpgradeService,
+      this.multiChainRewindService,
       this.nodeConfig.proofOfIndex ? this.poiService : undefined,
       this.forceCleanService
     );
