@@ -16,7 +16,7 @@ import {IBlockDispatcher} from './blockDispatcher';
 import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {mergeNumAndBlocks} from './dictionary/utils';
-import {IMultiChainHandler, IMultiChainRewindService, RewindStatus} from './multiChainRewind.service';
+import {IMultiChainHandler, MultiChainRewindService, RewindStatus} from './multiChainRewind.service';
 import {IStoreModelProvider} from './storeModelProvider';
 import {BypassBlocks, IBlock, IProjectService} from './types';
 import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
@@ -41,7 +41,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
     @Inject('IUnfinalizedBlocksService') private unfinalizedBlocksService: IUnfinalizedBlocksServiceUtil,
     @Inject('IStoreModelProvider') private storeModelProvider: IStoreModelProvider,
     @Inject('IBlockchainService') private blockchainSevice: IBlockchainService<DS>,
-    private multiChainRewindService: IMultiChainRewindService
+    private multiChainRewindService: MultiChainRewindService
   ) {}
 
   private get latestBestHeight(): number {

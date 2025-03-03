@@ -185,6 +185,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     logger.info(`Register rewind listener success, chainId: ${this.chainId}`);
 
     // Check whether the current state is in rollback.
+    // If a global lock situation occurs, prioritize setting it to the WaitOtherChain state. If a rollback is still required, then set it to the rewinding state.
     const {rewindLock, rewindTimestamp} = await this.getGlobalRewindStatus();
     if (rewindLock) {
       this.status = RewindStatus.WaitOtherChain;
