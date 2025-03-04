@@ -80,8 +80,13 @@ export class StellarApiService extends ApiService<
       );
     }
 
+    const { protocol } = new URL(sorobanEndpoint);
+    const protocolStr = protocol.replace(':', '');
+
     const sorobanClient = sorobanEndpoint
-      ? new SorobanServer(sorobanEndpoint)
+      ? new SorobanServer(sorobanEndpoint, {
+          allowHttp: protocolStr === 'http',
+        })
       : undefined;
 
     await this.createConnections(network, (endpoint, config) =>

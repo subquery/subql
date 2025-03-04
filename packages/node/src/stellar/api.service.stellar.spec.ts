@@ -76,6 +76,12 @@ describe('StellarApiService', () => {
     [apiService, app] = await prepareApiService();
   });
 
+  it('should allow http protocol for soroban endpoint', async () => {
+    await expect(
+      prepareApiService(HTTP_ENDPOINT, 'http://rpc-futurenet.stellar.org'),
+    ).resolves.not.toThrow();
+  });
+
   it('should instantiate api', () => {
     expect(apiService.api).toBeInstanceOf(StellarApi);
   });
