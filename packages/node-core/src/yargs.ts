@@ -200,6 +200,13 @@ export function yargsBuilder<
                 type: 'number',
                 default: 5,
               },
+              'store-cache-target': {
+                demandOption: false,
+                describe:
+                  'If indexing is happening within this many blocks of the target height, then cache data will be flushed every block. This makes sure a (nearly) fully synced node is flushing data to be available ASAP to query.',
+                type: 'number',
+                default: 10,
+              },
               'subquery-name': {
                 deprecated: true,
                 demandOption: false,
