@@ -5172,9 +5172,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/core@npm:^11.0.7":
-  version: 11.0.7
-  resolution: "@nestjs/core@npm:11.0.7"
+"@nestjs/core@npm:^11.0.11":
+  version: 11.0.11
+  resolution: "@nestjs/core@npm:11.0.11"
   dependencies:
     "@nuxt/opencollective": 0.4.1
     fast-safe-stringify: 2.1.1
@@ -5196,35 +5196,7 @@ __metadata:
       optional: true
     "@nestjs/websockets":
       optional: true
-  checksum: 0ebdfb54c52d2ab9761d05529e64f96b561b78e8094df642dbbe543c4e72ac759ac2400d2abd456e8c937c4ec308c2f9748600df071b4ceb3c2daf3bdc99f1cf
-  languageName: node
-  linkType: hard
-
-"@nestjs/core@npm:^9.4.0":
-  version: 9.4.3
-  resolution: "@nestjs/core@npm:9.4.3"
-  dependencies:
-    "@nuxtjs/opencollective": 0.3.2
-    fast-safe-stringify: 2.1.1
-    iterare: 1.2.1
-    path-to-regexp: 3.2.0
-    tslib: 2.5.3
-    uid: 2.0.2
-  peerDependencies:
-    "@nestjs/common": ^9.0.0
-    "@nestjs/microservices": ^9.0.0
-    "@nestjs/platform-express": ^9.0.0
-    "@nestjs/websockets": ^9.0.0
-    reflect-metadata: ^0.1.12
-    rxjs: ^7.1.0
-  peerDependenciesMeta:
-    "@nestjs/microservices":
-      optional: true
-    "@nestjs/platform-express":
-      optional: true
-    "@nestjs/websockets":
-      optional: true
-  checksum: 5c556c43fc4bce5001c9fa1190630031e60db5678d47c1266f6aca957d862fc8aa7168414cf7938852976ee52086395bd05d4a4daaa0915d12e47c4f644dc263
+  checksum: c99a9bbef0809056a30f8a2de549b2395d9db2dd153ce346e6851dffc5c0953e69bfff3265238ad78d6f6965e1f03466f287e64fd5c8d9931fcd565217eafc97
   languageName: node
   linkType: hard
 
@@ -5667,19 +5639,6 @@ __metadata:
   bin:
     opencollective: bin/opencollective.js
   checksum: 9b1da2cbde2dc643b5b10961c74157c1f21d19e5b06b674cdd60071fd9f0ddfdabc8f7ef74bd88e21cdbbb5fc8f16fc9e190ee9de6bc4adb32fa3b6c98fb1bc5
-  languageName: node
-  linkType: hard
-
-"@nuxtjs/opencollective@npm:0.3.2":
-  version: 0.3.2
-  resolution: "@nuxtjs/opencollective@npm:0.3.2"
-  dependencies:
-    chalk: ^4.1.0
-    consola: ^2.15.0
-    node-fetch: ^2.6.1
-  bin:
-    opencollective: bin/opencollective.js
-  checksum: fd3737c12edf55b5c2279674664c3ed5e756410ea82e9cd324c3f0e032ed5ccd8df1959ec69ea97f2f1c9c33c884aae3d7a7108a73ea0faa90d74ea47cf364d4
   languageName: node
   linkType: hard
 
@@ -7215,7 +7174,7 @@ __metadata:
   resolution: "@subql/node@workspace:packages/node"
   dependencies:
     "@nestjs/common": ^11.0.7
-    "@nestjs/core": ^11.0.7
+    "@nestjs/core": ^11.0.11
     "@nestjs/event-emitter": ^3.0.0
     "@nestjs/platform-express": ^11.0.7
     "@nestjs/schedule": ^5.0.1
@@ -7253,7 +7212,7 @@ __metadata:
     "@graphile/pg-aggregates": ^0.1.1
     "@graphile/pg-pubsub": ^4.13.0
     "@nestjs/common": ^9.4.0
-    "@nestjs/core": ^9.4.0
+    "@nestjs/core": ^11.0.11
     "@nestjs/platform-express": ^9.4.0
     "@nestjs/schematics": ^9.2.0
     "@nestjs/testing": ^9.4.0
@@ -11340,13 +11299,6 @@ __metadata:
   version: 1.0.10
   resolution: "confusing-browser-globals@npm:1.0.10"
   checksum: 7ccdc44c2ca419cf6576c3e4336106e18d1c5337f547e461342f51aec4a10f96fdfe45414b522be3c7d24ea0b62bf4372cd37768022e4d6161707ffb2c0987e6
-  languageName: node
-  linkType: hard
-
-"consola@npm:^2.15.0":
-  version: 2.15.3
-  resolution: "consola@npm:2.15.3"
-  checksum: 8ef7a09b703ec67ac5c389a372a33b6dc97eda6c9876443a60d76a3076eea0259e7f67a4e54fd5a52f97df73690822d090cf8b7e102b5761348afef7c6d03e28
   languageName: node
   linkType: hard
 
@@ -18894,13 +18846,6 @@ __metadata:
   version: 0.1.7
   resolution: "path-to-regexp@npm:0.1.7"
   checksum: 69a14ea24db543e8b0f4353305c5eac6907917031340e5a8b37df688e52accd09e3cebfe1660b70d76b6bd89152f52183f28c74813dbf454ba1a01c82a38abce
-  languageName: node
-  linkType: hard
-
-"path-to-regexp@npm:3.2.0":
-  version: 3.2.0
-  resolution: "path-to-regexp@npm:3.2.0"
-  checksum: c3d35cda3b26d9e604d789b9a1764bb9845f53ca8009d5809356b4677a3c064b0f01117a05a5b4b77bafd5ae002a82592e3f3495e885c22961f8b1dab8bd6ae7
   languageName: node
   linkType: hard
 
