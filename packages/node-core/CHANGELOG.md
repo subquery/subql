@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Flushing the cache every block when the project is fully synced to reduce delay between data indexed and being queryable (#2707)
+### Fixed
+- Finalized block getter when height is 0 (#2706)
 
 ## [17.0.2] - 2025-02-26
 ### Added
