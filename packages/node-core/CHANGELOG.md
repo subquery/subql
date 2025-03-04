@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [17.1.0] - 2025-03-05
 ### Added
 - Flushing the cache every block when the project is fully synced to reduce delay between data indexed and being queryable (#2707)
+
 ### Fixed
 - Finalized block getter when height is 0 (#2706)
 
@@ -933,7 +936,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/17.0.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/17.1.0...HEAD
+[17.1.0]: https://github.com/subquery/subql/compare/node-core/17.0.2...node-core/17.1.0
 [17.0.2]: https://github.com/subquery/subql/compare/node-core/17.0.1...node-core/17.0.2
 [17.0.1]: https://github.com/subquery/subql/compare/node-core/17.0.0...node-core/17.0.1
 [17.0.0]: https://github.com/subquery/subql/compare/node-core/16.2.1...node-core/17.0.0
