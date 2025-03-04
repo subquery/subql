@@ -56,6 +56,7 @@ export interface IConfig {
   readonly storeGetCacheSize: number;
   readonly storeCacheAsync: boolean;
   readonly storeFlushInterval: number;
+  readonly storeCacheTarget: number;
   readonly isTest?: boolean;
   readonly root?: string;
   readonly allowSchemaMigration: boolean;
@@ -90,6 +91,7 @@ const DEFAULT_CONFIG = {
   storeGetCacheSize: 500,
   storeCacheAsync: true,
   storeFlushInterval: 5,
+  storeCacheTarget: 10,
   allowSchemaMigration: false,
   monitorOutDir: './.monitor',
   monitorObjectMaxDepth: 5,
@@ -186,6 +188,10 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
 
   get storeFlushInterval(): number {
     return this._config.storeFlushInterval;
+  }
+
+  get storeCacheTarget(): number {
+    return this._config.storeCacheTarget;
   }
 
   get dictionaryRegistry(): string {

@@ -6,6 +6,7 @@ import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {delay} from '../../utils';
 import {Exporter} from './exporters';
+import {METADATA_ENTITY_NAME} from './metadata/utils';
 import {BaseEntity, CachedModel} from './model';
 import {StoreCacheService} from './storeCache.service';
 
@@ -302,78 +303,127 @@ describe('Store cache upper threshold', () => {
   });
 });
 
-describe('Store cache with exporters', () => {
+describe('Store cache', () => {
   let storeCacheService: StoreCacheService;
 
   const sequelize = new Sequelize();
-  const nodeConfig = {} as NodeConfig;
+  const nodeConfig = {storeCacheTarget: 5, storeFlushInterval: 2} as NodeConfig;
+
+  let targetHeight: number | undefined;
 
   beforeEach(() => {
+    targetHeight = 103;
     storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
     storeCacheService.init(false, {findByPk: () => Promise.resolve({toJSON: () => 1})} as any, undefined);
+
+    (storeCacheService as any).cachedModels[METADATA_ENTITY_NAME] = {
+      find(key: string) {
+        switch (key) {
+          case 'lastProcessedHeight':
+            return 0;
+          case 'targetHeight':
+            return targetHeight;
+          default:
+            throw new Error(`Not supported by test: ${key}`);
+        }
+      },
+    };
   });
 
-  // This makes sure exporting + flushing is atomic
-  it('aborts the transaction if an exporter throws', async () => {
-    const entity1Model = storeCacheService.getModel<TestEntity>('entity1');
+  describe('exporters', () => {
+    // This makes sure exporting + flushing is atomic
+    it('aborts the transaction if an exporter throws', async () => {
+      const entity1Model = storeCacheService.getModel<TestEntity>('entity1');
 
-    const errorExporter = {
-      export: () => {
-        return Promise.reject(new Error('Cant export'));
-      },
-      shutdown: () => Promise.resolve(),
-    } satisfies Exporter;
+      const errorExporter = {
+        export: () => {
+          return Promise.reject(new Error('Cant export'));
+        },
+        shutdown: () => Promise.resolve(),
+      } satisfies Exporter;
 
-    for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 5; i++) {
+        await entity1Model.set(
+          `entity1_id_0x0${i}`,
+          {
+            id: `entity1_id_0x0${i}`,
+            field1: 'set at block 1',
+          },
+          1
+        );
+      }
+
+      (entity1Model as unknown as CachedModel).addExporter(errorExporter);
+
+      await expect(() => storeCacheService.flushData(true)).rejects.toThrow('Cant export');
+    });
+  });
+
+  describe('flush interval', () => {
+    let flushSpy: jest.SpyInstance<Promise<void>, [forceFlush?: boolean | undefined]>;
+
+    beforeEach(async () => {
+      // Setup initial data that is flushed so we have a last flushed time
+      const entity1Model = storeCacheService.getModel<TestEntity>('entity1');
       await entity1Model.set(
-        `entity1_id_0x0${i}`,
+        'entity1_id_0x01',
         {
-          id: `entity1_id_0x0${i}`,
+          id: 'entity1_id_0x01',
           field1: 'set at block 1',
         },
         1
       );
-    }
+      await storeCacheService.flushData(true);
 
-    (entity1Model as unknown as CachedModel).addExporter(errorExporter);
+      flushSpy = jest.spyOn(storeCacheService, 'flushData');
+    });
 
-    await expect(() => storeCacheService.flushData(true)).rejects.toThrow('Cant export');
-  });
-});
+    it('force flushes at an interval', async () => {
+      let x = 0;
+      while (x <= 12) {
+        await storeCacheService.applyPendingChanges(x, false);
+        await delay(0.1);
+        x++;
+      }
 
-describe('Store cache with flush interval', () => {
-  let storeCacheService: StoreCacheService;
+      expect(flushSpy).toHaveBeenCalledWith(true);
+    });
 
-  const sequelize = new Sequelize();
-  const nodeConfig = {storeFlushInterval: 2} as NodeConfig;
+    it('always force flushes when near targetHeight', async () => {
+      let x = 100;
+      while (x < 105) {
+        await storeCacheService.applyPendingChanges(x, false);
+        await delay(0.1);
+        x++;
+      }
 
-  beforeEach(() => {
-    storeCacheService = new StoreCacheService(sequelize, nodeConfig, eventEmitter);
-    storeCacheService.init(false, {findByPk: () => Promise.resolve({toJSON: () => 1})} as any, undefined);
-  });
+      expect(flushSpy).toHaveBeenCalledTimes(5);
+      expect(flushSpy).toHaveBeenCalledWith(true);
+    });
 
-  it('force flushes at an interval', async () => {
-    // Setup initial data that is flushed so we have a last flushed time
-    const entity1Model = storeCacheService.getModel<TestEntity>('entity1');
-    await entity1Model.set(
-      'entity1_id_0x01',
-      {
-        id: 'entity1_id_0x01',
-        field1: 'set at block 1',
-      },
-      1
-    );
-    await storeCacheService.flushData(true);
+    it('applies pending changes without a targetHeight set', async () => {
+      targetHeight = undefined;
 
-    const flushSpy = jest.spyOn(storeCacheService, 'flushData');
+      let x = 100;
+      while (x < 105) {
+        await storeCacheService.applyPendingChanges(x, false);
+        await delay(0.1);
+        x++;
+      }
 
-    let x = 0;
-    while (x <= 12) {
-      await storeCacheService.applyPendingChanges(x, false);
-      await delay(0.1);
-      x++;
-    }
+      expect(flushSpy).toHaveBeenCalled();
+    });
 
-    expect(flushSpy).toHaveBeenCalledWith(true);
+    it('can force flush above the target height', async () => {
+      let x = 100;
+      while (x < 105) {
+        await storeCacheService.applyPendingChanges(x, false);
+        await delay(0.1);
+        x++;
+      }
+
+      expect(flushSpy).toHaveBeenCalledTimes(5);
+      expect(flushSpy).toHaveBeenCalledWith(true);
+    });
   });
 });

@@ -11,7 +11,6 @@ import {AdminEvent, IndexerEvent, PoiEvent, TargetBlockPayload} from '../../even
 import {getLogger} from '../../logger';
 import {monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite} from '../../process';
 import {IQueue, mainThreadOnly} from '../../utils';
-import {MonitorServiceInterface} from '../monitor.service';
 import {PoiBlock, PoiSyncService} from '../poi';
 import {StoreService} from '../store.service';
 import {IStoreModelProvider} from '../storeModelProvider';
@@ -61,8 +60,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     protected queue: Q,
     protected storeService: StoreService,
     private storeModelProvider: IStoreModelProvider,
-    private poiSyncService: PoiSyncService,
-    protected monitorService?: MonitorServiceInterface
+    private poiSyncService: PoiSyncService
   ) {}
 
   abstract enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): void | Promise<void>;
@@ -210,6 +208,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     await this.storeModelProvider.applyPendingChanges(
       height,
       !this.projectService.hasDataSourcesAfterHeight(height),
+
       this.storeService.transaction
     );
   }

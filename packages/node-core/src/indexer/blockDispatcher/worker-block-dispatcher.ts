@@ -89,8 +89,7 @@ export class WorkerBlockDispatcher<
       initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Worker'),
       storeService,
       storeModelProvider,
-      poiSyncService,
-      monitorService
+      poiSyncService
     );
 
     this.createWorker = () =>
