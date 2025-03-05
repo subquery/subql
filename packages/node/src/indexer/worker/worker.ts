@@ -24,8 +24,8 @@ import {
   initWorkerServices,
   IBaseIndexerWorker,
   createWorkerHost,
+  ProjectService,
 } from '@subql/node-core';
-import { ProjectService } from '../project.service';
 import { WorkerModule } from './worker.module';
 import { WorkerService } from './worker.service';
 

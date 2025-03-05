@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - '.github/workflows/**'
+      - ".github/workflows/**"
 
 concurrency:
   group: publish
@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: lts/*
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-types-stellar
@@ -71,6 +71,6 @@ jobs:
       - name: Commit changes
         uses: EndBug/add-and-commit@v5
         with:
-          message: '[SKIP CI] Prerelease'
+          message: "[SKIP CI] Prerelease"
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}

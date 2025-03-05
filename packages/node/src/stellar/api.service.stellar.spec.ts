@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { INestApplication } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { scValToNative } from '@stellar/stellar-sdk';
 import { ConnectionPoolService, NodeConfig } from '@subql/node-core';
@@ -55,7 +55,16 @@ const prepareApiService = async (
         provide: 'ISubqueryProject',
         useFactory: () => project ?? testSubqueryProject(endpoint, soroban),
       },
-      StellarApiService,
+      {
+        provide: StellarApiService,
+        useFactory: StellarApiService.create.bind(StellarApiService),
+        inject: [
+          'ISubqueryProject',
+          ConnectionPoolService,
+          EventEmitter2,
+          NodeConfig,
+        ],
+      },
     ],
     imports: [EventEmitterModule.forRoot()],
   }).compile();
@@ -63,7 +72,6 @@ const prepareApiService = async (
   const app = module.createNestApplication();
   await app.init();
   const apiService = app.get(StellarApiService);
-  await apiService.init();
   return [apiService, app];
 };
 

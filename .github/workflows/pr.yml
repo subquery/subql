@@ -2,7 +2,7 @@ name: PR
 on:
   pull_request:
     paths-ignore:
-      - '.github/workflows/**'
+      - ".github/workflows/**"
 jobs:
   code-style:
     name: code-style
@@ -12,53 +12,53 @@ jobs:
       SUBQL_ACCESS_TOKEN_TEST: ${{ secrets.SUBQL_ACCESS_TOKEN_TEST }}
       SUBQL_ORG_TEST: ${{ secrets.SUBQL_ORG_TEST }}
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup Node.js environment
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
-    - run: yarn
-    - name: build
-      run: yarn build
-    - name: code-style check
-      run: yarn pretty-quick --check --pattern 'packages/*/src/**/*' --branch origin/main
-    - name: lint
-      run: yarn lint
+      - uses: actions/checkout@v4
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - run: yarn
+      - name: build
+        run: yarn build
+      - name: code-style check
+        run: yarn pretty-quick --check --pattern 'packages/*/src/**/*' --branch origin/main
+      - name: lint
+        run: yarn lint
 
   coverage:
-        name: Coverage report
-        runs-on: ubuntu-latest
-        services:
-          postgres:
-            image: postgres
-            env:
-              POSTGRES_PASSWORD: postgres
-            options: >-
-              --health-cmd pg_isready
-              --health-interval 10s
-              --health-timeout 5s
-              --health-retries 5
+    name: Coverage report
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
         env:
-          DB_USER: postgres
-          DB_PASS: postgres
-          DB_DATABASE: postgres
-          DB_HOST: postgres
-          DB_PORT: 5432
-        steps:
-            - uses: actions/checkout@v3
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+    steps:
+      - uses: actions/checkout@v4
 
-            - name: Use Node 18
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 18
+      - name: Use Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
 
-            - name: Installing dependencies
-              run: yarn install
+      - name: Installing dependencies
+        run: yarn install
 
-            - uses: artiomtr/jest-coverage-report-action@v2
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  skip-step: install
-                  working-directory: ${{ matrix.path }}
-                  test-script: yarn test-jest
-                  annotations: none
+      - uses: artiomtr/jest-coverage-report-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-step: install
+          working-directory: ${{ matrix.path }}
+          test-script: yarn test-jest
+          annotations: none

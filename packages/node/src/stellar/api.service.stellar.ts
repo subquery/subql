@@ -37,27 +37,34 @@ export class StellarApiService extends ApiService<
   StellarApiConnection,
   IStellarEndpointConfig
 > {
-  private nodeConfig: NodeConfig;
-  constructor(
-    @Inject('ISubqueryProject') private project: SubqueryProject,
+  private constructor(
+    connectionPoolService: ConnectionPoolService<StellarApiConnection>,
+    eventEmitter: EventEmitter2,
+  ) {
+    super(connectionPoolService, eventEmitter);
+  }
+
+  static async create(
+    project: SubqueryProject,
     connectionPoolService: ConnectionPoolService<StellarApiConnection>,
     eventEmitter: EventEmitter2,
     nodeConfig: NodeConfig,
-  ) {
-    super(connectionPoolService, eventEmitter);
-    this.nodeConfig = nodeConfig;
-  }
-
-  async init(): Promise<StellarApiService> {
+  ): Promise<StellarApiService> {
     let network: StellarProjectNetworkConfig;
+
+    const apiService = new StellarApiService(
+      connectionPoolService,
+      eventEmitter,
+    );
+
     try {
-      network = this.project.network;
+      network = project.network;
     } catch (e) {
       exitWithError(new Error(`Failed to init api`, { cause: e }), logger);
     }
 
-    if (this.nodeConfig.primaryNetworkEndpoint) {
-      const [endpoint, config] = this.nodeConfig.primaryNetworkEndpoint;
+    if (nodeConfig.primaryNetworkEndpoint) {
+      const [endpoint, config] = nodeConfig.primaryNetworkEndpoint;
       (network.endpoint as Record<string, IEndpointConfig>)[endpoint] = config;
     }
 
@@ -65,18 +72,19 @@ export class StellarApiService extends ApiService<
 
     if (!network.sorobanEndpoint && sorobanEndpoint) {
       //update sorobanEndpoint from parent project
-      this.project.network.sorobanEndpoint = sorobanEndpoint;
+      project.network.sorobanEndpoint = sorobanEndpoint;
     }
 
+    // TOOD if project upgrades introduces new datasoruces this wont work
     if (
       dsHasSorobanEventHandler([
-        ...this.project.dataSources,
-        ...(this.project.templates as SubqlDatasource[]),
+        ...project.dataSources,
+        ...(project.templates as SubqlDatasource[]),
       ]) &&
       !sorobanEndpoint
     ) {
       throw new Error(
-        `Soroban network endpoint must be provided for network. chainId="${this.project.network.chainId}"`,
+        `Soroban network endpoint must be provided for network. chainId="${project.network.chainId}"`,
       );
     }
 
@@ -89,16 +97,16 @@ export class StellarApiService extends ApiService<
         })
       : undefined;
 
-    await this.createConnections(network, (endpoint, config) =>
+    await apiService.createConnections(network, (endpoint, config) =>
       StellarApiConnection.create(
         endpoint,
-        this.fetchBlockBatches,
+        apiService.fetchBlockBatches.bind(apiService),
         sorobanClient,
         config,
       ),
     );
 
-    return this;
+    return apiService;
   }
 
   get api(): StellarApi {

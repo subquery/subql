@@ -8,6 +8,7 @@ import {
   TestingService as BaseTestingService,
   TestRunner,
   NestLogger,
+  ProjectService,
 } from '@subql/node-core';
 import {
   BlockWrapper,
@@ -15,7 +16,6 @@ import {
   SubqlDatasource,
 } from '@subql/types-stellar';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { ProjectService } from '../indexer/project.service';
 import { StellarApi } from '../stellar';
 import SafeStellarProvider from '../stellar/safe-api';
 import { TestingModule } from './testing.module';

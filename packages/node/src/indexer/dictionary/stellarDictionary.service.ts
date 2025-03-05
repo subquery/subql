@@ -5,10 +5,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NETWORK_FAMILY } from '@subql/common';
 import { SubqlStellarDataSource } from '@subql/common-stellar';
-import { NodeConfig, DictionaryService, getLogger } from '@subql/node-core';
+import {
+  NodeConfig,
+  DictionaryService,
+  getLogger,
+  DsProcessorService,
+} from '@subql/node-core';
 import { StellarBlock } from '@subql/types-stellar';
 import { SubqueryProject } from '../../configure/SubqueryProject';
-import { DsProcessorService } from '../ds-processor.service';
 import { StellarDictionaryV1 } from './v1';
 
 const logger = getLogger('StellarDictionary');

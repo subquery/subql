@@ -8,10 +8,10 @@ import {
   getLogger,
   NestLogger,
   getValidPort,
+  ProjectService,
+  FetchService,
 } from '@subql/node-core';
 import { AppModule } from './app.module';
-import { FetchService } from './indexer/fetch.service';
-import { ProjectService } from './indexer/project.service';
 import { yargsOptions } from './yargs';
 const pjson = require('../package.json');
 

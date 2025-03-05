@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - '.github/workflows/**'
+      - ".github/workflows/**"
   workflow_dispatch:
 
 concurrency:
@@ -48,9 +48,9 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: lts/*
 
-    #Identify changes
+      #Identify changes
       - uses: marceloprado/has-changed-path@v1
         id: changed-types-stellar
         with:

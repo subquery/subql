@@ -26,6 +26,10 @@ import {
   ApiService,
   IBlock,
   SandboxService,
+  DsProcessorService,
+  DynamicDsService,
+  UnfinalizedBlocksService,
+  ProjectService,
 } from '@subql/node-core';
 import {
   StellarBlockWrapper,
@@ -41,13 +45,10 @@ import {
   SorobanEvent,
   SorobanEventFilter,
 } from '@subql/types-stellar';
+import { BlockchainService } from '../blockchain.service';
 import { StellarApi } from '../stellar';
 import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from '../stellar/safe-api';
-import { DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
-import { ProjectService } from './project.service';
-import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const logger = getLogger('indexer');
 
@@ -67,13 +68,14 @@ export class IndexerManager extends BaseIndexerManager<
   protected isCustomDs = isCustomDs;
 
   constructor(
-    apiService: ApiService,
+    @Inject('APIService') apiService: ApiService,
     nodeConfig: NodeConfig,
     sandboxService: SandboxService<SafeStellarProvider | null, StellarApi>,
     dsProcessorService: DsProcessorService,
-    dynamicDsService: DynamicDsService,
+    dynamicDsService: DynamicDsService<SubqlStellarDataSource>,
+    @Inject('IUnfinalizedBlocksService')
     unfinalizedBlocksService: UnfinalizedBlocksService,
-    @Inject('IProjectService') private projectService: ProjectService,
+    @Inject('IBlockchainService') blockchainService: BlockchainService,
   ) {
     super(
       apiService,
@@ -84,12 +86,8 @@ export class IndexerManager extends BaseIndexerManager<
       unfinalizedBlocksService,
       FilterTypeMap,
       ProcessorTypeMap,
+      blockchainService,
     );
-  }
-
-  async start(): Promise<void> {
-    await this.projectService.init();
-    logger.info('indexer manager started');
   }
 
   @profiler()

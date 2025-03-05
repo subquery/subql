@@ -3,74 +3,33 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
-  ApiService,
   ConnectionPoolService,
-  ConnectionPoolStateManager,
   DbModule,
-  InMemoryCacheService,
-  PoiService,
-  PoiSyncService,
-  ProjectUpgradeService,
-  StoreService,
   TestRunner,
-  SandboxService,
   NodeConfig,
-  storeModelFactory,
+  TestingCoreModule,
+  ProjectService,
+  UnfinalizedBlocksService,
+  DsProcessorService,
+  DynamicDsService,
 } from '@subql/node-core';
-import { Sequelize } from '@subql/x-sequelize';
+import { BlockchainService } from '../blockchain.service';
 import { ConfigureModule } from '../configure/configure.module';
-import { SubqueryProject } from '../configure/SubqueryProject';
-import { DsProcessorService } from '../indexer/ds-processor.service';
-import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { IndexerManager } from '../indexer/indexer.manager';
-import { ProjectService } from '../indexer/project.service';
-import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { StellarApiService } from '../stellar';
-import { StellarApiConnection } from '../stellar/api.connection';
-import { TestingService } from './testing.service';
 
 @Module({
+  imports: [TestingCoreModule],
   providers: [
-    InMemoryCacheService,
-    StoreService,
-    {
-      provide: 'IStoreModelProvider',
-      useFactory: storeModelFactory,
-      inject: [NodeConfig, EventEmitter2, SchedulerRegistry, Sequelize],
-    },
-    TestingService,
-    EventEmitter2,
-    PoiService,
-    PoiSyncService,
-    SandboxService,
-    DsProcessorService,
-    DynamicDsService,
-    UnfinalizedBlocksService,
-    ConnectionPoolService,
-    ConnectionPoolStateManager,
     {
       provide: 'IProjectService',
       useClass: ProjectService,
     },
     {
-      provide: ApiService,
-      useFactory: async (
-        project: SubqueryProject,
-        connectionPoolService: ConnectionPoolService<StellarApiConnection>,
-        eventEmitter: EventEmitter2,
-        nodeConfig: NodeConfig,
-      ) => {
-        const apiService = new StellarApiService(
-          project,
-          connectionPoolService,
-          eventEmitter,
-          nodeConfig,
-        );
-        await apiService.init();
-        return apiService;
-      },
+      provide: 'APIService',
+      useFactory: StellarApiService.create.bind(StellarApiService),
       inject: [
         'ISubqueryProject',
         ConnectionPoolService,
@@ -78,17 +37,22 @@ import { TestingService } from './testing.service';
         NodeConfig,
       ],
     },
-    TestRunner,
     {
-      provide: 'IApi',
-      useClass: StellarApiService,
+      provide: 'IUnfinalizedBlocksService',
+      useClass: UnfinalizedBlocksService,
     },
+    {
+      provide: 'IBlockchainService',
+      useClass: BlockchainService,
+    },
+    TestRunner,
     {
       provide: 'IIndexerManager',
       useClass: IndexerManager,
     },
     IndexerManager,
-    SchedulerRegistry,
+    DsProcessorService,
+    DynamicDsService,
   ],
 
   controllers: [],

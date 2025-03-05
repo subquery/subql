@@ -14,8 +14,13 @@ export function stellarBlockToHeader(
 ): Header {
   return {
     blockHeight: block.sequence,
-    blockHash: block.hash.toString(),
-    parentHash: block.prev_hash.toString(),
+    // Stellar has instant finalization and there is no RPC for getting blocks by hash.
+    // For these reasons we use the block numbers for hashes so that unfinalized blocks works.
+    blockHash: block.sequence.toString(),
+    parentHash: (block.sequence - 1).toString(),
+    // blockHash: block.hash.toString(),
+    // parentHash: block.prev_hash.toString(),
+    timestamp: new Date(block.closed_at),
   };
 }
 

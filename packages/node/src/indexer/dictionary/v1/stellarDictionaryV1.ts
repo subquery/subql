@@ -9,7 +9,12 @@ import {
   StellarEffectFilter,
   SubqlStellarProcessorOptions,
 } from '@subql/common-stellar';
-import { NodeConfig, DictionaryV1, getLogger } from '@subql/node-core';
+import {
+  NodeConfig,
+  DictionaryV1,
+  getLogger,
+  DsProcessorService,
+} from '@subql/node-core';
 import {
   DictionaryQueryCondition,
   DictionaryQueryEntry,
@@ -20,7 +25,6 @@ import { SorobanEventFilter, SubqlDatasource } from '@subql/types-stellar';
 import { sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../../../configure/SubqueryProject';
 import { yargsOptions } from '../../../yargs';
-import { DsProcessorService } from '../../ds-processor.service';
 
 type GetDsProcessor = DsProcessorService['getDsProcessor'];
 

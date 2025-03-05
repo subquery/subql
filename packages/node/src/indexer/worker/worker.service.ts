@@ -39,7 +39,7 @@ export class WorkerService extends BaseWorkerService<
   {}
 > {
   constructor(
-    private apiService: ApiService,
+    @Inject('APIService') private apiService: ApiService,
     private indexerManager: IndexerManager,
     @Inject('IProjectService')
     projectService: IProjectService<SubqlDatasource>,

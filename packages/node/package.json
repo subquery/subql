@@ -19,29 +19,26 @@
     "subql-node-stellar": "./bin/run"
   },
   "dependencies": {
-    "@nestjs/common": "^9.4.0",
-    "@nestjs/core": "^9.4.0",
-    "@nestjs/event-emitter": "^2.0.0",
-    "@nestjs/platform-express": "^9.4.0",
-    "@nestjs/schedule": "^3.0.1",
+    "@nestjs/common": "^11.0.11",
+    "@nestjs/core": "^11.0.11",
+    "@nestjs/event-emitter": "^3.0.1",
+    "@nestjs/platform-express": "^11.0.11",
+    "@nestjs/schedule": "^5.0.1",
     "@stellar/stellar-sdk": "^13.1.0",
-    "@subql/common": "^5.3.1",
+    "@subql/common": "^5.4.0",
     "@subql/common-stellar": "workspace:*",
-    "@subql/node-core": "^16.2.1",
+    "@subql/node-core": "^17.1.0",
     "@subql/testing": "^2.2.0",
     "@subql/types-stellar": "workspace:*",
     "lodash": "^4.17.21",
-    "pg": "^8.11.5",
-    "reflect-metadata": "^0.1.13",
-    "rimraf": "^3.0.2",
-    "yargs": "^16.2.0"
+    "reflect-metadata": "^0.1.13"
   },
   "peerDependencies": {
     "@subql/utils": "*"
   },
   "devDependencies": {
-    "@nestjs/schematics": "^9.2.0",
-    "@nestjs/testing": "^9.4.0",
+    "@nestjs/schematics": "^11.0.2",
+    "@nestjs/testing": "^11.0.11",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.4.0",
     "@types/lodash": "^4.14.178",
