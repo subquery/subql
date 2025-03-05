@@ -7,6 +7,9 @@ import {BuildOptions, DataTypes, Model, Sequelize} from '@subql/x-sequelize';
 export const RewindTimestampKeyPrefix = 'rewindTimestamp';
 export const RewindLockKey = 'rewindLock';
 
+/**
+ * @string chainId
+ */
 export type RewindTimestampKey = `${typeof RewindTimestampKeyPrefix}_${string}`;
 
 export type RewindLockInfo = {
@@ -50,5 +53,5 @@ export function GlobalDataFactory(sequelize: Sequelize, schema: string): GlobalD
 }
 
 export function generateRewindTimestampKey(chainId: string): RewindTimestampKey {
-  return `${RewindTimestampKeyPrefix}_${blake2AsHex(chainId)})`.substring(0, 63) as RewindTimestampKey;
+  return `${RewindTimestampKeyPrefix}_${blake2AsHex(chainId)})` as RewindTimestampKey;
 }
