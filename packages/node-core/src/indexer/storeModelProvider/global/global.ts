@@ -66,12 +66,10 @@ export class PlainGlobalModel implements IGlobalData {
     const records = await this.model.findAll({
       where: {key: {[Op.in]: [rewindTimestampKey, RewindLockKey]}},
     });
-    const rewindLockInfo: GlobalData<typeof RewindLockKey> | undefined = records
-      .find((r) => r.key === RewindLockKey)
-      ?.toJSON();
-    const rewindTimestampInfo: GlobalData<RewindTimestampKey> | undefined = records
+    const rewindLockInfo = records.find((r) => r.key === RewindLockKey)?.toJSON<GlobalData<typeof RewindLockKey>>();
+    const rewindTimestampInfo = records
       .find((r) => r.key === rewindTimestampKey)
-      ?.toJSON();
+      ?.toJSON<GlobalData<RewindTimestampKey>>();
 
     assert(
       rewindTimestampInfo !== undefined,
