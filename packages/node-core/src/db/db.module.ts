@@ -91,19 +91,6 @@ export async function establishNewSequelize(nodeConfig: NodeConfig): Promise<Seq
   return sequelizeFactory(buildSequelizeOptions(nodeConfig, DEFAULT_DB_OPTION))();
 }
 
-export function getPgPoolConfig(nodeConfig: NodeConfig): PoolConfig {
-  const sequelizeOptions = buildSequelizeOptions(nodeConfig, DEFAULT_DB_OPTION);
-  return {
-    user: sequelizeOptions.username,
-    password: sequelizeOptions.password,
-    host: sequelizeOptions.host,
-    port: sequelizeOptions.port,
-    database: sequelizeOptions.database,
-    max: 1,
-    ssl: sequelizeOptions.ssl,
-  };
-}
-
 @Global()
 export class DbModule {
   static forRootWithConfig(nodeConfig: NodeConfig, option: DbOption = DEFAULT_DB_OPTION): DynamicModule {

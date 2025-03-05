@@ -5,12 +5,12 @@ import assert from 'assert';
 import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {hashName} from '@subql/utils';
-import {Transaction, Op, QueryTypes, Sequelize} from '@subql/x-sequelize';
+import {Transaction, Sequelize} from '@subql/x-sequelize';
 import dayjs from 'dayjs';
-import {Pool, PoolClient} from 'pg';
+import {PoolClient} from 'pg';
 import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
-import {createRewindTrigger, createRewindTriggerFunction, getPgPoolConfig, getTriggers} from '../db';
+import {createRewindTrigger, createRewindTriggerFunction, getTriggers} from '../db';
 import {MultiChainRewindEvent, MultiChainRewindPayload} from '../events';
 import {getLogger} from '../logger';
 import {StoreService} from './store.service';
@@ -56,8 +56,8 @@ export interface IMultiChainHandler {
 export class MultiChainRewindService implements IMultiChainRewindService, OnApplicationShutdown {
   private _status: RewindStatus = RewindStatus.Normal;
   private _chainId?: string;
-  private _dbSchema?: string;
-  private _rewindTriggerName?: string;
+  private dbSchema: string;
+  private rewindTriggerName: string;
   private pgListener?: PoolClient;
   private _globalModel?: PlainGlobalModel = undefined;
   waitRewindHeader?: Header;
@@ -67,7 +67,10 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     private sequelize: Sequelize,
     private storeService: StoreService,
     @Inject('IBlockchainService') private readonly blockchainService: IBlockchainService
-  ) {}
+  ) {
+    this.dbSchema = this.nodeConfig.dbSchema;
+    this.rewindTriggerName = hashName(this.dbSchema, 'rewind_trigger', '_global');
+  }
 
   private set chainId(chainId: string) {
     this._chainId = chainId;
@@ -76,23 +79,6 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   get chainId(): string {
     assert(this._chainId, 'chainId is not set');
     return this._chainId;
-  }
-
-  private get dbSchema(): string {
-    assert(this._dbSchema, 'dbSchema is not set');
-    return this._dbSchema;
-  }
-
-  private set dbSchema(dbSchema: string) {
-    this._dbSchema = dbSchema;
-  }
-  private set rewindTriggerName(rewindTriggerName: string) {
-    this._rewindTriggerName = rewindTriggerName;
-  }
-
-  private get rewindTriggerName(): string {
-    assert(this._rewindTriggerName, 'rewindTriggerName is not set');
-    return this._rewindTriggerName;
   }
 
   private set status(status: RewindStatus) {
