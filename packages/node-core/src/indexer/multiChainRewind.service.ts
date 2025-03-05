@@ -187,16 +187,6 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   }
 
   /**
-   * Serialize the rewind lock
-   * @param rewindTimestamp ms
-   * @param chainTotal The total number of registered chains.
-   * @returns
-   */
-  private serializeRewindLock(rewindTimestamp: number, chainTotal: number): string {
-    return JSON.stringify({timestamp: rewindTimestamp, chainNum: chainTotal});
-  }
-
-  /**
    * If the set rewindTimestamp is greater than or equal to the current blockHeight, we do nothing because we will roll back to an earlier time.
    * If the set rewindTimestamp is less than the current blockHeight, we should roll back to the earlier rewindTimestamp.
    * @param rewindTimestamp rewindTimestamp in milliseconds
@@ -223,10 +213,11 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
    * @param timestamp To find the block closest to a given timestamp
    * @returns
    */
-  async getHeaderByBinarySearch(timestamp: Header['timestamp']): Promise<Required<Header>> {
-    assert(timestamp, 'getHeaderByBinarySearch `timestamp` is required');
+  private async getHeaderByBinarySearch(timestamp: Header['timestamp']): Promise<Required<Header>> {
+    const startHeight = await this.storeService.modelProvider.metadata.find('startHeight');
+    assert(startHeight !== undefined, 'startHeight is not set');
 
-    let left = 0;
+    let left = startHeight;
     let {height: right} = await this.storeService.getLastProcessedBlock();
     let searchNum = 0;
     while (left < right) {
