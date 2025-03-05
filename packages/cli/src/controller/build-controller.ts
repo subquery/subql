@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { readFileSync } from 'fs';
+import {readFileSync} from 'fs';
 import path from 'path';
-import { globSync } from 'glob';
+import {globSync} from 'glob';
 import TerserPlugin from 'terser-webpack-plugin';
-import webpack, { Configuration } from 'webpack';
-import { merge } from 'webpack-merge';
+import {TsconfigPathsPlugin} from 'tsconfig-paths-webpack-plugin';
+import webpack, {Configuration} from 'webpack';
+import {merge} from 'webpack-merge';
 
 const getBaseConfig = (
   buildEntries: Configuration['entry'],
@@ -54,6 +55,7 @@ const getBaseConfig = (
 
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.json'],
+    plugins: [new TsconfigPathsPlugin()],
   },
 
   output: {
@@ -72,7 +74,7 @@ export async function runWebpack(
 ): Promise<void> {
   const config = merge(
     getBaseConfig(buildEntries, projectDir, outputDir, isDev),
-    { output: { clean } }
+    {output: {clean}}
     // Can allow projects to override webpack config here
   );
 
@@ -121,7 +123,7 @@ export function getBuildEntries(directory: string): Record<string, string> {
         acc[key] = path.resolve(directory, value);
         return acc;
       },
-      { ...buildEntries }
+      {...buildEntries}
     );
   }
 
