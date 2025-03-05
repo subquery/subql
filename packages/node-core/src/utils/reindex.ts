@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize} from '@subql/x-sequelize';
-import {IProjectUpgradeService} from '../configure';
+import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {
   DynamicDsService,
   IUnfinalizedBlocksService,
@@ -46,6 +46,7 @@ export async function reindex(
   startHeight: number,
   targetBlockHeader: Header,
   lastProcessed: {height: number; timestamp?: number},
+  nodeConfig: NodeConfig,
   storeService: StoreService,
   unfinalizedBlockService: IUnfinalizedBlocksService<any>,
   dynamicDsService: DynamicDsService<any>,
@@ -55,8 +56,7 @@ export async function reindex(
   poiService?: PoiService,
   forceCleanService?: ForceCleanService
 ): Promise<void> {
-  const isMultiChain = storeService.historical === 'timestamp';
-  const lastUnit = isMultiChain ? lastProcessed.timestamp : lastProcessed.height;
+  const lastUnit = storeService.historical === 'timestamp' ? lastProcessed.timestamp : lastProcessed.height;
   const targetUnit = getHistoricalUnit(storeService.historical, targetBlockHeader);
 
   if (!lastUnit || lastUnit < targetUnit) {
@@ -68,7 +68,7 @@ export async function reindex(
 
   // if startHeight is greater than the targetHeight, just force clean
   // We prevent the entire data from being cleared due to multiple chains because the startblock is uncertain in multi-chain projects.
-  if (targetBlockHeader.blockHeight < startHeight && !isMultiChain) {
+  if (targetBlockHeader.blockHeight < startHeight && !nodeConfig.multiChain) {
     logger.info(
       `targetHeight: ${targetBlockHeader.blockHeight} is less than startHeight: ${startHeight}. Hence executing force-clean`
     );
@@ -82,7 +82,7 @@ export async function reindex(
   }
 
   logger.info(`Reindexing to ${storeService.historical}: ${targetUnit}`);
-  if (isMultiChain) {
+  if (nodeConfig.multiChain) {
     await multichainRewindService.setGlobalRewindLock(targetUnit);
   }
 
@@ -113,7 +113,7 @@ export async function reindex(
     await storeService.modelProvider.metadata.flush?.(transaction, targetUnit);
 
     // release rewind lock
-    if (isMultiChain) {
+    if (nodeConfig.multiChain) {
       await multichainRewindService.releaseChainRewindLock(transaction, targetUnit);
     }
 

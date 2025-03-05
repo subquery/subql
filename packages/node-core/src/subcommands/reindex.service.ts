@@ -131,6 +131,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       startHeight,
       targetBlockHeader,
       this.lastProcessedHeader,
+      this.nodeConfig,
       this.storeService,
       this.unfinalizedBlocksService,
       this.dynamicDsService,

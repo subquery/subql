@@ -76,7 +76,7 @@ export type Header = {
   blockHeight: number;
   blockHash: string;
   parentHash: string | undefined;
-  timestamp?: Date;
+  timestamp: Date;
 };
 
 export type BypassBlocks = (number | `${number}-${number}`)[];

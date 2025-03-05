@@ -6,11 +6,13 @@ import {BuildOptions, DataTypes, Model, Sequelize} from '@subql/x-sequelize';
 
 export const RewindTimestampKeyPrefix = 'rewindTimestamp';
 export const RewindLockKey = 'rewindLock';
+
 export type RewindTimestampKey = `${typeof RewindTimestampKeyPrefix}_${string}`;
 
 export type RewindLockInfo = {
   /** Timestamp to rewind to. */
   timestamp: number;
+  /** Remaining number of chains to be rolled back */
   chainNum: number;
 };
 export interface GlobalDataKeys {

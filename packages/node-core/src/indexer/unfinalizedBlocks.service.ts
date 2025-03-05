@@ -302,7 +302,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
       const result: (Header & {timestamp: string})[] = JSON.parse(val);
       return result.map(({timestamp, ...header}) => ({
         ...header,
-        timestamp: timestamp ? new Date(timestamp) : undefined,
+        timestamp: new Date(timestamp),
       }));
     }
     return [];

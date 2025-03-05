@@ -9,7 +9,8 @@ import {
   fetchBlocksBatches,
   filterExtrinsic,
   getBlockByHeight,
-  getTimestamp,
+  getTimestampFromBlockHash,
+  getTimestampFromSignedBlock,
 } from './substrate';
 
 const ENDPOINT_POLKADOT = 'wss://rpc.polkadot.io';
@@ -99,7 +100,19 @@ describe('substrate utils', () => {
     const provider = new WsProvider(ENDPOINT_SHIDEN);
     const api = await ApiPromise.create({ provider });
     const block1 = await getBlockByHeight(api, 1);
-    expect(getTimestamp(block1)).toBeUndefined();
+    expect(getTimestampFromSignedBlock(block1)).toBeUndefined();
+    await api.disconnect();
+  });
+
+  it('return defined if no timestamp set extrinsic', async () => {
+    const provider = new WsProvider(ENDPOINT_SHIDEN);
+    const api = await ApiPromise.create({ provider });
+    const block1 = await getBlockByHeight(api, 1);
+    const timestamp = await getTimestampFromBlockHash(
+      api,
+      block1.block.header.hash.toString(),
+    );
+    expect(timestamp).toBeDefined();
     await api.disconnect();
   });
 });

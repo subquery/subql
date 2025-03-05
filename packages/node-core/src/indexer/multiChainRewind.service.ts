@@ -246,7 +246,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     while (left < right) {
       searchNum++;
       const mid = Math.floor((left + right) / 2);
-      const header = await this.blockchainService.getRequiredHeaderForHeight(mid);
+      const header = await this.blockchainService.getHeaderForHeight(mid);
 
       if (header.timestamp === timestamp) {
         return header;
@@ -258,7 +258,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     }
 
     const targetHeader = left
-      ? await this.blockchainService.getRequiredHeaderForHeight(left)
+      ? await this.blockchainService.getHeaderForHeight(left)
       : {
           blockHash: '',
           blockHeight: 0,

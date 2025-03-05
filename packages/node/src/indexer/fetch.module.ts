@@ -64,7 +64,6 @@ import { IIndexerWorker } from './worker/worker';
       provide: 'IProjectService',
     },
     MultiChainRewindService,
-    /* END: Move to node core */
     IndexerManager,
     {
       provide: 'IBlockDispatcher',

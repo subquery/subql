@@ -33,7 +33,7 @@ export abstract class BaseWorkerService<
   private queue: AutoQueue<IBlock<B>>;
 
   protected abstract fetchChainBlock(heights: number, extra: E): Promise<IBlock<B>>;
-  protected abstract toBlockResponse(block: B): R;
+  protected abstract toBlockResponse(block: B): Promise<R>;
   protected abstract processFetchedBlock(block: IBlock<B>, dataSources: DS[]): Promise<ProcessBlockResponse>;
   protected abstract getBlockSize(block: IBlock<B>): number;
 

@@ -478,6 +478,7 @@ export class ProjectService<
       this.getStartBlockFromDataSources(),
       targetBlockHeader,
       {height, timestamp},
+      this.nodeConfig,
       this.storeService,
       this.unfinalizedBlockService,
       this.dynamicDsService,

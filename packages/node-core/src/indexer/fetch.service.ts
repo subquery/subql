@@ -22,7 +22,7 @@ import {BypassBlocks, IBlock, IProjectService} from './types';
 import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
 
 const logger = getLogger('FetchService');
-
+const multiChainRewindDelay = 3;
 @Injectable()
 export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<FB>, FB>
   implements OnApplicationShutdown, IMultiChainHandler
@@ -211,7 +211,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
         logger.info(
           `Waiting for all chains to complete rewind, current chainId: ${this.multiChainRewindService.chainId}`
         );
-        await delay(3);
+        await delay(multiChainRewindDelay);
         continue;
       }
 
