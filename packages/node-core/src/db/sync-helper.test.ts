@@ -193,75 +193,85 @@ describe('sync helper test', () => {
       );
     }, 10_000);
   });
+});
 
-  describe('Multi-chain notification', () => {
-    let client: unknown;
-    schema = 'multi-chain-test';
-    const listenerHash = hashName(schema, 'rewind_trigger', '_global');
+describe('Multi-chain notification', () => {
+  let app: INestApplication;
+  let sequelize: Sequelize;
+  const schema = 'multi-chain-test';
 
-    afterEach(async () => {
-      if (client) {
-        await (client as any).query(`UNLISTEN "${listenerHash}"`);
-        (client as any).removeAllListeners('notification');
-        sequelize.connectionManager.releaseConnection(client);
-      }
+  let client: unknown;
+
+  const listenerHash = hashName(schema, 'rewind_trigger', '_global');
+
+  afterAll(async () => {
+    await sequelize.dropSchema(schema, {});
+    await sequelize.close();
+    return app?.close();
+  });
+
+  afterEach(async () => {
+    if (client) {
+      await (client as any).query(`UNLISTEN "${listenerHash}"`);
+      (client as any).removeAllListeners('notification');
+      sequelize.connectionManager.releaseConnection(client);
+    }
+  });
+
+  it('can handle multiple rows in one transaction', async () => {
+    const module = await Test.createTestingModule({
+      imports: [DbModule.forRootWithConfig(nodeConfig)],
+    }).compile();
+    app = module.createNestApplication();
+    await app.init();
+    sequelize = app.get(Sequelize);
+    await sequelize.createSchema(schema, {});
+    // mock create global table
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS "${schema}"._global (
+        key VARCHAR(255) NOT NULL PRIMARY KEY,
+        value JSONB,
+        "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL,
+        "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL
+    )`);
+
+    await sequelize.query(createRewindTriggerFunction(schema));
+    await sequelize.query(createRewindTrigger(schema));
+
+    client = await sequelize.connectionManager.getConnection({
+      type: 'read',
+    });
+    await (client as any).query(`LISTEN "${listenerHash}"`);
+
+    const listener = jest.fn();
+    (client as any).on('notification', (msg: any) => {
+      console.log('Payload:', msg.payload);
+      listener(msg.payload);
     });
 
-    it('can handle multiple rows in one transaction', async () => {
-      const module = await Test.createTestingModule({
-        imports: [DbModule.forRootWithConfig(nodeConfig)],
-      }).compile();
-      app = module.createNestApplication();
-      await app.init();
-      sequelize = app.get(Sequelize);
-      await sequelize.createSchema(schema, {});
-      // mock create global table
-      await sequelize.query(`
-        CREATE TABLE IF NOT EXISTS "${schema}"._global (
-          key VARCHAR(255) NOT NULL PRIMARY KEY,
-          value JSONB,
-          "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL,
-          "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL
-      )`);
+    const rewindSqlFromTimestamp = (
+      timestamp: number
+    ) => `INSERT INTO "${schema}"."_global" ( "key", "value", "createdAt", "updatedAt" )
+      VALUES
+      ( 'rewindLock', '{"timestamp":${timestamp},"chainNum":1}', now(), now()) 
+      ON CONFLICT ( "key" ) 
+      DO UPDATE 
+      SET "key" = EXCLUDED."key",
+          "value" = EXCLUDED."value",
+          "updatedAt" = EXCLUDED."updatedAt" 
+      WHERE "_global"."key" = '${RewindLockKey}' AND ("_global"."value"->>'timestamp')::BIGINT > ${timestamp}`;
+    const rewindTimestamp = 1597669506000;
+    await sequelize.query(rewindSqlFromTimestamp(rewindTimestamp));
+    await delay(1);
 
-      await sequelize.query(createRewindTriggerFunction(schema));
-      await sequelize.query(createRewindTrigger(schema));
+    await sequelize.query(rewindSqlFromTimestamp(rewindTimestamp - 1));
+    await delay(1);
 
-      client = await sequelize.connectionManager.getConnection({
-        type: 'read',
-      });
-      await (client as any).query(`LISTEN "${listenerHash}"`);
-
-      const listener = jest.fn();
-      (client as any).on('notification', (msg: any) => {
-        console.log('Payload:', msg.payload);
-        listener(msg.payload);
-      });
-
-      const rewindSqlFromTimestamp = (
-        timestamp: number
-      ) => `INSERT INTO "${schema}"."_global" ( "key", "value", "createdAt", "updatedAt" )
-        VALUES
-        ( 'rewindLock', '{"timestamp":${timestamp},"chainNum":1}', now(), now()) 
-        ON CONFLICT ( "key" ) 
-        DO UPDATE 
-        SET "key" = EXCLUDED."key",
-            "value" = EXCLUDED."value",
-            "updatedAt" = EXCLUDED."updatedAt" 
-        WHERE "_global"."key" = '${RewindLockKey}' AND ("_global"."value"->>'timestamp')::BIGINT > ${timestamp}`;
-      const rewindTimestamp = 1597669506000;
-      await sequelize.query(rewindSqlFromTimestamp(rewindTimestamp));
-      await delay(1);
-
-      await sequelize.query(rewindSqlFromTimestamp(rewindTimestamp - 1));
-      await delay(1);
-
-      await sequelize.query(`DELETE FROM "${schema}"."_global" WHERE "key" = '${RewindLockKey}'`);
-      await delay(1);
-      expect(listener).toHaveBeenCalledTimes(3);
-      expect(listener).toHaveBeenNthCalledWith(1, MultiChainRewindEvent.Rewind);
-      expect(listener).toHaveBeenNthCalledWith(2, MultiChainRewindEvent.RewindTimestampDecreased);
-      expect(listener).toHaveBeenNthCalledWith(3, MultiChainRewindEvent.RewindComplete);
-    }, 20_000);
-  });
+    await sequelize.query(`DELETE FROM "${schema}"."_global" WHERE "key" = '${RewindLockKey}'`);
+    await delay(1);
+    expect(listener).toHaveBeenCalledTimes(3);
+    expect(listener).toHaveBeenNthCalledWith(1, MultiChainRewindEvent.Rewind);
+    expect(listener).toHaveBeenNthCalledWith(2, MultiChainRewindEvent.RewindTimestampDecreased);
+    expect(listener).toHaveBeenNthCalledWith(3, MultiChainRewindEvent.RewindComplete);
+  }, 20_000);
 });
