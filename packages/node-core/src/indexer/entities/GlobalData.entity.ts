@@ -53,5 +53,5 @@ export function GlobalDataFactory(sequelize: Sequelize, schema: string): GlobalD
 }
 
 export function generateRewindTimestampKey(chainId: string): RewindTimestampKey {
-  return `${RewindTimestampKeyPrefix}_${blake2AsHex(chainId)})` as RewindTimestampKey;
+  return `${RewindTimestampKeyPrefix}_${blake2AsHex(chainId)}` as RewindTimestampKey;
 }

@@ -6,6 +6,7 @@ import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {hashName} from '@subql/utils';
 import {Transaction, Sequelize} from '@subql/x-sequelize';
+import {Connection} from '@subql/x-sequelize/types/dialects/abstract/connection-manager';
 import dayjs from 'dayjs';
 import {PoolClient} from 'pg';
 import {IBlockchainService} from '../blockchain.service';
@@ -98,7 +99,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   }
 
   onApplicationShutdown() {
-    this.pgListener?.release();
+    this.sequelize.connectionManager.releaseConnection(this.pgListener as Connection);
   }
 
   async init(chainId: string, dbSchema: string, reindex: (targetHeader: Header) => Promise<void>) {
@@ -134,33 +135,32 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       type: 'read',
     })) as PoolClient;
 
-    this.pgListener.on('notification', (msg) => {
-      Promise.resolve().then(async () => {
-        const eventType = msg.payload;
-        logger.info(`Received rewind event: ${eventType}, chainId: ${this.chainId}`);
-        switch (eventType) {
-          case MultiChainRewindEvent.Rewind:
-          case MultiChainRewindEvent.RewindTimestampDecreased: {
-            const {rewindTimestamp} = await this.globalModel.getGlobalRewindStatus();
-            this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
-            this.status = RewindStatus.Rewinding;
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    this.pgListener.on('notification', async (msg) => {
+      const eventType = msg.payload;
+      logger.info(`Received rewind event: ${eventType}, chainId: ${this.chainId}`);
+      switch (eventType) {
+        case MultiChainRewindEvent.Rewind:
+        case MultiChainRewindEvent.RewindTimestampDecreased: {
+          const {rewindTimestamp} = await this.globalModel.getGlobalRewindStatus();
+          this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
+          this.status = RewindStatus.Rewinding;
 
-            // Trigger the rewind event, and let the fetchService listen to the message and handle the queueFlush.
-            this.eventEmitter.emit(eventType, {
-              height: this.waitRewindHeader.blockHeight,
-            } satisfies MultiChainRewindPayload);
-            break;
-          }
-          case MultiChainRewindEvent.RewindComplete:
-            // recover indexing status
-            this.waitRewindHeader = undefined;
-            this.status = RewindStatus.Normal;
-            break;
-          default:
-            throw new Error(`Unknown rewind event: ${eventType}`);
+          // Trigger the rewind event, and let the fetchService listen to the message and handle the queueFlush.
+          this.eventEmitter.emit(eventType, {
+            height: this.waitRewindHeader.blockHeight,
+          } satisfies MultiChainRewindPayload);
+          break;
         }
-        logger.info(`Handle success rewind event: ${eventType}, chainId: ${this.chainId}`);
-      });
+        case MultiChainRewindEvent.RewindComplete:
+          // recover indexing status
+          this.waitRewindHeader = undefined;
+          this.status = RewindStatus.Normal;
+          break;
+        default:
+          throw new Error(`Unknown rewind event: ${eventType}`);
+      }
+      logger.info(`Handle success rewind event: ${eventType}, chainId: ${this.chainId}`);
     });
 
     await this.pgListener.query(`LISTEN "${this.rewindTriggerName}"`);

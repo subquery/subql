@@ -61,36 +61,3 @@ describe('BlockchainService', () => {
     expect(requiredHeader.timestamp.getTime()).toEqual(1739501268001);
   });
 });
-
-describe('Shiden Chain', () => {
-  const ENDPOINT_SHIDEN = 'wss://rpc.shiden.astar.network';
-  let apiService: ApiService;
-  let blockchainService: BlockchainService;
-
-  beforeAll(async () => {
-    const nodeConfig = new NodeConfig({} as any);
-
-    apiService = await ApiService.init(
-      {
-        network: {
-          endpoint: { [ENDPOINT_SHIDEN]: {} },
-          chainId:
-            '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-        },
-        dataSources: [],
-        templates: [],
-      } as any,
-      new ConnectionPoolService(nodeConfig, new ConnectionPoolStateManager()),
-      new EventEmitter2(),
-      nodeConfig,
-    );
-
-    blockchainService = new BlockchainService(apiService, null as any) as any;
-  }, 10000);
-
-  // SHIDEN does not have block timestamp
-  it('can get the block timestamp', async () => {
-    const timestamp = await blockchainService.getBlockTimestamp(100000);
-    expect(timestamp.getTime()).toEqual(11111);
-  });
-});

@@ -107,7 +107,7 @@ describe('substrate utils', () => {
   it('return defined if no timestamp set extrinsic', async () => {
     const provider = new WsProvider(ENDPOINT_SHIDEN);
     const api = await ApiPromise.create({ provider });
-    const block1 = await getBlockByHeight(api, 1);
+    const block1 = await getBlockByHeight(api, 99999);
     const timestamp = await getTimestampFromBlockHash(
       api,
       block1.block.header.hash.toString(),
