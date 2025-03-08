@@ -68,7 +68,7 @@ describe('Check whether the db store and cache store are consistent.', () => {
     const reindex = jest.fn();
 
     // Initialize the service
-    await multiChainRewindService.init(chainId, testSchemaName, reindex);
+    await multiChainRewindService.init(chainId, reindex);
   });
 
   afterEach(async () => {
