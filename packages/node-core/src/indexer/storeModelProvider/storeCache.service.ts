@@ -148,12 +148,17 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
   }
 
   async applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void> {
-    const force =
-      this.#lastFlushed &&
-      this.config.storeFlushInterval > 0 &&
-      Date.now() >= this.#lastFlushed.getTime() + this.config.storeFlushInterval * 1000;
+    const targetHeight = await this.metadata.find('targetHeight');
+    const nearTarget = !!targetHeight && height >= targetHeight - this.config.storeCacheTarget;
 
-    if (this.config.storeCacheAsync) {
+    // Flush if interval conditions are met or near the targetHeight
+    const force =
+      (this.#lastFlushed &&
+        this.config.storeFlushInterval > 0 &&
+        Date.now() >= this.#lastFlushed.getTime() + this.config.storeFlushInterval * 1000) ||
+      nearTarget;
+
+    if (this.config.storeCacheAsync && !nearTarget) {
       // Flush all completed block data and don't wait
       await this.flushAndWaitForCapacity(force)?.catch((e) => {
         exitWithError(new Error(`Flushing cache failed`, {cause: e}), logger);

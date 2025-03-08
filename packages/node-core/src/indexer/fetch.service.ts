@@ -45,12 +45,13 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
   ) {}
 
   private get latestBestHeight(): number {
-    assert(this._latestBestHeight, new Error('Latest Best Height is not available'));
+    assert(this._latestBestHeight !== undefined, new Error('Latest Best Height is not available'));
     return this._latestBestHeight;
   }
 
   private get latestFinalizedHeight(): number {
-    assert(this._latestFinalizedHeight, new Error('Latest Finalized Height is not available'));
+    // Devnets don't always finalize blocks, in those cases we set the finalized block to be 0 and we need to specifically check for undefined here.
+    assert(this._latestFinalizedHeight !== undefined, new Error('Latest Finalized Height is not available'));
     return this._latestFinalizedHeight;
   }
 
