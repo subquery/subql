@@ -37,6 +37,17 @@ describe('Check whether the db store and cache store are consistent.', () => {
   let sequelize: Sequelize;
   let storeService: StoreService;
   let multiChainRewindService: MultiChainRewindService;
+
+  // Mock IBlockchainService
+  const mockBlockchainService = {
+    getHeaderForHeight: jest.fn((height: number) => ({
+      blockHeight: height,
+      timestamp: genBlockDate(height),
+      blockHash: `hash${height}`,
+      parentHash: height > 0 ? `hash${height - 1}` : '',
+    })),
+  };
+
   beforeAll(async () => {
     sequelize = new Sequelize(
       `postgresql://${option.username}:${option.password}@${option.host}:${option.port}/${option.database}`,
@@ -45,7 +56,13 @@ describe('Check whether the db store and cache store are consistent.', () => {
     await sequelize.authenticate();
 
     await sequelize.query(`CREATE SCHEMA ${testSchemaName};`);
-    const nodeConfig = new NodeConfig({subquery: 'test', proofOfIndex: true, enableCache: false, multiChain: true});
+    const nodeConfig = new NodeConfig({
+      subquery: 'test',
+      dbSchema: testSchemaName,
+      proofOfIndex: true,
+      enableCache: false,
+      multiChain: true,
+    });
     const project = {network: {chainId: '1'}, schema} as any;
     const dbModel = new PlainStoreModelService(sequelize, nodeConfig);
     storeService = new StoreService(sequelize, nodeConfig, dbModel, project);
@@ -76,16 +93,6 @@ describe('Check whether the db store and cache store are consistent.', () => {
     multiChainRewindService.onApplicationShutdown();
     await sequelize.close();
   });
-
-  // Mock IBlockchainService
-  const mockBlockchainService = {
-    getHeaderForHeight: jest.fn((height: number) => ({
-      blockHeight: height,
-      timestamp: genBlockDate(height),
-      blockHash: `hash${height}`,
-      parentHash: height > 0 ? `hash${height - 1}` : '',
-    })),
-  };
 
   it('should handle rewind correctly', async () => {
     // Act: Set global rewind lock to rewind to block 5
