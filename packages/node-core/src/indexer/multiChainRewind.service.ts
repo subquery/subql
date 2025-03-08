@@ -43,7 +43,7 @@ export interface IMultiChainRewindService {
 }
 
 export interface IMultiChainHandler {
-  handleMultiChainRewindEvent(rewindBlockPayload: MultiChainRewindPayload): void;
+  processMultiChainRewind(rewindBlockPayload: MultiChainRewindPayload): void;
 }
 
 /**
@@ -102,10 +102,8 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     this.sequelize.connectionManager.releaseConnection(this.pgListener as Connection);
   }
 
-  async init(chainId: string, dbSchema: string, reindex: (targetHeader: Header) => Promise<void>) {
+  async init(chainId: string, reindex: (targetHeader: Header) => Promise<void>) {
     this.chainId = chainId;
-    this.dbSchema = dbSchema;
-    this.rewindTriggerName = hashName(this.dbSchema, 'rewind_trigger', '_global');
 
     if (this.nodeConfig.multiChain) {
       await this.sequelize.query(`${createRewindTriggerFunction(this.dbSchema)}`);

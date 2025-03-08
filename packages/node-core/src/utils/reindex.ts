@@ -63,6 +63,11 @@ export async function reindex(
     logger.warn(
       `Skipping reindexing to ${storeService.historical} ${targetUnit}: current indexing height ${lastUnit} is behind requested ${storeService.historical}`
     );
+    if (nodeConfig.multiChain) {
+      const tx = await sequelize.transaction();
+      await multichainRewindService.releaseChainRewindLock(tx, targetUnit);
+      await tx.commit();
+    }
     return;
   }
 

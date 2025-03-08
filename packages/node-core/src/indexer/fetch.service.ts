@@ -400,7 +400,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
 
   @OnEvent(MultiChainRewindEvent.Rewind)
   @OnEvent(MultiChainRewindEvent.RewindTimestampDecreased)
-  handleMultiChainRewindEvent(payload: MultiChainRewindPayload) {
+  processMultiChainRewind(payload: MultiChainRewindPayload) {
     logger.info(`Received rewind event, height: ${payload.height}`);
     this.resetForNewDs(payload.height);
     this.blockDispatcher.setLatestProcessedHeight(payload.height);

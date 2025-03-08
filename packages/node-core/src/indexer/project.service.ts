@@ -450,7 +450,7 @@ export class ProjectService<
     return undefined;
   }
   private async initMultiChainRewindService(): Promise<Header | undefined> {
-    return this.multiChainRewindService.init(this.project.network.chainId, this.schema, this.reindex.bind(this));
+    return this.multiChainRewindService.init(this.project.network.chainId, this.reindex.bind(this));
   }
 
   private async handleProjectChange(): Promise<void> {
