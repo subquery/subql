@@ -207,7 +207,11 @@ describe('ProjectService', () => {
           provide: 'IBlockchainService',
           useClass: BlockchainService,
         },
-        MultiChainRewindService,
+        {
+          provide: MultiChainRewindService,
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          useValue: { init: () => {} },
+        },
       ],
       imports: [EventEmitterModule.forRoot()],
     }).compile();
