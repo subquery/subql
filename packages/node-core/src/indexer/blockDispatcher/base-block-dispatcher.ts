@@ -4,6 +4,7 @@
 import assert from 'assert';
 
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
+import {ICoreBlockchainService} from '@subql/node-core/blockchain.service';
 import {hexToU8a, u8aEq} from '@subql/utils';
 import {Transaction} from '@subql/x-sequelize';
 import {NodeConfig, IProjectUpgradeService} from '../../configure';
@@ -61,7 +62,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     protected queue: Q,
     protected storeService: StoreService,
     private storeModelProvider: IStoreModelProvider,
-    private poiSyncService: PoiSyncService
+    private poiSyncService: PoiSyncService,
+    private blockChainService: ICoreBlockchainService
   ) {}
 
   abstract enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): void | Promise<void>;
@@ -215,7 +217,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   }
 
   @OnEvent(AdminEvent.rewindTarget)
-  handleAdminRewind(blockPayload: TargetBlockPayload): void {
+  async handleAdminRewind(blockPayload: TargetBlockPayload) {
     if (this.currentProcessingHeight < blockPayload.height) {
       // this will throw back to admin controller, will NOT lead current indexing exit
       throw new Error(
@@ -224,8 +226,10 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     }
 
     // TODO can this work without
+    const timestamp = await this.blockChainService.getBlockTimestamp(blockPayload.height);
     this._pendingRewindHeader = {
       blockHeight: Number(blockPayload.height),
+      timestamp,
     } as Header;
     const message = `Received admin command to rewind to block ${blockPayload.height}`;
     monitorWrite(`***** [ADMIN] ${message}`);

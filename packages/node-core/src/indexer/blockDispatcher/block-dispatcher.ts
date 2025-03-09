@@ -1,22 +1,22 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { OnApplicationShutdown } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Interval } from '@nestjs/schedule';
-import { BaseDataSource } from '@subql/types-core';
-import { IBlockchainService } from '../../blockchain.service';
-import { NodeConfig } from '../../configure';
-import { IProjectUpgradeService } from '../../configure/ProjectUpgrade.service';
-import { IndexerEvent } from '../../events';
-import { getBlockHeight, IBlock, PoiSyncService, StoreService } from '../../indexer';
-import { getLogger } from '../../logger';
-import { exitWithError, monitorWrite } from '../../process';
-import { profilerWrap } from '../../profiler';
-import { Queue, AutoQueue, RampQueue, delay, isTaskFlushedError } from '../../utils';
-import { IStoreModelProvider } from '../storeModelProvider';
-import { IIndexerManager, IProjectService, ISubqueryProject } from '../types';
-import { BaseBlockDispatcher } from './base-block-dispatcher';
+import {OnApplicationShutdown} from '@nestjs/common';
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {Interval} from '@nestjs/schedule';
+import {BaseDataSource} from '@subql/types-core';
+import {IBlockchainService} from '../../blockchain.service';
+import {NodeConfig} from '../../configure';
+import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
+import {IndexerEvent} from '../../events';
+import {getBlockHeight, IBlock, PoiSyncService, StoreService} from '../../indexer';
+import {getLogger} from '../../logger';
+import {exitWithError, monitorWrite} from '../../process';
+import {profilerWrap} from '../../profiler';
+import {Queue, AutoQueue, RampQueue, delay, isTaskFlushedError} from '../../utils';
+import {IStoreModelProvider} from '../storeModelProvider';
+import {IIndexerManager, IProjectService, ISubqueryProject} from '../types';
+import {BaseBlockDispatcher} from './base-block-dispatcher';
 
 const logger = getLogger('BlockDispatcherService');
 
@@ -27,7 +27,8 @@ type BatchBlockFetcher<B> = (heights: number[]) => Promise<IBlock<B>[]>;
  */
 export class BlockDispatcher<B, DS extends BaseDataSource>
   extends BaseBlockDispatcher<Queue<IBlock<B> | number>, DS, B>
-  implements OnApplicationShutdown {
+  implements OnApplicationShutdown
+{
   private fetchQueue: AutoQueue<IBlock<B>>;
   private processQueue: AutoQueue<void>;
 
@@ -57,7 +58,8 @@ export class BlockDispatcher<B, DS extends BaseDataSource>
       new Queue(nodeConfig.batchSize * 3),
       storeService,
       storeModelProvider,
-      poiSyncService
+      poiSyncService,
+      blockchainService
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3, 1, nodeConfig.timeout, 'Process');
     this.fetchQueue = new RampQueue(
@@ -177,7 +179,8 @@ export class BlockDispatcher<B, DS extends BaseDataSource>
                   }
                   logger.error(
                     e,
-                    `Failed to index block at height ${header.blockHeight} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
+                    `Failed to index block at height ${header.blockHeight} ${
+                      e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
                     }`
                   );
                   throw e;
@@ -198,7 +201,7 @@ export class BlockDispatcher<B, DS extends BaseDataSource>
               // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
               return;
             }
-            exitWithError(new Error(`Failed to enqueue fetched block to process`, { cause: e }), logger);
+            exitWithError(new Error(`Failed to enqueue fetched block to process`, {cause: e}), logger);
           });
 
         this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
@@ -207,7 +210,7 @@ export class BlockDispatcher<B, DS extends BaseDataSource>
       }
     } catch (e: any) {
       if (!this.isShutdown) {
-        exitWithError(new Error(`Failed to process blocks from queue`, { cause: e }), logger);
+        exitWithError(new Error(`Failed to process blocks from queue`, {cause: e}), logger);
       }
     } finally {
       this.fetching = false;

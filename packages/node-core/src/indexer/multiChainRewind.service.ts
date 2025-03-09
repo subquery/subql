@@ -8,6 +8,7 @@ import {hashName} from '@subql/utils';
 import {Transaction, Sequelize} from '@subql/x-sequelize';
 import {Connection} from '@subql/x-sequelize/types/dialects/abstract/connection-manager';
 import dayjs from 'dayjs';
+import {uniqueId} from 'lodash';
 import {PoolClient} from 'pg';
 import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
@@ -136,7 +137,8 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.pgListener.on('notification', async (msg) => {
       const eventType = msg.payload;
-      logger.info(`Received rewind event: ${eventType}, chainId: ${this.chainId}`);
+      const sessionUuid = uniqueId();
+      logger.info(`[${sessionUuid}]Received rewind event: ${eventType}, chainId: ${this.chainId}`);
       switch (eventType) {
         case MultiChainRewindEvent.Rewind:
         case MultiChainRewindEvent.RewindTimestampDecreased: {
@@ -158,7 +160,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
         default:
           throw new Error(`Unknown rewind event: ${eventType}`);
       }
-      logger.info(`Handle success rewind event: ${eventType}, chainId: ${this.chainId}`);
+      logger.info(`[${sessionUuid}]Handle success rewind event: ${eventType}, chainId: ${this.chainId}`);
     });
 
     await this.pgListener.query(`LISTEN "${this.rewindTriggerName}"`);
