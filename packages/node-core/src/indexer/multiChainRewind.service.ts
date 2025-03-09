@@ -134,33 +134,35 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       type: 'read',
     })) as PoolClient;
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    this.pgListener.on('notification', async (msg) => {
-      const eventType = msg.payload;
-      const sessionUuid = uniqueId();
-      logger.info(`[${sessionUuid}]Received rewind event: ${eventType}, chainId: ${this.chainId}`);
-      switch (eventType) {
-        case MultiChainRewindEvent.Rewind:
-        case MultiChainRewindEvent.RewindTimestampDecreased: {
-          const {rewindTimestamp} = await this.globalModel.getGlobalRewindStatus();
-          this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
-          this.status = RewindStatus.Rewinding;
+    let processingPromise = Promise.resolve();
+    this.pgListener.on('notification', (msg) => {
+      processingPromise = processingPromise.then(async () => {
+        const eventType = msg.payload;
+        const sessionUuid = uniqueId();
+        logger.info(`[${sessionUuid}]Received rewind event: ${eventType}, chainId: ${this.chainId}`);
+        switch (eventType) {
+          case MultiChainRewindEvent.Rewind:
+          case MultiChainRewindEvent.RewindTimestampDecreased: {
+            const {rewindTimestamp} = await this.globalModel.getGlobalRewindStatus();
+            this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
+            this.status = RewindStatus.Rewinding;
 
-          // Trigger the rewind event, and let the fetchService listen to the message and handle the queueFlush.
-          this.eventEmitter.emit(eventType, {
-            height: this.waitRewindHeader.blockHeight,
-          } satisfies MultiChainRewindPayload);
-          break;
+            // Trigger the rewind event, and let the fetchService listen to the message and handle the queueFlush.
+            this.eventEmitter.emit(eventType, {
+              height: this.waitRewindHeader.blockHeight,
+            } satisfies MultiChainRewindPayload);
+            break;
+          }
+          case MultiChainRewindEvent.RewindComplete:
+            // recover indexing status
+            this.waitRewindHeader = undefined;
+            this.status = RewindStatus.Normal;
+            break;
+          default:
+            throw new Error(`Unknown rewind event: ${eventType}`);
         }
-        case MultiChainRewindEvent.RewindComplete:
-          // recover indexing status
-          this.waitRewindHeader = undefined;
-          this.status = RewindStatus.Normal;
-          break;
-        default:
-          throw new Error(`Unknown rewind event: ${eventType}`);
-      }
-      logger.info(`[${sessionUuid}]Handle success rewind event: ${eventType}, chainId: ${this.chainId}`);
+        logger.info(`[${sessionUuid}]Handle success rewind event: ${eventType}, chainId: ${this.chainId}`);
+      });
     });
 
     await this.pgListener.query(`LISTEN "${this.rewindTriggerName}"`);
