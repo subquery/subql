@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Sequelize} from '@subql/x-sequelize';
-import {IProjectUpgradeService} from '../configure';
+import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {
   DynamicDsService,
   IUnfinalizedBlocksService,
@@ -13,6 +13,7 @@ import {
   cacheProviderFlushData,
   cacheProviderResetData,
   Header,
+  MultiChainRewindService,
 } from '../indexer';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
@@ -37,6 +38,7 @@ const logger = getLogger('Reindex');
  * @param dynamicDsService
  * @param sequelize
  * @param projectUpgradeService
+ * @param multichainRewindService
  * @param poiService
  * @param forceCleanService
  */
@@ -44,11 +46,13 @@ export async function reindex(
   startHeight: number,
   targetBlockHeader: Header,
   lastProcessed: {height: number; timestamp?: number},
+  nodeConfig: NodeConfig,
   storeService: StoreService,
   unfinalizedBlockService: IUnfinalizedBlocksService<any>,
   dynamicDsService: DynamicDsService<any>,
   sequelize: Sequelize,
   projectUpgradeService: IProjectUpgradeService<ISubqueryProject>,
+  multichainRewindService: MultiChainRewindService,
   poiService?: PoiService,
   forceCleanService?: ForceCleanService
 ): Promise<void> {
@@ -59,11 +63,17 @@ export async function reindex(
     logger.warn(
       `Skipping reindexing to ${storeService.historical} ${targetUnit}: current indexing height ${lastUnit} is behind requested ${storeService.historical}`
     );
+    if (nodeConfig.multiChain) {
+      const tx = await sequelize.transaction();
+      await multichainRewindService.releaseChainRewindLock(tx, targetUnit);
+      await tx.commit();
+    }
     return;
   }
 
   // if startHeight is greater than the targetHeight, just force clean
-  if (targetBlockHeader.blockHeight < startHeight) {
+  // We prevent the entire data from being cleared due to multiple chains because the startblock is uncertain in multi-chain projects.
+  if (targetBlockHeader.blockHeight < startHeight && !nodeConfig.multiChain) {
     logger.info(
       `targetHeight: ${targetBlockHeader.blockHeight} is less than startHeight: ${startHeight}. Hence executing force-clean`
     );
@@ -73,45 +83,50 @@ export async function reindex(
     // if DB need rollback? no, because forceCleanService will take care of it
     await cacheProviderResetData(storeService.modelProvider);
     await forceCleanService?.forceClean();
-  } else {
-    logger.info(`Reindexing to ${storeService.historical}: ${targetUnit}`);
-    await cacheProviderFlushData(storeService.modelProvider, true);
-    await cacheProviderResetData(storeService.modelProvider);
-    if (storeService.modelProvider instanceof StoreCacheService) {
-      await storeService.modelProvider.flushData(true);
-      await storeService.modelProvider.resetData();
-    }
-    const transaction = await sequelize.transaction();
-    try {
-      /*
+    return;
+  }
+
+  logger.info(`Reindexing to ${storeService.historical}: ${targetUnit}`);
+  if (nodeConfig.multiChain) {
+    await multichainRewindService.setGlobalRewindLock(targetUnit);
+  }
+
+  await cacheProviderFlushData(storeService.modelProvider, true);
+  await cacheProviderResetData(storeService.modelProvider);
+  if (storeService.modelProvider instanceof StoreCacheService) {
+    await storeService.modelProvider.flushData(true);
+    await storeService.modelProvider.resetData();
+  }
+  const transaction = await sequelize.transaction();
+  try {
+    /*
       Must initialize storeService, to ensure all models are loaded, as storeService.init has not been called at this point
-       1. During runtime, model should be already been init
-       2.1 On start, projectUpgrade rewind will sync the sequelize models
-       2.2 On start, without projectUpgrade or upgradablePoint, sequelize will sync models through project.service
+      1. During runtime, model should be already been init
+      2.1 On start, projectUpgrade rewind will sync the sequelize models
+      2.2 On start, without projectUpgrade or upgradablePoint, sequelize will sync models through project.service
     */
-      await projectUpgradeService.rewind(
-        targetBlockHeader.blockHeight,
-        lastProcessed.height,
-        transaction,
-        storeService
-      );
+    await projectUpgradeService.rewind(targetBlockHeader.blockHeight, lastProcessed.height, transaction, storeService);
 
-      await Promise.all([
-        storeService.rewind(targetBlockHeader, transaction),
-        unfinalizedBlockService.resetUnfinalizedBlocks(), // TODO: may not needed for nonfinalized chains
-        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(), // TODO: may not needed for nonfinalized chains
-        dynamicDsService.resetDynamicDatasource(targetBlockHeader.blockHeight, transaction),
-        poiService?.rewind(targetBlockHeader.blockHeight, transaction),
-      ]);
-      // Flush metadata changes from above Promise.all
-      await storeService.modelProvider.metadata.flush?.(transaction, targetUnit);
+    await Promise.all([
+      storeService.rewind(targetBlockHeader, transaction),
+      unfinalizedBlockService.resetUnfinalizedBlocks(), // TODO: may not needed for nonfinalized chains
+      unfinalizedBlockService.resetLastFinalizedVerifiedHeight(), // TODO: may not needed for nonfinalized chains
+      dynamicDsService.resetDynamicDatasource(targetBlockHeader.blockHeight, transaction),
+      poiService?.rewind(targetBlockHeader.blockHeight, transaction),
+    ]);
+    // Flush metadata changes from above Promise.all
+    await storeService.modelProvider.metadata.flush?.(transaction, targetUnit);
 
-      await transaction.commit();
-      logger.info('Reindex Success');
-    } catch (err: any) {
-      logger.error(err, 'Reindexing failed');
-      await transaction.rollback();
-      throw err;
+    // release rewind lock
+    if (nodeConfig.multiChain) {
+      await multichainRewindService.releaseChainRewindLock(transaction, targetUnit);
     }
+
+    await transaction.commit();
+    logger.info('Reindex Success');
+  } catch (err: any) {
+    logger.error(err, 'Reindexing failed');
+    await transaction.rollback();
+    throw err;
   }
 }

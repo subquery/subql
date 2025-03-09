@@ -34,7 +34,8 @@ import { IIndexerWorker } from './indexer/worker/worker';
 import {
   calcInterval,
   getBlockByHeight,
-  getTimestamp,
+  getTimestampFromSignedBlock,
+  getTimestampFromBlockHash,
   substrateHeaderToHeader,
 } from './utils/substrate';
 
@@ -115,9 +116,20 @@ export class BlockchainService
     this.apiService.updateBlockFetching();
   }
 
-  async getBlockTimestamp(height: number): Promise<Date | undefined> {
+  async getBlockTimestamp(height: number): Promise<Date> {
     const block = await getBlockByHeight(this.apiService.api, height);
-    return getTimestamp(block);
+
+    let timestamp = getTimestampFromSignedBlock(block);
+    if (!timestamp) {
+      // Not all networks have a block timestamp, e.g. Shiden
+      const blockTimestamp = await (
+        await this.apiService.unsafeApi.at(block.hash)
+      ).query.timestamp.now();
+
+      timestamp = new Date(blockTimestamp.toNumber());
+    }
+
+    return timestamp;
   }
 
   getBlockSize(block: IBlock): number {
@@ -127,9 +139,8 @@ export class BlockchainService
   async getFinalizedHeader(): Promise<Header> {
     const finalizedHash =
       await this.apiService.unsafeApi.rpc.chain.getFinalizedHead();
-    const finalizedHeader =
-      await this.apiService.unsafeApi.rpc.chain.getHeader(finalizedHash);
-    return substrateHeaderToHeader(finalizedHeader);
+
+    return this.getHeaderForHash(finalizedHash.toHex());
   }
 
   async getBestHeight(): Promise<number> {
@@ -148,9 +159,15 @@ export class BlockchainService
   // TODO can this decorator be in unfinalizedBlocks Service?
   @mainThreadOnly()
   async getHeaderForHash(hash: string): Promise<Header> {
-    return substrateHeaderToHeader(
+    const blockHeader = substrateHeaderToHeader(
       await this.apiService.unsafeApi.rpc.chain.getHeader(hash),
     );
+    const timestamp = await getTimestampFromBlockHash(
+      this.apiService.unsafeApi,
+      blockHeader.blockHash,
+    );
+
+    return { ...blockHeader, timestamp };
   }
 
   // TODO can this decorator be in unfinalizedBlocks Service?

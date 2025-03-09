@@ -13,8 +13,8 @@ export interface ICoreBlockchainService<
 
   // Project service
   onProjectChange(project: SubQueryProject): Promise<void> | void;
-  /* Not all networks have a block timestamp, e.g. Shiden */
-  getBlockTimestamp(height: number): Promise<Date | undefined>;
+  /* Not all networks have a block timestamp, e.g. Shiden need to request one more get */
+  getBlockTimestamp(height: number): Promise<Date>;
 }
 
 export interface IBlockchainService<

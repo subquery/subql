@@ -12,16 +12,12 @@ import {
   Header,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
-import { substrateBlockToHeader } from '../../utils/substrate';
+import { fillTsInHeader, substrateBlockToHeader } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
-import {
-  BlockContent,
-  getBlockSize,
-  LightBlockContent,
-} from '../types';
+import { BlockContent, getBlockSize, LightBlockContent } from '../types';
 
 export type FetchBlockResponse = Header & { specVersion?: number };
 
@@ -64,11 +60,13 @@ export class WorkerService extends BaseWorkerService<
   }
 
   // TODO test this with LightBlockContent
-  protected toBlockResponse(
+  protected async toBlockResponse(
     block: BlockContent /* | LightBlockContent*/,
-  ): FetchBlockResponse {
+  ): Promise<FetchBlockResponse> {
+    const header = substrateBlockToHeader(block.block);
+
     return {
-      ...substrateBlockToHeader(block.block),
+      ...(await fillTsInHeader(this.apiService.unsafeApi, header)),
       specVersion: block.block.specVersion,
     };
   }

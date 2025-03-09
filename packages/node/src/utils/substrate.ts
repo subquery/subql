@@ -39,7 +39,10 @@ const INTERVAL_THRESHOLD = BN_THOUSAND.div(BN_TWO);
 const DEFAULT_TIME = new BN(6_000);
 const A_DAY = new BN(24 * 60 * 60 * 1000);
 
-export function substrateHeaderToHeader(header: SubstrateHeader): Header {
+type MissTsHeader = Omit<Header, 'timestamp'>;
+type OptionalTsHeader = MissTsHeader & { timestamp?: Date };
+
+export function substrateHeaderToHeader(header: SubstrateHeader): MissTsHeader {
   return {
     blockHeight: header.number.toNumber(),
     blockHash: header.hash.toHex(),
@@ -47,10 +50,12 @@ export function substrateHeaderToHeader(header: SubstrateHeader): Header {
   };
 }
 
-export function substrateBlockToHeader(block: SignedBlock): Header {
+export function substrateBlockToHeader(block: SignedBlock): OptionalTsHeader {
+  const timestamp = getTimestampFromSignedBlock(block);
+
   return {
     ...substrateHeaderToHeader(block.block.header),
-    timestamp: getTimestamp(block),
+    timestamp,
   };
 }
 
@@ -60,13 +65,13 @@ export function wrapBlock(
   specVersion: number,
 ): SubstrateBlock {
   return merge(signedBlock, {
-    timestamp: getTimestamp(signedBlock),
+    timestamp: getTimestampFromSignedBlock(signedBlock),
     specVersion: specVersion,
     events,
   });
 }
 
-export function getTimestamp({
+export function getTimestampFromSignedBlock({
   block: { extrinsics },
 }: SignedBlock): Date | undefined {
   // extrinsics can be undefined when fetching light blocks
@@ -88,6 +93,22 @@ export function getTimestamp({
   // See test `return undefined if no timestamp set extrinsic`
   // E.g Shiden
   return undefined;
+}
+
+export async function getTimestampFromBlockHash(
+  api: ApiPromise,
+  blockHash: string,
+): Promise<Date> {
+  try {
+    const blockTimestamp = await (
+      await api.at(blockHash)
+    ).query.timestamp.now();
+    return new Date(blockTimestamp.toNumber());
+  } catch (e) {
+    logger.error(`failed to fetch timestamp for block ${blockHash}`);
+    // SHIDEN network query.timestamp is undefined
+    return undefined as any;
+  }
 }
 
 export function wrapExtrinsics(
@@ -394,6 +415,13 @@ export async function fetchBlocksBatches(
       : fetchRuntimeVersionRange(api, parentBlockHashs),
   ]);
 
+  const blockHeaderMap: Header[] = await Promise.all(
+    blocks.map(async (block, idx) => {
+      const header = substrateBlockToHeader(block);
+      return fillTsInHeader(api, header);
+    }),
+  );
+
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
     const parentSpecVersion =
@@ -405,7 +433,7 @@ export async function fetchBlocksBatches(
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
 
     return {
-      getHeader: () => substrateBlockToHeader(wrappedBlock),
+      getHeader: () => blockHeaderMap[idx],
       block: {
         block: wrappedBlock,
         extrinsics: wrappedExtrinsics,
@@ -413,6 +441,21 @@ export async function fetchBlocksBatches(
       },
     };
   });
+}
+
+function isFullHeader(header: OptionalTsHeader): header is Header {
+  return header.timestamp !== undefined;
+}
+
+export async function fillTsInHeader(
+  api: ApiPromise,
+  header: OptionalTsHeader,
+): Promise<Header> {
+  if (!isFullHeader(header)) {
+    const timestamp = await getTimestampFromBlockHash(api, header.blockHash);
+    return { ...header, timestamp };
+  }
+  return header;
 }
 
 // TODO why is fetchBlocksBatches a breadth first funciton rather than depth?
@@ -425,7 +468,7 @@ export async function fetchLightBlock(
     throw ApiPromiseConnection.handleError(e);
   });
 
-  const [header, events] = await Promise.all([
+  const [header, events, timestamp] = await Promise.all([
     api.rpc.chain.getHeader(blockHash).catch((e) => {
       logger.error(
         `failed to fetch Block Header hash="${blockHash}" height="${height}"`,
@@ -436,6 +479,7 @@ export async function fetchLightBlock(
       logger.error(`failed to fetch events at block ${blockHash}`);
       throw ApiPromiseConnection.handleError(e);
     }),
+    (await api.at(blockHash)).query.timestamp.now(),
   ]);
 
   const blockHeader: BlockHeader = {
@@ -448,7 +492,10 @@ export async function fetchLightBlock(
       events: events.map((evt, idx) => merge(evt, { idx, block: blockHeader })),
     },
     getHeader: () => {
-      return substrateHeaderToHeader(blockHeader.block.header);
+      return {
+        ...substrateHeaderToHeader(blockHeader.block.header),
+        timestamp: new Date(timestamp.toNumber()),
+      };
     },
   };
 }

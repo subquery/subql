@@ -3,6 +3,7 @@
 
 import {DynamicModule, Global} from '@nestjs/common';
 import {Sequelize, Options as SequelizeOption} from '@subql/x-sequelize';
+import {PoolConfig} from 'pg';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
