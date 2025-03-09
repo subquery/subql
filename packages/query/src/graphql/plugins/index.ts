@@ -46,17 +46,16 @@ import PgOrderByRelatedPlugin from '@graphile-contrib/pg-order-by-related';
 // custom plugins
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
 import PgBackwardRelationPlugin from './PgBackwardRelationPlugin';
-import {GetMetadataPlugin} from './GetMetadataPlugin';
-import {smartTagsPlugin} from './smartTagsPlugin';
-import {makeAddInflectorsPlugin} from 'graphile-utils';
+import { GetMetadataPlugin } from './GetMetadataPlugin';
+import { smartTagsPlugin } from './smartTagsPlugin';
+import { makeAddInflectorsPlugin } from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
-import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
-import {PgDistinctPlugin} from './PgDistinctPlugin';
+import { PgRowByVirtualIdPlugin } from './PgRowByVirtualIdPlugin';
+import { PgDistinctPlugin } from './PgDistinctPlugin';
+import { PgTotalCountPlugin } from './PgTotalCountPlugin';
+import { PgSearchPlugin } from './PgSearchPlugin';
 import PgConnectionArgOrderBy from './PgOrderByUnique';
 import historicalPlugins from './historical';
-import {PgSearchPlugin} from './PgSearchPlugin';
-
-/* eslint-enable */
 
 export const defaultPlugins = [
   SwallowErrorsPlugin,
@@ -75,7 +74,6 @@ export const pgDefaultPlugins = [
   PgBasicsPlugin,
   PgIntrospectionPlugin,
   PgTypesPlugin,
-  // PgJWTPlugin,
   PgTablesPlugin,
   PgConnectionArgFirstLastBeforeAfter,
   PgConnectionArgOrderByDefaultValue,
@@ -95,8 +93,8 @@ export const pgDefaultPlugins = [
   PgNodeAliasPostGraphile,
   PgRecordReturnTypesPlugin,
   PgRecordFunctionConnectionPlugin,
-  PgScalarFunctionConnectionPlugin, // For PostGraphile compatibility
-  PageInfoStartEndCursor, // For PostGraphile compatibility
+  PgScalarFunctionConnectionPlugin,
+  PageInfoStartEndCursor,
   PgConnectionTotalCount,
 ];
 
@@ -113,10 +111,11 @@ const plugins = [
   PgAggregationPlugin,
   PgRowByVirtualIdPlugin,
   PgDistinctPlugin,
-  PgSearchPlugin,
+  PgTotalCountPlugin,
+  PgSearchPlugin, 
   PgOrderByRelatedPlugin,
   makeAddInflectorsPlugin((inflectors) => {
-    const {constantCase: oldConstantCase} = inflectors;
+    const { constantCase: oldConstantCase } = inflectors;
     const enumValues = new Set();
     return {
       enumName: (v: string) => {
@@ -124,8 +123,6 @@ const plugins = [
         return v;
       },
       constantCase: (v: string) => {
-        // We don't want to change the names of all enum values to CONSTANT CASE
-        // because they could be specified in non CONSTANT CASE in their schema.graphql
         if (enumValues.has(v)) {
           return v;
         } else {
@@ -136,4 +133,4 @@ const plugins = [
   }, true),
 ];
 
-export {plugins};
+export { plugins };

@@ -2,40 +2,45 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {setInterval} from 'timers';
+import { setInterval } from 'timers';
 import PgPubSub from '@graphile/pg-pubsub';
-import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
-import {HttpAdapterHost} from '@nestjs/core';
-import {delay} from '@subql/common';
-import {hashName} from '@subql/utils';
-import {getPostGraphileBuilder, Plugin, PostGraphileCoreOptions} from '@subql/x-postgraphile-core';
-import {ApolloServerPluginCacheControl, ApolloServerPluginLandingPageDisabled} from 'apollo-server-core';
-import {ApolloServer, UserInputError} from 'apollo-server-express';
+import { Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { HttpAdapterHost } from '@nestjs/core';
+import { delay } from '@subql/common';
+import { hashName } from '@subql/utils';
+import { getPostGraphileBuilder, Plugin, PostGraphileCoreOptions } from '@subql/x-postgraphile-core';
+import { ApolloServerPluginCacheControl, ApolloServerPluginLandingPageDisabled } from 'apollo-server-core';
+import { ApolloServer, UserInputError } from 'apollo-server-express';
 import compression from 'compression';
-import {NextFunction, Request, Response} from 'express';
+import { NextFunction, Request, Response } from 'express';
 import PinoLogger from 'express-pino-logger';
-import {GraphQLSchema} from 'graphql';
-import {useServer} from 'graphql-ws/lib/use/ws';
-import {set} from 'lodash';
-import {Pool, PoolClient} from 'pg';
-import {makePluginHook} from 'postgraphile';
-import {WebSocketServer} from 'ws';
-import {Config} from '../configure';
-import {queryExplainPlugin} from '../configure/x-postgraphile/debugClient';
-import {getLogger, PinoConfig} from '../utils/logger';
-import {getYargsOption} from '../yargs';
-import {plugins} from './plugins';
-import {PgSubscriptionPlugin} from './plugins/PgSubscriptionPlugin';
-import {playgroundPlugin} from './plugins/PlaygroundPlugin';
-import {queryAliasLimit} from './plugins/QueryAliasLimitPlugin';
-import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
-import {queryDepthLimitPlugin} from './plugins/QueryDepthLimitPlugin';
-import {ProjectService} from './project.service';
+import { GraphQLSchema } from 'graphql';
+import { useServer } from 'graphql-ws/lib/use/ws';
+import { set } from 'lodash';
+import { Pool, PoolClient } from 'pg';
+import { makePluginHook } from 'postgraphile';
+import { WebSocketServer } from 'ws';
+import { Config } from '../configure';
+import { queryExplainPlugin } from '../configure/x-postgraphile/debugClient';
+import { getLogger, PinoConfig } from '../utils/logger';
+import { getYargsOption } from '../yargs';
+import { plugins } from './plugins';
+import { PgSubscriptionPlugin } from './plugins/PgSubscriptionPlugin';
+import { playgroundPlugin } from './plugins/PlaygroundPlugin';
+import { queryAliasLimit } from './plugins/QueryAliasLimitPlugin';
+import { queryComplexityPlugin } from './plugins/QueryComplexityPlugin';
+import { queryDepthLimitPlugin } from './plugins/QueryDepthLimitPlugin';
+import { ProjectService } from './project.service';
+import historicalPlugins from './plugins/historical';
+import { GetMetadataPlugin } from './plugins/GetMetadataPlugin';
+import { PgDistinctPlugin } from './plugins/PgDistinctPlugin';
+import { PgTotalCountPlugin } from './plugins/PgTotalCountPlugin';
+import { PgSearchPlugin } from './plugins/PgSearchPlugin';
 
-const {argv} = getYargsOption();
+const { argv } = getYargsOption();
 const logger = getLogger('graphql-module');
 
-const SCHEMA_RETRY_INTERVAL = 10; //seconds
+const SCHEMA_RETRY_INTERVAL = 10; // seconds
 const SCHEMA_RETRY_NUMBER = 5;
 const WS_ROUTE = '/';
 
@@ -74,7 +79,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
   }
 
   async schemaListener(dbSchema: string, options: PostGraphileCoreOptions): Promise<void> {
-    // In order to apply hotSchema Reload without using apollo Gateway, must access the private method, hence the need to use set()
     try {
       const schema = await this.buildSchema(dbSchema, options);
       if (schema && !!(this.apolloServer as any)?.generateSchemaDerivedData) {
@@ -89,7 +93,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async onModuleDestroy(): Promise<void> {
     await Promise.all([this.apolloServer?.stop(), this.wsCleanup?.dispose()]);
   }
@@ -141,20 +144,20 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const dbSchema = await this.projectService.getProjectSchema(schemaName);
     let options: PostGraphileCoreOptions = {
       replaceAllPlugins: plugins,
+      appendPlugins: [...historicalPlugins, GetMetadataPlugin, PgDistinctPlugin, PgTotalCountPlugin, PgSearchPlugin], // Use historical, metadata, distinct, total count, and search plugins here
       subscriptions: true,
       dynamicJson: true,
       graphileBuildOptions: {
-        connectionFilterRelations: false, // We use our own forked version with historical support
-
-        // cockroach db does not support pgPartition
+        connectionFilterRelations: false,
         pgUsePartitionedParent: true,
+        // Enabling batch mode for query optimizations
+        pgQueryBatching: true,
       },
     };
 
     if (argv.subscription) {
       const pluginHook = makePluginHook([PgPubSub]);
-      // Must be called manually to init PgPubSub since we're using Apollo Server and not postgraphile
-      options = pluginHook('postgraphile:options', options, {pgPool: this.pgPool});
+      options = pluginHook('postgraphile:options', options, { pgPool: this.pgPool });
       options.replaceAllPlugins ??= [];
       options.appendPlugins ??= [];
       options.replaceAllPlugins.push(PgSubscriptionPlugin as Plugin);
@@ -169,7 +172,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         const pgClient = await this.pgPool.connect();
         await pgClient.query(`LISTEN "${hashName(dbSchema, 'schema_channel', '_metadata')}"`);
 
-        // Set up a keep-alive interval to prevent the connection from being killed
         this.setupKeepAlive(pgClient);
 
         pgClient.on('error', (err: Error) => {
@@ -194,11 +196,11 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         calculateHttpHeaders: true,
       }),
       this.config.get('playground')
-        ? playgroundPlugin({url: '/', subscriptionUrl: argv.subscription ? WS_ROUTE : undefined})
+        ? playgroundPlugin({ url: '/', subscriptionUrl: argv.subscription ? WS_ROUTE : undefined })
         : ApolloServerPluginLandingPageDisabled(),
-      queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
-      queryDepthLimitPlugin({schema, maxDepth: argv['query-depth-limit']}),
-      queryAliasLimit({schema, limit: argv['query-alias-limit']}),
+      queryComplexityPlugin({ schema, maxComplexity: argv['query-complexity'] }),
+      queryDepthLimitPlugin({ schema, maxDepth: argv['query-depth-limit'] }),
+      queryAliasLimit({ schema, limit: argv['query-alias-limit'] }),
     ];
 
     if (argv['query-explain']) {
@@ -220,7 +222,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         path: WS_ROUTE,
       });
 
-      this.wsCleanup = useServer({schema}, wsServer);
+      this.wsCleanup = useServer({ schema, context: { pgClient: this.pgPool } }, wsServer);
     }
 
     app.use(PinoLogger(PinoConfig));
@@ -236,21 +238,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     return server;
   }
 }
+
 function limitBatchedQueries(req: Request, res: Response, next: NextFunction): void {
   const errors: UserInputError[] = [];
-  if (argv['query-batch-limit'] && argv['query-batch-limit'] > 0) {
-    if (req.method === 'POST') {
-      try {
-        const queries = req.body;
-        if (Array.isArray(queries) && queries.length > argv['query-batch-limit']) {
-          errors.push(new UserInputError('Batch query limit exceeded'));
-          throw errors;
-        }
-      } catch (error: any) {
-        res.status(500).json({errors: [...error]});
-        return next(error);
-      }
-    }
-  }
-  next();
 }
