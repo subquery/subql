@@ -179,4 +179,27 @@ describe('TestRunner', () => {
       `\t\tattribute: "timestamp":\n\t\t\texpected: "1970-01-01T00:00:01.000Z"\n\t\t\tactual:   "1970-01-01T00:00:01.001Z"\n`
     );
   });
+
+  it('increments error if a block fails to be fetched', async () => {
+    const expectedEntity = {
+      _name: 'Entity1',
+      id: '1',
+      attr: 'value',
+    };
+    const testMock = {
+      name: 'test1',
+      blockHeight: 1,
+      handler: 'handler1',
+      expectedEntities: [expectedEntity],
+      dependentEntities: [],
+    };
+
+    apiServiceMock.fetchBlocks = jest.fn().mockRejectedValue(new Error('Failed to fetch block'));
+
+    const indexBlock = jest.fn().mockResolvedValue(undefined);
+    const res = await testRunner.runTest(testMock, sandboxMock, indexBlock);
+
+    expect(res.failedTests).toBe(2);
+    expect(res.failedTestSummary?.failedAttributes[0]).toContain('Failed to fetch block');
+  });
 });

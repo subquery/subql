@@ -36,6 +36,24 @@ export class TestRunner<A, SA, B, DS> {
     @Inject('IIndexerManager') protected readonly indexerManager: IIndexerManager<B, DS>
   ) {}
 
+  private async fetchBlock(height: number): Promise<IBlock<B>> {
+    try {
+      const [block] = await this.apiService.fetchBlocks([height]);
+      return block;
+    } catch (e: any) {
+      logger.warn(`Test: ${test.name} field due to fetch block error`, e);
+      this.failedTestSummary = {
+        testName: test.name,
+        entityId: undefined,
+        entityName: undefined,
+        failedAttributes: [`Fetch Block Error:\n${e.message}`],
+      };
+
+      this.failedTests++;
+      throw e;
+    }
+  }
+
   async runTest(
     test: SubqlTest,
     sandbox: TestSandbox,
@@ -55,7 +73,7 @@ export class TestRunner<A, SA, B, DS> {
     try {
       // Fetch block
       logger.debug('Fetching block');
-      const [block] = await this.apiService.fetchBlocks([test.blockHeight]);
+      const block = await this.fetchBlock(test.blockHeight);
 
       await this.storeService.setBlockHeader(block.getHeader());
       // Ensure a block height is set so that data is flushed correctly
