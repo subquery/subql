@@ -433,7 +433,12 @@ group by
     }
     for (const model of Object.values(this.sequelize.models)) {
       if ('__block_range' in model.getAttributes()) {
-        await batchDeleteAndThenUpdate(this.sequelize, model, transaction, this.getHistoricalUnit());
+        await batchDeleteAndThenUpdate(
+          this.sequelize,
+          model,
+          transaction,
+          getHistoricalUnit(this.historical, targetBlockHeader)
+        );
       }
     }
 

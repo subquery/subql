@@ -181,6 +181,13 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
           void this.poiSyncService.syncPoi();
         }
         this.eventEmitter.emit(IndexerEvent.RewindSuccess, {success: true, height: reindexBlockHeader.blockHeight});
+
+        // End transaction
+        await this.storeModelProvider.applyPendingChanges(
+          height,
+          !this.projectService.hasDataSourcesAfterHeight(height),
+          this.storeService.transaction
+        );
         return;
       } catch (e: any) {
         this.eventEmitter.emit(IndexerEvent.RewindFailure, {success: false, message: e.message});
@@ -208,7 +215,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     await this.storeModelProvider.applyPendingChanges(
       height,
       !this.projectService.hasDataSourcesAfterHeight(height),
-
       this.storeService.transaction
     );
   }
@@ -225,6 +231,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     // TODO can this work without
     this._pendingRewindHeader = {
       blockHeight: Number(blockPayload.height),
+      timestamp: new Date(),
     } as Header;
     const message = `Received admin command to rewind to block ${blockPayload.height}`;
     monitorWrite(`***** [ADMIN] ${message}`);

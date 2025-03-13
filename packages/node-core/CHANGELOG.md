@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- UnfinalizedBlock rollback not being handled correctly
+
 ## [17.1.0] - 2025-03-05
 ### Added
 - Flushing the cache every block when the project is fully synced to reduce delay between data indexed and being queryable (#2707)
