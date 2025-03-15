@@ -50,11 +50,11 @@ export function playgroundPlugin(options: {url: string; subscriptionUrl?: string
     -->
     <script
       crossorigin
-      src="https://unpkg.com/react@18/umd/react.production.min.js"
+      src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"
     ></script>
     <script
       crossorigin
-      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+      src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"
     ></script>
     <!--
       These two files can be found in the npm module, however you may wish to
@@ -62,21 +62,21 @@ export function playgroundPlugin(options: {url: string; subscriptionUrl?: string
       favored resource bundler.
      -->
     <script
-      src="https://unpkg.com/graphiql/graphiql.min.js"
+      src="https://cdn.jsdelivr.net/npm/graphiql/graphiql.min.js"
       type="application/javascript"
     ></script>
-    <link rel="stylesheet" href="https://unpkg.com/graphiql/graphiql.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/graphiql/graphiql.min.css" />
     <!--
       These are imports for the GraphIQL Explorer plugin.
      -->
     <script
-      src="https://unpkg.com/@graphiql/plugin-explorer/dist/index.umd.js"
+      src="https://cdn.jsdelivr.net/npm/@graphiql/plugin-explorer/dist/index.umd.js"
       crossorigin
     ></script>
 
     <link
       rel="stylesheet"
-      href="https://unpkg.com/@graphiql/plugin-explorer/dist/style.css"
+      href="https://cdn.jsdelivr.net/npm/@graphiql/plugin-explorer/dist/style.css"
     />
   </head>
 
