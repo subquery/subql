@@ -14,6 +14,7 @@ import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
 import {
   ConnectionPoolStateManager,
+  createIndexerWorker,
   DynamicDsService,
   IBaseIndexerWorker,
   IBlock,
@@ -29,7 +30,6 @@ import {MonitorServiceInterface} from '../monitor.service';
 import {StoreService} from '../store.service';
 import {IStoreModelProvider} from '../storeModelProvider';
 import {ISubqueryProject, IProjectService, Header} from '../types';
-import {createIndexerWorker} from '../worker';
 import {BaseBlockDispatcher} from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
@@ -56,6 +56,7 @@ export class WorkerBlockDispatcher<
 {
   protected workers: TerminateableWorker<Worker>[] = [];
   private numWorkers: number;
+  private fetchQueue: AutoQueue<Header>;
 
   private createWorker: () => Promise<TerminateableWorker<Worker>>;
 
@@ -89,6 +90,9 @@ export class WorkerBlockDispatcher<
       storeModelProvider,
       poiSyncService
     );
+
+    const fetchQueueSize = nodeConfig.batchSize * 3 * (nodeConfig.workers ?? 1);
+    this.fetchQueue = new AutoQueue(fetchQueueSize, fetchQueueSize, nodeConfig.timeout, 'Fetch');
 
     this.createWorker = () =>
       createIndexerWorker<Worker, ApiConn, Block, DS>(
@@ -172,15 +176,28 @@ export class WorkerBlockDispatcher<
     // Used to compare before and after as a way to check if queue was flushed
     const bufferedHeight = this.latestBufferedHeight;
 
+    /*
+     Wrap the promise in a fetchQueue for 2 reasons:
+     1. It retains the order when resolving the fetched promises
+     2. It means `this.queue` doesn't fill up with tasks awaiting pendingBlocks which then means we can abort fetching and wait for idle
+    */
+    const pendingBlock = this.fetchQueue.put(() =>
+      this.blockchainService.fetchBlockWorker(worker, height, {workers: this.workers})
+    );
+
     void this.pipeBlock({
-      fetchTask: this.blockchainService.fetchBlockWorker(worker, height, {workers: this.workers}),
-      processBlock: (header: Header) => {
+      fetchTask: pendingBlock,
+      processBlock: async () => {
         monitorWrite(`Processing from worker #${workerIdx}`);
-        return worker.processBlock(header.blockHeight);
+        return worker.processBlock(height);
       },
-      processQueue: this.queue,
       discardBlock: () => bufferedHeight > this.latestBufferedHeight,
-      abortFetching: () => void Promise.all(this.workers.map((w) => w.abortFetching())),
+      processQueue: this.queue,
+      abortFetching: async () => {
+        await Promise.all(this.workers.map((w) => w.abortFetching()));
+        // Wait for any pending blocks to be processed
+        this.fetchQueue.abort();
+      },
       getHeader: (header) => header,
       height,
     });

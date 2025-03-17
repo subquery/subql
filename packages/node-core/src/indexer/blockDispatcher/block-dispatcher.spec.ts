@@ -18,6 +18,23 @@ let workerIdx = 0;
 
 const nodeConfig = new NodeConfig({batchSize: 10, workers: 2} as any);
 
+let fetchBlocksFunction = async (height: number): Promise<IBlock<number>> => {
+  await delay(0.1);
+  if (failureBlocks.includes(height)) {
+    await delay(0.3);
+    throw new Error(`Failed to fetch block ${height}`);
+  }
+  return {
+    block: height,
+    getHeader: () => ({
+      blockHeight: height,
+      blockHash: height.toString(),
+      parentHash: (height - 1).toString(),
+      timestamp: new Date(),
+    }),
+  };
+};
+
 function resolveablePromise(): [Promise<void>, () => void] {
   let resolve: () => void;
   const promise = new Promise<void>((res) => {
@@ -56,41 +73,15 @@ const storeModelProvider = {
 const blockchainService = {
   getBlockSize: jest.fn(),
   fetchBlocks: async ([blockNum]: number[]) => {
-    await delay(0.1);
-
-    if (failureBlocks.includes(blockNum)) {
-      await delay(0.3);
-      throw new Error(`Failed to fetch block ${blockNum}`);
-    }
-    return [
-      {
-        block: blockNum,
-        getHeader: () => ({
-          blockHeight: blockNum,
-          timestamp: new Date(),
-        }),
-      },
-    ];
+    const res = await fetchBlocksFunction(blockNum);
+    return [res];
   },
   fetchBlockWorker: (worker: TestWorker, height: number) => worker.fetchBlock(height),
 } as any;
 
 class TestWorkerService extends BaseWorkerService<number, Header> {
   async fetchChainBlock(height: number): Promise<IBlock<number>> {
-    await delay(0.1);
-    if (failureBlocks.includes(height)) {
-      await delay(0.3);
-      throw new Error(`Failed to fetch block ${height}`);
-    }
-    return {
-      block: height,
-      getHeader: () => ({
-        blockHeight: height,
-        blockHash: height.toString(),
-        parentHash: (height - 1).toString(),
-        timestamp: new Date(),
-      }),
-    };
+    return fetchBlocksFunction(height);
   }
   toBlockResponse(block: number): Header {
     return {
@@ -138,7 +129,7 @@ class TestWorker implements IBaseIndexerWorker {
       threadId: this.threradId + 1,
       isIndexing: this.workerService.isIndexing,
       fetchedBlocks: this.workerService.numFetchedBlocks,
-      toFetchBlocks: 0,
+      toFetchBlocks: this.workerService.numFetchingBlocks,
     };
   }
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -279,6 +270,44 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
     await delay(2);
 
     await blockDispatcher.enqueueBlocks([8, 9, 10], 10);
+
+    expect(exitWithError).toHaveBeenCalled();
+
+    // Should index 4 blocks
+    expect(indexBlockFunction).toHaveBeenCalledTimes(4);
+    expect(indexedBlocks).toEqual([1, 2, 3, 4]);
+  });
+
+  it('should finish indexing fetched blocks before shutdown when an earlier block fails to fetch after a later block', async () => {
+    const indexedBlocks: number[] = [];
+    failureBlocks = [5];
+
+    fetchBlocksFunction = async (height: number): Promise<IBlock<number>> => {
+      await delay(0.1);
+      if (failureBlocks.includes(height)) {
+        await delay(1);
+        throw new Error(`Failed to fetch block ${height}`);
+      }
+      return {
+        block: height,
+        getHeader: () => ({
+          blockHeight: height,
+          blockHash: height.toString(),
+          parentHash: (height - 1).toString(),
+          timestamp: new Date(),
+        }),
+      };
+    };
+
+    indexBlockFunction = jest.fn(async (block: IBlock<number>) => {
+      await delay(0.4);
+      indexedBlocks.push(block.block);
+    });
+
+    // Split over 2 calls to be sent do different workers.
+    await blockDispatcher.enqueueBlocks([1, 2, 3, 4, 5], 5);
+    await blockDispatcher.enqueueBlocks([6, 7, 8], 8);
+    await delay(2);
 
     expect(exitWithError).toHaveBeenCalled();
 

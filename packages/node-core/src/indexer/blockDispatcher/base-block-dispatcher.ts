@@ -296,7 +296,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     processQueue: AutoQueue<void>;
     /**
      * A function to abort fetching any other blokcs. This is called when there is an error with the fetch task */
-    abortFetching: () => void;
+    abortFetching: () => Promise<void> | void;
     getHeader: (input: T) => Header;
     height: number;
   }): Promise<void> {
@@ -315,7 +315,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
         if (!this.isShutdown) {
           this.isShutdown = true;
           this.fetchFailureHeight = options.height;
-          options.abortFetching();
+          await options.abortFetching();
           // this.fetchQueue.abort();
           // Wait for any pending blocks to be processed
           await options.processQueue.onIdle();
