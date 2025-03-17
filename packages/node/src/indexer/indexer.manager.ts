@@ -97,7 +97,6 @@ export class IndexerManager extends BaseIndexerManager<
     dataSources: SubstrateProjectDs[],
     getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
-    // console.log(`Indexing block ${blockContent.block.block.header.number}`);
     if (isFullBlock(blockContent)) {
       const { block, events, extrinsics } = blockContent;
       await this.indexContent(SubstrateHandlerKind.Block)(
@@ -130,11 +129,8 @@ export class IndexerManager extends BaseIndexerManager<
         >,
       );
 
-      // let evtCount = 0;
-
       // Run initialization events
       for (const event of groupedEvents.init) {
-        // console.log(`indexing event (${evtCount++}/${events.length})(init)`);
         await this.indexContent(SubstrateHandlerKind.Event)(
           event,
           dataSources,
@@ -155,7 +151,6 @@ export class IndexerManager extends BaseIndexerManager<
         );
 
         for (const event of extrinsicEvents) {
-          // console.log(`indexing event (${evtCount++}/${events.length})`);
           await this.indexContent(SubstrateHandlerKind.Event)(
             event,
             dataSources,
@@ -166,7 +161,6 @@ export class IndexerManager extends BaseIndexerManager<
 
       // Run finalization events
       for (const event of groupedEvents.finalize) {
-        // console.log(`indexing event (${evtCount++}/${events.length})(finalize)`);
         await this.indexContent(SubstrateHandlerKind.Event)(
           event,
           dataSources,
@@ -182,7 +176,6 @@ export class IndexerManager extends BaseIndexerManager<
         );
       }
     }
-    // console.log(`Indexed block ${blockContent.block.block.header.number}`);
   }
 
   private indexContent(
