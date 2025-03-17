@@ -14,7 +14,6 @@ import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
 import {
   ConnectionPoolStateManager,
-  createIndexerWorker,
   DynamicDsService,
   IBaseIndexerWorker,
   IBlock,
@@ -25,12 +24,12 @@ import {
 } from '../../indexer';
 import {getLogger} from '../../logger';
 import {monitorWrite} from '../../process';
-import {AutoQueue, isTaskFlushedError} from '../../utils';
+import {AutoQueue} from '../../utils';
 import {MonitorServiceInterface} from '../monitor.service';
 import {StoreService} from '../store.service';
 import {IStoreModelProvider} from '../storeModelProvider';
-import {ISubqueryProject, IProjectService} from '../types';
-import {isBlockUnavailableError} from '../worker/utils';
+import {ISubqueryProject, IProjectService, Header} from '../types';
+import {createIndexerWorker} from '../worker';
 import {BaseBlockDispatcher} from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
@@ -57,7 +56,6 @@ export class WorkerBlockDispatcher<
 {
   protected workers: TerminateableWorker<Worker>[] = [];
   private numWorkers: number;
-  private isShutdown = false;
 
   private createWorker: () => Promise<TerminateableWorker<Worker>>;
 
@@ -142,6 +140,10 @@ export class WorkerBlockDispatcher<
 
     logger.info(`Enqueueing blocks ${heights[0]}...${last(heights)}, total ${heights.length} blocks`);
 
+    // Needs to happen before enqueuing heights so discardBlock check works.
+    // Unlike with the normal dispatcher there is not a queue ob blockHeights to delay this.
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights as number[]) ?? this.latestBufferedHeight;
+
     // eslint-disable-next-line no-constant-condition
     if (true) {
       /*
@@ -159,8 +161,6 @@ export class WorkerBlockDispatcher<
        */
       heights.map(async (height) => this.enqueueBlock(height as number, await this.getNextWorkerIndex()));
     }
-
-    this.latestBufferedHeight = latestBufferHeight ?? last(heights as number[]) ?? this.latestBufferedHeight;
   }
 
   private enqueueBlock(height: number, workerIdx: number): void {
@@ -172,46 +172,17 @@ export class WorkerBlockDispatcher<
     // Used to compare before and after as a way to check if queue was flushed
     const bufferedHeight = this.latestBufferedHeight;
 
-    const pendingBlock = this.blockchainService.fetchBlockWorker(worker, height, {workers: this.workers});
-
-    const processBlock = async () => {
-      try {
-        const header = await pendingBlock;
-        if (bufferedHeight > this.latestBufferedHeight) {
-          logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
-          return;
-        }
-
-        await this.preProcessBlock(header);
-
+    void this.pipeBlock({
+      fetchTask: this.blockchainService.fetchBlockWorker(worker, height, {workers: this.workers}),
+      processBlock: (header: Header) => {
         monitorWrite(`Processing from worker #${workerIdx}`);
-        const {dynamicDsCreated, reindexBlockHeader} = await worker.processBlock(height);
-
-        await this.postProcessBlock(header, {
-          dynamicDsCreated,
-          reindexBlockHeader,
-        });
-      } catch (e: any) {
-        // TODO discard any cache changes from this block height
-        if (isTaskFlushedError(e)) {
-          return;
-        }
-        if (isBlockUnavailableError(e)) {
-          return;
-        }
-        logger.error(
-          e,
-          `failed to index block at height ${height} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''}`
-        );
-        process.exit(1);
-      }
-    };
-
-    void this.queue.put(processBlock).catch((e) => {
-      if (isTaskFlushedError(e)) {
-        return;
-      }
-      throw e;
+        return worker.processBlock(header.blockHeight);
+      },
+      processQueue: this.queue,
+      discardBlock: () => bufferedHeight > this.latestBufferedHeight,
+      abortFetching: () => void Promise.all(this.workers.map((w) => w.abortFetching())),
+      getHeader: (header) => header,
+      height,
     });
   }
 

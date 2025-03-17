@@ -98,6 +98,12 @@ async function numFetchingBlocks(): Promise<number> {
   return workerService.numFetchingBlocks;
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
+async function abortFetching(): Promise<void> {
+  assert(workerService, 'Worker Not initialised');
+  return workerService.abortFetching();
+}
+
 // Export types to be used on the parent
 type FetchBlock = typeof fetchBlock;
 type ProcessBlock = typeof processBlock;
@@ -105,6 +111,7 @@ type NumFetchedBlocks = typeof numFetchedBlocks;
 type NumFetchingBlocks = typeof numFetchingBlocks;
 type GetWorkerStatus = typeof getStatus;
 type GetMemoryLeft = typeof getMemoryLeft;
+type AbortFetching = typeof abortFetching;
 
 export type IBaseIndexerWorker = {
   processBlock: ProcessBlock;
@@ -113,6 +120,7 @@ export type IBaseIndexerWorker = {
   numFetchingBlocks: NumFetchingBlocks;
   getStatus: GetWorkerStatus;
   getMemoryLeft: GetMemoryLeft;
+  abortFetching: AbortFetching;
 };
 
 export const baseWorkerFunctions: (keyof IBaseIndexerWorker)[] = [
@@ -151,6 +159,7 @@ export function createWorkerHost<
       numFetchingBlocks,
       getStatus,
       getMemoryLeft,
+      abortFetching,
     },
     logger
   );
