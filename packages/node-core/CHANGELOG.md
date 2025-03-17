@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Testing not updating test results correctly if fetching block fails (#2716)
+### Changed
+- On block fetch failure, finish indxing already fetched blocks before exiting (#2720)
 
 ## [17.1.0] - 2025-03-05
 ### Added
