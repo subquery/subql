@@ -7185,7 +7185,7 @@ __metadata:
     "@types/js-yaml": ^4.0.9
     "@types/semver": ^7.5.8
     "@types/update-notifier": ^6
-    axios: ^0.28.0
+    axios: ^1.8.3
     class-transformer: ^0.5.1
     class-validator: ^0.14.1
     form-data: ^4.0.1
@@ -9759,6 +9759,17 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: cb8ce291818effda09240cb60f114d5625909b345e10f389a945320e06acf0bc949d0f8422d25720f5dd421362abee302c99f5e97edec4c156c8939814b23d19
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.8.3":
+  version: 1.8.3
+  resolution: "axios@npm:1.8.3"
+  dependencies:
+    follow-redirects: ^1.15.6
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: 85fc8ad7d968e43ea9da5513310637d29654b181411012ee14cc0a4b3662782e6c81ac25eea40b5684f86ed2d8a01fa6fc20b9b48c4da14ef4eaee848fea43bc
   languageName: node
   linkType: hard
 
