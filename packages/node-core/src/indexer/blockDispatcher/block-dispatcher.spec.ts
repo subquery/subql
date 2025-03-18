@@ -344,4 +344,92 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
 
     expect(indexedBlocks).toEqual([1, 3, 4, 5]);
   });
+
+  describe('postProcessBlock', () => {
+    it('should call storeModelProvider.applyPendingChanges with correct parameters during normal processing', async () => {
+      // Arrange
+      const header: Header = {
+        blockHeight: 100,
+        blockHash: '0xhash',
+        parentHash: '0xparenthash',
+        timestamp: new Date(),
+      };
+
+      const processBlockResponse: ProcessBlockResponse = {
+        dynamicDsCreated: false,
+        reindexBlockHeader: null,
+      };
+
+      // Act
+      await (blockDispatcher as any).postProcessBlock(header, processBlockResponse);
+
+      // Assert
+      expect(storeModelProvider.applyPendingChanges).toHaveBeenCalledWith(
+        header.blockHeight,
+        true, // !projectService.hasDataSourcesAfterHeight(height)
+        storeService.transaction
+      );
+    });
+
+    it('should call applyPendingChanges correctly when handling a reindex', async () => {
+      // Arrange
+      const header: Header = {
+        blockHeight: 100,
+        blockHash: '0xhash',
+        parentHash: '0xparenthash',
+        timestamp: new Date(),
+      };
+
+      const reindexBlockHeader: Header = {
+        blockHeight: 90,
+        blockHash: '0xoldhash',
+        parentHash: '0xoldparenthash',
+        timestamp: new Date(),
+      };
+
+      const processBlockResponse: ProcessBlockResponse = {
+        dynamicDsCreated: false,
+        reindexBlockHeader,
+      };
+
+      // Mock rewind method to avoid executing the full rewind logic
+      (blockDispatcher as any).rewind = jest.fn().mockResolvedValue(undefined);
+
+      // Act
+      await (blockDispatcher as any).postProcessBlock(header, processBlockResponse);
+
+      // Assert
+      expect(storeModelProvider.applyPendingChanges).toHaveBeenCalledWith(
+        header.blockHeight,
+        true, // !projectService.hasDataSourcesAfterHeight(height)
+        storeService.transaction
+      );
+    });
+
+    it('should call applyPendingChanges correctly when a dynamic datasource is created', async () => {
+      // Arrange
+      const header: Header = {
+        blockHeight: 100,
+        blockHash: '0xhash',
+        parentHash: '0xparenthash',
+        timestamp: new Date(),
+      };
+
+      const processBlockResponse: ProcessBlockResponse = {
+        dynamicDsCreated: true, // Dynamic datasource was created
+        reindexBlockHeader: null,
+      };
+
+      // Act
+      await (blockDispatcher as any).postProcessBlock(header, processBlockResponse);
+
+      // Assert
+      expect((blockDispatcher as any)._onDynamicDsCreated).toHaveBeenCalledWith(header.blockHeight);
+      expect(storeModelProvider.applyPendingChanges).toHaveBeenCalledWith(
+        header.blockHeight,
+        true,
+        storeService.transaction
+      );
+    });
+  });
 });
