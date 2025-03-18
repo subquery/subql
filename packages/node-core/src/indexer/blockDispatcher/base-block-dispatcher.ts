@@ -174,6 +174,13 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     monitorWrite(`Finished block ${height}`);
     if (reindexBlockHeader !== null && reindexBlockHeader !== undefined) {
       try {
+        // End transaction
+        await this.storeModelProvider.applyPendingChanges(
+          height,
+          !this.projectService.hasDataSourcesAfterHeight(height),
+          this.storeService.transaction
+        );
+
         if (this.nodeConfig.proofOfIndex) {
           await this.poiSyncService.stopSync();
           this.poiSyncService.clear();
@@ -187,13 +194,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
           void this.poiSyncService.syncPoi();
         }
         this.eventEmitter.emit(IndexerEvent.RewindSuccess, {success: true, height: reindexBlockHeader.blockHeight});
-
-        // End transaction
-        await this.storeModelProvider.applyPendingChanges(
-          height,
-          !this.projectService.hasDataSourcesAfterHeight(height),
-          this.storeService.transaction
-        );
         return;
       } catch (e: any) {
         this.eventEmitter.emit(IndexerEvent.RewindFailure, {success: false, message: e.message});
