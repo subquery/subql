@@ -130,6 +130,7 @@ export const baseWorkerFunctions: (keyof IBaseIndexerWorker)[] = [
   'numFetchingBlocks',
   'getStatus',
   'getMemoryLeft',
+  'abortFetching',
 ];
 
 export function createWorkerHost<

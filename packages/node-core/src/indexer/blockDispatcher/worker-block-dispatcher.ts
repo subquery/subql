@@ -91,8 +91,12 @@ export class WorkerBlockDispatcher<
       poiSyncService
     );
 
-    const fetchQueueSize = nodeConfig.batchSize * 3 * (nodeConfig.workers ?? 1);
-    this.fetchQueue = new AutoQueue(fetchQueueSize, fetchQueueSize, nodeConfig.timeout, 'Fetch');
+    this.fetchQueue = new AutoQueue(
+      undefined,
+      nodeConfig.batchSize * 3 * (nodeConfig.workers ?? 1),
+      nodeConfig.timeout,
+      'Fetch'
+    );
 
     this.createWorker = () =>
       createIndexerWorker<Worker, ApiConn, Block, DS>(
