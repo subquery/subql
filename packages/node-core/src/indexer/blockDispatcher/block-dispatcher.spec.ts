@@ -346,6 +346,10 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
   });
 
   describe('postProcessBlock', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     it('should call storeModelProvider.applyPendingChanges with correct parameters during normal processing', async () => {
       // Arrange
       const header: Header = {
