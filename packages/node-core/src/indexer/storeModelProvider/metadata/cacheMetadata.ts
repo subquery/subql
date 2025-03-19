@@ -132,7 +132,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
     await this.model.sequelize.query(APPEND_DS_QUERY(schemaTable, items), tx && {transaction: tx});
   }
 
-  private async handleSpecialKeys(tx?: Transaction): Promise<void> {
+  private async handleSpecialKeys(tx?: Transaction, blockHeight?: number): Promise<void> {
     await Promise.all(
       specialKeys.map(async (key) => {
         switch (key) {
@@ -146,7 +146,10 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
             if (val !== undefined) {
               await this.model.bulkCreate([{key, value: val}], {transaction: tx, updateOnDuplicate: ['key', 'value']});
             } else if (this.datasourceUpdates.length) {
-              await this.appendDynamicDatasources(this.datasourceUpdates, tx);
+              await this.appendDynamicDatasources(
+                this.datasourceUpdates.filter((ds) => blockHeight && ds.startBlock <= blockHeight),
+                tx
+              );
             }
             break;
           }
@@ -193,7 +196,7 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
         transaction: tx,
         updateOnDuplicate: ['key', 'value'],
       }),
-      this.handleSpecialKeys(tx),
+      this.handleSpecialKeys(tx, blockHeight),
       this.model.destroy({where: {key: this.removeCache}}),
     ]);
   }
@@ -222,6 +225,8 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
     }
     this.setCache = {...newSetCache};
     this.getCache = {...newSetCache};
-    this.datasourceUpdates = [];
+    this.datasourceUpdates = blockHeight
+      ? this.datasourceUpdates.filter((ds) => ds.startBlock > blockHeight)
+      : this.datasourceUpdates;
   }
 }
