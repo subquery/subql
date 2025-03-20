@@ -225,8 +225,6 @@ export class CacheMetadataModel extends Cacheable implements IMetadata, ICachedM
     }
     this.setCache = {...newSetCache};
     this.getCache = {...newSetCache};
-    this.datasourceUpdates = blockHeight
-      ? this.datasourceUpdates.filter((ds) => ds.startBlock > blockHeight)
-      : this.datasourceUpdates;
+    this.datasourceUpdates = blockHeight ? this.datasourceUpdates.filter((ds) => ds.startBlock > blockHeight) : [];
   }
 }

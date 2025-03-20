@@ -42,7 +42,7 @@ describe('cacheMetadata integration', () => {
     return res?.toJSON()?.value as any;
   };
 
-  const flush = async (height = 1) => {
+  const flush = async (height: number) => {
     const tx = await sequelize.transaction();
     await cacheMetadataModel.flush(tx, height);
     await tx.commit();
@@ -84,7 +84,8 @@ describe('cacheMetadata integration', () => {
         {templateName: 'baz', startBlock: 3},
       ];
 
-      await flush();
+      await flush(1);
+      expect((cacheMetadataModel as any).datasourceUpdates).toEqual([expected[1], expected[2]]);
 
       const v = await queryMeta('dynamicDatasources');
       expect(v).toEqual([expected[0]]);
@@ -106,7 +107,7 @@ describe('cacheMetadata integration', () => {
 
       cacheMetadataModel.set('dynamicDatasources', [{templateName: 'bar', startBlock: 2}]);
 
-      await flush();
+      await flush(1);
 
       const v = await queryMeta('dynamicDatasources');
       expect(v).toEqual([{templateName: 'bar', startBlock: 2}]);
@@ -114,7 +115,7 @@ describe('cacheMetadata integration', () => {
 
     it('Caches the dynamicDatasources correctly after using set', async () => {
       cacheMetadataModel.setNewDynamicDatasource({templateName: 'foo', startBlock: 1});
-      await flush();
+      await flush(1);
 
       const cacheV = await cacheMetadataModel.find('dynamicDatasources');
       expect(cacheV).toEqual([{templateName: 'foo', startBlock: 1}]);
