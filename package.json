@@ -24,7 +24,7 @@
     "husky": "^7.0.4",
     "jest": "^29.5.0",
     "lint-staged": "^15.2.7",
-    "node-fetch": "2.7.0",
+    "node-fetch": "3.3.2",
     "prettier": "^3.3.3",
     "pretty-quick": "^4.0.0",
     "regenerator-runtime": "^0.13.11",
@@ -37,7 +37,7 @@
   "resolutions": {
     "@polkadot/api": "^15.6.1",
     "@polkadot/util": "^13.4.3",
-    "node-fetch": "2.6.7"
+    "node-fetch": "3.3.2"
   },
   "scripts": {
     "build": "yarn workspaces foreach -tA run build",
