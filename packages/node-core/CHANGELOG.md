@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Testing not updating test results correctly if fetching block fails (#2716)
+- The `dynamicDatasources` will be cleared in advance, causing subsequent index data to be missing.
 - UnfinalizedBlock rollback not being handled correctly
 
 ### Changed
