@@ -110,4 +110,8 @@ export abstract class BaseWorkerService<
   get isIndexing(): boolean {
     return this._isIndexing;
   }
+
+  abortFetching(): void {
+    return this.queue.abort();
+  }
 }

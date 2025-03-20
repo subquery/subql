@@ -29,6 +29,8 @@ export function unwrapProxyArgs<T extends Array<any>, R>(fn: (...args: T) => R):
   return (...args: T) => fn(...(args.map(unwrapProxy) as T));
 }
 
+/**
+ * This is thrown by chains that don't produce blocks at every height. e.g Near, Solana. */
 export class BlockUnavailableError extends Error {
   constructor(message = BLOCK_UNAVAILBLE_ERROR_MSG) {
     super(message);
