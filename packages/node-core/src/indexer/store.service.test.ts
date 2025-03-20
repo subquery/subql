@@ -199,6 +199,9 @@ describe('Cache Provider', () => {
     await sequelize.close();
   });
 
+  beforeEach(async () => {
+    await sequelize.query(`TRUNCATE TABLE "${testSchemaName}"."accounts" CASCADE;`);
+  });
   async function cacheFlush(blockHeight: number, handle: (blockHeight: number) => Promise<void>) {
     const tx = await sequelize.transaction();
     tx.afterCommit(() => {
@@ -258,5 +261,64 @@ describe('Cache Provider', () => {
 
     allDatas = await getAllAccounts();
     expect(allDatas).toHaveLength(3);
+  });
+
+  it('Should correctly rewind to previous states', async () => {
+    const getAllAccounts = () =>
+      sequelize.query<any>(`SELECT * FROM "${testSchemaName}"."accounts"`, {
+        type: QueryTypes.SELECT,
+      });
+
+    // Set up initial data at block 5000
+    const accountEntity = {id: 'rewind-test-001', balance: 1000};
+    await cacheFlush(5000, async (blockHeight) => {
+      await Account.set(accountEntity.id, accountEntity, blockHeight);
+    });
+
+    // Modify data at block 6000
+    const updatedAccount = {id: 'rewind-test-001', balance: 2000};
+    await cacheFlush(6000, async (blockHeight) => {
+      await Account.set(updatedAccount.id, updatedAccount, blockHeight);
+    });
+
+    // Add new data at block 7000
+    const anotherAccount = {id: 'rewind-test-002', balance: 3000};
+    await cacheFlush(7000, async (blockHeight) => {
+      await Account.set(anotherAccount.id, anotherAccount, blockHeight);
+    });
+
+    // Verify current state before rewind
+    const account1 = await Account.get(accountEntity.id);
+    const account2 = await Account.get(anotherAccount.id);
+    expect(account1.balance).toEqual(2000);
+    expect(account2.balance).toEqual(3000);
+
+    // Rewind to block 6000
+    const tx1 = await sequelize.transaction();
+    await storeService.rewind({blockHeight: 6000, timestamp: new Date()} as any, tx1);
+    await tx1.commit();
+
+    let allDatas = await getAllAccounts();
+    expect(allDatas.length).toEqual(2);
+
+    // Rewind further back to block 5000
+    const tx2 = await sequelize.transaction();
+    await storeService.rewind({blockHeight: 5000, timestamp: new Date()} as any, tx2);
+    await tx2.commit();
+
+    allDatas = await getAllAccounts();
+    expect(allDatas.length).toEqual(1);
+
+    // Check database records
+    allDatas = await getAllAccounts();
+    const rewindTestDatas = allDatas.filter((data) => data.id.startsWith('rewind-test'));
+
+    // We should only have one active record for rewind-test-001 with block range starting at 5000
+    const activeRecords = rewindTestDatas.filter((data) => data._block_range[1].value === null);
+
+    expect(activeRecords.length).toEqual(1);
+    expect(activeRecords[0].id).toEqual('rewind-test-001');
+    expect(activeRecords[0].balance).toEqual(1000);
+    expect(activeRecords[0]._block_range[0].value).toEqual('5000');
   });
 });

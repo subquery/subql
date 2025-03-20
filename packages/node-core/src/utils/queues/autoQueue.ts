@@ -35,6 +35,7 @@ export class AutoQueue<T> implements IQueue {
   private pendingPromise = false;
   private queue: Queue<Action<T>>;
   private _abort = false;
+  private _resolveIdle?: () => void;
   // private processingTasks = 0;
 
   private eventEmitter = new EventEmitter2();
@@ -172,6 +173,9 @@ export class AutoQueue<T> implements IQueue {
       }
     }
 
+    // Processed all items in the queue
+    this._resolveIdle?.();
+    this._resolveIdle = undefined;
     this.pendingPromise = false;
   }
 
@@ -201,5 +205,19 @@ export class AutoQueue<T> implements IQueue {
     this.eventEmitter.on(evt, callback as (size: number) => void);
 
     return () => this.eventEmitter.off(evt, callback as (size: number) => void);
+  }
+
+  async onIdle(): Promise<void> {
+    if (this.size === 0) {
+      return;
+    }
+
+    return new Promise((resolve) => {
+      const currentResolve = this._resolveIdle;
+      this._resolveIdle = () => {
+        currentResolve?.();
+        resolve();
+      };
+    });
   }
 }

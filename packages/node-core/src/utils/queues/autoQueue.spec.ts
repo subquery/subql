@@ -193,4 +193,20 @@ describe('AutoQueue', () => {
 
     expect(results).toEqual([1, 2, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
   });
+
+  it('resolves the isIdle promise when the queue becomes idle', async () => {
+    const autoQueue = new AutoQueue<number>(10, 2, 1);
+
+    const pendingIdle = autoQueue.onIdle();
+
+    const tasks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      return v;
+    });
+
+    autoQueue.putMany(tasks);
+
+    await expect(pendingIdle).resolves.toBeUndefined();
+  });
 });
