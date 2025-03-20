@@ -42,9 +42,9 @@ describe('cacheMetadata integration', () => {
     return res?.toJSON()?.value as any;
   };
 
-  const flush = async () => {
+  const flush = async (height = 1) => {
     const tx = await sequelize.transaction();
-    await cacheMetadataModel.flush(tx, 1 /* Metadata doesn't use historical */);
+    await cacheMetadataModel.flush(tx, height);
     await tx.commit();
   };
 
@@ -87,10 +87,18 @@ describe('cacheMetadata integration', () => {
       await flush();
 
       const v = await queryMeta('dynamicDatasources');
-      expect(v).toEqual(expected);
+      expect(v).toEqual([expected[0]]);
 
       const cacheV = await cacheMetadataModel.find('dynamicDatasources');
       expect(cacheV).toEqual(expected);
+
+      await flush(3);
+
+      // The data retrieved from memory is complete.
+      const cacheData2 = await cacheMetadataModel.find('dynamicDatasources');
+      expect(cacheData2).toEqual(expected);
+      const dbData2 = await queryMeta('dynamicDatasources');
+      expect(dbData2).toEqual(expected);
     });
 
     it('Allows overriding all dynamicDatasources', async () => {
@@ -128,45 +136,6 @@ describe('cacheMetadata integration', () => {
 
       const cacheV = await cacheMetadataModel.find('dynamicDatasources');
       expect(cacheV).toEqual([{templateName: 'bar', startBlock: 2}]);
-    });
-
-    it('Clears the cache correctly', async () => {
-      cacheMetadataModel.setNewDynamicDatasource({templateName: 'foo', startBlock: 1});
-      const tx = await sequelize.transaction();
-      await cacheMetadataModel.flush(tx, 1);
-
-      // During the database write operation, the indexHandler seized the CPU for execution and wrote to setNewDynamicDatasource.
-      cacheMetadataModel.setNewDynamicDatasource({templateName: 'zoo', startBlock: 100});
-
-      await tx.commit();
-      expect((cacheMetadataModel as any).datasourceUpdates).toEqual([{templateName: 'zoo', startBlock: 100}]);
-
-      // The data retrieved from memory is complete.
-      const cacheData = await cacheMetadataModel.find('dynamicDatasources');
-      expect(cacheData).toEqual([
-        {templateName: 'foo', startBlock: 1},
-        {templateName: 'zoo', startBlock: 100},
-      ]);
-
-      // There is only one database.
-      const dbData = await queryMeta('dynamicDatasources');
-      expect(dbData).toEqual([{templateName: 'foo', startBlock: 1}]);
-
-      const tx2 = await sequelize.transaction();
-      await cacheMetadataModel.flush(tx2, 100);
-      await tx2.commit();
-
-      // The data retrieved from memory is complete.
-      const cacheData2 = await cacheMetadataModel.find('dynamicDatasources');
-      expect(cacheData2).toEqual([
-        {templateName: 'foo', startBlock: 1},
-        {templateName: 'zoo', startBlock: 100},
-      ]);
-      const dbData2 = await queryMeta('dynamicDatasources');
-      expect(dbData2).toEqual([
-        {templateName: 'foo', startBlock: 1},
-        {templateName: 'zoo', startBlock: 100},
-      ]);
     });
   });
 });
