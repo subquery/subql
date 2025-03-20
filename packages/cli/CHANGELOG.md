@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.7.1] - 2025-03-20
+### Fixed
+- Testing not updating test results correctly if fetching block fails (#2716)
+
 ## [5.7.0] - 2025-02-25
 ### Changed
 - Bump `typescript` version
@@ -736,7 +740,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.7.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.7.1...HEAD
+[5.7.1]: https://github.com/subquery/subql/compare/cli/5.7.0...cli/5.7.1
 [5.7.0]: https://github.com/subquery/subql/compare/cli/5.6.0...cli/5.7.0
 [5.6.0]: https://github.com/subquery/subql/compare/cli/5.5.2...cli/5.6.0
 [5.5.2]: https://github.com/subquery/subql/compare/cli/5.5.1...cli/5.5.2
