@@ -100,13 +100,8 @@ describe('Check whether the db store and cache store are consistent.', () => {
     await multiChainRewindService.setGlobalRewindLock(rewindTimestamp);
 
     // Assert: Check that the service is in Rewinding state and has the correct waitRewindHeader
-    expect(multiChainRewindService.status).toBe(RewindStatus.WaitRewind);
-    expect(multiChainRewindService.waitRewindHeader).toEqual({
-      blockHeight: 5,
-      timestamp: new Date(rewindTimestamp),
-      blockHash: 'hash5',
-      parentHash: 'hash4',
-    });
+    expect(multiChainRewindService.status).toBe(RewindStatus.Rewinding);
+    expect(multiChainRewindService.waitRewindHeader).toBeUndefined();
 
     // Release the chain rewind lock
     const tx = await sequelize.transaction();

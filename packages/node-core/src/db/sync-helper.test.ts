@@ -267,6 +267,7 @@ describe('Multi-chain notification', () => {
     await sequelize.query(rewindSqlFromTimestamp(rewindTimestamp - 1));
 
     await sequelize.query(`DELETE FROM "${schema}"."_global" WHERE "key" = '${RewindLockKey}'`);
+    await delay(1);
 
     expect(listener).toHaveBeenCalledTimes(3);
     expect(listener).toHaveBeenNthCalledWith(1, MultiChainRewindEvent.Rewind);
