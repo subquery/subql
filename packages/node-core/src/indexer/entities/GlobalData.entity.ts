@@ -16,7 +16,7 @@ export type RewindLockInfo = {
   /** Timestamp to rewind to. */
   timestamp: number;
   /** Remaining number of chains to be rolled back */
-  chainNum: number;
+  chainsCount: number;
 };
 export interface GlobalDataKeys {
   rewindLock: RewindLockInfo;

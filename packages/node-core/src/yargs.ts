@@ -122,23 +122,11 @@ export function yargsBuilder<
                 type: 'string',
                 choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
               },
-              'multi-chain': {
-                alias: 'multichain',
-                demandOption: false,
-                default: false,
-                describe: 'Enables indexing multiple subquery projects into the same database schema',
-                type: 'boolean',
-              },
               'network-dictionary': {
                 alias: 'd',
                 demandOption: false,
                 describe: 'Specify the dictionary api for this network',
                 type: 'string',
-              },
-              'network-endpoint': {
-                demandOption: false,
-                type: 'string',
-                describe: 'Blockchain network endpoint to connect',
               },
               'primary-network-endpoint': {
                 demandOption: false,
@@ -379,6 +367,18 @@ export function yargsBuilder<
           default: process.cwd(),
           describe: 'Local path or IPFS cid of the subquery project',
           type: 'string',
+        },
+        'network-endpoint': {
+          demandOption: false,
+          type: 'string',
+          describe: 'Blockchain network endpoint to connect',
+        },
+        'multi-chain': {
+          alias: 'multichain',
+          demandOption: false,
+          default: false,
+          describe: 'Enables indexing multiple subquery projects into the same database schema',
+          type: 'boolean',
         },
       })
   );

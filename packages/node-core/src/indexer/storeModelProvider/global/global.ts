@@ -57,10 +57,13 @@ export class PlainGlobalModel implements IGlobalData {
    * @returns
    */
   private serializeRewindLock(rewindTimestamp: number, chainTotal: number): string {
-    return JSON.stringify({timestamp: rewindTimestamp, chainNum: chainTotal});
+    return JSON.stringify({timestamp: rewindTimestamp, chainsCount: chainTotal});
   }
 
-  async getGlobalRewindStatus() {
+  async getGlobalRewindStatus(): Promise<{
+    rewindTimestamp: GlobalDataKeys[RewindTimestampKey];
+    rewindLock?: GlobalDataKeys[typeof RewindLockKey];
+  }> {
     const rewindTimestampKey = generateRewindTimestampKey(this.chainId);
 
     const records = await this.model.findAll({
@@ -142,8 +145,8 @@ export class PlainGlobalModel implements IGlobalData {
       `UPDATE "${this.dbSchema}"."${globalTable}"
       SET value = jsonb_set(
         value, 
-        '{chainNum}', 
-        to_jsonb(COALESCE(("${globalTable}"."value" ->> 'chainNum')::BIGINT, 0) - 1), 
+        '{chainsCount}', 
+        to_jsonb(COALESCE(("${globalTable}"."value" ->> 'chainsCount')::BIGINT, 0) - 1), 
         false
       )
       WHERE "${globalTable}"."key" = '${RewindLockKey}' AND ("${globalTable}"."value"->>'timestamp')::BIGINT = ${rewindTimestamp}
@@ -158,7 +161,7 @@ export class PlainGlobalModel implements IGlobalData {
     if (results.length === 0) {
       return 0;
     }
-    const chainNum = results[0].value.chainNum;
+    const chainsCount = results[0].value.chainsCount;
 
     const rewindTimestampKey = generateRewindTimestampKey(this.chainId);
     const [affectedCount] = await this.model.update(
@@ -176,10 +179,10 @@ export class PlainGlobalModel implements IGlobalData {
       `not found rewind timestamp key in global data, chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`
     );
 
-    if (chainNum === 0) {
+    if (chainsCount === 0) {
       await this.model.destroy({where: {key: RewindLockKey}, transaction: tx});
     }
 
-    return chainNum;
+    return chainsCount;
   }
 }

@@ -99,11 +99,8 @@ describe('Check whether the db store and cache store are consistent.', () => {
     const rewindTimestamp = genBlockTimestamp(5);
     await multiChainRewindService.setGlobalRewindLock(rewindTimestamp);
 
-    // Wait briefly for the PostgreSQL listener to process the notification
-    await delay(1);
-
     // Assert: Check that the service is in Rewinding state and has the correct waitRewindHeader
-    expect(multiChainRewindService.status).toBe(RewindStatus.Rewinding);
+    expect(multiChainRewindService.status).toBe(RewindStatus.WaitRewind);
     expect(multiChainRewindService.waitRewindHeader).toEqual({
       blockHeight: 5,
       timestamp: new Date(rewindTimestamp),

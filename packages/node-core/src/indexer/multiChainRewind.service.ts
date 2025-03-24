@@ -28,6 +28,8 @@ export enum RewindStatus {
   WaitOtherChain = 'waitOtherChain',
   /** The current chain is executing rewind. */
   Rewinding = 'rewinding',
+  /** The current chain is waiting for rewind. */
+  WaitRewind = 'waitRewind',
 }
 export interface IMultiChainRewindService {
   chainId: string;
@@ -74,7 +76,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     this.rewindTriggerName = hashName(this.dbSchema, 'rewind_trigger', '_global');
   }
 
-  private set chainId(chainId: string) {
+  set chainId(chainId: string) {
     this._chainId = chainId;
   }
 
@@ -106,22 +108,21 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   async init(chainId: string, reindex: (targetHeader: Header) => Promise<void>) {
     this.chainId = chainId;
 
-    if (this.nodeConfig.multiChain) {
-      await this.sequelize.query(`${createRewindTriggerFunction(this.dbSchema)}`);
+    if (!this.nodeConfig.multiChain) return;
 
-      const rewindTriggers = await getTriggers(this.sequelize, this.rewindTriggerName);
-      if (rewindTriggers.length === 0) {
-        await this.sequelize.query(`${createRewindTrigger(this.dbSchema)}`);
-      }
+    await this.sequelize.query(`${createRewindTriggerFunction(this.dbSchema)}`);
+    const rewindTriggers = await getTriggers(this.sequelize, this.rewindTriggerName);
+    if (rewindTriggers.length === 0) {
+      await this.sequelize.query(`${createRewindTrigger(this.dbSchema)}`);
+    }
 
-      // Register a listener and create a schema notification sending function.
-      await this.registerPgListener();
+    // Register a listener and create a schema notification sending function.
+    await this.registerPgListener();
 
-      if (this.waitRewindHeader) {
-        const rewindHeader = {...this.waitRewindHeader};
-        await reindex(rewindHeader);
-        return rewindHeader;
-      }
+    if (this.waitRewindHeader) {
+      const rewindHeader = {...this.waitRewindHeader};
+      await reindex(rewindHeader);
+      return rewindHeader;
     }
   }
 
@@ -145,7 +146,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
           case MultiChainRewindEvent.RewindTimestampDecreased: {
             const {rewindTimestamp} = await this.globalModel.getGlobalRewindStatus();
             this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
-            this.status = RewindStatus.Rewinding;
+            this.status = RewindStatus.WaitRewind;
 
             // Trigger the rewind event, and let the fetchService listen to the message and handle the queueFlush.
             this.eventEmitter.emit(eventType, {
@@ -175,7 +176,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       this.status = RewindStatus.WaitOtherChain;
     }
     if (rewindTimestamp) {
-      this.status = RewindStatus.Rewinding;
+      this.status = RewindStatus.WaitRewind;
       this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
     }
   }
@@ -202,12 +203,12 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   }
 
   async releaseChainRewindLock(tx: Transaction, rewindTimestamp: number): Promise<number> {
-    const chainNum = await this.globalModel.releaseChainRewindLock(tx, rewindTimestamp);
+    const chainsCount = await this.globalModel.releaseChainRewindLock(tx, rewindTimestamp);
     // The current chain has completed the rewind, and we still need to wait for other chains to finish.
     // When fully synchronized, set the status back to normal by pgListener.
     this.status = RewindStatus.WaitOtherChain;
-    logger.info(`Rewind success chainId: ${JSON.stringify({chainNum, chainId: this.chainId, rewindTimestamp})}`);
-    return chainNum;
+    logger.info(`Rewind success chainId: ${JSON.stringify({chainsCount, chainId: this.chainId, rewindTimestamp})}`);
+    return chainsCount;
   }
 
   /**

@@ -6,6 +6,7 @@ import {Test} from '@nestjs/testing';
 import {delay} from '@subql/common';
 import {hashName} from '@subql/utils';
 import {Sequelize} from '@subql/x-sequelize';
+import {PoolClient} from 'pg';
 import {NodeConfig} from '../configure/NodeConfig';
 import {MultiChainRewindEvent} from '../events';
 import {RewindLockKey} from '../indexer';
@@ -54,7 +55,7 @@ describe('sync helper test', () => {
   }, 50000);
 
   describe('has the correct notification trigger payload', () => {
-    let client: unknown;
+    let client: PoolClient;
 
     afterEach(async () => {
       if (client) {
@@ -85,11 +86,11 @@ describe('sync helper test', () => {
       await sequelize.query(createSendNotificationTriggerFunction(schema));
       await sequelize.query(createNotifyTrigger(schema, tableName));
 
-      client = await sequelize.connectionManager.getConnection({
+      client = (await sequelize.connectionManager.getConnection({
         type: 'read',
-      });
+      })) as PoolClient;
 
-      await (client as any).query('LISTEN "0xc4e66f9e1358fa3c"');
+      await client.query('LISTEN "0xc4e66f9e1358fa3c"');
 
       const listener = jest.fn();
       (client as any).on('notification', (msg: any) => {
@@ -139,9 +140,9 @@ describe('sync helper test', () => {
       await sequelize.query(createSendNotificationTriggerFunction(schema));
       await sequelize.query(createNotifyTrigger(schema, tableName));
 
-      client = await sequelize.connectionManager.getConnection({
+      client = (await sequelize.connectionManager.getConnection({
         type: 'read',
-      });
+      })) as PoolClient;
 
       await (client as any).query('LISTEN "0xc4e66f9e1358fa3c"');
 
@@ -200,7 +201,7 @@ describe('Multi-chain notification', () => {
   let sequelize: Sequelize;
   const schema = 'multi-chain-test';
 
-  let client: unknown;
+  let client: PoolClient;
 
   const listenerHash = hashName(schema, 'rewind_trigger', '_global');
 
@@ -238,9 +239,9 @@ describe('Multi-chain notification', () => {
     await sequelize.query(createRewindTriggerFunction(schema));
     await sequelize.query(createRewindTrigger(schema));
 
-    client = await sequelize.connectionManager.getConnection({
+    client = (await sequelize.connectionManager.getConnection({
       type: 'read',
-    });
+    })) as PoolClient;
     await (client as any).query(`LISTEN "${listenerHash}"`);
 
     const listener = jest.fn();
@@ -253,7 +254,7 @@ describe('Multi-chain notification', () => {
       timestamp: number
     ) => `INSERT INTO "${schema}"."_global" ( "key", "value", "createdAt", "updatedAt" )
       VALUES
-      ( 'rewindLock', '{"timestamp":${timestamp},"chainNum":1}', now(), now()) 
+      ( 'rewindLock', '{"timestamp":${timestamp},"chainsCount":1}', now(), now()) 
       ON CONFLICT ( "key" ) 
       DO UPDATE 
       SET "key" = EXCLUDED."key",
@@ -262,13 +263,11 @@ describe('Multi-chain notification', () => {
       WHERE "_global"."key" = '${RewindLockKey}' AND ("_global"."value"->>'timestamp')::BIGINT > ${timestamp}`;
     const rewindTimestamp = 1597669506000;
     await sequelize.query(rewindSqlFromTimestamp(rewindTimestamp));
-    await delay(1);
 
     await sequelize.query(rewindSqlFromTimestamp(rewindTimestamp - 1));
-    await delay(1);
 
     await sequelize.query(`DELETE FROM "${schema}"."_global" WHERE "key" = '${RewindLockKey}'`);
-    await delay(1);
+
     expect(listener).toHaveBeenCalledTimes(3);
     expect(listener).toHaveBeenNthCalledWith(1, MultiChainRewindEvent.Rewind);
     expect(listener).toHaveBeenNthCalledWith(2, MultiChainRewindEvent.RewindTimestampDecreased);

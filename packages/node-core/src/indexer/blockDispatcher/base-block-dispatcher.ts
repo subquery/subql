@@ -226,11 +226,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     }
 
     // TODO can this work without
-    const timestamp = await this.blockChainService.getBlockTimestamp(blockPayload.height);
-    this._pendingRewindHeader = {
-      blockHeight: Number(blockPayload.height),
-      timestamp,
-    } as Header;
+    this._pendingRewindHeader = await this.blockChainService.getHeaderForHeight(blockPayload.height);
     const message = `Received admin command to rewind to block ${blockPayload.height}`;
     monitorWrite(`***** [ADMIN] ${message}`);
     logger.warn(message);

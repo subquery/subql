@@ -202,7 +202,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
       // If we're rewinding, we should wait until it's done
       const multiChainStatus = this.multiChainRewindService.status;
 
-      if (RewindStatus.Rewinding === multiChainStatus) {
+      if (RewindStatus.WaitRewind === multiChainStatus) {
         assert(this.multiChainRewindService.waitRewindHeader, 'Multi chain Rewind header is not set');
         await this.projectService.reindex(this.multiChainRewindService.waitRewindHeader);
         continue;
@@ -212,6 +212,12 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
         logger.info(
           `Waiting for all chains to complete rewind, current chainId: ${this.multiChainRewindService.chainId}`
         );
+        await delay(multiChainRewindDelay);
+        continue;
+      }
+
+      if (RewindStatus.Rewinding === multiChainStatus) {
+        logger.info(`Rewinding, current chainId: ${this.multiChainRewindService.chainId}`);
         await delay(multiChainRewindDelay);
         continue;
       }
@@ -404,6 +410,6 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
   processMultiChainRewind(payload: MultiChainRewindPayload) {
     logger.info(`Received rewind event, height: ${payload.height}`);
     this.resetForNewDs(payload.height);
-    this.blockDispatcher.setLatestProcessedHeight(payload.height);
+    this.blockDispatcher.setLatestProcessedHeight(payload.height + 1);
   }
 }
