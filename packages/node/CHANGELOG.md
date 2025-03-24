@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.6.1] - 2025-03-24
+### Changed
+- Update node-core with fix for workers max queue error
+
 ## [5.6.0] - 2025-03-20
 ### Changed
 - Update @subql/node-core dependencies
@@ -600,7 +604,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.6.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.6.1...HEAD
+[5.6.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.6.0...node-ethereum/5.6.1
 [5.6.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.5.0...node-ethereum/5.6.0
 [5.5.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.4.0...node-ethereum/5.5.0
 [5.4.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.3.0...node-ethereum/5.4.0
