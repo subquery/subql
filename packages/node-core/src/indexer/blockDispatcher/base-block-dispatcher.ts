@@ -67,8 +67,9 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     private projectUpgradeService: IProjectUpgradeService,
     protected queue: Q,
     protected storeService: StoreService,
-    protected storeModelProvider: IStoreModelProvider,
-    private poiSyncService: PoiSyncService
+    private storeModelProvider: IStoreModelProvider,
+    private poiSyncService: PoiSyncService,
+    private blockChainService: ICoreBlockchainService
   ) {}
 
   abstract enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): void | Promise<void>;
