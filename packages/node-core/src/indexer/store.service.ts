@@ -77,6 +77,7 @@ export class StoreService {
   private _historical?: HistoricalMode;
   private _metadataModel?: IMetadata;
   private _schema?: string;
+  private _isMultichain?: boolean;
   // Should be updated each block
   private _blockHeader?: Header;
   private _operationStack?: StoreOperations;
@@ -133,6 +134,11 @@ export class StoreService {
     return this.#transaction;
   }
 
+  get isMultichain(): boolean {
+    assert(this._isMultichain !== undefined, new NoInitError());
+    return this._isMultichain;
+  }
+
   async syncDbSize(): Promise<bigint> {
     if (!this._lastTimeDbSizeChecked || Date.now() - this._lastTimeDbSizeChecked > DB_SIZE_CACHE_TIMEOUT) {
       this._lastTimeDbSizeChecked = Date.now();
@@ -166,18 +172,20 @@ export class StoreService {
       this.poiRepo = usePoiFactory(this.sequelize, schema);
     }
 
+    this._schema = schema;
+
+    await this.setMultiChainProject();
+
     this._metaDataRepo = await MetadataFactory(
       this.sequelize,
       schema,
-      this.config.multiChain,
+      this.isMultichain,
       this.subqueryProject.network.chainId
     );
 
-    if (this.config.multiChain) {
+    if (this.isMultichain) {
       this._globalDataRepo = GlobalDataFactory(this.sequelize, schema);
     }
-
-    this._schema = schema;
 
     await this.sequelize.sync();
 
@@ -513,7 +521,7 @@ group by
   }
 
   private async initChainRewindTimestamp() {
-    if (!this.config.multiChain) return;
+    if (!this.isMultichain) return;
 
     const tx = await this.sequelize.transaction();
     if ((await this.getRewindTimestamp(tx)) !== undefined) {
@@ -532,6 +540,19 @@ group by
     ]);
 
     return {height: height || 0, timestamp};
+  }
+
+  async setMultiChainProject() {
+    if (this.config.multiChain) {
+      this._isMultichain = true;
+      return;
+    }
+
+    const tableRes = await this.sequelize.query<Array<string>>(
+      `SELECT table_name FROM information_schema.tables where table_schema='${this.schema}' and table_name = '_global'`,
+      {type: QueryTypes.SELECT}
+    );
+    this._isMultichain = tableRes.length > 0;
   }
 }
 

@@ -108,7 +108,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   async init(chainId: string, reindex: (targetHeader: Header) => Promise<void>) {
     this.chainId = chainId;
 
-    if (!this.nodeConfig.multiChain) return;
+    if (!this.storeService.isMultichain) return;
 
     await this.sequelize.query(`${createRewindTriggerFunction(this.dbSchema)}`);
     const rewindTriggers = await getTriggers(this.sequelize, this.rewindTriggerName);

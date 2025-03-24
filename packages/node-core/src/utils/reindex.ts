@@ -46,7 +46,6 @@ export async function reindex(
   startHeight: number,
   targetBlockHeader: Header,
   lastProcessed: {height: number; timestamp?: number},
-  nodeConfig: NodeConfig,
   storeService: StoreService,
   unfinalizedBlockService: IUnfinalizedBlocksService<any>,
   dynamicDsService: DynamicDsService<any>,
@@ -63,7 +62,7 @@ export async function reindex(
     logger.warn(
       `Skipping reindexing to ${storeService.historical} ${targetUnit}: current indexing height ${lastUnit} is behind requested ${storeService.historical}`
     );
-    if (nodeConfig.multiChain) {
+    if (storeService.isMultichain) {
       const tx = await sequelize.transaction();
       await multichainRewindService.releaseChainRewindLock(tx, targetUnit);
       await tx.commit();
@@ -73,7 +72,7 @@ export async function reindex(
 
   // if startHeight is greater than the targetHeight, just force clean
   // We prevent the entire data from being cleared due to multiple chains because the startblock is uncertain in multi-chain projects.
-  if (targetBlockHeader.blockHeight < startHeight && !nodeConfig.multiChain) {
+  if (targetBlockHeader.blockHeight < startHeight && !storeService.isMultichain) {
     logger.info(
       `targetHeight: ${targetBlockHeader.blockHeight} is less than startHeight: ${startHeight}. Hence executing force-clean`
     );
@@ -87,7 +86,7 @@ export async function reindex(
   }
 
   logger.info(`Reindexing to ${storeService.historical}: ${targetUnit}`);
-  if (nodeConfig.multiChain) {
+  if (storeService.isMultichain) {
     await multichainRewindService.setGlobalRewindLock(targetUnit);
   }
 
@@ -118,7 +117,7 @@ export async function reindex(
     await storeService.modelProvider.metadata.flush?.(transaction, targetUnit);
 
     // release rewind lock
-    if (nodeConfig.multiChain) {
+    if (storeService.isMultichain) {
       await multichainRewindService.releaseChainRewindLock(transaction, targetUnit);
     }
 

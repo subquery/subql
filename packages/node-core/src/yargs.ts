@@ -122,6 +122,13 @@ export function yargsBuilder<
                 type: 'string',
                 choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
               },
+              'multi-chain': {
+                alias: 'multichain',
+                demandOption: false,
+                default: false,
+                describe: 'Enables indexing multiple subquery projects into the same database schema',
+                type: 'boolean',
+              },
               'network-dictionary': {
                 alias: 'd',
                 demandOption: false,
@@ -372,13 +379,6 @@ export function yargsBuilder<
           demandOption: false,
           type: 'string',
           describe: 'Blockchain network endpoint to connect',
-        },
-        'multi-chain': {
-          alias: 'multichain',
-          demandOption: false,
-          default: false,
-          describe: 'Enables indexing multiple subquery projects into the same database schema',
-          type: 'boolean',
         },
       })
   );
