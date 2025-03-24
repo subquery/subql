@@ -81,10 +81,12 @@ export class AutoQueue<T> implements IQueue {
    * We don't want this function to be async
    * If it is async it will return a promise that throws rather than throwing the function
    */
-  async put(item: Task<T>): Promise<T> {
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  put(item: Task<T>): Promise<T> {
     return this.putMany([item])[0];
   }
 
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
   putMany(tasks: Array<Task<T>>): Promise<T>[] {
     if (this.freeSpace && tasks.length > this.freeSpace) {
       throw new Error(`${this.name} Queue exceeds max size`);

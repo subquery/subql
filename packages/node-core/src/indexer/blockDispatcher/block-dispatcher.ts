@@ -81,6 +81,7 @@ export class BlockDispatcher<B, DS extends BaseDataSource>
   onApplicationShutdown(): void {
     this.isShutdown = true;
     this.processQueue.abort();
+    this.fetchQueue.abort();
   }
 
   enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight: number): void {
