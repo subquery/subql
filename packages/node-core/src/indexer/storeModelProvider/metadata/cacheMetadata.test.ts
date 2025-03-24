@@ -42,9 +42,9 @@ describe('cacheMetadata integration', () => {
     return res?.toJSON()?.value as any;
   };
 
-  const flush = async () => {
+  const flush = async (height: number) => {
     const tx = await sequelize.transaction();
-    await cacheMetadataModel.flush(tx, 1 /* Metadata doesn't use historical */);
+    await cacheMetadataModel.flush(tx, height);
     await tx.commit();
   };
 
@@ -84,13 +84,22 @@ describe('cacheMetadata integration', () => {
         {templateName: 'baz', startBlock: 3},
       ];
 
-      await flush();
+      await flush(1);
+      expect((cacheMetadataModel as any).datasourceUpdates).toEqual([expected[1], expected[2]]);
 
       const v = await queryMeta('dynamicDatasources');
-      expect(v).toEqual(expected);
+      expect(v).toEqual([expected[0]]);
 
       const cacheV = await cacheMetadataModel.find('dynamicDatasources');
       expect(cacheV).toEqual(expected);
+
+      await flush(3);
+
+      // The data retrieved from memory is complete.
+      const cacheData2 = await cacheMetadataModel.find('dynamicDatasources');
+      expect(cacheData2).toEqual(expected);
+      const dbData2 = await queryMeta('dynamicDatasources');
+      expect(dbData2).toEqual(expected);
     });
 
     it('Allows overriding all dynamicDatasources', async () => {
@@ -98,7 +107,7 @@ describe('cacheMetadata integration', () => {
 
       cacheMetadataModel.set('dynamicDatasources', [{templateName: 'bar', startBlock: 2}]);
 
-      await flush();
+      await flush(1);
 
       const v = await queryMeta('dynamicDatasources');
       expect(v).toEqual([{templateName: 'bar', startBlock: 2}]);
@@ -106,7 +115,7 @@ describe('cacheMetadata integration', () => {
 
     it('Caches the dynamicDatasources correctly after using set', async () => {
       cacheMetadataModel.setNewDynamicDatasource({templateName: 'foo', startBlock: 1});
-      await flush();
+      await flush(1);
 
       const cacheV = await cacheMetadataModel.find('dynamicDatasources');
       expect(cacheV).toEqual([{templateName: 'foo', startBlock: 1}]);

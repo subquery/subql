@@ -25,12 +25,11 @@ import {
 } from '../../indexer';
 import {getLogger} from '../../logger';
 import {monitorWrite} from '../../process';
-import {AutoQueue, isTaskFlushedError} from '../../utils';
+import {AutoQueue} from '../../utils';
 import {MonitorServiceInterface} from '../monitor.service';
 import {StoreService} from '../store.service';
 import {IStoreModelProvider} from '../storeModelProvider';
-import {ISubqueryProject, IProjectService} from '../types';
-import {isBlockUnavailableError} from '../worker/utils';
+import {ISubqueryProject, IProjectService, Header} from '../types';
 import {BaseBlockDispatcher} from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
@@ -52,12 +51,12 @@ export class WorkerBlockDispatcher<
     Block = any,
     ApiConn extends IApiConnectionSpecific = IApiConnectionSpecific,
   >
-  extends BaseBlockDispatcher<AutoQueue<void>, DS, Block>
+  extends BaseBlockDispatcher<AutoQueue<Header>, DS, Block>
   implements OnApplicationShutdown
 {
   protected workers: TerminateableWorker<Worker>[] = [];
   private numWorkers: number;
-  private isShutdown = false;
+  private processQueue: AutoQueue<void>;
 
   private createWorker: () => Promise<TerminateableWorker<Worker>>;
 
@@ -86,12 +85,14 @@ export class WorkerBlockDispatcher<
       project,
       projectService,
       projectUpgradeService,
-      initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Worker'),
+      initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Fetch'),
       storeService,
       storeModelProvider,
       poiSyncService,
       blockchainService
     );
+
+    this.processQueue = initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Process');
 
     this.createWorker = () =>
       createIndexerWorker<Worker, ApiConn, Block, DS>(
@@ -143,6 +144,10 @@ export class WorkerBlockDispatcher<
 
     logger.info(`Enqueueing blocks ${heights[0]}...${last(heights)}, total ${heights.length} blocks`);
 
+    // Needs to happen before enqueuing heights so discardBlock check works.
+    // Unlike with the normal dispatcher there is not a queue ob blockHeights to delay this.
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights as number[]) ?? this.latestBufferedHeight;
+
     // eslint-disable-next-line no-constant-condition
     if (true) {
       /*
@@ -160,8 +165,6 @@ export class WorkerBlockDispatcher<
        */
       heights.map(async (height) => this.enqueueBlock(height as number, await this.getNextWorkerIndex()));
     }
-
-    this.latestBufferedHeight = latestBufferHeight ?? last(heights as number[]) ?? this.latestBufferedHeight;
   }
 
   private enqueueBlock(height: number, workerIdx: number): void {
@@ -173,46 +176,30 @@ export class WorkerBlockDispatcher<
     // Used to compare before and after as a way to check if queue was flushed
     const bufferedHeight = this.latestBufferedHeight;
 
-    const pendingBlock = this.blockchainService.fetchBlockWorker(worker, height, {workers: this.workers});
+    /*
+     Wrap the promise in a fetchQueue for 2 reasons:
+     1. It retains the order when resolving the fetched promises
+     2. It means `this.queue` doesn't fill up with tasks awaiting pendingBlocks which then means we can abort fetching and wait for idle
+    */
+    const pendingBlock = this.queue.put(() =>
+      this.blockchainService.fetchBlockWorker(worker, height, {workers: this.workers})
+    );
 
-    const processBlock = async () => {
-      try {
-        const header = await pendingBlock;
-        if (bufferedHeight > this.latestBufferedHeight) {
-          logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
-          return;
-        }
-
-        await this.preProcessBlock(header);
-
+    void this.pipeBlock({
+      fetchTask: pendingBlock,
+      processBlock: async () => {
         monitorWrite(`Processing from worker #${workerIdx}`);
-        const {dynamicDsCreated, reindexBlockHeader} = await worker.processBlock(height);
-
-        await this.postProcessBlock(header, {
-          dynamicDsCreated,
-          reindexBlockHeader,
-        });
-      } catch (e: any) {
-        // TODO discard any cache changes from this block height
-        if (isTaskFlushedError(e)) {
-          return;
-        }
-        if (isBlockUnavailableError(e)) {
-          return;
-        }
-        logger.error(
-          e,
-          `failed to index block at height ${height} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''}`
-        );
-        process.exit(1);
-      }
-    };
-
-    void this.queue.put(processBlock).catch((e) => {
-      if (isTaskFlushedError(e)) {
-        return;
-      }
-      throw e;
+        return worker.processBlock(height);
+      },
+      discardBlock: () => bufferedHeight > this.latestBufferedHeight,
+      processQueue: this.processQueue,
+      abortFetching: async () => {
+        await Promise.all(this.workers.map((w) => w.abortFetching()));
+        // Wait for any pending blocks to be processed
+        this.queue.abort();
+      },
+      getHeader: (header) => header,
+      height,
     });
   }
 

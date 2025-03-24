@@ -13,7 +13,7 @@ import {getBlockHeight, IBlock, PoiSyncService, StoreService} from '../../indexe
 import {getLogger} from '../../logger';
 import {exitWithError, monitorWrite} from '../../process';
 import {profilerWrap} from '../../profiler';
-import {Queue, AutoQueue, RampQueue, delay, isTaskFlushedError} from '../../utils';
+import {Queue, AutoQueue, RampQueue, delay} from '../../utils';
 import {IStoreModelProvider} from '../storeModelProvider';
 import {IIndexerManager, IProjectService, ISubqueryProject} from '../types';
 import {BaseBlockDispatcher} from './base-block-dispatcher';
@@ -35,7 +35,6 @@ export class BlockDispatcher<B, DS extends BaseDataSource>
   private fetchBlocksBatches: BatchBlockFetcher<B>;
 
   private fetching = false;
-  private isShutdown = false;
 
   constructor(
     nodeConfig: NodeConfig,
@@ -83,6 +82,7 @@ export class BlockDispatcher<B, DS extends BaseDataSource>
   onApplicationShutdown(): void {
     this.isShutdown = true;
     this.processQueue.abort();
+    this.fetchQueue.abort();
   }
 
   enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight: number): void {
@@ -135,74 +135,45 @@ export class BlockDispatcher<B, DS extends BaseDataSource>
 
         // Used to compare before and after as a way to check if queue was flushed
         const bufferedHeight = this._latestBufferedHeight;
-        void this.fetchQueue
-          .put(async () => {
-            if (typeof blockOrNum !== 'number') {
-              // Type is of block
-              return blockOrNum;
-            }
-            const [block] = await this.fetchBlocksBatches([blockOrNum]);
 
-            return block;
-          })
-          .then(
-            (block) => {
-              const header = block.getHeader();
+        const pendingBlock = this.fetchQueue.put(async () => {
+          if (typeof blockOrNum !== 'number') {
+            // Type is of block
+            return blockOrNum;
+          }
+          const [block] = await this.fetchBlocksBatches([blockOrNum]);
 
-              return this.processQueue.put(async () => {
-                // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
-                // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block
-                const peeked = this.queue.peek();
-                if (
-                  bufferedHeight > this._latestBufferedHeight ||
-                  (peeked && getBlockHeight(peeked) < header.blockHeight)
-                ) {
-                  logger.info(`Queue was reset for new DS, discarding fetched blocks`);
-                  return;
-                }
+          return block;
+        });
 
-                try {
-                  await this.preProcessBlock(header);
-                  monitorWrite(`Processing from main thread`);
-                  // Inject runtimeVersion here to enhance api.at preparation
-                  const processBlockResponse = await this.indexerManager.indexBlock(
-                    block,
-                    await this.projectService.getDataSources(block.getHeader().blockHeight)
-                  );
-                  await this.postProcessBlock(header, processBlockResponse);
-                  //set block to null for garbage collection
-                  (block as any) = null;
-                } catch (e: any) {
-                  // TODO discard any cache changes from this block height
-                  if (this.isShutdown) {
-                    return;
-                  }
-                  logger.error(
-                    e,
-                    `Failed to index block at height ${header.blockHeight} ${
-                      e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
-                    }`
-                  );
-                  throw e;
-                }
-              });
-            },
-            (e) => {
-              if (isTaskFlushedError(e)) {
-                // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
-                return;
-              }
-              logger.error(e, `Failed to fetch block ${getBlockHeight(blockOrNum)}.`);
-              throw e;
-            }
-          )
-          .catch((e) => {
-            if (isTaskFlushedError(e)) {
-              // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
-              return;
-            }
-            exitWithError(new Error(`Failed to enqueue fetched block to process`, {cause: e}), logger);
-          });
+        void this.pipeBlock({
+          fetchTask: pendingBlock,
+          processBlock: async (block: IBlock<B>) => {
+            monitorWrite(`Processing from main thread`);
+            // Inject runtimeVersion here to enhance api.at preparation
+            const processBlockResponse = await this.indexerManager.indexBlock(
+              block,
+              await this.projectService.getDataSources(block.getHeader().blockHeight)
+            );
+
+            //set block to null for garbage collection
+            (block as any) = null;
+            return processBlockResponse;
+          },
+          discardBlock: (header) => {
+            // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
+            // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block
+            const peeked = this.queue.peek();
+            return !!(
+              bufferedHeight > this._latestBufferedHeight ||
+              (peeked && getBlockHeight(peeked) < header.blockHeight)
+            );
+          },
+          processQueue: this.processQueue,
+          abortFetching: this.fetchQueue.abort.bind(this.fetchQueue),
+          getHeader: (block) => block.getHeader(),
+          height: getBlockHeight(blockOrNum),
+        });
 
         this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
           value: this.processQueue.size,

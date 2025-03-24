@@ -1,6 +1,6 @@
 {
   "name": "@subql/query",
-  "version": "2.21.0",
+  "version": "2.21.1",
   "description": "",
   "bin": {
     "subql-query": "./bin/run"
@@ -43,7 +43,7 @@
     "@subql/x-graphile-build-pg": "4.13.0-0.2.5",
     "@subql/x-postgraphile-core": "4.13.0-0.2.0",
     "apollo-server-express": "^3.12.0",
-    "compression": "^1.7.4",
+    "compression": "^1.8.0",
     "express-pino-logger": "^6.0.0",
     "graphile-build": "^4.12.2",
     "graphile-utils": "^4.12.2",

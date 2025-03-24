@@ -10,13 +10,14 @@ import {Transaction} from '@subql/x-sequelize';
 import {NodeConfig, IProjectUpgradeService} from '../../configure';
 import {AdminEvent, IndexerEvent, PoiEvent, TargetBlockPayload} from '../../events';
 import {getLogger} from '../../logger';
-import {monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite} from '../../process';
-import {IQueue, mainThreadOnly} from '../../utils';
+import {exitWithError, monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite} from '../../process';
+import {AutoQueue, IQueue, isTaskFlushedError, mainThreadOnly} from '../../utils';
 import {PoiBlock, PoiSyncService} from '../poi';
 import {StoreService} from '../store.service';
-import {IStoreModelProvider} from '../storeModelProvider';
+import {IStoreModelProvider, StoreCacheService} from '../storeModelProvider';
 import {IPoi} from '../storeModelProvider/poi';
 import {Header, IBlock, IProjectService, ISubqueryProject} from '../types';
+import {isBlockUnavailableError} from '../worker';
 
 const logger = getLogger('BaseBlockDispatcherService');
 
@@ -53,6 +54,11 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   private _onDynamicDsCreated?: (height: number) => void;
   private _pendingRewindHeader?: Header;
 
+  protected isShutdown = false;
+
+  /* The height at which a block fetch failure first ocurrs, ensuring that we don't process any blocks after this */
+  protected fetchFailureHeight?: number;
+
   constructor(
     protected nodeConfig: NodeConfig,
     protected eventEmitter: EventEmitter2,
@@ -61,9 +67,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     private projectUpgradeService: IProjectUpgradeService,
     protected queue: Q,
     protected storeService: StoreService,
-    private storeModelProvider: IStoreModelProvider,
-    private poiSyncService: PoiSyncService,
-    private blockChainService: ICoreBlockchainService
+    protected storeModelProvider: IStoreModelProvider,
+    private poiSyncService: PoiSyncService
   ) {}
 
   abstract enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): void | Promise<void>;
@@ -171,6 +176,13 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     monitorWrite(`Finished block ${height}`);
     if (reindexBlockHeader !== null && reindexBlockHeader !== undefined) {
       try {
+        // End transaction
+        await this.storeModelProvider.applyPendingChanges(
+          height,
+          !this.projectService.hasDataSourcesAfterHeight(height),
+          this.storeService.transaction
+        );
+
         if (this.nodeConfig.proofOfIndex) {
           await this.poiSyncService.stopSync();
           this.poiSyncService.clear();
@@ -211,7 +223,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     await this.storeModelProvider.applyPendingChanges(
       height,
       !this.projectService.hasDataSourcesAfterHeight(height),
-
       this.storeService.transaction
     );
   }
@@ -234,6 +245,110 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
 
   private resetPendingRewindHeader(): void {
     this._pendingRewindHeader = undefined;
+  }
+
+  /**
+   * Process a block with any pre and post processing as well as a check to discard the block.
+   * */
+  private async processBlockTask<T>(
+    data: T,
+    getHeader: (data: T) => Header,
+    discardBlock: (header: Header) => boolean,
+    processBlock: (data: T) => Promise<ProcessBlockResponse>
+  ): Promise<void> {
+    const header = getHeader(data);
+    try {
+      if (discardBlock(header)) {
+        logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
+        return;
+      }
+
+      await this.preProcessBlock(header);
+      const processBlockResponse = await processBlock(data);
+      await this.postProcessBlock(header, processBlockResponse);
+    } catch (e: any) {
+      // TODO discard any cache changes from this block height
+      if (this.isShutdown) {
+        return;
+      }
+      logger.error(
+        e,
+        `Failed to index block at height ${header.blockHeight} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''}`
+      );
+      throw e;
+    }
+  }
+
+  /**
+   * Pipes a pending block to be processed.
+   * This includes error handling and will facilitate shutdown.
+   * If a block fails to fetch then and existing blocks that need to be fetched are processed before exiting.
+   * */
+  protected async pipeBlock<T>(options: {
+    /**
+     * A promise that resolves once the block is fetched.
+     * */
+    fetchTask: Promise<T>;
+    /**
+     * A function that triggers the block to be indexed.
+     * */
+    processBlock: (input: T) => Promise<ProcessBlockResponse>;
+    /**
+     *  Used to determine if a fetched block should be discarded and not processed. This happens with rewinds
+     * */
+    discardBlock: (header: Header) => boolean;
+    /**
+     *  The queue used to process blocks
+     * */
+    processQueue: AutoQueue<void>;
+    /**
+     * A function to abort fetching any other blokcs. This is called when there is an error with the fetch task */
+    abortFetching: () => Promise<void> | void;
+    getHeader: (input: T) => Header;
+    height: number;
+  }): Promise<void> {
+    return options.fetchTask
+      .catch(async (e) => {
+        // Failed to fetch block
+        if (isTaskFlushedError(e)) {
+          return;
+        }
+        if (isBlockUnavailableError(e)) {
+          return;
+        }
+
+        // Block fetching has failed, start shutting down things. But we can wait until the ramining fetched blocks can be processed
+        console.error('ERROR', e);
+        logger.error(`Failed to fetch block, waiting for fetched blocks to be processed before shutting down.`, e);
+        if (!this.isShutdown) {
+          this.isShutdown = true;
+          this.fetchFailureHeight = options.height;
+          await options.abortFetching();
+          // this.fetchQueue.abort();
+          // Wait for any pending blocks to be processed
+          await options.processQueue.onIdle();
+          // Ensure any pending changes are persisted
+          if (this.storeModelProvider instanceof StoreCacheService) {
+            await this.storeModelProvider.flushData(true);
+          }
+
+          exitWithError(new Error(`Failed to fetch block ${options.height}.`, {cause: e}), logger);
+        }
+      })
+      .then((data) => {
+        // Don't add more data to index if theres a failure fetching an earlier block
+        if (!data || (this.fetchFailureHeight && options.height > this.fetchFailureHeight)) {
+          return;
+        }
+
+        return options.processQueue.put(() =>
+          this.processBlockTask(data, options.getHeader, options.discardBlock, options.processBlock)
+        );
+      })
+      .catch((e: any) => {
+        // Failed to process block
+        exitWithError(new Error(`Failed to index block ${options.height}`, {cause: e}), logger);
+      });
   }
 
   /**

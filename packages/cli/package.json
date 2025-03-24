@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "5.7.0",
+  "version": "5.7.1",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -12,7 +12,7 @@
     "@oclif/core": "^2.16.0",
     "@subql/common": "workspace:*",
     "@subql/utils": "workspace:*",
-    "boxen": "5.1.2",
+    "boxen": "8.0.1",
     "chalk": "^4",
     "ejs": "^3.1.10",
     "fs-extra": "^11.2.0",
@@ -27,6 +27,7 @@
     "terser-webpack-plugin": "^5.3.10",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
+    "tsconfig-paths-webpack-plugin": "^4.2.0",
     "tslib": "^2.6.3",
     "typescript": "^5.7.3",
     "update-notifier": "^5.1.0",

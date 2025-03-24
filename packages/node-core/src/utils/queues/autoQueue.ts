@@ -35,6 +35,7 @@ export class AutoQueue<T> implements IQueue {
   private pendingPromise = false;
   private queue: Queue<Action<T>>;
   private _abort = false;
+  private _resolveIdle?: () => void;
   // private processingTasks = 0;
 
   private eventEmitter = new EventEmitter2();
@@ -80,10 +81,12 @@ export class AutoQueue<T> implements IQueue {
    * We don't want this function to be async
    * If it is async it will return a promise that throws rather than throwing the function
    */
-  async put(item: Task<T>): Promise<T> {
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  put(item: Task<T>): Promise<T> {
     return this.putMany([item])[0];
   }
 
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
   putMany(tasks: Array<Task<T>>): Promise<T>[] {
     if (this.freeSpace && tasks.length > this.freeSpace) {
       throw new Error(`${this.name} Queue exceeds max size`);
@@ -172,6 +175,9 @@ export class AutoQueue<T> implements IQueue {
       }
     }
 
+    // Processed all items in the queue
+    this._resolveIdle?.();
+    this._resolveIdle = undefined;
     this.pendingPromise = false;
   }
 
@@ -201,5 +207,19 @@ export class AutoQueue<T> implements IQueue {
     this.eventEmitter.on(evt, callback as (size: number) => void);
 
     return () => this.eventEmitter.off(evt, callback as (size: number) => void);
+  }
+
+  async onIdle(): Promise<void> {
+    if (this.size === 0) {
+      return;
+    }
+
+    return new Promise((resolve) => {
+      const currentResolve = this._resolveIdle;
+      this._resolveIdle = () => {
+        currentResolve?.();
+        resolve();
+      };
+    });
   }
 }
