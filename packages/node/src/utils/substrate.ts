@@ -50,8 +50,10 @@ export function substrateHeaderToHeader(header: SubstrateHeader): MissTsHeader {
   };
 }
 
-export function substrateBlockToHeader(block: SignedBlock): OptionalTsHeader {
-  const timestamp = getTimestampFromSignedBlock(block);
+export function substrateBlockToHeader(block: SignedBlock): Header {
+  const timestamp = getTimestamp(block);
+  // TODO How can this be handled here? Is it possible to add a configuration that allows undefined or sets it to the same value as the height?
+  assert(timestamp, 'Unable to correctly obtain block timestamp');
 
   return {
     ...substrateHeaderToHeader(block.block.header),
@@ -65,13 +67,13 @@ export function wrapBlock(
   specVersion: number,
 ): SubstrateBlock {
   return merge(signedBlock, {
-    timestamp: getTimestampFromSignedBlock(signedBlock),
+    timestamp: getTimestamp(signedBlock),
     specVersion: specVersion,
     events,
   });
 }
 
-export function getTimestampFromSignedBlock({
+export function getTimestamp({
   block: { extrinsics },
 }: SignedBlock): Date | undefined {
   // extrinsics can be undefined when fetching light blocks
@@ -95,20 +97,20 @@ export function getTimestampFromSignedBlock({
   return undefined;
 }
 
-export async function getTimestampFromBlockHash(
+export async function getHeaderForHash(
   api: ApiPromise,
   blockHash: string,
-): Promise<Date> {
-  try {
-    const blockTimestamp = await (
-      await api.at(blockHash)
-    ).query.timestamp.now();
-    return new Date(blockTimestamp.toNumber());
-  } catch (e) {
-    logger.error(`failed to fetch timestamp for block ${blockHash}`);
-    // SHIDEN network query.timestamp is undefined
-    return undefined as any;
-  }
+): Promise<Header> {
+  const block = await api.rpc.chain.getBlock(blockHash).catch((e) => {
+    logger.error(
+      `failed to fetch Block hash="${blockHash}" ${getApiDecodeErrMsg(
+        e.message,
+      )}`,
+    );
+    throw ApiPromiseConnection.handleError(e);
+  });
+
+  return substrateBlockToHeader(block);
 }
 
 export function wrapExtrinsics(
@@ -415,11 +417,8 @@ export async function fetchBlocksBatches(
       : fetchRuntimeVersionRange(api, parentBlockHashs),
   ]);
 
-  const blockHeaderMap: Header[] = await Promise.all(
-    blocks.map(async (block, idx) => {
-      const header = substrateBlockToHeader(block);
-      return fillTsInHeader(api, header);
-    }),
+  const blockHeaderMap: Header[] = blocks.map((block, idx) =>
+    substrateBlockToHeader(block),
   );
 
   return blocks.map((block, idx) => {
@@ -445,17 +444,6 @@ export async function fetchBlocksBatches(
 
 function isFullHeader(header: OptionalTsHeader): header is Header {
   return header.timestamp !== undefined;
-}
-
-export async function fillTsInHeader(
-  api: ApiPromise,
-  header: OptionalTsHeader,
-): Promise<Header> {
-  if (!isFullHeader(header)) {
-    const timestamp = await getTimestampFromBlockHash(api, header.blockHash);
-    return { ...header, timestamp };
-  }
-  return header;
 }
 
 // TODO why is fetchBlocksBatches a breadth first funciton rather than depth?

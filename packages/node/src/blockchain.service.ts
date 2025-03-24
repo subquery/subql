@@ -34,9 +34,8 @@ import { IIndexerWorker } from './indexer/worker/worker';
 import {
   calcInterval,
   getBlockByHeight,
-  getTimestampFromSignedBlock,
-  getTimestampFromBlockHash,
-  substrateHeaderToHeader,
+  getTimestamp,
+  getHeaderForHash,
 } from './utils/substrate';
 
 const BLOCK_TIME_VARIANCE = 5000; //ms
@@ -119,7 +118,7 @@ export class BlockchainService
   async getBlockTimestamp(height: number): Promise<Date> {
     const block = await getBlockByHeight(this.apiService.api, height);
 
-    let timestamp = getTimestampFromSignedBlock(block);
+    let timestamp = getTimestamp(block);
     if (!timestamp) {
       // Not all networks have a block timestamp, e.g. Shiden
       const blockTimestamp = await (
@@ -159,15 +158,7 @@ export class BlockchainService
   // TODO can this decorator be in unfinalizedBlocks Service?
   @mainThreadOnly()
   async getHeaderForHash(hash: string): Promise<Header> {
-    const blockHeader = substrateHeaderToHeader(
-      await this.apiService.unsafeApi.rpc.chain.getHeader(hash),
-    );
-    const timestamp = await getTimestampFromBlockHash(
-      this.apiService.unsafeApi,
-      blockHeader.blockHash,
-    );
-
-    return { ...blockHeader, timestamp };
+    return getHeaderForHash(this.apiService.unsafeApi, hash);
   }
 
   // TODO can this decorator be in unfinalizedBlocks Service?

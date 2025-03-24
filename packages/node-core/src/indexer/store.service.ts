@@ -499,9 +499,9 @@ group by
     return getHistoricalUnit(this.historical, this.blockHeader);
   }
 
-  private async getRewindTimestamp(): Promise<number | undefined> {
+  private async getRewindTimestamp(tx?: Transaction): Promise<number | undefined> {
     const rewindTimestampKey = generateRewindTimestampKey(this.subqueryProject.network.chainId);
-    const record = await this.globalDataRepo.findByPk(rewindTimestampKey);
+    const record = await this.globalDataRepo.findByPk(rewindTimestampKey, {transaction: tx});
     if (hasValue(record)) {
       return record.toJSON().value as number;
     }
@@ -509,9 +509,15 @@ group by
 
   private async initChainRewindTimestamp() {
     if (!this.config.multiChain) return;
-    if ((await this.getRewindTimestamp()) !== undefined) return;
+
+    const tx = await this.sequelize.transaction();
+    if ((await this.getRewindTimestamp(tx)) !== undefined) {
+      await tx.commit();
+      return;
+    }
     const rewindTimestampKey = generateRewindTimestampKey(this.subqueryProject.network.chainId);
-    await this.globalDataRepo.create({key: rewindTimestampKey, value: 0});
+    await this.globalDataRepo.create({key: rewindTimestampKey, value: 0}, {transaction: tx});
+    await tx.commit();
   }
 
   async getLastProcessedBlock(): Promise<{height: number; timestamp?: number}> {

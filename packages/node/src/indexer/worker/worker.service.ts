@@ -12,7 +12,7 @@ import {
   Header,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
-import { fillTsInHeader, substrateBlockToHeader } from '../../utils/substrate';
+import { substrateBlockToHeader } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary';
 import { IndexerManager } from '../indexer.manager';
@@ -60,13 +60,11 @@ export class WorkerService extends BaseWorkerService<
   }
 
   // TODO test this with LightBlockContent
-  protected async toBlockResponse(
+  protected toBlockResponse(
     block: BlockContent /* | LightBlockContent*/,
-  ): Promise<FetchBlockResponse> {
-    const header = substrateBlockToHeader(block.block);
-
+  ): FetchBlockResponse {
     return {
-      ...(await fillTsInHeader(this.apiService.unsafeApi, header)),
+      ...substrateBlockToHeader(block.block),
       specVersion: block.block.specVersion,
     };
   }
