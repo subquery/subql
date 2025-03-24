@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [17.2.1] - 2025-03-24
 ### Fixed
 - Max queue size error with workers (#2725)
 
@@ -947,7 +949,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/17.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/17.2.1...HEAD
+[17.2.1]: https://github.com/subquery/subql/compare/node-core/17.2.0...node-core/17.2.1
 [17.2.0]: https://github.com/subquery/subql/compare/node-core/17.1.0...node-core/17.2.0
 [17.1.0]: https://github.com/subquery/subql/compare/node-core/17.0.2...node-core/17.1.0
 [17.0.2]: https://github.com/subquery/subql/compare/node-core/17.0.1...node-core/17.0.2
