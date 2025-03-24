@@ -51,12 +51,12 @@ export class WorkerBlockDispatcher<
     Block = any,
     ApiConn extends IApiConnectionSpecific = IApiConnectionSpecific,
   >
-  extends BaseBlockDispatcher<AutoQueue<void>, DS, Block>
+  extends BaseBlockDispatcher<AutoQueue<Header>, DS, Block>
   implements OnApplicationShutdown
 {
   protected workers: TerminateableWorker<Worker>[] = [];
   private numWorkers: number;
-  private fetchQueue: AutoQueue<Header>;
+  private processQueue: AutoQueue<void>;
 
   private createWorker: () => Promise<TerminateableWorker<Worker>>;
 
@@ -85,18 +85,13 @@ export class WorkerBlockDispatcher<
       project,
       projectService,
       projectUpgradeService,
-      initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Worker'),
+      initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Fetch'),
       storeService,
       storeModelProvider,
       poiSyncService
     );
 
-    this.fetchQueue = new AutoQueue(
-      undefined,
-      nodeConfig.batchSize * 3 * (nodeConfig.workers ?? 1),
-      nodeConfig.timeout,
-      'Fetch'
-    );
+    this.processQueue = initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Process');
 
     this.createWorker = () =>
       createIndexerWorker<Worker, ApiConn, Block, DS>(
@@ -185,7 +180,7 @@ export class WorkerBlockDispatcher<
      1. It retains the order when resolving the fetched promises
      2. It means `this.queue` doesn't fill up with tasks awaiting pendingBlocks which then means we can abort fetching and wait for idle
     */
-    const pendingBlock = this.fetchQueue.put(() =>
+    const pendingBlock = this.queue.put(() =>
       this.blockchainService.fetchBlockWorker(worker, height, {workers: this.workers})
     );
 
@@ -196,11 +191,11 @@ export class WorkerBlockDispatcher<
         return worker.processBlock(height);
       },
       discardBlock: () => bufferedHeight > this.latestBufferedHeight,
-      processQueue: this.queue,
+      processQueue: this.processQueue,
       abortFetching: async () => {
         await Promise.all(this.workers.map((w) => w.abortFetching()));
         // Wait for any pending blocks to be processed
-        this.fetchQueue.abort();
+        this.queue.abort();
       },
       getHeader: (header) => header,
       height,

@@ -318,7 +318,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
         }
 
         // Block fetching has failed, start shutting down things. But we can wait until the ramining fetched blocks can be processed
-        logger.error(`Failed to fetch block, waiting for fetched blocks to be processed before shutting down.`);
+        console.error('ERROR', e);
+        logger.error(`Failed to fetch block, waiting for fetched blocks to be processed before shutting down.`, e);
         if (!this.isShutdown) {
           this.isShutdown = true;
           this.fetchFailureHeight = options.height;

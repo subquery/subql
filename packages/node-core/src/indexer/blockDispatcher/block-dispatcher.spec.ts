@@ -18,7 +18,7 @@ let workerIdx = 0;
 
 const nodeConfig = new NodeConfig({batchSize: 10, workers: 2} as any);
 
-let fetchBlocksFunction = async (height: number): Promise<IBlock<number>> => {
+const defaultFetchBlocksFunction = async (height: number): Promise<IBlock<number>> => {
   await delay(0.1);
   if (failureBlocks.includes(height)) {
     await delay(0.3);
@@ -34,6 +34,8 @@ let fetchBlocksFunction = async (height: number): Promise<IBlock<number>> => {
     }),
   };
 };
+
+let fetchBlocksFunction = defaultFetchBlocksFunction;
 
 function resolveablePromise(): [Promise<void>, () => void] {
   let resolve: () => void;
@@ -221,6 +223,7 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
   let blockDispatcher: IBlockDispatcher<number>;
 
   beforeEach(async () => {
+    fetchBlocksFunction = defaultFetchBlocksFunction;
     failureBlocks = [];
     indexBlockFunction = jest.fn();
     workerIdx = 0;
@@ -343,6 +346,38 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
     await pendingBlock5;
 
     expect(indexedBlocks).toEqual([1, 3, 4, 5]);
+  });
+
+  it('correctly sets the free size', async () => {
+    const [pendingBlock, resolveBlock] = resolveablePromise();
+
+    fetchBlocksFunction = async (height: number): Promise<IBlock<number>> => {
+      await pendingBlock;
+      return {
+        block: height,
+        getHeader: () => ({
+          blockHeight: height,
+          blockHash: height.toString(),
+          parentHash: (height - 1).toString(),
+          timestamp: new Date(),
+        }),
+      };
+    };
+
+    // Startup should have free size
+    expect(blockDispatcher.freeSize).toBeGreaterThan(0);
+
+    const blocks = new Array(blockDispatcher.freeSize).fill(0).map((_, idx) => idx + 1);
+    const lastBlock = blocks[blocks.length - 1];
+    await blockDispatcher.enqueueBlocks(blocks, lastBlock);
+
+    // BlockDispatcher will take all the items from the queue and put them straight into the fetch queue. So the value doesn't change initially
+    const expectedSize = blockDispatcher instanceof BlockDispatcher ? 30 : 0;
+
+    expect(blockDispatcher.freeSize).toBe(expectedSize);
+
+    // Trigger blocks being fetched
+    resolveBlock();
   });
 
   describe('postProcessBlock', () => {
