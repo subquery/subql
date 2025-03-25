@@ -216,7 +216,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
    * @param timestamp To find the block closest to a given timestamp
    * @returns
    */
-  private async getHeaderByBinarySearch(timestamp: Header['timestamp']): Promise<Required<Header>> {
+  private async getHeaderByBinarySearch(timestamp: Header['timestamp']): Promise<Header> {
     const startHeight = await this.storeService.modelProvider.metadata.find('startHeight');
     assert(startHeight !== undefined, 'startHeight is not set');
 
@@ -237,14 +237,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       }
     }
 
-    const targetHeader = left
-      ? await this.blockchainService.getHeaderForHeight(left)
-      : {
-          blockHash: '',
-          blockHeight: 0,
-          parentHash: '',
-          timestamp,
-        };
+    const targetHeader = await this.blockchainService.getHeaderForHeight(left);
     logger.info(`Binary search times: ${searchNum}, target Header: ${JSON.stringify(targetHeader)}`);
 
     return targetHeader;
