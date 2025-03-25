@@ -40,7 +40,6 @@ const DEFAULT_TIME = new BN(6_000);
 const A_DAY = new BN(24 * 60 * 60 * 1000);
 
 type MissTsHeader = Omit<Header, 'timestamp'>;
-type OptionalTsHeader = MissTsHeader & { timestamp?: Date };
 
 export function substrateHeaderToHeader(header: SubstrateHeader): MissTsHeader {
   return {
@@ -442,10 +441,6 @@ export async function fetchBlocksBatches(
   });
 }
 
-function isFullHeader(header: OptionalTsHeader): header is Header {
-  return header.timestamp !== undefined;
-}
-
 // TODO why is fetchBlocksBatches a breadth first funciton rather than depth?
 export async function fetchLightBlock(
   api: ApiPromise,
@@ -456,7 +451,7 @@ export async function fetchLightBlock(
     throw ApiPromiseConnection.handleError(e);
   });
 
-  const [header, events, timestamp] = await Promise.all([
+  const [substrateHeader, events, header] = await Promise.all([
     api.rpc.chain.getHeader(blockHash).catch((e) => {
       logger.error(
         `failed to fetch Block Header hash="${blockHash}" height="${height}"`,
@@ -467,11 +462,11 @@ export async function fetchLightBlock(
       logger.error(`failed to fetch events at block ${blockHash}`);
       throw ApiPromiseConnection.handleError(e);
     }),
-    (await api.at(blockHash)).query.timestamp.now(),
+    getHeaderForHash(api, blockHash.toHex()),
   ]);
 
   const blockHeader: BlockHeader = {
-    block: { header },
+    block: { header: substrateHeader },
     events: events.toArray(),
   };
   return {
@@ -480,10 +475,7 @@ export async function fetchLightBlock(
       events: events.map((evt, idx) => merge(evt, { idx, block: blockHeader })),
     },
     getHeader: () => {
-      return {
-        ...substrateHeaderToHeader(blockHeader.block.header),
-        timestamp: new Date(timestamp.toNumber()),
-      };
+      return header;
     },
   };
 }
