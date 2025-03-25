@@ -52,7 +52,10 @@ export function substrateHeaderToHeader(header: SubstrateHeader): MissTsHeader {
 export function substrateBlockToHeader(block: SignedBlock): Header {
   const timestamp = getTimestamp(block);
   // TODO How can this be handled here? Is it possible to add a configuration that allows undefined or sets it to the same value as the height?
-  assert(timestamp, 'Unable to correctly obtain block timestamp');
+  assert(
+    timestamp,
+    'Failed to retrieve a reliable timestamp. This issue is more likely to occur on networks like Shiden',
+  );
 
   return {
     ...substrateHeaderToHeader(block.block.header),
