@@ -46,7 +46,7 @@
     "compression": "^1.8.0",
     "express-pino-logger": "^6.0.0",
     "graphile-build": "^4.12.2",
-    "graphile-utils": "^4.12.2",
+    "graphile-utils": "^4.13.0",
     "graphql": "^15.8.0",
     "graphql-query-complexity": "^0.11.0",
     "graphql-ws": "^5.16.0",
