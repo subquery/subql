@@ -17,11 +17,7 @@ import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
-import {
-  BlockContent,
-  getBlockSize,
-  LightBlockContent,
-} from '../types';
+import { BlockContent, getBlockSize, LightBlockContent } from '../types';
 
 export type FetchBlockResponse = Header & { specVersion?: number };
 

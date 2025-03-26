@@ -34,8 +34,17 @@ import {
 } from '../db';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
-import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit} from '../utils';
-import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
+import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit, hasValue} from '../utils';
+import {
+  generateRewindTimestampKey,
+  GlobalDataFactory,
+  GlobalDataRepo,
+  MetadataFactory,
+  MetadataRepo,
+  PoiFactory,
+  PoiFactoryDeprecate,
+  PoiRepo,
+} from './entities';
 import {Store} from './store';
 import {IMetadata, IStoreModelProvider, PlainStoreModelService} from './storeModelProvider';
 import {StoreOperations} from './StoreOperations';
@@ -63,10 +72,12 @@ export class StoreService {
   poiRepo?: PoiRepo;
   private _modelIndexedFields?: IndexField[];
   private _modelsRelations?: GraphQLModelsRelationsEnums;
+  private _globalDataRepo?: GlobalDataRepo;
   private _metaDataRepo?: MetadataRepo;
   private _historical?: HistoricalMode;
   private _metadataModel?: IMetadata;
   private _schema?: string;
+  private _isMultichain?: boolean;
   // Should be updated each block
   private _blockHeader?: Header;
   private _operationStack?: StoreOperations;
@@ -104,6 +115,11 @@ export class StoreService {
     return this._operationStack;
   }
 
+  get globalDataRepo(): GlobalDataRepo {
+    assert(this._globalDataRepo, new NoInitError());
+    return this._globalDataRepo;
+  }
+
   get blockHeader(): Header {
     assert(this._blockHeader, new Error('StoreService.setBlockHeader has not been called'));
     return this._blockHeader;
@@ -116,6 +132,11 @@ export class StoreService {
 
   get transaction(): Transaction | undefined {
     return this.#transaction;
+  }
+
+  get isMultichain(): boolean {
+    assert(this._isMultichain !== undefined, new NoInitError());
+    return this._isMultichain;
   }
 
   async syncDbSize(): Promise<bigint> {
@@ -151,14 +172,20 @@ export class StoreService {
       this.poiRepo = usePoiFactory(this.sequelize, schema);
     }
 
+    this._schema = schema;
+
+    await this.setMultiChainProject();
+
     this._metaDataRepo = await MetadataFactory(
       this.sequelize,
       schema,
-      this.config.multiChain,
+      this.isMultichain,
       this.subqueryProject.network.chainId
     );
 
-    this._schema = schema;
+    if (this.isMultichain) {
+      this._globalDataRepo = GlobalDataFactory(this.sequelize, schema);
+    }
 
     await this.sequelize.sync();
 
@@ -172,6 +199,8 @@ export class StoreService {
     await this.initHotSchemaReloadQueries(schema);
 
     await this.metadataModel.set('historicalStateEnabled', this.historical);
+
+    await this.initChainRewindTimestamp();
   }
 
   async init(schema: string): Promise<void> {
@@ -481,6 +510,49 @@ group by
   getHistoricalUnit(): number {
     // Cant throw here because even with historical disabled the current height is used by the store
     return getHistoricalUnit(this.historical, this.blockHeader);
+  }
+
+  private async getRewindTimestamp(tx?: Transaction): Promise<number | undefined> {
+    const rewindTimestampKey = generateRewindTimestampKey(this.subqueryProject.network.chainId);
+    const record = await this.globalDataRepo.findByPk(rewindTimestampKey, {transaction: tx});
+    if (hasValue(record)) {
+      return record.toJSON().value as number;
+    }
+  }
+
+  private async initChainRewindTimestamp() {
+    if (!this.isMultichain) return;
+
+    const tx = await this.sequelize.transaction();
+    if ((await this.getRewindTimestamp(tx)) !== undefined) {
+      await tx.commit();
+      return;
+    }
+    const rewindTimestampKey = generateRewindTimestampKey(this.subqueryProject.network.chainId);
+    await this.globalDataRepo.create({key: rewindTimestampKey, value: 0}, {transaction: tx});
+    await tx.commit();
+  }
+
+  async getLastProcessedBlock(): Promise<{height: number; timestamp?: number}> {
+    const {lastProcessedBlockTimestamp: timestamp, lastProcessedHeight: height} = await this.metadataModel.findMany([
+      'lastProcessedHeight',
+      'lastProcessedBlockTimestamp',
+    ]);
+
+    return {height: height || 0, timestamp};
+  }
+
+  async setMultiChainProject() {
+    if (this.config.multiChain) {
+      this._isMultichain = true;
+      return;
+    }
+
+    const tableRes = await this.sequelize.query<Array<string>>(
+      `SELECT table_name FROM information_schema.tables where table_schema='${this.schema}' and table_name = '_global'`,
+      {type: QueryTypes.SELECT}
+    );
+    this._isMultichain = tableRes.length > 0;
   }
 }
 

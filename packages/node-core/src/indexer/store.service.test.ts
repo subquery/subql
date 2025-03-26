@@ -18,6 +18,10 @@ const option: DbOption = {
 };
 
 jest.setTimeout(60000);
+// Mock 1740100000 is the timestamp of the genesis block
+const genBlockTimestamp = (height: number) => (1740100000 + height) * 1000;
+const genBlockDate = (height: number) => new Date(genBlockTimestamp(height));
+
 const testSchemaName = 'test_model_store';
 const schema = buildSchemaFromString(`
   type Account @entity {
@@ -57,7 +61,12 @@ describe('Check whether the db store and cache store are consistent.', () => {
   });
 
   it('Same block, Execute the set method multiple times.', async () => {
-    await storeService.setBlockHeader({blockHeight: 1, blockHash: '0x01', parentHash: '0x00'});
+    await storeService.setBlockHeader({
+      blockHeight: 1,
+      blockHash: '0x01',
+      parentHash: '0x00',
+      timestamp: genBlockDate(1),
+    });
 
     const accountEntity = {id: 'block-001', balance: 100};
 
@@ -121,7 +130,12 @@ describe('Check whether the db store and cache store are consistent.', () => {
   }, 30000);
 
   it('_block_range update check', async () => {
-    await storeService.setBlockHeader({blockHeight: 1000, blockHash: '0x1000', parentHash: '0x0999'});
+    await storeService.setBlockHeader({
+      blockHeight: 1000,
+      blockHash: '0x1000',
+      parentHash: '0x0999',
+      timestamp: genBlockDate(1000),
+    });
 
     // insert new account.
     const account1000Data = {id: 'block-1000', balance: 999};
@@ -207,7 +221,12 @@ describe('Cache Provider', () => {
     tx.afterCommit(() => {
       Account.clear(blockHeight);
     });
-    await storeService.setBlockHeader({blockHeight, blockHash: `0x${blockHeight}`, parentHash: `0x${blockHeight - 1}`});
+    await storeService.setBlockHeader({
+      blockHeight,
+      blockHash: `0x${blockHeight}`,
+      parentHash: `0x${blockHeight - 1}`,
+      timestamp: genBlockDate(blockHeight),
+    });
     await handle(blockHeight);
     await Account.runFlush(tx, blockHeight);
     await tx.commit();

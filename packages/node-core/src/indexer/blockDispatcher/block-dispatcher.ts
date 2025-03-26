@@ -57,7 +57,8 @@ export class BlockDispatcher<B, DS extends BaseDataSource>
       new Queue(nodeConfig.batchSize * 3),
       storeService,
       storeModelProvider,
-      poiSyncService
+      poiSyncService,
+      blockchainService
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3, 1, nodeConfig.timeout, 'Process');
     this.fetchQueue = new RampQueue(
