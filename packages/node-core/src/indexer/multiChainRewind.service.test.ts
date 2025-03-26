@@ -33,7 +33,7 @@ const schema = buildSchemaFromString(`
   }
 `);
 
-describe('Check whether the db store and cache store are consistent.', () => {
+describe('MultiChain Rewind Service', () => {
   let sequelize: Sequelize;
   let storeService: StoreService;
   let multiChainRewindService: MultiChainRewindService;
@@ -48,7 +48,7 @@ describe('Check whether the db store and cache store are consistent.', () => {
     })),
   };
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     sequelize = new Sequelize(
       `postgresql://${option.username}:${option.password}@${option.host}:${option.port}/${option.database}`,
       option
@@ -115,5 +115,111 @@ describe('Check whether the db store and cache store are consistent.', () => {
     expect(remaining).toBe(0); // No remaining chains to rewind
     expect(multiChainRewindService.status).toBe(RewindStatus.Normal);
     expect(multiChainRewindService.waitRewindHeader).toBeUndefined();
+  });
+
+  it('should handle multiple concurrent rewind requests', async () => {
+    // Arrange: Set up multiple rewind timestamps
+    const rewindTimestamp1 = genBlockTimestamp(5);
+    const rewindTimestamp2 = genBlockTimestamp(3); // Earlier timestamp
+
+    // Act: Request two rewinds almost simultaneously
+    const promise1 = multiChainRewindService.setGlobalRewindLock(rewindTimestamp1);
+    const promise2 = multiChainRewindService.setGlobalRewindLock(rewindTimestamp2);
+
+    await Promise.all([promise1, promise2]);
+
+    // Assert: The service should be in Rewinding state
+    expect(multiChainRewindService.status).toBe(RewindStatus.Rewinding);
+
+    // Complete the rewind process
+    const tx = await sequelize.transaction();
+    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, rewindTimestamp2);
+    await tx.commit();
+
+    await delay(1);
+
+    // Assert: The rewind is complete and used the earlier timestamp
+    expect(remaining).toBe(0);
+    expect(multiChainRewindService.status).toBe(RewindStatus.Normal);
+  });
+
+  it('should handle rewind to a timestamp that already passed', async () => {
+    // Mock the current timestamp to be higher than our target
+    jest.spyOn(multiChainRewindService, 'searchWaitRewindHeader' as any).mockResolvedValueOnce({
+      blockHeight: 2,
+      timestamp: genBlockDate(2),
+      blockHash: 'hash2',
+      parentHash: 'hash1',
+    });
+
+    // Act: Set rewind to timestamp 2 (which is "in the past" for the current chain state)
+    const rewindTimestamp = genBlockTimestamp(2);
+    await multiChainRewindService.setGlobalRewindLock(rewindTimestamp);
+
+    // Assert: The service should still enter Rewinding state
+    expect(multiChainRewindService.status).toBe(RewindStatus.Rewinding);
+
+    // Complete the rewind process
+    const tx = await sequelize.transaction();
+    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, rewindTimestamp);
+    await tx.commit();
+
+    await delay(1);
+
+    expect(remaining).toBe(0);
+    expect(multiChainRewindService.status).toBe(RewindStatus.Normal);
+  });
+
+  it('should handle rewind during an ongoing rewind', async () => {
+    // Act: Set first rewind to block 5
+    const rewindTimestamp1 = genBlockTimestamp(5);
+    await multiChainRewindService.setGlobalRewindLock(rewindTimestamp1);
+
+    // Assert: Check that the service is in Rewinding state
+    expect(multiChainRewindService.status).toBe(RewindStatus.Rewinding);
+
+    // Act: Attempt to rewind to an earlier block while already rewinding
+    const rewindTimestamp2 = genBlockTimestamp(3);
+    await multiChainRewindService.setGlobalRewindLock(rewindTimestamp2);
+
+    // Complete the rewind process
+    const tx = await sequelize.transaction();
+    // We should be rewinding to timestamp2 since it's earlier
+    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, rewindTimestamp2);
+    await tx.commit();
+
+    await delay(1);
+
+    expect(remaining).toBe(0);
+    expect(multiChainRewindService.status).toBe(RewindStatus.Normal);
+  });
+
+  it('should handle binary search edge cases for timestamp matching', async () => {
+    // Mock the binary search to simulate a large gap between blocks
+    const mockGetHeaderByBinarySearch = jest.spyOn(multiChainRewindService as any, 'getHeaderByBinarySearch');
+    mockGetHeaderByBinarySearch.mockResolvedValueOnce({
+      blockHeight: 4,
+      timestamp: genBlockDate(4),
+      blockHash: 'hash4',
+      parentHash: 'hash3',
+    });
+
+    // Act: Set rewind to a timestamp that falls between blocks
+    const rewindTimestamp = genBlockTimestamp(4.5); // Timestamp between blocks 4 and 5
+    await multiChainRewindService.setGlobalRewindLock(rewindTimestamp);
+
+    // Assert: The service should use the closest block
+    expect(multiChainRewindService.status).toBe(RewindStatus.Rewinding);
+
+    // Complete the rewind process
+    const tx = await sequelize.transaction();
+    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, rewindTimestamp);
+    await tx.commit();
+
+    await delay(1);
+
+    expect(mockGetHeaderByBinarySearch).toHaveBeenCalledWith(expect.any(Date));
+    expect(remaining).toBe(0);
+    expect(multiChainRewindService.status).toBe(RewindStatus.Normal);
   });
 });
