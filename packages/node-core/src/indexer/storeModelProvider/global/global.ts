@@ -3,25 +3,13 @@
 
 import assert from 'assert';
 import {getLogger} from '@subql/node-core/logger';
-import {Op, QueryTypes, Sequelize, Transaction} from '@subql/x-sequelize';
-import {
-  generateRewindTimestampKey,
-  GlobalData,
-  GlobalDataKeys,
-  GlobalDataRepo,
-  RewindLockInfo,
-  RewindLockKey,
-  RewindTimestampKey,
-  RewindTimestampKeyPrefix,
-} from '../../entities';
+import {Op, Sequelize, Transaction} from '@subql/x-sequelize';
+import {GlobalData, GlobalDataRepo, MultiChainRewindStatus} from '../../entities';
 
 export interface IGlobalData {
-  getGlobalRewindStatus(): Promise<{
-    rewindTimestamp: GlobalDataKeys[RewindTimestampKey];
-    rewindLock?: GlobalDataKeys[typeof RewindLockKey];
-  }>;
+  getChainRewindInfo(): Promise<GlobalData>;
 
-  setGlobalRewindLock(rewindTimestamp: number): Promise<{needRewind: boolean}>;
+  setGlobalRewindLock(rewindTimestamp: number): Promise<{lockTimestamp: number}>;
   /**
    * Check if the height is consistent before unlocking.
    * @param tx
@@ -50,84 +38,55 @@ export class PlainGlobalModel implements IGlobalData {
     return sequelize;
   }
 
-  /**
-   * Serialize the rewind lock
-   * @param rewindTimestamp ms
-   * @param chainTotal The total number of registered chains.
-   * @returns
-   */
-  private serializeRewindLock(rewindTimestamp: number, chainTotal: number): string {
-    return JSON.stringify({timestamp: rewindTimestamp, chainsCount: chainTotal});
-  }
-
-  async getGlobalRewindStatus(): Promise<{
-    rewindTimestamp: GlobalDataKeys[RewindTimestampKey];
-    rewindLock?: GlobalDataKeys[typeof RewindLockKey];
-  }> {
-    const rewindTimestampKey = generateRewindTimestampKey(this.chainId);
-
-    const records = await this.model.findAll({
-      where: {key: {[Op.in]: [rewindTimestampKey, RewindLockKey]}},
+  async getChainRewindInfo(): Promise<GlobalData> {
+    const rewindTimestampInfo = await this.model.findOne({
+      where: {chainId: this.chainId},
     });
-    const rewindLockInfo = records.find((r) => r.key === RewindLockKey)?.toJSON<GlobalData<typeof RewindLockKey>>();
-    const rewindTimestampInfo = records
-      .find((r) => r.key === rewindTimestampKey)
-      ?.toJSON<GlobalData<RewindTimestampKey>>();
 
-    assert(
-      rewindTimestampInfo !== undefined,
-      `Not registered rewind timestamp key in global data, chainId: ${this.chainId}`
-    );
-    return {rewindTimestamp: rewindTimestampInfo.value, rewindLock: rewindLockInfo?.value};
+    assert(rewindTimestampInfo, `Not registered rewind timestamp key in global data, chainId: ${this.chainId}`);
+    return rewindTimestampInfo;
   }
 
   /**
    * If the set rewindTimestamp is greater than or equal to the current blockHeight, we do nothing because we will roll back to an earlier time.
    * If the set rewindTimestamp is less than the current blockHeight, we should roll back to the earlier rewindTimestamp.
-   * @param rewindTimestamp rewindTimestamp in milliseconds
+   * The reason for not using the external tx variable here is to complete the locking task as soon as possible and promptly send a notification to allow other chains to rewind.
+   * @param rewindTimestamp
+   * @param tx
+   * @returns
    */
-  async setGlobalRewindLock(rewindTimestamp: number): Promise<{needRewind: boolean}> {
-    const globalTable = this.model.tableName;
-    const chainTotal = await this.model.count({
-      where: {
-        key: {[Op.like]: `${RewindTimestampKeyPrefix}_%`},
-      },
-    });
-
-    let needRewind = false;
+  async setGlobalRewindLock(rewindTimestamp: number): Promise<{lockTimestamp: number}> {
     const tx = await this.sequelize.transaction();
+    const {chainsCount, currentChain} = await this.getChainsInfo(tx);
+
     try {
-      const [_, updateRows] = await this.sequelize.query(
-        `INSERT INTO "${this.dbSchema}"."${globalTable}" ( "key", "value", "createdAt", "updatedAt" )
-        VALUES
-        ( '${RewindLockKey}', '${this.serializeRewindLock(rewindTimestamp, chainTotal)}', now(), now()) 
-        ON CONFLICT ( "key" ) 
-        DO UPDATE 
-        SET "key" = EXCLUDED."key",
-            "value" = EXCLUDED."value",
-            "updatedAt" = EXCLUDED."updatedAt" 
-        WHERE "${globalTable}"."key" = '${RewindLockKey}' AND ("${globalTable}"."value"->>'timestamp')::BIGINT > ${rewindTimestamp}`,
+      let lockTimestamp = 0;
+      const [affectedCount] = await this.model.update(
         {
-          type: QueryTypes.INSERT,
+          status: MultiChainRewindStatus.WaitRewind,
+          rewindTimestamp,
+          initiator: false,
+        },
+        {
+          where: {
+            [Op.or]: [{status: MultiChainRewindStatus.Normal}, {rewindTimestamp: {[Op.gt]: rewindTimestamp}}],
+          },
           transaction: tx,
         }
       );
 
-      // If there is a rewind lock that is greater than the current rewind timestamp, we should not update the rewind timestamp
-      if (updateRows === 1) {
-        await this.model.update(
-          {value: rewindTimestamp},
-          {
-            where: {key: {[Op.like]: 'rewindTimestamp_%'}},
-            transaction: tx,
-          }
-        );
+      assert(
+        affectedCount === 0 || affectedCount === chainsCount,
+        `Set global rewind lock failed, chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`
+      );
 
-        // The current chain is in REWINDING state
-        needRewind = true;
+      if (affectedCount === chainsCount) {
+        lockTimestamp = rewindTimestamp;
+        await this.model.update({initiator: true}, {where: {chainId: this.chainId}, transaction: tx});
       }
+
       await tx.commit();
-      return {needRewind};
+      return {lockTimestamp};
     } catch (e: any) {
       logger.error(
         `setGlobalRewindLock failed chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}, errorMsg: ${e.message}`
@@ -137,52 +96,56 @@ export class PlainGlobalModel implements IGlobalData {
     }
   }
 
-  async releaseChainRewindLock(tx: Transaction, rewindTimestamp: number): Promise<number> {
-    const globalTable = this.model.tableName;
+  /**
+   * The following special cases may exist:
+   * 1.	A table lock needs to be added before release to prevent multiple chains from releasing simultaneously, causing a deadlock. If one chain is setting setGlobalRewindLock, others need to queue (so it’s necessary to check if it’s the lock for the current timestamp; if not, the release fails, and the rollback fails).
+   * 2.	There may be a case where lastProcessBlock < rewindTime, in which case the lock should be released directly (force = true).
+   * @param rewindTimestamp
+   * @returns
+   */
+  async releaseChainRewindLock(tx: Transaction, rewindTimestamp: number, force = false): Promise<number> {
+    // A table lock should be used here to prevent multiple chains from releasing simultaneously, causing a deadlock.
+    const chainList = await this.model.findAll({transaction: tx, lock: tx.LOCK.UPDATE});
+    const currentChainInfo = chainList.find((chain) => chain.chainId === this.chainId);
+    const waitChainCount = chainList.filter((chain) => chain.status === MultiChainRewindStatus.WaitRewind).length;
 
-    // Ensure the first write occurs and prevent deadlock, only update the rewindNum - 1
-    const results = await this.sequelize.query<{value: RewindLockInfo}>(
-      `UPDATE "${this.dbSchema}"."${globalTable}"
-      SET value = jsonb_set(
-        value, 
-        '{chainsCount}', 
-        to_jsonb(COALESCE(("${globalTable}"."value" ->> 'chainsCount')::BIGINT, 0) - 1), 
-        false
-      )
-      WHERE "${globalTable}"."key" = '${RewindLockKey}' AND ("${globalTable}"."value"->>'timestamp')::BIGINT = ${rewindTimestamp}
-      RETURNING value`,
-      {
-        type: QueryTypes.SELECT,
-        transaction: tx,
-      }
-    );
-
-    // not exist rewind lock in current timestamp
-    if (results.length === 0) {
-      return 0;
+    if (!force) {
+      assert(currentChainInfo, `Not registered rewind timestamp key in global data, chainId: ${this.chainId}`);
+      assert(
+        currentChainInfo.status === MultiChainRewindStatus.WaitRewind &&
+          currentChainInfo.rewindTimestamp === rewindTimestamp,
+        `ChainRewindLock is not match, chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}, status: ${currentChainInfo.status}`
+      );
     }
-    const chainsCount = results[0].value.chainsCount;
 
-    const rewindTimestampKey = generateRewindTimestampKey(this.chainId);
     const [affectedCount] = await this.model.update(
-      {value: 0},
+      {status: MultiChainRewindStatus.WaitOtherChain},
       {
         where: {
-          key: rewindTimestampKey,
-          value: rewindTimestamp,
+          chainId: this.chainId,
+          status: MultiChainRewindStatus.WaitRewind,
         },
         transaction: tx,
       }
     );
-    assert(
-      affectedCount === 1,
-      `not found rewind timestamp key in global data, chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`
-    );
 
-    if (chainsCount === 0) {
-      await this.model.destroy({where: {key: RewindLockKey}, transaction: tx});
+    assert(affectedCount === 1, `Release chain rewind lock failed, chainId: ${this.chainId}`);
+
+    if (waitChainCount - 1 === 0) {
+      // Everything is complete, release the lock.
+      await this.model.update(
+        {status: MultiChainRewindStatus.Normal, rewindTimestamp: 0, initiator: false},
+        {where: {status: MultiChainRewindStatus.WaitOtherChain}, transaction: tx}
+      );
     }
 
-    return chainsCount;
+    return waitChainCount - 1;
+  }
+
+  private async getChainsInfo(tx: Transaction) {
+    const chainList = await this.model.findAll({transaction: tx, lock: tx.LOCK.UPDATE});
+    const currentChain = chainList.find((chain) => chain.chainId === this.chainId);
+    const waitChainCount = chainList.filter((chain) => chain.status === MultiChainRewindStatus.WaitRewind).length;
+    return {currentChain, chainsCount: chainList.length, waitChainCount};
   }
 }

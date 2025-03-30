@@ -1,31 +1,24 @@
 // Copyright 2020-2024 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {blake2AsHex} from '@subql/utils';
 import {BuildOptions, DataTypes, Model, Sequelize} from '@subql/x-sequelize';
 
-export const RewindTimestampKeyPrefix = 'rewindTimestamp';
-export const RewindLockKey = 'rewindLock';
-
-/**
- * @string chainId
- */
-export type RewindTimestampKey = `${typeof RewindTimestampKeyPrefix}_${string}`;
-
-export type RewindLockInfo = {
-  /** Timestamp to rewind to. */
-  timestamp: number;
-  /** Remaining number of chains to be rolled back */
-  chainsCount: number;
-};
-export interface GlobalDataKeys {
-  rewindLock: RewindLockInfo;
-  [key: RewindTimestampKey]: number;
+export enum MultiChainRewindStatus {
+  /** The current chain is in normal state. */
+  Normal = 'normal',
+  /** The current chain is waiting for other chains to rewind. */
+  WaitOtherChain = 'waitOtherChain',
+  /** The current chain is executing rewind. */
+  Rewinding = 'rewinding',
+  /** The current chain is waiting for rewind. */
+  WaitRewind = 'waitRewind',
 }
 
-export interface GlobalData<k extends keyof GlobalDataKeys = keyof GlobalDataKeys> {
-  key: k;
-  value: GlobalDataKeys[k];
+export interface GlobalData {
+  chainId: string;
+  rewindTimestamp: number;
+  status: MultiChainRewindStatus;
+  initiator: boolean;
 }
 
 interface GlobalDataEntity extends Model<GlobalData>, GlobalData {}
@@ -40,18 +33,27 @@ export function GlobalDataFactory(sequelize: Sequelize, schema: string): GlobalD
   return <GlobalDataRepo>sequelize.define(
     tableName,
     {
-      key: {
+      chainId: {
         type: DataTypes.STRING,
         primaryKey: true,
       },
-      value: {
-        type: DataTypes.JSONB,
+      rewindTimestamp: {
+        type: DataTypes.BIGINT,
+        defaultValue: 0,
+        get() {
+          return Number(this.getDataValue('rewindTimestamp'));
+        },
+      },
+      status: {
+        type: DataTypes.ENUM,
+        values: Object.values(MultiChainRewindStatus),
+        defaultValue: MultiChainRewindStatus.Normal,
+      },
+      initiator: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
       },
     },
     {freezeTableName: true, schema: schema}
   );
-}
-
-export function generateRewindTimestampKey(chainId: string): RewindTimestampKey {
-  return `${RewindTimestampKeyPrefix}_${blake2AsHex(chainId)}` as RewindTimestampKey;
 }

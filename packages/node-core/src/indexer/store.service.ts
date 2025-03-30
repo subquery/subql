@@ -36,11 +36,11 @@ import {getLogger} from '../logger';
 import {exitWithError} from '../process';
 import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit, hasValue} from '../utils';
 import {
-  generateRewindTimestampKey,
   GlobalDataFactory,
   GlobalDataRepo,
   MetadataFactory,
   MetadataRepo,
+  MultiChainRewindStatus,
   PoiFactory,
   PoiFactoryDeprecate,
   PoiRepo,
@@ -513,11 +513,8 @@ group by
   }
 
   private async getRewindTimestamp(tx?: Transaction): Promise<number | undefined> {
-    const rewindTimestampKey = generateRewindTimestampKey(this.subqueryProject.network.chainId);
-    const record = await this.globalDataRepo.findByPk(rewindTimestampKey, {transaction: tx});
-    if (hasValue(record)) {
-      return record.toJSON().value as number;
-    }
+    const record = await this.globalDataRepo.findByPk(this.subqueryProject.network.chainId, {transaction: tx});
+    return record?.rewindTimestamp;
   }
 
   private async initChainRewindTimestamp() {
@@ -528,8 +525,15 @@ group by
       await tx.commit();
       return;
     }
-    const rewindTimestampKey = generateRewindTimestampKey(this.subqueryProject.network.chainId);
-    await this.globalDataRepo.create({key: rewindTimestampKey, value: 0}, {transaction: tx});
+    await this.globalDataRepo.create(
+      {
+        chainId: this.subqueryProject.network.chainId,
+        rewindTimestamp: 0,
+        status: MultiChainRewindStatus.Normal,
+        initiator: false,
+      },
+      {transaction: tx}
+    );
     await tx.commit();
   }
 

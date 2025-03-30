@@ -3,11 +3,12 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {buildSchemaFromString} from '@subql/utils';
-import {Sequelize, QueryTypes} from '@subql/x-sequelize';
+import {Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
 import {DbOption} from '../db';
 import {delay} from '../utils';
-import {MultiChainRewindService, RewindStatus} from './multiChainRewind.service';
+import {MultiChainRewindStatus} from './entities';
+import {MultiChainRewindService} from './multiChainRewind.service';
 import {StoreService} from './store.service';
 import {PlainStoreModelService} from './storeModelProvider';
 
@@ -100,7 +101,7 @@ describe('MultiChain Rewind Service', () => {
     await multiChainRewindService.setGlobalRewindLock(rewindTimestamp);
 
     // Assert: Check that the service is in Rewinding state and has the correct waitRewindHeader
-    expect(multiChainRewindService.status).toBe(RewindStatus.Rewinding);
+    expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Rewinding);
     expect(multiChainRewindService.waitRewindHeader).toBeUndefined();
 
     // Release the chain rewind lock
@@ -113,7 +114,7 @@ describe('MultiChain Rewind Service', () => {
 
     // Assert: Check that the rewind is complete and status is back to Normal
     expect(remaining).toBe(0); // No remaining chains to rewind
-    expect(multiChainRewindService.status).toBe(RewindStatus.Normal);
+    expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Normal);
     expect(multiChainRewindService.waitRewindHeader).toBeUndefined();
   });
 
@@ -129,7 +130,7 @@ describe('MultiChain Rewind Service', () => {
     await Promise.all([promise1, promise2]);
 
     // Assert: The service should be in Rewinding state
-    expect(multiChainRewindService.status).toBe(RewindStatus.Rewinding);
+    expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Rewinding);
 
     // Complete the rewind process
     const tx = await sequelize.transaction();
@@ -140,7 +141,7 @@ describe('MultiChain Rewind Service', () => {
 
     // Assert: The rewind is complete and used the earlier timestamp
     expect(remaining).toBe(0);
-    expect(multiChainRewindService.status).toBe(RewindStatus.Normal);
+    expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Normal);
   });
 
   it('should handle rewind to a timestamp that already passed', async () => {
@@ -157,7 +158,7 @@ describe('MultiChain Rewind Service', () => {
     await multiChainRewindService.setGlobalRewindLock(rewindTimestamp);
 
     // Assert: The service should still enter Rewinding state
-    expect(multiChainRewindService.status).toBe(RewindStatus.Rewinding);
+    expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Rewinding);
 
     // Complete the rewind process
     const tx = await sequelize.transaction();
@@ -167,7 +168,7 @@ describe('MultiChain Rewind Service', () => {
     await delay(1);
 
     expect(remaining).toBe(0);
-    expect(multiChainRewindService.status).toBe(RewindStatus.Normal);
+    expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Normal);
   });
 
   it('should handle rewind during an ongoing rewind', async () => {
@@ -176,7 +177,7 @@ describe('MultiChain Rewind Service', () => {
     await multiChainRewindService.setGlobalRewindLock(rewindTimestamp1);
 
     // Assert: Check that the service is in Rewinding state
-    expect(multiChainRewindService.status).toBe(RewindStatus.Rewinding);
+    expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Rewinding);
 
     // Act: Attempt to rewind to an earlier block while already rewinding
     const rewindTimestamp2 = genBlockTimestamp(3);
@@ -191,7 +192,7 @@ describe('MultiChain Rewind Service', () => {
     await delay(1);
 
     expect(remaining).toBe(0);
-    expect(multiChainRewindService.status).toBe(RewindStatus.Normal);
+    expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Normal);
   });
 
   it('should handle binary search edge cases for timestamp matching', async () => {
@@ -209,7 +210,7 @@ describe('MultiChain Rewind Service', () => {
     await multiChainRewindService.setGlobalRewindLock(rewindTimestamp);
 
     // Assert: The service should use the closest block
-    expect(multiChainRewindService.status).toBe(RewindStatus.Rewinding);
+    expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Rewinding);
 
     // Complete the rewind process
     const tx = await sequelize.transaction();
@@ -220,6 +221,6 @@ describe('MultiChain Rewind Service', () => {
 
     expect(mockGetHeaderByBinarySearch).toHaveBeenCalledWith(expect.any(Date));
     expect(remaining).toBe(0);
-    expect(multiChainRewindService.status).toBe(RewindStatus.Normal);
+    expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Normal);
   });
 });

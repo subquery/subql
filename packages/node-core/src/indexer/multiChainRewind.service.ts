@@ -15,27 +15,18 @@ import {NodeConfig} from '../configure';
 import {createRewindTrigger, createRewindTriggerFunction, getTriggers} from '../db';
 import {MultiChainRewindEvent, MultiChainRewindPayload} from '../events';
 import {getLogger} from '../logger';
+import {MultiChainRewindStatus} from './entities';
 import {StoreService} from './store.service';
 import {PlainGlobalModel} from './storeModelProvider/global/global';
 import {Header} from './types';
 
 const logger = getLogger('MultiChainRewindService');
 
-export enum RewindStatus {
-  /** The current chain is in normal state. */
-  Normal = 'normal',
-  /** The current chain is waiting for other chains to rewind. */
-  WaitOtherChain = 'waitOtherChain',
-  /** The current chain is executing rewind. */
-  Rewinding = 'rewinding',
-  /** The current chain is waiting for rewind. */
-  WaitRewind = 'waitRewind',
-}
 export interface IMultiChainRewindService {
   chainId: string;
-  status: RewindStatus;
+  status: MultiChainRewindStatus;
   waitRewindHeader?: Header;
-  setGlobalRewindLock(rewindTimestamp: number): Promise<void>;
+  setGlobalRewindLock(rewindTimestamp: number): Promise<boolean>;
   /**
    * Check if the height is consistent before unlocking.
    * @param tx
@@ -58,7 +49,7 @@ export interface IMultiChainHandler {
  */
 @Injectable()
 export class MultiChainRewindService implements IMultiChainRewindService, OnApplicationShutdown {
-  private _status: RewindStatus = RewindStatus.Normal;
+  private _status: MultiChainRewindStatus = MultiChainRewindStatus.Normal;
   private _chainId?: string;
   private dbSchema: string;
   private rewindTriggerName: string;
@@ -85,7 +76,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     return this._chainId;
   }
 
-  private set status(status: RewindStatus) {
+  private set status(status: MultiChainRewindStatus) {
     this._status = status;
   }
 
@@ -138,15 +129,18 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     let processingPromise = Promise.resolve();
     this.pgListener.on('notification', (msg) => {
       processingPromise = processingPromise.then(async () => {
-        const eventType = msg.payload;
+        assert(msg.payload, 'Payload is empty');
+        const {chainId, event: eventType} = JSON.parse(msg.payload) as {chainId: string; event: MultiChainRewindEvent};
+        if (chainId !== this.chainId) return;
+
         const sessionUuid = uniqueId();
         logger.info(`[${sessionUuid}]Received rewind event: ${eventType}, chainId: ${this.chainId}`);
         switch (eventType) {
           case MultiChainRewindEvent.Rewind:
           case MultiChainRewindEvent.RewindTimestampDecreased: {
-            const {rewindTimestamp} = await this.globalModel.getGlobalRewindStatus();
+            const {rewindTimestamp} = await this.globalModel.getChainRewindInfo();
             this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
-            this.status = RewindStatus.WaitRewind;
+            this.status = MultiChainRewindStatus.WaitRewind;
 
             // Trigger the rewind event, and let the fetchService listen to the message and handle the queueFlush.
             this.eventEmitter.emit(eventType, {
@@ -157,7 +151,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
           case MultiChainRewindEvent.RewindComplete:
             // recover indexing status
             this.waitRewindHeader = undefined;
-            this.status = RewindStatus.Normal;
+            this.status = MultiChainRewindStatus.Normal;
             break;
           default:
             throw new Error(`Unknown rewind event: ${eventType}`);
@@ -171,12 +165,12 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
 
     // Check whether the current state is in rollback.
     // If a global lock situation occurs, prioritize setting it to the WaitOtherChain state. If a rollback is still required, then set it to the rewinding state.
-    const {rewindLock, rewindTimestamp} = await this.globalModel.getGlobalRewindStatus();
-    if (rewindLock) {
-      this.status = RewindStatus.WaitOtherChain;
+    const {rewindTimestamp, status} = await this.globalModel.getChainRewindInfo();
+    if (status === MultiChainRewindStatus.WaitOtherChain) {
+      this.status = MultiChainRewindStatus.WaitOtherChain;
     }
-    if (rewindTimestamp) {
-      this.status = RewindStatus.WaitRewind;
+    if (status === MultiChainRewindStatus.WaitRewind) {
+      this.status = MultiChainRewindStatus.WaitRewind;
       this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
     }
   }
@@ -195,18 +189,20 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
    * @param rewindTimestamp rewindTimestamp in milliseconds
    */
   async setGlobalRewindLock(rewindTimestamp: number) {
-    const {needRewind} = await this.globalModel.setGlobalRewindLock(rewindTimestamp);
+    const {lockTimestamp} = await this.globalModel.setGlobalRewindLock(rewindTimestamp);
+    const needRewind = lockTimestamp <= rewindTimestamp;
     if (needRewind) {
       logger.info(`setGlobalRewindLock success chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`);
-      this.status = RewindStatus.Rewinding;
+      this.status = MultiChainRewindStatus.Rewinding;
     }
+    return needRewind;
   }
 
-  async releaseChainRewindLock(tx: Transaction, rewindTimestamp: number): Promise<number> {
+  async releaseChainRewindLock(tx: Transaction, rewindTimestamp: number, force = false): Promise<number> {
     const chainsCount = await this.globalModel.releaseChainRewindLock(tx, rewindTimestamp);
     // The current chain has completed the rewind, and we still need to wait for other chains to finish.
     // When fully synchronized, set the status back to normal by pgListener.
-    this.status = RewindStatus.WaitOtherChain;
+    this.status = MultiChainRewindStatus.WaitOtherChain;
     logger.info(`Rewind success chainId: ${JSON.stringify({chainsCount, chainId: this.chainId, rewindTimestamp})}`);
     return chainsCount;
   }

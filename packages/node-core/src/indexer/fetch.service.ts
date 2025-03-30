@@ -16,7 +16,8 @@ import {IBlockDispatcher} from './blockDispatcher';
 import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {mergeNumAndBlocks} from './dictionary/utils';
-import {IMultiChainHandler, MultiChainRewindService, RewindStatus} from './multiChainRewind.service';
+import {MultiChainRewindStatus} from './entities';
+import {IMultiChainHandler, MultiChainRewindService} from './multiChainRewind.service';
 import {IStoreModelProvider} from './storeModelProvider';
 import {BypassBlocks, IBlock, IProjectService} from './types';
 import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
@@ -202,13 +203,13 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
       // If we're rewinding, we should wait until it's done
       const multiChainStatus = this.multiChainRewindService.status;
 
-      if (RewindStatus.WaitRewind === multiChainStatus) {
+      if (MultiChainRewindStatus.WaitRewind === multiChainStatus) {
         assert(this.multiChainRewindService.waitRewindHeader, 'Multi chain Rewind header is not set');
         await this.projectService.reindex(this.multiChainRewindService.waitRewindHeader);
         continue;
       }
 
-      if (RewindStatus.WaitOtherChain === multiChainStatus) {
+      if (MultiChainRewindStatus.WaitOtherChain === multiChainStatus) {
         logger.info(
           `Waiting for all chains to complete rewind, current chainId: ${this.multiChainRewindService.chainId}`
         );
@@ -216,7 +217,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
         continue;
       }
 
-      if (RewindStatus.Rewinding === multiChainStatus) {
+      if (MultiChainRewindStatus.Rewinding === multiChainStatus) {
         logger.info(`Rewinding, current chainId: ${this.multiChainRewindService.chainId}`);
         await delay(multiChainRewindDelay);
         continue;

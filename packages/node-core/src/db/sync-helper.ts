@@ -17,7 +17,6 @@ import {
 } from '@subql/x-sequelize';
 import {ModelAttributeColumnReferencesOptions, ModelIndexesOptions} from '@subql/x-sequelize/types/model';
 import {MultiChainRewindEvent} from '../events';
-import {RewindLockKey} from '../indexer';
 import {EnumType} from '../utils';
 import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -304,7 +303,7 @@ export function createRewindTrigger(schema: string): string {
 
   return `
   CREATE TRIGGER "${triggerName}"
-    AFTER INSERT OR UPDATE OR DELETE
+    AFTER UPDATE
     ON "${schema}"."_global"
     FOR EACH ROW
     EXECUTE FUNCTION "${schema}".rewind_notification();
@@ -317,31 +316,29 @@ export function createRewindTriggerFunction(schema: string): string {
   return `
   CREATE OR REPLACE FUNCTION "${schema}".rewind_notification()
     RETURNS trigger AS $$
-    DECLARE
-      key_value TEXT;
     BEGIN
-      IF TG_OP = 'DELETE' THEN
-        key_value := OLD.value ->> 'key';
-      ELSE
-        key_value := NEW.value ->> 'key';
-      END IF;
-
-      -- Make sure it’s RewindLockKey
-      IF key_value <> '${RewindLockKey}' THEN
+      IF NEW.status = 'normal' THEN
+        PERFORM pg_notify(
+          '${triggerName}', 
+          format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.RewindComplete}', OLD."chainId")
+        );
         RETURN NULL;
       END IF;
 
-      IF TG_OP = 'INSERT' THEN
-        PERFORM pg_notify('${triggerName}', '${MultiChainRewindEvent.Rewind}');
-      END IF;
-      
-      -- During a rollback, there is a chain that needs to be rolled back to an earlier height.
-      IF TG_OP = 'UPDATE' AND (NEW.value ->> 'timestamp')::BIGINT < (OLD.value ->> 'timestamp')::BIGINT THEN
-        PERFORM pg_notify('${triggerName}', '${MultiChainRewindEvent.RewindTimestampDecreased}');
+      IF OLD.status = 'normal' THEN
+        PERFORM pg_notify(
+          '${triggerName}', 
+          format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.Rewind}', OLD."chainId")
+        );
+        RETURN NULL;
       END IF;
 
-      IF TG_OP = 'DELETE' THEN
-        PERFORM pg_notify('${triggerName}', '${MultiChainRewindEvent.RewindComplete}');
+      IF NEW."rewindTimestamp" < OLD."rewindTimestamp" THEN
+        PERFORM pg_notify(
+          '${triggerName}', 
+          format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.RewindTimestampDecreased}', OLD."chainId")
+        );
+        RETURN NULL;
       END IF;
 
       RETURN NULL;
