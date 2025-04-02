@@ -55,7 +55,7 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
           }
         } else {
           logger.info(
-            `Changed dictionray: new index: ${this._currentDictionaryIndex}, type: ${this._dictionaries[this._currentDictionaryIndex]?.constructor?.name}`
+            `Changed dictionary: new index: ${this._currentDictionaryIndex}, type: ${this._dictionaries[this._currentDictionaryIndex]?.constructor?.name}`
           );
         }
       }
