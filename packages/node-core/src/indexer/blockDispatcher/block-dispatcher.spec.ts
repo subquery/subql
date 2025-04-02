@@ -7,13 +7,13 @@ import {NodeConfig} from '../../configure';
 import {exitWithError} from '../../process';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 import {Header, IBlock} from '../types';
-import {BaseWorkerService, IBaseIndexerWorker, WorkerStatusResponse} from '../worker';
+import {BaseWorkerService, BlockUnavailableError, IBaseIndexerWorker, WorkerStatusResponse} from '../worker';
 import {IBlockDispatcher, ProcessBlockResponse} from './base-block-dispatcher';
 import {BlockDispatcher} from './block-dispatcher';
 import {WorkerBlockDispatcher} from './worker-block-dispatcher';
 
 let failureBlocks: number[] = [];
-let indexBlockFunction: (block: IBlock<number>) => Promise<void>;
+let indexBlockFunction: (block: IBlock<number>) => Promise<void | ProcessBlockResponse>;
 let workerIdx = 0;
 
 const nodeConfig = new NodeConfig({batchSize: 10, workers: 2} as any);
@@ -96,7 +96,11 @@ class TestWorkerService extends BaseWorkerService<number, Header> {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async processFetchedBlock(block: IBlock<number>): Promise<ProcessBlockResponse> {
-    await indexBlockFunction?.(block);
+    const res = await indexBlockFunction?.(block);
+
+    if (res) {
+      return res;
+    }
 
     return {
       dynamicDsCreated: false,
@@ -169,8 +173,16 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
     (): IBlockDispatcher<number> => {
       const indexerManager = {
         indexBlock: async (input: IBlock<number>) => {
-          await indexBlockFunction(input);
-          return {};
+          const res = await indexBlockFunction(input);
+
+          if (res) {
+            return res;
+          }
+
+          return {
+            dynamicDsCreated: false,
+            reindexBlockHeader: null,
+          };
         },
       } as any;
 
@@ -378,6 +390,81 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
 
     // Trigger blocks being fetched
     resolveBlock();
+  });
+
+  it('handles a task flushed error', async () => {
+    const indexedBlocks: number[] = [];
+
+    fetchBlocksFunction = async (height: number): Promise<IBlock<number>> => {
+      await delay(0.1);
+      return {
+        block: height,
+        getHeader: () => ({
+          blockHeight: height,
+          blockHash: height.toString(),
+          parentHash: (height - 1).toString(),
+          timestamp: new Date(),
+        }),
+      };
+    };
+
+    indexBlockFunction = jest.fn(async (block: IBlock<number>) => {
+      await delay(0.1);
+      indexedBlocks.push(block.block);
+
+      if (block.block === 2) {
+        return {
+          dynamicDsCreated: true,
+          reindexBlockHeader: block.getHeader(),
+        };
+      }
+    });
+
+    // Split over 2 calls to be sent do different workers.
+    await blockDispatcher.enqueueBlocks([1, 2, 3, 4, 5], 5);
+    await blockDispatcher.enqueueBlocks([6, 7, 8], 8);
+    await delay(2);
+
+    // This should flush the blocks after the height where dynamicDs is created
+    expect(indexBlockFunction).toHaveBeenCalledTimes(2);
+    expect(indexedBlocks).toEqual([1, 2]);
+  });
+
+  it('handles a block unavailable error', async () => {
+    const indexedBlocks: number[] = [];
+
+    const unavailableBlocks = [4];
+
+    fetchBlocksFunction = async (height: number): Promise<IBlock<number>> => {
+      await delay(0.1);
+
+      if (unavailableBlocks.includes(height)) {
+        throw new BlockUnavailableError(`Block ${height} is unavailable`);
+      }
+      return {
+        block: height,
+        getHeader: () => ({
+          blockHeight: height,
+          blockHash: height.toString(),
+          parentHash: (height - 1).toString(),
+          timestamp: new Date(),
+        }),
+      };
+    };
+
+    indexBlockFunction = jest.fn(async (block: IBlock<number>) => {
+      await delay(0.1);
+      indexedBlocks.push(block.block);
+    });
+
+    // Split over 2 calls to be sent do different workers.
+    await blockDispatcher.enqueueBlocks([1, 2, 3, 4, 5], 5);
+    await blockDispatcher.enqueueBlocks([6, 7, 8], 8);
+    await delay(2);
+
+    // This should flush the blocks after the height where dynamicDs is created
+    expect(indexBlockFunction).toHaveBeenCalledTimes(7);
+    expect(indexedBlocks).toEqual([1, 2, 3, 5, 6, 7, 8]);
   });
 
   describe('postProcessBlock', () => {
