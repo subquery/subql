@@ -88,7 +88,8 @@ export class WorkerBlockDispatcher<
       initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Fetch'),
       storeService,
       storeModelProvider,
-      poiSyncService
+      poiSyncService,
+      blockchainService
     );
 
     this.processQueue = initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Process');
