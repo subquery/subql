@@ -341,9 +341,16 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
           return;
         }
 
-        return options.processQueue.put(() =>
-          this.processBlockTask(data, options.getHeader, options.discardBlock, options.processBlock)
-        );
+        return options.processQueue
+          .put(() => this.processBlockTask(data, options.getHeader, options.discardBlock, options.processBlock))
+          .catch((e) => {
+            if (isTaskFlushedError(e)) {
+              // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
+              return;
+            }
+            logger.error(e, `Failed to process block ${options.height}`);
+            throw e;
+          });
       })
       .catch((e: any) => {
         // Failed to process block

@@ -35,6 +35,7 @@ const defaultFetchBlocksFunction = async (height: number): Promise<IBlock<number
   };
 };
 
+let dynamicDsCreatedBlock: number[] = [];
 let fetchBlocksFunction = defaultFetchBlocksFunction;
 
 function resolveablePromise(): [Promise<void>, () => void] {
@@ -97,9 +98,8 @@ class TestWorkerService extends BaseWorkerService<number, Header> {
   // eslint-disable-next-line @typescript-eslint/require-await
   async processFetchedBlock(block: IBlock<number>): Promise<ProcessBlockResponse> {
     await indexBlockFunction?.(block);
-
     return {
-      dynamicDsCreated: false,
+      dynamicDsCreated: dynamicDsCreatedBlock.includes(block.block),
       reindexBlockHeader: null,
     };
   }
@@ -170,7 +170,10 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
       const indexerManager = {
         indexBlock: async (input: IBlock<number>) => {
           await indexBlockFunction(input);
-          return {};
+          return {
+            dynamicDsCreated: dynamicDsCreatedBlock.includes(input.block),
+            reindexBlockHeader: null,
+          };
         },
       } as any;
 
@@ -230,10 +233,11 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
 
     blockDispatcher = initDispatcher();
 
-    await blockDispatcher.init(jest.fn());
+    await blockDispatcher.init(blockDispatcher.flushQueue.bind(blockDispatcher));
   });
 
   afterEach(async () => {
+    dynamicDsCreatedBlock = [];
     if (blockDispatcher instanceof BlockDispatcher || blockDispatcher instanceof WorkerBlockDispatcher) {
       await blockDispatcher.onApplicationShutdown();
     }
@@ -384,7 +388,6 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
     beforeEach(() => {
       jest.clearAllMocks();
     });
-
     it('should call storeModelProvider.applyPendingChanges with correct parameters during normal processing', async () => {
       // Arrange
       const header: Header = {
@@ -393,15 +396,12 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
         parentHash: '0xparenthash',
         timestamp: new Date(),
       };
-
       const processBlockResponse: ProcessBlockResponse = {
         dynamicDsCreated: false,
         reindexBlockHeader: null,
       };
-
       // Act
       await (blockDispatcher as any).postProcessBlock(header, processBlockResponse);
-
       // Assert
       expect(storeModelProvider.applyPendingChanges).toHaveBeenCalledWith(
         header.blockHeight,
@@ -418,25 +418,20 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
         parentHash: '0xparenthash',
         timestamp: new Date(),
       };
-
       const reindexBlockHeader: Header = {
         blockHeight: 90,
         blockHash: '0xoldhash',
         parentHash: '0xoldparenthash',
         timestamp: new Date(),
       };
-
       const processBlockResponse: ProcessBlockResponse = {
         dynamicDsCreated: false,
         reindexBlockHeader,
       };
-
       // Mock rewind method to avoid executing the full rewind logic
       (blockDispatcher as any).rewind = jest.fn().mockResolvedValue(undefined);
-
       // Act
       await (blockDispatcher as any).postProcessBlock(header, processBlockResponse);
-
       // Assert
       expect(storeModelProvider.applyPendingChanges).toHaveBeenCalledWith(
         header.blockHeight,
@@ -446,6 +441,8 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
     });
 
     it('should call applyPendingChanges correctly when a dynamic datasource is created', async () => {
+      await blockDispatcher.init(jest.fn());
+
       // Arrange
       const header: Header = {
         blockHeight: 100,
@@ -453,15 +450,12 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
         parentHash: '0xparenthash',
         timestamp: new Date(),
       };
-
       const processBlockResponse: ProcessBlockResponse = {
         dynamicDsCreated: true, // Dynamic datasource was created
         reindexBlockHeader: null,
       };
-
       // Act
       await (blockDispatcher as any).postProcessBlock(header, processBlockResponse);
-
       // Assert
       expect((blockDispatcher as any)._onDynamicDsCreated).toHaveBeenCalledWith(header.blockHeight);
       expect(storeModelProvider.applyPendingChanges).toHaveBeenCalledWith(
@@ -469,6 +463,19 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
         true,
         storeService.transaction
       );
+    });
+
+    it('should call _onDynamicDsCreated when dynamic datasource is created', async () => {
+      dynamicDsCreatedBlock = [7];
+      const onDynamicDsCreatedSpy = jest.spyOn(blockDispatcher as any, '_onDynamicDsCreated');
+
+      await blockDispatcher.enqueueBlocks([7], 7);
+      await delay(1);
+
+      await blockDispatcher.enqueueBlocks([8], 10);
+      await delay(1);
+
+      expect(onDynamicDsCreatedSpy).toHaveBeenCalledWith(7);
     });
   });
 });
