@@ -512,7 +512,7 @@ group by
     return getHistoricalUnit(this.historical, this.blockHeader);
   }
 
-  private async getRewindTimestamp(tx?: Transaction): Promise<number | undefined> {
+  private async getRewindTimestamp(tx?: Transaction): Promise<Date | undefined> {
     const record = await this.globalDataRepo.findByPk(this.subqueryProject.network.chainId, {transaction: tx});
     return record?.rewindTimestamp;
   }
@@ -528,7 +528,7 @@ group by
     await this.globalDataRepo.create(
       {
         chainId: this.subqueryProject.network.chainId,
-        rewindTimestamp: 0,
+        rewindTimestamp: new Date(0),
         status: MultiChainRewindStatus.Normal,
         initiator: false,
       },

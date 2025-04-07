@@ -98,7 +98,7 @@ describe('MultiChain Rewind Service', () => {
   it('should handle rewind correctly', async () => {
     // Act: Set global rewind lock to rewind to block 5
     const rewindTimestamp = genBlockTimestamp(5);
-    await multiChainRewindService.setGlobalRewindLock(rewindTimestamp);
+    await multiChainRewindService.setGlobalRewindLock(new Date(rewindTimestamp));
 
     // Assert: Check that the service is in Rewinding state and has the correct waitRewindHeader
     expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Rewinding);
@@ -106,7 +106,7 @@ describe('MultiChain Rewind Service', () => {
 
     // Release the chain rewind lock
     const tx = await sequelize.transaction();
-    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, rewindTimestamp);
+    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, new Date(rewindTimestamp));
     await tx.commit();
 
     // Wait for the RewindComplete notification to be processed
@@ -124,8 +124,8 @@ describe('MultiChain Rewind Service', () => {
     const rewindTimestamp2 = genBlockTimestamp(3); // Earlier timestamp
 
     // Act: Request two rewinds almost simultaneously
-    const promise1 = multiChainRewindService.setGlobalRewindLock(rewindTimestamp1);
-    const promise2 = multiChainRewindService.setGlobalRewindLock(rewindTimestamp2);
+    const promise1 = multiChainRewindService.setGlobalRewindLock(new Date(rewindTimestamp1));
+    const promise2 = multiChainRewindService.setGlobalRewindLock(new Date(rewindTimestamp2));
 
     await Promise.all([promise1, promise2]);
 
@@ -134,7 +134,7 @@ describe('MultiChain Rewind Service', () => {
 
     // Complete the rewind process
     const tx = await sequelize.transaction();
-    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, rewindTimestamp2);
+    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, new Date(rewindTimestamp2));
     await tx.commit();
 
     await delay(1);
@@ -155,14 +155,14 @@ describe('MultiChain Rewind Service', () => {
 
     // Act: Set rewind to timestamp 2 (which is "in the past" for the current chain state)
     const rewindTimestamp = genBlockTimestamp(2);
-    await multiChainRewindService.setGlobalRewindLock(rewindTimestamp);
+    await multiChainRewindService.setGlobalRewindLock(new Date(rewindTimestamp));
 
     // Assert: The service should still enter Rewinding state
     expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Rewinding);
 
     // Complete the rewind process
     const tx = await sequelize.transaction();
-    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, rewindTimestamp);
+    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, new Date(rewindTimestamp));
     await tx.commit();
 
     await delay(1);
@@ -174,19 +174,19 @@ describe('MultiChain Rewind Service', () => {
   it('should handle rewind during an ongoing rewind', async () => {
     // Act: Set first rewind to block 5
     const rewindTimestamp1 = genBlockTimestamp(5);
-    await multiChainRewindService.setGlobalRewindLock(rewindTimestamp1);
+    await multiChainRewindService.setGlobalRewindLock(new Date(rewindTimestamp1));
 
     // Assert: Check that the service is in Rewinding state
     expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Rewinding);
 
     // Act: Attempt to rewind to an earlier block while already rewinding
     const rewindTimestamp2 = genBlockTimestamp(3);
-    await multiChainRewindService.setGlobalRewindLock(rewindTimestamp2);
+    await multiChainRewindService.setGlobalRewindLock(new Date(rewindTimestamp2));
 
     // Complete the rewind process
     const tx = await sequelize.transaction();
     // We should be rewinding to timestamp2 since it's earlier
-    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, rewindTimestamp2);
+    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, new Date(rewindTimestamp2));
     await tx.commit();
 
     await delay(1);
@@ -207,14 +207,14 @@ describe('MultiChain Rewind Service', () => {
 
     // Act: Set rewind to a timestamp that falls between blocks
     const rewindTimestamp = genBlockTimestamp(4.5); // Timestamp between blocks 4 and 5
-    await multiChainRewindService.setGlobalRewindLock(rewindTimestamp);
+    await multiChainRewindService.setGlobalRewindLock(new Date(rewindTimestamp));
 
     // Assert: The service should use the closest block
     expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Rewinding);
 
     // Complete the rewind process
     const tx = await sequelize.transaction();
-    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, rewindTimestamp);
+    const remaining = await multiChainRewindService.releaseChainRewindLock(tx, new Date(rewindTimestamp));
     await tx.commit();
 
     await delay(1);

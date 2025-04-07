@@ -23,6 +23,7 @@ import {BypassBlocks, IBlock, IProjectService} from './types';
 import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
 
 const logger = getLogger('FetchService');
+// Unit is ms
 const multiChainRewindDelay = 3;
 @Injectable()
 export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<FB>, FB>
@@ -203,13 +204,13 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
       // If we're rewinding, we should wait until it's done
       const multiChainStatus = this.multiChainRewindService.status;
 
-      if (MultiChainRewindStatus.WaitRewind === multiChainStatus) {
+      if (MultiChainRewindStatus.Incomplete === multiChainStatus) {
         assert(this.multiChainRewindService.waitRewindHeader, 'Multi chain Rewind header is not set');
         await this.projectService.reindex(this.multiChainRewindService.waitRewindHeader);
         continue;
       }
 
-      if (MultiChainRewindStatus.WaitOtherChain === multiChainStatus) {
+      if (MultiChainRewindStatus.Complete === multiChainStatus) {
         logger.info(
           `Waiting for all chains to complete rewind, current chainId: ${this.multiChainRewindService.chainId}`
         );

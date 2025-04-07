@@ -9,14 +9,15 @@ import {GlobalData, GlobalDataRepo, MultiChainRewindStatus} from '../../entities
 export interface IGlobalData {
   getChainRewindInfo(): Promise<GlobalData>;
 
-  setGlobalRewindLock(rewindTimestamp: number): Promise<{lockTimestamp: number}>;
+  setGlobalRewindLock(rewindTimestamp: Date): Promise<{lockTimestamp: Date}>;
   /**
    * Check if the height is consistent before unlocking.
    * @param tx
    * @param rewindTimestamp The timestamp to roll back to, in milliseconds.
+   * @param forceRewindTimestamp The minimum timestamp allowed for forced rewind
    * @returns the number of remaining rewind chains
    */
-  releaseChainRewindLock(tx: Transaction, rewindTimestamp: number): Promise<number>;
+  releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, forceRewindTimestamp?: Date): Promise<number>;
 }
 
 const logger = getLogger('PlainGlobalModel');
@@ -55,15 +56,15 @@ export class PlainGlobalModel implements IGlobalData {
    * @param tx
    * @returns
    */
-  async setGlobalRewindLock(rewindTimestamp: number): Promise<{lockTimestamp: number}> {
+  async setGlobalRewindLock(rewindTimestamp: Date): Promise<{lockTimestamp: Date}> {
     const tx = await this.sequelize.transaction();
     const {chainsCount, currentChain} = await this.getChainsInfo(tx);
 
     try {
-      let lockTimestamp = 0;
+      let lockTimestamp = new Date(0);
       const [affectedCount] = await this.model.update(
         {
-          status: MultiChainRewindStatus.WaitRewind,
+          status: MultiChainRewindStatus.Incomplete,
           rewindTimestamp,
           initiator: false,
         },
@@ -101,29 +102,31 @@ export class PlainGlobalModel implements IGlobalData {
    * 1.	A table lock needs to be added before release to prevent multiple chains from releasing simultaneously, causing a deadlock. If one chain is setting setGlobalRewindLock, others need to queue (so it’s necessary to check if it’s the lock for the current timestamp; if not, the release fails, and the rollback fails).
    * 2.	There may be a case where lastProcessBlock < rewindTime, in which case the lock should be released directly (force = true).
    * @param rewindTimestamp
+   * @param forceRewindTimestamp The minimum timestamp allowed for forced rewind
    * @returns
    */
-  async releaseChainRewindLock(tx: Transaction, rewindTimestamp: number, force = false): Promise<number> {
+  async releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, forceRewindTimestamp?: Date): Promise<number> {
     // A table lock should be used here to prevent multiple chains from releasing simultaneously, causing a deadlock.
     const chainList = await this.model.findAll({transaction: tx, lock: tx.LOCK.UPDATE});
+    const waitChainCount = chainList.filter((chain) => chain.status === MultiChainRewindStatus.Incomplete).length;
     const currentChainInfo = chainList.find((chain) => chain.chainId === this.chainId);
-    const waitChainCount = chainList.filter((chain) => chain.status === MultiChainRewindStatus.WaitRewind).length;
+    assert(currentChainInfo, `Not registered rewind timestamp key in global data, chainId: ${this.chainId}`);
 
-    if (!force) {
-      assert(currentChainInfo, `Not registered rewind timestamp key in global data, chainId: ${this.chainId}`);
+    if (!forceRewindTimestamp) {
       assert(
-        currentChainInfo.status === MultiChainRewindStatus.WaitRewind &&
-          currentChainInfo.rewindTimestamp === rewindTimestamp,
+        currentChainInfo.status === MultiChainRewindStatus.Incomplete &&
+          currentChainInfo.rewindTimestamp.getTime() === rewindTimestamp.getTime(),
         `ChainRewindLock is not match, chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}, status: ${currentChainInfo.status}`
       );
     }
 
     const [affectedCount] = await this.model.update(
-      {status: MultiChainRewindStatus.WaitOtherChain},
+      {status: MultiChainRewindStatus.Complete},
       {
         where: {
           chainId: this.chainId,
-          status: MultiChainRewindStatus.WaitRewind,
+          status: MultiChainRewindStatus.Incomplete,
+          ...(forceRewindTimestamp ? {rewindTimestamp: {[Op.gte]: forceRewindTimestamp}} : {rewindTimestamp}),
         },
         transaction: tx,
       }
@@ -134,8 +137,8 @@ export class PlainGlobalModel implements IGlobalData {
     if (waitChainCount - 1 === 0) {
       // Everything is complete, release the lock.
       await this.model.update(
-        {status: MultiChainRewindStatus.Normal, rewindTimestamp: 0, initiator: false},
-        {where: {status: MultiChainRewindStatus.WaitOtherChain}, transaction: tx}
+        {status: MultiChainRewindStatus.Normal, rewindTimestamp: new Date(0), initiator: false},
+        {where: {status: MultiChainRewindStatus.Complete}, transaction: tx}
       );
     }
 
@@ -145,7 +148,7 @@ export class PlainGlobalModel implements IGlobalData {
   private async getChainsInfo(tx: Transaction) {
     const chainList = await this.model.findAll({transaction: tx, lock: tx.LOCK.UPDATE});
     const currentChain = chainList.find((chain) => chain.chainId === this.chainId);
-    const waitChainCount = chainList.filter((chain) => chain.status === MultiChainRewindStatus.WaitRewind).length;
+    const waitChainCount = chainList.filter((chain) => chain.status === MultiChainRewindStatus.Incomplete).length;
     return {currentChain, chainsCount: chainList.length, waitChainCount};
   }
 }

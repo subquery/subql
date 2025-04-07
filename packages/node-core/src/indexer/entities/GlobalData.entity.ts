@@ -4,19 +4,19 @@
 import {BuildOptions, DataTypes, Model, Sequelize} from '@subql/x-sequelize';
 
 export enum MultiChainRewindStatus {
-  /** The current chain is in normal state. */
+  /** Indicates a normal state. Each chain needs to register before starting to sync blocks. */
   Normal = 'normal',
-  /** The current chain is waiting for other chains to rewind. */
-  WaitOtherChain = 'waitOtherChain',
+  /** The rewind task has been completed. The rollback height can be determined using rewindTimestamp. */
+  Complete = 'complete',
+  /** Unprocessed rewind task. The rollback height can be determined using rewindTimestamp. */
+  Incomplete = 'incomplete',
   /** The current chain is executing rewind. */
   Rewinding = 'rewinding',
-  /** The current chain is waiting for rewind. */
-  WaitRewind = 'waitRewind',
 }
 
 export interface GlobalData {
   chainId: string;
-  rewindTimestamp: number;
+  rewindTimestamp: Date;
   status: MultiChainRewindStatus;
   initiator: boolean;
 }
@@ -38,11 +38,8 @@ export function GlobalDataFactory(sequelize: Sequelize, schema: string): GlobalD
         primaryKey: true,
       },
       rewindTimestamp: {
-        type: DataTypes.BIGINT,
-        defaultValue: 0,
-        get() {
-          return Number(this.getDataValue('rewindTimestamp'));
-        },
+        type: DataTypes.DATE,
+        defaultValue: new Date(0),
       },
       status: {
         type: DataTypes.ENUM,

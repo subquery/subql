@@ -26,14 +26,15 @@ export interface IMultiChainRewindService {
   chainId: string;
   status: MultiChainRewindStatus;
   waitRewindHeader?: Header;
-  setGlobalRewindLock(rewindTimestamp: number): Promise<boolean>;
+  setGlobalRewindLock(rewindTimestamp: Date): Promise<boolean>;
   /**
    * Check if the height is consistent before unlocking.
    * @param tx
-   * @param rewindTimestamp The timestamp to roll back to, in milliseconds.
+   * @param rewindTimestamp The timestamp to roll back to.
+   * @param forceRewindTimestamp The timestamp to force roll back to.
    * @returns the number of remaining rewind chains
    */
-  releaseChainRewindLock(tx: Transaction, rewindTimestamp: number): Promise<number>;
+  releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, forceRewindTimestamp?: Date): Promise<number>;
 }
 
 export interface IMultiChainHandler {
@@ -96,9 +97,13 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     this.sequelize.connectionManager.releaseConnection(this.pgListener as Connection);
   }
 
-  async init(chainId: string, reindex: (targetHeader: Header) => Promise<void>) {
+  async init(chainId: string, reindex?: (targetHeader: Header) => Promise<void>) {
     this.chainId = chainId;
 
+    if (reindex === undefined) {
+      // When using the reindex command, this parameter is not required.
+      return;
+    }
     if (!this.storeService.isMultichain) return;
 
     await this.sequelize.query(`${createRewindTriggerFunction(this.dbSchema)}`);
@@ -140,7 +145,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
           case MultiChainRewindEvent.RewindTimestampDecreased: {
             const {rewindTimestamp} = await this.globalModel.getChainRewindInfo();
             this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
-            this.status = MultiChainRewindStatus.WaitRewind;
+            this.status = MultiChainRewindStatus.Incomplete;
 
             // Trigger the rewind event, and let the fetchService listen to the message and handle the queueFlush.
             this.eventEmitter.emit(eventType, {
@@ -166,21 +171,20 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     // Check whether the current state is in rollback.
     // If a global lock situation occurs, prioritize setting it to the WaitOtherChain state. If a rollback is still required, then set it to the rewinding state.
     const {rewindTimestamp, status} = await this.globalModel.getChainRewindInfo();
-    if (status === MultiChainRewindStatus.WaitOtherChain) {
-      this.status = MultiChainRewindStatus.WaitOtherChain;
+    if (status === MultiChainRewindStatus.Complete) {
+      this.status = MultiChainRewindStatus.Complete;
     }
-    if (status === MultiChainRewindStatus.WaitRewind) {
-      this.status = MultiChainRewindStatus.WaitRewind;
+    if (status === MultiChainRewindStatus.Incomplete) {
+      this.status = MultiChainRewindStatus.Incomplete;
       this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
     }
   }
 
-  private async searchWaitRewindHeader(rewindTimestamp: number): Promise<Header> {
-    const rewindDate = dayjs(rewindTimestamp).toDate();
-    const rewindBlockHeader = await this.getHeaderByBinarySearch(rewindDate);
+  private async searchWaitRewindHeader(rewindTimestamp: Date): Promise<Header> {
+    const rewindBlockHeader = await this.getHeaderByBinarySearch(rewindTimestamp);
     // The blockHeader.timestamp obtained from the query cannot be used directly, as it will cause an infinite loop.
     // Different chains have timestamp discrepancies, which will result in infinite backward tracing.
-    return {...rewindBlockHeader, timestamp: rewindDate};
+    return {...rewindBlockHeader, timestamp: rewindTimestamp};
   }
 
   /**
@@ -188,7 +192,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
    * If the set rewindTimestamp is less than the current blockHeight, we should roll back to the earlier rewindTimestamp.
    * @param rewindTimestamp rewindTimestamp in milliseconds
    */
-  async setGlobalRewindLock(rewindTimestamp: number) {
+  async setGlobalRewindLock(rewindTimestamp: Date) {
     const {lockTimestamp} = await this.globalModel.setGlobalRewindLock(rewindTimestamp);
     const needRewind = lockTimestamp <= rewindTimestamp;
     if (needRewind) {
@@ -198,11 +202,11 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     return needRewind;
   }
 
-  async releaseChainRewindLock(tx: Transaction, rewindTimestamp: number, force = false): Promise<number> {
-    const chainsCount = await this.globalModel.releaseChainRewindLock(tx, rewindTimestamp);
+  async releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, forceRewindTimestamp?: Date): Promise<number> {
+    const chainsCount = await this.globalModel.releaseChainRewindLock(tx, rewindTimestamp, forceRewindTimestamp);
     // The current chain has completed the rewind, and we still need to wait for other chains to finish.
     // When fully synchronized, set the status back to normal by pgListener.
-    this.status = MultiChainRewindStatus.WaitOtherChain;
+    this.status = MultiChainRewindStatus.Complete;
     logger.info(`Rewind success chainId: ${JSON.stringify({chainsCount, chainId: this.chainId, rewindTimestamp})}`);
     return chainsCount;
   }

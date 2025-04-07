@@ -64,7 +64,8 @@ export async function reindex(
     );
     if (storeService.isMultichain) {
       const tx = await sequelize.transaction();
-      await multichainRewindService.releaseChainRewindLock(tx, targetUnit, true);
+      // When lastUnit is undefined, it means indexing hasn’t started yet.
+      await multichainRewindService.releaseChainRewindLock(tx, new Date(targetUnit), new Date(lastUnit || 0));
       await tx.commit();
     }
     return;
@@ -87,7 +88,7 @@ export async function reindex(
 
   logger.info(`Reindexing to ${storeService.historical}: ${targetUnit}`);
   if (storeService.isMultichain) {
-    const needRewind = await multichainRewindService.setGlobalRewindLock(targetUnit);
+    const needRewind = await multichainRewindService.setGlobalRewindLock(new Date(targetUnit));
     if (!needRewind) {
       logger.warn(`Rewind to ${storeService.historical} ${targetUnit} is not needed`);
       return;
@@ -122,7 +123,7 @@ export async function reindex(
 
     // release rewind lock
     if (storeService.isMultichain) {
-      await multichainRewindService.releaseChainRewindLock(transaction, targetUnit);
+      await multichainRewindService.releaseChainRewindLock(transaction, new Date(targetUnit));
     }
 
     await transaction.commit();

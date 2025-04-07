@@ -78,7 +78,7 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       timestamp,
     };
 
-    this.multiChainRewindService.chainId = this.project.network.chainId;
+    this.multiChainRewindService.init(this.project.network.chainId);
 
     await this.projectUpgradeService.init(
       this.storeService,

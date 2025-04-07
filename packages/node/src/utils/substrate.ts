@@ -51,7 +51,6 @@ export function substrateHeaderToHeader(header: SubstrateHeader): MissTsHeader {
 
 export function substrateBlockToHeader(block: SignedBlock): Header {
   const timestamp = getTimestamp(block);
-  // TODO How can this be handled here? Is it possible to add a configuration that allows undefined or sets it to the same value as the height?
   assert(
     timestamp,
     'Failed to retrieve a reliable timestamp. This issue is more likely to occur on networks like Shiden',
@@ -454,7 +453,7 @@ export async function fetchLightBlock(
     throw ApiPromiseConnection.handleError(e);
   });
 
-  const [substrateHeader, events, header] = await Promise.all([
+  const [header, events, timestamp] = await Promise.all([
     api.rpc.chain.getHeader(blockHash).catch((e) => {
       logger.error(
         `failed to fetch Block Header hash="${blockHash}" height="${height}"`,
@@ -465,11 +464,12 @@ export async function fetchLightBlock(
       logger.error(`failed to fetch events at block ${blockHash}`);
       throw ApiPromiseConnection.handleError(e);
     }),
-    getHeaderForHash(api, blockHash.toHex()),
+    // TODO: Maybe api.query.timestamp.now.at(blockHash) is the only option. If we do use it we need sufficient tests and errors if a chain doesn't support getting the timestamp.
+    (await api.at(blockHash)).query.timestamp.now(),
   ]);
 
   const blockHeader: BlockHeader = {
-    block: { header: substrateHeader },
+    block: { header },
     events: events.toArray(),
   };
   return {
@@ -478,7 +478,10 @@ export async function fetchLightBlock(
       events: events.map((evt, idx) => merge(evt, { idx, block: blockHeader })),
     },
     getHeader: () => {
-      return header;
+      return {
+        ...substrateHeaderToHeader(blockHeader.block.header),
+        timestamp: new Date(timestamp.toNumber()),
+      };
     },
   };
 }
