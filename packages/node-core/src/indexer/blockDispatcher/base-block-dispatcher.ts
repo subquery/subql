@@ -317,7 +317,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
           return;
         }
 
-        // Block fetching has failed, start shutting down things. But we can wait until the remaining fetched blocks can be processed
+        // Block fetching has failed, start shutting down things. But we can wait until the ramining fetched blocks can be processed
+        console.error('ERROR', e);
         logger.error(`Failed to fetch block, waiting for fetched blocks to be processed before shutting down.`, e);
         if (!this.isShutdown) {
           this.isShutdown = true;
@@ -340,9 +341,16 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
           return;
         }
 
-        return options.processQueue.put(() =>
-          this.processBlockTask(data, options.getHeader, options.discardBlock, options.processBlock)
-        );
+        return options.processQueue
+          .put(() => this.processBlockTask(data, options.getHeader, options.discardBlock, options.processBlock))
+          .catch((e) => {
+            if (isTaskFlushedError(e)) {
+              // Do nothing, fetching the block was flushed, this could be caused by forked blocks or dynamic datasources
+              return;
+            }
+            logger.error(e, `Failed to process block ${options.height}`);
+            throw e;
+          });
       })
       .catch((e: any) => {
         // Failed to process block

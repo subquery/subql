@@ -3,6 +3,7 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {delay} from '@subql/common';
+import {isTaskFlushedError, TaskFlushedError} from '@subql/node-core/utils';
 import {NodeConfig} from '../../configure';
 import {exitWithError} from '../../process';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
@@ -35,6 +36,7 @@ const defaultFetchBlocksFunction = async (height: number): Promise<IBlock<number
   };
 };
 
+let dynamicDsCreatedBlock: number[] = [];
 let fetchBlocksFunction = defaultFetchBlocksFunction;
 
 function resolveablePromise(): [Promise<void>, () => void] {
@@ -103,7 +105,7 @@ class TestWorkerService extends BaseWorkerService<number, Header> {
     }
 
     return {
-      dynamicDsCreated: false,
+      dynamicDsCreated: dynamicDsCreatedBlock.includes(block.block),
       reindexBlockHeader: null,
     };
   }
@@ -157,6 +159,13 @@ jest.mock('../../process', () => ({
   ...jest.requireActual('../../process'),
   exitWithError: jest.fn(),
 }));
+jest.mock('../../utils/queues/autoQueue', () => {
+  const original = jest.requireActual('../../utils/queues/autoQueue');
+  return {
+    ...original,
+    isTaskFlushedError: jest.fn(),
+  };
+});
 
 jest.mock('../worker', () => ({
   ...jest.requireActual('../worker'),
@@ -180,7 +189,7 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
           }
 
           return {
-            dynamicDsCreated: false,
+            dynamicDsCreated: dynamicDsCreatedBlock.includes(input.block),
             reindexBlockHeader: null,
           };
         },
@@ -242,10 +251,11 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
 
     blockDispatcher = initDispatcher();
 
-    await blockDispatcher.init(jest.fn());
+    await blockDispatcher.init(blockDispatcher.flushQueue.bind(blockDispatcher));
   });
 
   afterEach(async () => {
+    dynamicDsCreatedBlock = [];
     if (blockDispatcher instanceof BlockDispatcher || blockDispatcher instanceof WorkerBlockDispatcher) {
       await blockDispatcher.onApplicationShutdown();
     }
@@ -533,6 +543,8 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
     });
 
     it('should call applyPendingChanges correctly when a dynamic datasource is created', async () => {
+      (blockDispatcher as any)._onDynamicDsCreated = jest.fn();
+
       // Arrange
       const header: Header = {
         blockHeight: 100,
@@ -556,6 +568,20 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
         true,
         storeService.transaction
       );
+    });
+
+    it('should call _onDynamicDsCreated when dynamic datasource is created', async () => {
+      dynamicDsCreatedBlock = [7];
+      const onDynamicDsCreatedSpy = jest.spyOn(blockDispatcher as any, '_onDynamicDsCreated');
+
+      await blockDispatcher.enqueueBlocks([7], 7);
+      await delay(1);
+
+      await blockDispatcher.enqueueBlocks([8], 10);
+      await delay(1);
+
+      expect(onDynamicDsCreatedSpy).toHaveBeenCalledWith(7);
+      expect(isTaskFlushedError).toHaveBeenCalledWith(new TaskFlushedError('Process'));
     });
   });
 });
