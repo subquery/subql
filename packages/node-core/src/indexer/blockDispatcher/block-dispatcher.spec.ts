@@ -5,6 +5,7 @@ import {EventEmitter2} from '@nestjs/event-emitter';
 import {delay} from '@subql/common';
 import {NodeConfig} from '../../configure';
 import {exitWithError} from '../../process';
+import {isTaskFlushedError, TaskFlushedError} from '../../utils';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 import {Header, IBlock} from '../types';
 import {BaseWorkerService, IBaseIndexerWorker, WorkerStatusResponse} from '../worker';
@@ -153,6 +154,13 @@ jest.mock('../../process', () => ({
   ...jest.requireActual('../../process'),
   exitWithError: jest.fn(),
 }));
+jest.mock('../../utils/queues/autoQueue', () => {
+  const original = jest.requireActual('../../utils/queues/autoQueue');
+  return {
+    ...original,
+    isTaskFlushedError: jest.fn(),
+  };
+});
 
 jest.mock('../worker', () => ({
   ...jest.requireActual('../worker'),
@@ -476,6 +484,7 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
       await delay(1);
 
       expect(onDynamicDsCreatedSpy).toHaveBeenCalledWith(7);
+      expect(isTaskFlushedError).toHaveBeenCalledWith(new TaskFlushedError('Process'));
     });
   });
 });
