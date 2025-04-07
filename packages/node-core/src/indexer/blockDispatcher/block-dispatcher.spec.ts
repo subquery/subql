@@ -441,7 +441,7 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
     });
 
     it('should call applyPendingChanges correctly when a dynamic datasource is created', async () => {
-      await blockDispatcher.init(jest.fn());
+      (blockDispatcher as any)._onDynamicDsCreated = jest.fn();
 
       // Arrange
       const header: Header = {
