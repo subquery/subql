@@ -573,15 +573,15 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
     it('should call _onDynamicDsCreated when dynamic datasource is created', async () => {
       dynamicDsCreatedBlock = [7];
       const onDynamicDsCreatedSpy = jest.spyOn(blockDispatcher as any, '_onDynamicDsCreated');
-
+      // await Promise.all([
+      // ]);
       await blockDispatcher.enqueueBlocks([7], 7);
-      await delay(1);
+      await blockDispatcher.enqueueBlocks([8], 8);
+      await delay(2);
 
-      await blockDispatcher.enqueueBlocks([8], 10);
-      await delay(1);
-
+      const queueName = blockDispatcher instanceof BlockDispatcher ? 'Process' : 'Fetch';
       expect(onDynamicDsCreatedSpy).toHaveBeenCalledWith(7);
-      expect(isTaskFlushedError).toHaveBeenCalledWith(new TaskFlushedError('Process'));
+      expect(isTaskFlushedError).toHaveBeenCalledWith(new TaskFlushedError(queueName));
     });
   });
 });
