@@ -163,7 +163,7 @@ jest.mock('../../utils/queues/autoQueue', () => {
   const original = jest.requireActual('../../utils/queues/autoQueue');
   return {
     ...original,
-    isTaskFlushedError: jest.fn(),
+    isTaskFlushedError: jest.fn(original.isTaskFlushedError),
   };
 });
 
