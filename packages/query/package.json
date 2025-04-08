@@ -1,6 +1,6 @@
 {
   "name": "@subql/query",
-  "version": "2.21.1",
+  "version": "2.21.2-0",
   "description": "",
   "bin": {
     "subql-query": "./bin/run"
@@ -46,7 +46,7 @@
     "compression": "^1.8.0",
     "express-pino-logger": "^6.0.0",
     "graphile-build": "^4.12.2",
-    "graphile-utils": "^4.12.2",
+    "graphile-utils": "^4.13.0",
     "graphql": "^15.8.0",
     "graphql-query-complexity": "^0.11.0",
     "graphql-ws": "^5.16.0",
@@ -70,5 +70,6 @@
     "@types/ws": "^8",
     "@types/yargs": "^16.0.9",
     "nodemon": "^3.1.4"
-  }
+  },
+  "stableVersion": "2.21.1"
 }
