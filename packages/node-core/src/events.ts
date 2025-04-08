@@ -67,7 +67,3 @@ export interface NetworkMetadataPayload {
   specName: string;
   genesisHash: string;
 }
-
-export interface MultiChainRewindPayload {
-  height: number;
-}

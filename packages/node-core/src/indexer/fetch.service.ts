@@ -9,7 +9,7 @@ import {BaseDataSource} from '@subql/types-core';
 import {range} from 'lodash';
 import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
-import {EventPayload, IndexerEvent, MultiChainRewindEvent, MultiChainRewindPayload} from '../events';
+import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {delay, filterBypassBlocks, getModulos} from '../utils';
 import {IBlockDispatcher} from './blockDispatcher';
@@ -17,7 +17,7 @@ import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {mergeNumAndBlocks} from './dictionary/utils';
 import {MultiChainRewindStatus} from './entities';
-import {IMultiChainHandler, MultiChainRewindService} from './multiChainRewind.service';
+import {MultiChainRewindService} from './multiChainRewind.service';
 import {IStoreModelProvider} from './storeModelProvider';
 import {BypassBlocks, IBlock, IProjectService} from './types';
 import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
@@ -27,7 +27,7 @@ const logger = getLogger('FetchService');
 const multiChainRewindDelay = 3;
 @Injectable()
 export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<FB>, FB>
-  implements OnApplicationShutdown, IMultiChainHandler
+  implements OnApplicationShutdown
 {
   private _latestBestHeight?: number;
   private _latestFinalizedHeight?: number;
@@ -107,6 +107,13 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
     // Find one usable dictionary at start
 
     await this.blockDispatcher.init(this.resetForNewDs.bind(this));
+
+    if (this.nodeConfig.multiChain) {
+      this.multiChainRewindService.setRewindEventHook((height: number) => {
+        this.resetForNewDs(height);
+        this.blockDispatcher.setLatestProcessedHeight(height);
+      });
+    }
 
     void this.startLoop(startHeight);
   }
@@ -405,13 +412,5 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
 
   getLatestFinalizedHeight(): number {
     return this.latestFinalizedHeight;
-  }
-
-  @OnEvent(MultiChainRewindEvent.Rewind)
-  @OnEvent(MultiChainRewindEvent.RewindTimestampDecreased)
-  processMultiChainRewind(payload: MultiChainRewindPayload) {
-    logger.info(`Received rewind event, height: ${payload.height}`);
-    this.resetForNewDs(payload.height);
-    this.blockDispatcher.setLatestProcessedHeight(payload.height + 1);
   }
 }

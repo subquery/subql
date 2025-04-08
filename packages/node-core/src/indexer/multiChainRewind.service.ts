@@ -3,17 +3,15 @@
 
 import assert from 'assert';
 import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
-import {EventEmitter2} from '@nestjs/event-emitter';
 import {hashName} from '@subql/utils';
 import {Transaction, Sequelize} from '@subql/x-sequelize';
 import {Connection} from '@subql/x-sequelize/types/dialects/abstract/connection-manager';
-import dayjs from 'dayjs';
 import {uniqueId} from 'lodash';
 import {PoolClient} from 'pg';
 import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
 import {createRewindTrigger, createRewindTriggerFunction, getTriggers} from '../db';
-import {MultiChainRewindEvent, MultiChainRewindPayload} from '../events';
+import {MultiChainRewindEvent} from '../events';
 import {getLogger} from '../logger';
 import {MultiChainRewindStatus} from './entities';
 import {StoreService} from './store.service';
@@ -26,6 +24,11 @@ export interface IMultiChainRewindService {
   chainId: string;
   status: MultiChainRewindStatus;
   waitRewindHeader?: Header;
+  /**
+   * Set the rewind event hook.
+   * It should only be called when indexing, and there is no need to set it when using the rewind command.
+   **/
+  setRewindEventHook(fn: (height: number) => void): void;
   setGlobalRewindLock(rewindTimestamp: Date): Promise<boolean>;
   /**
    * Check if the height is consistent before unlocking.
@@ -35,10 +38,6 @@ export interface IMultiChainRewindService {
    * @returns the number of remaining rewind chains
    */
   releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, forceRewindTimestamp?: Date): Promise<number>;
-}
-
-export interface IMultiChainHandler {
-  processMultiChainRewind(rewindBlockPayload: MultiChainRewindPayload): void;
 }
 
 /**
@@ -55,11 +54,11 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   private dbSchema: string;
   private rewindTriggerName: string;
   private pgListener?: PoolClient;
+  private handleRewindEvent?: (height: number) => void;
   private _globalModel?: PlainGlobalModel = undefined;
   waitRewindHeader?: Header;
   constructor(
     private nodeConfig: NodeConfig,
-    private eventEmitter: EventEmitter2,
     private sequelize: Sequelize,
     private storeService: StoreService,
     @Inject('IBlockchainService') private readonly blockchainService: IBlockchainService
@@ -147,10 +146,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
             this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
             this.status = MultiChainRewindStatus.Incomplete;
 
-            // Trigger the rewind event, and let the fetchService listen to the message and handle the queueFlush.
-            this.eventEmitter.emit(eventType, {
-              height: this.waitRewindHeader.blockHeight,
-            } satisfies MultiChainRewindPayload);
+            this.handleRewindEvent?.(this.waitRewindHeader.blockHeight);
             break;
           }
           case MultiChainRewindEvent.RewindComplete:
@@ -185,6 +181,15 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     // The blockHeader.timestamp obtained from the query cannot be used directly, as it will cause an infinite loop.
     // Different chains have timestamp discrepancies, which will result in infinite backward tracing.
     return {...rewindBlockHeader, timestamp: rewindTimestamp};
+  }
+
+  setRewindEventHook(fn: (height: number) => void) {
+    assert(
+      this.handleRewindEvent === undefined,
+      'setRewindAfterHook can only be set once, please check the code logic'
+    );
+    logger.info(`setRewindAfterHook success, chainId: ${this.chainId}`);
+    this.handleRewindEvent = fn;
   }
 
   /**
