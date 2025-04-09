@@ -180,7 +180,7 @@ export class PlainGlobalModel implements IGlobalData {
     const metadataRes = await Promise.all(
       multiMetadataTables.map((table) =>
         this.sequelize.query<{value: string}>(
-          `SELECT "value" FROM "${this.dbSchema}"."${table}" WHERE "key" = 'chain'`,
+          `SELECT "value" FROM "${this.dbSchema}"."${table}" WHERE "key" = 'chainId'`,
           {
             type: QueryTypes.SELECT,
             transaction: tx,

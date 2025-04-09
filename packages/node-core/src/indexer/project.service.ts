@@ -215,6 +215,7 @@ export class ProjectService<
       'blockOffset',
       'indexerNodeVersion',
       'chain',
+      'chainId',
       'specName',
       'genesisHash',
       'startHeight',
@@ -249,6 +250,10 @@ export class ProjectService<
     }
     if (existing.chain !== chain) {
       await metadata.set('chain', chain);
+    }
+
+    if (existing.chainId !== this.project.network.chainId) {
+      await metadata.set('chainId', this.project.network.chainId);
     }
 
     if (existing.specName !== specName) {
