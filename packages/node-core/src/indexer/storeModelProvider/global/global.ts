@@ -92,7 +92,7 @@ export class PlainGlobalModel implements IGlobalData {
         await tx.commit();
         return {lockTimestamp};
       } else {
-        const chainIds = await this.getChainIdsFromMetadata();
+        const chainIds = await this.getChainIdsFromMetadata(tx);
         // No rewind task, set the current chain as the initiator
         await this.model.bulkCreate(
           chainIds.map((chainId) => ({
@@ -167,7 +167,7 @@ export class PlainGlobalModel implements IGlobalData {
     return {currentChain, chainsCount: chainList.length, waitChainCount};
   }
 
-  async getChainIdsFromMetadata() {
+  async getChainIdsFromMetadata(tx: Transaction): Promise<string[]> {
     const tableRes = await this.sequelize.query<Array<string>>(tableExistsQuery(this.dbSchema), {
       type: QueryTypes.SELECT,
     });
@@ -180,18 +180,15 @@ export class PlainGlobalModel implements IGlobalData {
     const metadataRes = await Promise.all(
       multiMetadataTables.map((table) =>
         this.sequelize.query<{value: string}>(
-          `SELECT "value" FROM "${this.dbSchema}"."${table}" WHERE "key" = 'genesisHash'`,
+          `SELECT "value" FROM "${this.dbSchema}"."${table}" WHERE "key" = 'chain'`,
           {
             type: QueryTypes.SELECT,
+            transaction: tx,
           }
         )
       )
     );
 
-    const chainIds: string[] = [];
-    metadataRes.forEach((metadata) => {
-      chainIds.push(metadata[0].value);
-    });
-    return chainIds;
+    return metadataRes.map((metadata) => metadata[0].value);
   }
 }
