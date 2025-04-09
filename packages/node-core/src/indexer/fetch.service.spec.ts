@@ -18,6 +18,10 @@ import {
   DatasourceParams,
   IBaseIndexerWorker,
   BypassBlocks,
+  MultiChainRewindService,
+  MultiChainRewindStatus,
+  reindex,
+  getLogger,
 } from '../';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {DictionaryService} from './dictionary/dictionary.service';
@@ -212,6 +216,14 @@ const getBlockDispatcher = () => {
   return inst;
 };
 
+jest.mock('../utils', () => {
+  const original = jest.requireActual('../utils');
+  return {
+    ...original,
+    delay: jest.fn(original.delay),
+  };
+});
+
 describe('Fetch Service', () => {
   let fetchService: TestFetchService;
   let blockDispatcher: IBlockDispatcher<any>;
@@ -219,6 +231,8 @@ describe('Fetch Service', () => {
   let dataSources: BaseDataSource[];
   let unfinalizedBlocksService: UnfinalizedBlocksService<any>;
   let blockchainService: TestBlockchainService;
+  const multichainRewindService: MultiChainRewindService = {} as MultiChainRewindService;
+  let projectService: IProjectService<any>;
 
   let spyOnEnqueueSequential: jest.SpyInstance<
     void | Promise<void>,
@@ -235,7 +249,7 @@ describe('Fetch Service', () => {
     const eventEmitter = new EventEmitter2();
     const schedulerRegistry = new SchedulerRegistry();
 
-    const projectService = {
+    projectService = {
       getStartBlockFromDataSources: jest.fn(() => Math.min(...dataSources.map((ds) => ds.startBlock ?? 0))),
       getAllDataSources: jest.fn(() => dataSources),
       getDataSourcesMap: jest.fn(() => {
@@ -250,6 +264,7 @@ describe('Fetch Service', () => {
         return new BlockHeightMap(x);
       }),
       bypassBlocks: [],
+      reindex: jest.fn(),
     } as any as IProjectService<any>;
 
     blockDispatcher = getBlockDispatcher();
@@ -273,7 +288,7 @@ describe('Fetch Service', () => {
         },
       } as any,
       blockchainService,
-      {} as any
+      multichainRewindService
     );
 
     spyOnEnqueueSequential = jest.spyOn(fetchService as any, 'enqueueSequential') as any;
@@ -801,4 +816,29 @@ describe('Fetch Service', () => {
     expect(spyOnEnqueueSequential).toHaveBeenCalledTimes(1);
     expect((fetchService as any).blockDispatcher.latestBufferedHeight).toEqual(910);
   }, 10000);
+
+  it('MultiChainRewindStatus.Incomplete will reindex', async () => {
+    (multichainRewindService as any).status = MultiChainRewindStatus.Incomplete;
+    (multichainRewindService as any).waitRewindHeader = {} as Header;
+    await fetchService.init(10);
+    expect(projectService.reindex).toHaveBeenCalled();
+  });
+
+  it('MultiChainRewindStatus.Complete message', async () => {
+    const logger = getLogger('FetchService');
+    const consoleSpy = jest.spyOn(logger, 'info');
+
+    (multichainRewindService as any).status = MultiChainRewindStatus.Complete;
+    await fetchService.init(10);
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/Waiting for all chains to complete rewind/));
+  });
+
+  it('MultiChainRewindStatus.Rewinding message', async () => {
+    const logger = getLogger('FetchService');
+    const consoleSpy = jest.spyOn(logger, 'info');
+
+    (multichainRewindService as any).status = MultiChainRewindStatus.Rewinding;
+    await fetchService.init(10);
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/Rewinding, current chainId/));
+  });
 });

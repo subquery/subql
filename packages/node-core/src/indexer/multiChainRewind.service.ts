@@ -56,6 +56,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   private pgListener?: PoolClient;
   private handleRewindEvent?: (height: number) => void;
   private _globalModel?: PlainGlobalModel = undefined;
+  private processingPromise: Promise<void> = Promise.resolve();
   waitRewindHeader?: Header;
   constructor(
     private nodeConfig: NodeConfig,
@@ -130,43 +131,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       type: 'read',
     })) as PoolClient;
 
-    let processingPromise = Promise.resolve();
-    this.pgListener.on('notification', (msg) => {
-      processingPromise = processingPromise.then(async () => {
-        assert(msg.payload, 'Payload is empty');
-        const {chainId, event: eventType} = JSON.parse(msg.payload) as {chainId: string; event: MultiChainRewindEvent};
-        if (chainId !== this.chainId) return;
-
-        const sessionUuid = uniqueId();
-        logger.info(`[${sessionUuid}]Received rewind event: ${eventType}, chainId: ${this.chainId}`);
-        switch (eventType) {
-          case MultiChainRewindEvent.Rewind:
-          case MultiChainRewindEvent.RewindTimestampDecreased: {
-            const chainRewindInfo = await this.globalModel.getChainRewindInfo();
-            assert(chainRewindInfo, `Not registered rewind timestamp in global data, chainId: ${this.chainId}`);
-
-            this.waitRewindHeader = await this.searchWaitRewindHeader(chainRewindInfo.rewindTimestamp);
-            this.status = MultiChainRewindStatus.Incomplete;
-
-            this.handleRewindEvent?.(this.waitRewindHeader.blockHeight);
-            break;
-          }
-          case MultiChainRewindEvent.RewindComplete:
-            // recover indexing status
-            this.waitRewindHeader = undefined;
-            this.status = MultiChainRewindStatus.Complete;
-            break;
-          case MultiChainRewindEvent.FullyRewind:
-            // recover indexing status
-            this.waitRewindHeader = undefined;
-            this.status = MultiChainRewindStatus.Normal;
-            break;
-          default:
-            throw new Error(`Unknown rewind event: ${eventType}`);
-        }
-        logger.info(`[${sessionUuid}]Handle success rewind event: ${eventType}, chainId: ${this.chainId}`);
-      });
-    });
+    this.pgListener.on('notification', this.notifyHandle.bind(this));
 
     await this.pgListener.query(`LISTEN "${this.rewindTriggerName}"`);
     logger.info(`Register rewind listener success, chainId: ${this.chainId}`);
@@ -183,6 +148,45 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       this.status = MultiChainRewindStatus.Incomplete;
       this.waitRewindHeader = await this.searchWaitRewindHeader(chainRewindInfo.rewindTimestamp);
     }
+  }
+
+  private notifyHandle(msg: any) {
+    this.processingPromise.then(async () => {
+      assert(msg.payload, 'Payload is empty');
+      const {chainId, event: eventType} = JSON.parse(msg.payload) as {chainId: string; event: MultiChainRewindEvent};
+      if (chainId !== this.chainId) return;
+
+      const sessionUuid = uniqueId();
+      logger.info(`[${sessionUuid}]Received rewind event: ${eventType}, chainId: ${this.chainId}`);
+      switch (eventType) {
+        case MultiChainRewindEvent.Rewind:
+        case MultiChainRewindEvent.RewindTimestampDecreased: {
+          const chainRewindInfo = await this.globalModel.getChainRewindInfo();
+          assert(chainRewindInfo, `Not registered rewind timestamp in global data, chainId: ${this.chainId}`);
+
+          if (chainRewindInfo?.status === MultiChainRewindStatus.Complete) break;
+
+          this.waitRewindHeader = await this.searchWaitRewindHeader(chainRewindInfo.rewindTimestamp);
+          this.status = MultiChainRewindStatus.Incomplete;
+
+          this.handleRewindEvent?.(this.waitRewindHeader.blockHeight);
+          break;
+        }
+        case MultiChainRewindEvent.RewindComplete:
+          // recover indexing status
+          this.waitRewindHeader = undefined;
+          this.status = MultiChainRewindStatus.Complete;
+          break;
+        case MultiChainRewindEvent.FullyRewind:
+          // recover indexing status
+          this.waitRewindHeader = undefined;
+          this.status = MultiChainRewindStatus.Normal;
+          break;
+        default:
+          throw new Error(`Unknown rewind event: ${eventType}`);
+      }
+      logger.info(`[${sessionUuid}]Handle success rewind event: ${eventType}, chainId: ${this.chainId}`);
+    });
   }
 
   private async searchWaitRewindHeader(rewindTimestamp: Date): Promise<Header> {
