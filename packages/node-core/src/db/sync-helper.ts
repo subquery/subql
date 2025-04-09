@@ -17,6 +17,7 @@ import {
 } from '@subql/x-sequelize';
 import {ModelAttributeColumnReferencesOptions, ModelIndexesOptions} from '@subql/x-sequelize/types/model';
 import {MultiChainRewindEvent} from '../events';
+import {MultiChainRewindStatus} from '../indexer';
 import {EnumType} from '../utils';
 import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -303,7 +304,7 @@ export function createRewindTrigger(schema: string): string {
 
   return `
   CREATE TRIGGER "${triggerName}"
-    AFTER UPDATE
+    AFTER INSERT OR UPDATE OR DELETE
     ON "${schema}"."_global"
     FOR EACH ROW
     EXECUTE FUNCTION "${schema}".rewind_notification();
@@ -317,28 +318,28 @@ export function createRewindTriggerFunction(schema: string): string {
   CREATE OR REPLACE FUNCTION "${schema}".rewind_notification()
     RETURNS trigger AS $$
     BEGIN
-      IF NEW.status = 'normal' THEN
+      IF TG_OP = 'INSERT' THEN
         PERFORM pg_notify(
           '${triggerName}', 
-          format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.RewindComplete}', OLD."chainId")
+          format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.Rewind}', NEW."chainId")
         );
-        RETURN NULL;
-      END IF;
-
-      IF OLD.status = 'normal' THEN
+      ELSIF TG_OP = 'UPDATE' THEN
+        IF NEW.status = '${MultiChainRewindStatus.Complete}' THEN
+          PERFORM pg_notify(
+            '${triggerName}', 
+            format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.RewindComplete}', NEW."chainId")
+          );
+        ELSIF NEW."rewindTimestamp" < OLD."rewindTimestamp" THEN
+          PERFORM pg_notify(
+            '${triggerName}', 
+            format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.RewindTimestampDecreased}', NEW."chainId")
+          );
+        END IF;
+      ELSIF TG_OP = 'DELETE' THEN
         PERFORM pg_notify(
           '${triggerName}', 
-          format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.Rewind}', OLD."chainId")
+          format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.FullyRewind}', OLD."chainId")
         );
-        RETURN NULL;
-      END IF;
-
-      IF NEW."rewindTimestamp" < OLD."rewindTimestamp" THEN
-        PERFORM pg_notify(
-          '${triggerName}', 
-          format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.RewindTimestampDecreased}', OLD."chainId")
-        );
-        RETURN NULL;
       END IF;
 
       RETURN NULL;
@@ -752,3 +753,7 @@ create or replace function ${escapedName(schema, functionName)}(search text)
 
 export const commentSearchFunctionQuery = (schema: string, table: string): Query =>
   commentOnFunction(schema, searchFunctionName(schema, table), `@name search_${table}`);
+
+export const tableExistsQuery = (schema: string): string => {
+  return `SELECT table_name FROM information_schema.tables where table_schema='${schema}'`;
+};

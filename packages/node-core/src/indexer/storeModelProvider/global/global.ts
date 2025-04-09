@@ -3,11 +3,14 @@
 
 import assert from 'assert';
 import {getLogger} from '@subql/node-core/logger';
-import {Op, Sequelize, Transaction} from '@subql/x-sequelize';
+import {MULTI_METADATA_REGEX} from '@subql/utils';
+import {Op, QueryTypes, Sequelize, Transaction} from '@subql/x-sequelize';
+import {flatten} from 'lodash';
+import {tableExistsQuery} from '../../../db';
 import {GlobalData, GlobalDataRepo, MultiChainRewindStatus} from '../../entities';
 
 export interface IGlobalData {
-  getChainRewindInfo(): Promise<GlobalData>;
+  getChainRewindInfo(): Promise<GlobalData | null>;
 
   setGlobalRewindLock(rewindTimestamp: Date): Promise<{lockTimestamp: Date}>;
   /**
@@ -39,12 +42,11 @@ export class PlainGlobalModel implements IGlobalData {
     return sequelize;
   }
 
-  async getChainRewindInfo(): Promise<GlobalData> {
+  async getChainRewindInfo(): Promise<GlobalData | null> {
     const rewindTimestampInfo = await this.model.findOne({
       where: {chainId: this.chainId},
     });
 
-    assert(rewindTimestampInfo, `Not registered rewind timestamp key in global data, chainId: ${this.chainId}`);
     return rewindTimestampInfo;
   }
 
@@ -59,41 +61,65 @@ export class PlainGlobalModel implements IGlobalData {
   async setGlobalRewindLock(rewindTimestamp: Date): Promise<{lockTimestamp: Date}> {
     const tx = await this.sequelize.transaction();
     const {chainsCount, currentChain} = await this.getChainsInfo(tx);
-
-    try {
-      let lockTimestamp = new Date(0);
-      const [affectedCount] = await this.model.update(
-        {
-          status: MultiChainRewindStatus.Incomplete,
-          rewindTimestamp,
-          initiator: false,
-        },
-        {
-          where: {
-            [Op.or]: [{status: MultiChainRewindStatus.Normal}, {rewindTimestamp: {[Op.gt]: rewindTimestamp}}],
+    if (chainsCount) {
+      // Exist rewind task
+      try {
+        let lockTimestamp = new Date(0);
+        const [affectedCount] = await this.model.update(
+          {
+            status: MultiChainRewindStatus.Incomplete,
+            rewindTimestamp,
+            initiator: false,
           },
-          transaction: tx,
+          {
+            where: {
+              [Op.or]: [{status: MultiChainRewindStatus.Normal}, {rewindTimestamp: {[Op.gt]: rewindTimestamp}}],
+            },
+            transaction: tx,
+          }
+        );
+
+        assert(
+          affectedCount === 0 || affectedCount === chainsCount,
+          `Set global rewind lock failed, chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`
+        );
+
+        if (affectedCount === chainsCount) {
+          lockTimestamp = rewindTimestamp;
+          await this.model.update({initiator: true}, {where: {chainId: this.chainId}, transaction: tx});
         }
-      );
 
-      assert(
-        affectedCount === 0 || affectedCount === chainsCount,
-        `Set global rewind lock failed, chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`
-      );
-
-      if (affectedCount === chainsCount) {
-        lockTimestamp = rewindTimestamp;
-        await this.model.update({initiator: true}, {where: {chainId: this.chainId}, transaction: tx});
+        await tx.commit();
+        return {lockTimestamp};
+      } catch (e: any) {
+        logger.error(
+          `setGlobalRewindLock failed chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}, errorMsg: ${e.message}`
+        );
+        await tx.rollback();
+        throw e;
       }
-
-      await tx.commit();
-      return {lockTimestamp};
-    } catch (e: any) {
-      logger.error(
-        `setGlobalRewindLock failed chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}, errorMsg: ${e.message}`
-      );
-      await tx.rollback();
-      throw e;
+    } else {
+      const chainIds = await this.getChainIdsFromMetadata();
+      // No rewind task, set the current chain as the initiator
+      try {
+        await this.model.bulkCreate(
+          chainIds.map((chainId) => ({
+            chainId,
+            status: MultiChainRewindStatus.Incomplete,
+            rewindTimestamp,
+            initiator: chainId === this.chainId,
+          })),
+          {transaction: tx}
+        );
+        await tx.commit();
+        return {lockTimestamp: rewindTimestamp};
+      } catch (e: any) {
+        logger.error(
+          `setGlobalRewindLock failed chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}, errorMsg: ${e.message}`
+        );
+        await tx.rollback();
+        throw e;
+      }
     }
   }
 
@@ -136,10 +162,7 @@ export class PlainGlobalModel implements IGlobalData {
 
     if (waitChainCount - 1 === 0) {
       // Everything is complete, release the lock.
-      await this.model.update(
-        {status: MultiChainRewindStatus.Normal, rewindTimestamp: new Date(0), initiator: false},
-        {where: {status: MultiChainRewindStatus.Complete}, transaction: tx}
-      );
+      await this.model.destroy({where: {status: MultiChainRewindStatus.Complete}, transaction: tx});
     }
 
     return waitChainCount - 1;
@@ -150,5 +173,33 @@ export class PlainGlobalModel implements IGlobalData {
     const currentChain = chainList.find((chain) => chain.chainId === this.chainId);
     const waitChainCount = chainList.filter((chain) => chain.status === MultiChainRewindStatus.Incomplete).length;
     return {currentChain, chainsCount: chainList.length, waitChainCount};
+  }
+
+  async getChainIdsFromMetadata() {
+    const tableRes = await this.sequelize.query<Array<string>>(tableExistsQuery(this.dbSchema), {
+      type: QueryTypes.SELECT,
+    });
+    const multiMetadataTables: string[] = flatten(tableRes).filter((value: string) => MULTI_METADATA_REGEX.test(value));
+    assert(
+      multiMetadataTables.length > 0,
+      `No multi metadata tables found in the database. Please check your schema or configuration.`
+    );
+
+    const metadataRes = await Promise.all(
+      multiMetadataTables.map((table) =>
+        this.sequelize.query<{value: string}>(
+          `SELECT "value" FROM "${this.dbSchema}"."${table}" WHERE "key" = 'genesisHash'`,
+          {
+            type: QueryTypes.SELECT,
+          }
+        )
+      )
+    );
+
+    const chainIds: string[] = [];
+    metadataRes.forEach((metadata) => {
+      chainIds.push(metadata[0].value);
+    });
+    return chainIds;
   }
 }

@@ -43,8 +43,7 @@ export function GlobalDataFactory(sequelize: Sequelize, schema: string): GlobalD
       },
       status: {
         type: DataTypes.ENUM,
-        values: Object.values(MultiChainRewindStatus),
-        defaultValue: MultiChainRewindStatus.Normal,
+        values: [MultiChainRewindStatus.Complete, MultiChainRewindStatus.Incomplete],
       },
       initiator: {
         type: DataTypes.BOOLEAN,

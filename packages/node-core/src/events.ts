@@ -33,6 +33,7 @@ export enum MultiChainRewindEvent {
   Rewind = 'rewind',
   RewindComplete = 'rewind_complete',
   RewindTimestampDecreased = 'timestamp_decreased',
+  FullyRewind = 'fully_rewind',
 }
 
 export interface RewindPayload {

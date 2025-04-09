@@ -31,6 +31,7 @@ import {
   getDbSizeAndUpdateMetadata,
   getTriggers,
   SchemaMigrationService,
+  tableExistsQuery,
 } from '../db';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
@@ -199,8 +200,6 @@ export class StoreService {
     await this.initHotSchemaReloadQueries(schema);
 
     await this.metadataModel.set('historicalStateEnabled', this.historical);
-
-    await this.initChainRewindTimestamp();
   }
 
   async init(schema: string): Promise<void> {
@@ -322,10 +321,7 @@ export class StoreService {
     const {historical, multiChain} = this.config;
 
     try {
-      const tableRes = await this.sequelize.query<Array<string>>(
-        `SELECT table_name FROM information_schema.tables where table_schema='${schema}'`,
-        {type: QueryTypes.SELECT}
-      );
+      const tableRes = await this.sequelize.query<Array<string>>(tableExistsQuery(schema), {type: QueryTypes.SELECT});
 
       const metadataTableNames = flatten(tableRes).filter(
         (value: string) => METADATA_REGEX.test(value) || MULTI_METADATA_REGEX.test(value)
@@ -517,26 +513,6 @@ group by
     return record?.rewindTimestamp;
   }
 
-  private async initChainRewindTimestamp() {
-    if (!this.isMultichain) return;
-
-    const tx = await this.sequelize.transaction();
-    if ((await this.getRewindTimestamp(tx)) !== undefined) {
-      await tx.commit();
-      return;
-    }
-    await this.globalDataRepo.create(
-      {
-        chainId: this.subqueryProject.network.chainId,
-        rewindTimestamp: new Date(0),
-        status: MultiChainRewindStatus.Normal,
-        initiator: false,
-      },
-      {transaction: tx}
-    );
-    await tx.commit();
-  }
-
   async getLastProcessedBlock(): Promise<{height: number; timestamp?: number}> {
     const {lastProcessedBlockTimestamp: timestamp, lastProcessedHeight: height} = await this.metadataModel.findMany([
       'lastProcessedHeight',
@@ -552,11 +528,11 @@ group by
       return;
     }
 
-    const tableRes = await this.sequelize.query<Array<string>>(
-      `SELECT table_name FROM information_schema.tables where table_schema='${this.schema}' and table_name = '_global'`,
-      {type: QueryTypes.SELECT}
-    );
-    this._isMultichain = tableRes.length > 0;
+    const tableRes = await this.sequelize.query<Array<string>>(tableExistsQuery(this.schema), {
+      type: QueryTypes.SELECT,
+    });
+
+    this._isMultichain = !!flatten(tableRes).find((value: string) => MULTI_METADATA_REGEX.test(value));
   }
 }
 

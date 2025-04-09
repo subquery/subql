@@ -142,14 +142,21 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
         switch (eventType) {
           case MultiChainRewindEvent.Rewind:
           case MultiChainRewindEvent.RewindTimestampDecreased: {
-            const {rewindTimestamp} = await this.globalModel.getChainRewindInfo();
-            this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
+            const chainRewindInfo = await this.globalModel.getChainRewindInfo();
+            assert(chainRewindInfo, `Not registered rewind timestamp in global data, chainId: ${this.chainId}`);
+
+            this.waitRewindHeader = await this.searchWaitRewindHeader(chainRewindInfo.rewindTimestamp);
             this.status = MultiChainRewindStatus.Incomplete;
 
             this.handleRewindEvent?.(this.waitRewindHeader.blockHeight);
             break;
           }
           case MultiChainRewindEvent.RewindComplete:
+            // recover indexing status
+            this.waitRewindHeader = undefined;
+            this.status = MultiChainRewindStatus.Complete;
+            break;
+          case MultiChainRewindEvent.FullyRewind:
             // recover indexing status
             this.waitRewindHeader = undefined;
             this.status = MultiChainRewindStatus.Normal;
@@ -166,13 +173,15 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
 
     // Check whether the current state is in rollback.
     // If a global lock situation occurs, prioritize setting it to the WaitOtherChain state. If a rollback is still required, then set it to the rewinding state.
-    const {rewindTimestamp, status} = await this.globalModel.getChainRewindInfo();
-    if (status === MultiChainRewindStatus.Complete) {
+    const chainRewindInfo = await this.globalModel.getChainRewindInfo();
+    if (!chainRewindInfo) return;
+
+    if (chainRewindInfo.status === MultiChainRewindStatus.Complete) {
       this.status = MultiChainRewindStatus.Complete;
     }
-    if (status === MultiChainRewindStatus.Incomplete) {
+    if (chainRewindInfo.status === MultiChainRewindStatus.Incomplete) {
       this.status = MultiChainRewindStatus.Incomplete;
-      this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
+      this.waitRewindHeader = await this.searchWaitRewindHeader(chainRewindInfo.rewindTimestamp);
     }
   }
 
