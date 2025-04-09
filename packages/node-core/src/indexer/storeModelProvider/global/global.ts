@@ -61,9 +61,9 @@ export class PlainGlobalModel implements IGlobalData {
   async setGlobalRewindLock(rewindTimestamp: Date): Promise<{lockTimestamp: Date}> {
     const tx = await this.sequelize.transaction();
     const {chainsCount, currentChain} = await this.getChainsInfo(tx);
-    if (chainsCount) {
-      // Exist rewind task
-      try {
+    try {
+      if (chainsCount) {
+        // Exist rewind task
         let lockTimestamp = new Date(0);
         const [affectedCount] = await this.model.update(
           {
@@ -73,7 +73,7 @@ export class PlainGlobalModel implements IGlobalData {
           },
           {
             where: {
-              [Op.or]: [{status: MultiChainRewindStatus.Normal}, {rewindTimestamp: {[Op.gt]: rewindTimestamp}}],
+              rewindTimestamp: {[Op.gt]: rewindTimestamp},
             },
             transaction: tx,
           }
@@ -91,17 +91,9 @@ export class PlainGlobalModel implements IGlobalData {
 
         await tx.commit();
         return {lockTimestamp};
-      } catch (e: any) {
-        logger.error(
-          `setGlobalRewindLock failed chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}, errorMsg: ${e.message}`
-        );
-        await tx.rollback();
-        throw e;
-      }
-    } else {
-      const chainIds = await this.getChainIdsFromMetadata();
-      // No rewind task, set the current chain as the initiator
-      try {
+      } else {
+        const chainIds = await this.getChainIdsFromMetadata();
+        // No rewind task, set the current chain as the initiator
         await this.model.bulkCreate(
           chainIds.map((chainId) => ({
             chainId,
@@ -113,13 +105,13 @@ export class PlainGlobalModel implements IGlobalData {
         );
         await tx.commit();
         return {lockTimestamp: rewindTimestamp};
-      } catch (e: any) {
-        logger.error(
-          `setGlobalRewindLock failed chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}, errorMsg: ${e.message}`
-        );
-        await tx.rollback();
-        throw e;
       }
+    } catch (e: any) {
+      logger.error(
+        `setGlobalRewindLock failed chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}, errorMsg: ${e.message}`
+      );
+      await tx.rollback();
+      throw e;
     }
   }
 
