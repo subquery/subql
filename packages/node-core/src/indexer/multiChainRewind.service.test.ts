@@ -48,7 +48,7 @@ async function createChainProject(chainId: string, mockBlockchainService: any, s
   const storeService = new StoreService(sequelize, nodeConfig, dbModel, project);
   await storeService.initCoreTables(testSchemaName);
   await storeService.init(testSchemaName);
-  await storeService.modelProvider.metadata.set('chainId', chainId);
+  await storeService.modelProvider.metadata.set('chain', chainId);
   await storeService.modelProvider.metadata.set('startHeight', 1);
   await storeService.modelProvider.metadata.set('lastProcessedHeight', 10000);
   await storeService.modelProvider.metadata.set(

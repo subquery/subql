@@ -8,7 +8,6 @@ import {HistoricalMode} from '../types';
 
 export interface MetadataKeys {
   chain: string;
-  chainId: string;
   genesisHash: string;
   startHeight: number;
   historicalStateEnabled: HistoricalMode;

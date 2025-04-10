@@ -151,7 +151,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   }
 
   private notifyHandle(msg: any) {
-    this.processingPromise.then(async () => {
+    this.processingPromise = this.processingPromise.then(async () => {
       assert(msg.payload, 'Payload is empty');
       const {chainId, event: eventType} = JSON.parse(msg.payload) as {chainId: string; event: MultiChainRewindEvent};
       if (chainId !== this.chainId) return;

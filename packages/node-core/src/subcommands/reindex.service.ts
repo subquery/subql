@@ -78,7 +78,10 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
       timestamp,
     };
 
-    this.multiChainRewindService.init(this.project.network.chainId);
+    const chain = await this.storeService.modelProvider.metadata.find('chain');
+    assert(chain, 'Chain not found in metadata');
+
+    this.multiChainRewindService.init(chain);
 
     await this.projectUpgradeService.init(
       this.storeService,

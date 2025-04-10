@@ -215,7 +215,6 @@ export class ProjectService<
       'blockOffset',
       'indexerNodeVersion',
       'chain',
-      'chainId',
       'specName',
       'genesisHash',
       'startHeight',
@@ -250,10 +249,6 @@ export class ProjectService<
     }
     if (existing.chain !== chain) {
       await metadata.set('chain', chain);
-    }
-
-    if (existing.chainId !== this.project.network.chainId) {
-      await metadata.set('chainId', this.project.network.chainId);
     }
 
     if (existing.specName !== specName) {
@@ -455,7 +450,7 @@ export class ProjectService<
     return undefined;
   }
   private async initMultiChainRewindService(): Promise<Header | undefined> {
-    return this.multiChainRewindService.init(this.project.network.chainId, this.reindex.bind(this));
+    return this.multiChainRewindService.init(this.apiService.networkMeta.chain, this.reindex.bind(this));
   }
 
   private async handleProjectChange(): Promise<void> {
