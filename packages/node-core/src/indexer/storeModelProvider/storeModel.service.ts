@@ -6,6 +6,7 @@ import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {exitWithError} from '../../process';
+import {MultiChainRewindStatus} from '../entities';
 import {BaseStoreModelService} from './baseStoreModel.service';
 import {CsvExporter, Exporter, isTxExporter} from './exporters';
 import {MetadataModel} from './metadata/metadata';
@@ -68,6 +69,12 @@ export class PlainStoreModelService extends BaseStoreModelService<IModel<any>> i
 
   async applyPendingChanges(height: number, dataSourcesCompleted: boolean, tx: Transaction): Promise<void> {
     try {
+      if (this.multiChainRewindService && this.multiChainRewindService.status !== MultiChainRewindStatus.Normal) {
+        logger.debug(`flushData${height} during rollback, skip it.`);
+        await tx.rollback();
+        return;
+      }
+
       if (!tx) {
         exitWithError(new Error('Transaction not found'), logger, 1);
       }

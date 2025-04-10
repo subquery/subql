@@ -41,11 +41,11 @@ import {
   GlobalDataRepo,
   MetadataFactory,
   MetadataRepo,
-  MultiChainRewindStatus,
   PoiFactory,
   PoiFactoryDeprecate,
   PoiRepo,
 } from './entities';
+import {MultiChainRewindService} from './multiChainRewind.service';
 import {Store} from './store';
 import {IMetadata, IStoreModelProvider, PlainStoreModelService} from './storeModelProvider';
 import {StoreOperations} from './StoreOperations';
@@ -533,6 +533,10 @@ group by
     });
 
     this._isMultichain = !!flatten(tableRes).find((value: string) => MULTI_METADATA_REGEX.test(value));
+  }
+
+  initMultiChain(multiChainRewindService: MultiChainRewindService) {
+    this.modelProvider.initMultiChain(multiChainRewindService);
   }
 }
 

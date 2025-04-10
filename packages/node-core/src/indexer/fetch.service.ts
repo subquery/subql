@@ -212,7 +212,12 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
       const multiChainStatus = this.multiChainRewindService.status;
 
       if (MultiChainRewindStatus.Incomplete === multiChainStatus) {
-        assert(this.multiChainRewindService.waitRewindHeader, 'Multi chain Rewind header is not set');
+        // assert(this.multiChainRewindService.waitRewindHeader, 'Multi chain Rewind header is not set');
+        if (!this.multiChainRewindService.waitRewindHeader) {
+          logger.info(`Multi chain Rewind header is not set, Waiting for it to be set`);
+          await delay(multiChainRewindDelay);
+          continue;
+        }
         await this.projectService.reindex(this.multiChainRewindService.waitRewindHeader);
         continue;
       }

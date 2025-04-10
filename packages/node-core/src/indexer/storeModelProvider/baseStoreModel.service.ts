@@ -5,6 +5,7 @@ import {BeforeApplicationShutdown} from '@nestjs/common';
 import {ModelStatic} from '@subql/x-sequelize';
 import {getLogger} from '../../logger';
 import {MetadataRepo, PoiRepo} from '../entities';
+import {IMultiChainRewindService} from '../multiChainRewind.service';
 import {HistoricalMode} from '../types';
 import {Exporter} from './exporters';
 import {METADATA_ENTITY_NAME} from './metadata/utils';
@@ -17,6 +18,7 @@ export abstract class BaseStoreModelService<M = IModel<any>> implements BeforeAp
   protected poiRepo?: PoiRepo;
   protected metadataRepo?: MetadataRepo;
   protected cachedModels: Record<string, M> = {};
+  multiChainRewindService?: IMultiChainRewindService;
 
   protected abstract createModel(entity: string): M;
 
@@ -24,6 +26,10 @@ export abstract class BaseStoreModelService<M = IModel<any>> implements BeforeAp
     this.historical = historical;
     this.metadataRepo = meta;
     this.poiRepo = poi;
+  }
+
+  initMultiChain(multiChainRewindService: IMultiChainRewindService) {
+    this.multiChainRewindService = multiChainRewindService;
   }
 
   getModel<T extends BaseEntity>(entity: string): IModel<T> {

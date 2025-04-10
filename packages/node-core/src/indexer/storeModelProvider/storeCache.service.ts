@@ -11,6 +11,7 @@ import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {exitWithError} from '../../process';
 import {profiler} from '../../profiler';
+import {MultiChainRewindStatus} from '../entities';
 import {BaseCacheService} from './baseCache.service';
 import {CsvExporter, Exporter} from './exporters';
 import {CacheMetadataModel} from './metadata';
@@ -150,6 +151,11 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
   async applyPendingChanges(height: number, dataSourcesCompleted: boolean): Promise<void> {
     const targetHeight = await this.metadata.find('targetHeight');
     const nearTarget = !!targetHeight && height >= targetHeight - this.config.storeCacheTarget;
+
+    if (this.multiChainRewindService && this.multiChainRewindService.status !== MultiChainRewindStatus.Normal) {
+      logger.debug(`flushData${height} during rollback, skip it.`);
+      return;
+    }
 
     // Flush if interval conditions are met or near the targetHeight
     const force =
