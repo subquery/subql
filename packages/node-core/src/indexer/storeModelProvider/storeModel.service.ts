@@ -69,12 +69,6 @@ export class PlainStoreModelService extends BaseStoreModelService<IModel<any>> i
 
   async applyPendingChanges(height: number, dataSourcesCompleted: boolean, tx: Transaction): Promise<void> {
     try {
-      if (this.multiChainRewindService && this.multiChainRewindService.status !== MultiChainRewindStatus.Normal) {
-        logger.debug(`flushData${height} during rollback, skip it.`);
-        await tx.rollback();
-        return;
-      }
-
       if (!tx) {
         exitWithError(new Error('Transaction not found'), logger, 1);
       }

@@ -152,11 +152,6 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
     const targetHeight = await this.metadata.find('targetHeight');
     const nearTarget = !!targetHeight && height >= targetHeight - this.config.storeCacheTarget;
 
-    if (this.multiChainRewindService && this.multiChainRewindService.status !== MultiChainRewindStatus.Normal) {
-      logger.debug(`flushData${height} during rollback, skip it.`);
-      return;
-    }
-
     // Flush if interval conditions are met or near the targetHeight
     const force =
       (this.#lastFlushed &&

@@ -108,13 +108,6 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
 
     await this.blockDispatcher.init(this.resetForNewDs.bind(this));
 
-    if (this.nodeConfig.multiChain) {
-      this.multiChainRewindService.setRewindEventHook((height: number) => {
-        this.resetForNewDs(height);
-        this.blockDispatcher.setLatestProcessedHeight(height);
-      });
-    }
-
     void this.startLoop(startHeight);
   }
 

@@ -19,6 +19,7 @@ import {
   IBaseIndexerWorker,
   IBlock,
   InMemoryCacheService,
+  MultiChainRewindService,
   PoiSyncService,
   TerminateableWorker,
   UnfinalizedBlocksService,
@@ -74,6 +75,7 @@ export class WorkerBlockDispatcher<
     connectionPoolState: ConnectionPoolStateManager<ApiConn>,
     @Inject('ISubqueryProject') project: ISubqueryProject,
     @Inject('IBlockchainService') private blockchainService: IBlockchainService<DS>,
+    multiChainRewindService: MultiChainRewindService,
     workerPath: string,
     workerFns: Parameters<typeof createIndexerWorker<Worker, ApiConn, Block, DS>>[1],
     monitorService?: MonitorServiceInterface,
@@ -89,7 +91,8 @@ export class WorkerBlockDispatcher<
       storeService,
       storeModelProvider,
       poiSyncService,
-      blockchainService
+      blockchainService,
+      multiChainRewindService
     );
 
     this.processQueue = initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Process');

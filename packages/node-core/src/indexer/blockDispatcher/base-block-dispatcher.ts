@@ -12,6 +12,7 @@ import {AdminEvent, IndexerEvent, PoiEvent, TargetBlockPayload} from '../../even
 import {getLogger} from '../../logger';
 import {exitWithError, monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite} from '../../process';
 import {AutoQueue, IQueue, isTaskFlushedError, mainThreadOnly} from '../../utils';
+import {MultiChainRewindService} from '../multiChainRewind.service';
 import {PoiBlock, PoiSyncService} from '../poi';
 import {StoreService} from '../store.service';
 import {IStoreModelProvider, StoreCacheService} from '../storeModelProvider';
@@ -69,7 +70,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     protected storeService: StoreService,
     private storeModelProvider: IStoreModelProvider,
     private poiSyncService: PoiSyncService,
-    private blockChainService: ICoreBlockchainService
+    private blockChainService: ICoreBlockchainService,
+    private multiChainRewindService: MultiChainRewindService
   ) {}
 
   abstract enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): void | Promise<void>;
@@ -173,7 +175,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     const {blockHash, blockHeight: height} = header;
     const {dynamicDsCreated, reindexBlockHeader: processReindexBlockHeader} = processBlockResponse;
     // Rewind height received from admin api have higher priority than processed reindexBlockHeight
-    const reindexBlockHeader = this._pendingRewindHeader ?? processReindexBlockHeader;
+    const reindexBlockHeader =
+      this._pendingRewindHeader ?? this.multiChainRewindService.waitRewindHeader ?? processReindexBlockHeader;
     monitorWrite(`Finished block ${height}`);
     if (reindexBlockHeader !== null && reindexBlockHeader !== undefined) {
       try {

@@ -105,7 +105,6 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       return;
     }
     if (!this.storeService.isMultichain) return;
-    this.storeService.initMultiChain(this);
 
     await this.sequelize.query(`${createRewindTriggerFunction(this.dbSchema)}`);
     const rewindTriggers = await getTriggers(this.sequelize, this.rewindTriggerName);
@@ -169,7 +168,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
 
           this.status = MultiChainRewindStatus.Incomplete;
           this.waitRewindHeader = await this.searchWaitRewindHeader(chainRewindInfo.rewindTimestamp);
-          this.handleRewindEvent?.(this.waitRewindHeader.blockHeight);
+          // this.handleRewindEvent?.(this.waitRewindHeader.blockHeight);
           break;
         }
         case MultiChainRewindEvent.RewindComplete:

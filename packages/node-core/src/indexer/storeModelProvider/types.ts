@@ -4,7 +4,6 @@
 import {ModelStatic, Transaction} from '@subql/x-sequelize';
 import {LRUCache} from 'lru-cache';
 import {MetadataRepo, PoiRepo} from '../entities';
-import {IMultiChainRewindService} from '../multiChainRewind.service';
 import {HistoricalMode} from '../types';
 import {IMetadata} from './metadata';
 import {BaseEntity, IModel} from './model';
@@ -16,11 +15,8 @@ export type HistoricalModel = {__block_range: any};
 export interface IStoreModelProvider {
   poi: IPoi | null;
   metadata: IMetadata;
-  multiChainRewindService?: IMultiChainRewindService;
 
   init(historical: HistoricalMode, meta: MetadataRepo, poi?: PoiRepo): void;
-
-  initMultiChain(multiChainRewindService?: IMultiChainRewindService): void;
 
   getModel<T extends BaseEntity>(entity: string): IModel<T>;
 

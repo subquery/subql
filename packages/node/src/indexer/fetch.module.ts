@@ -91,6 +91,7 @@ import { IIndexerWorker } from './worker/worker';
         ConnectionPoolStateManager,
         'IBlockchainService',
         IndexerManager,
+        MultiChainRewindService,
         MonitorService,
       ],
     },

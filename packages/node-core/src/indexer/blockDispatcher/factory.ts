@@ -10,6 +10,7 @@ import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
 import {DynamicDsService} from '../dynamic-ds.service';
 import {InMemoryCacheService} from '../inMemoryCache.service';
 import {MonitorService} from '../monitor.service';
+import {MultiChainRewindService} from '../multiChainRewind.service';
 import {PoiSyncService} from '../poi';
 import {ProjectService} from '../project.service';
 import {StoreService} from '../store.service';
@@ -41,6 +42,7 @@ export const blockDispatcherFactory =
     connectionPoolState: ConnectionPoolStateManager<ApiConn>,
     blockchainService: IBlockchainService<DS>,
     indexerManager: IIndexerManager<Block, DS>,
+    multiChainRewindService: MultiChainRewindService,
     monitorService?: MonitorService
   ): IBlockDispatcher<Block> => {
     return nodeConfig.workers
@@ -58,6 +60,7 @@ export const blockDispatcherFactory =
           connectionPoolState,
           project,
           blockchainService,
+          multiChainRewindService,
           workerPath,
           workerFns,
           monitorService
@@ -72,6 +75,7 @@ export const blockDispatcherFactory =
           poiSyncService,
           project,
           blockchainService,
-          indexerManager
+          indexerManager,
+          multiChainRewindService
         );
   };
