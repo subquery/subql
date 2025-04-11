@@ -11,7 +11,6 @@ import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {exitWithError} from '../../process';
 import {profiler} from '../../profiler';
-import {MultiChainRewindStatus} from '../entities';
 import {BaseCacheService} from './baseCache.service';
 import {CsvExporter, Exporter} from './exporters';
 import {CacheMetadataModel} from './metadata';

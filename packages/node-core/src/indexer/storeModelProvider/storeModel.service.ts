@@ -6,7 +6,6 @@ import {Sequelize, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {getLogger} from '../../logger';
 import {exitWithError} from '../../process';
-import {MultiChainRewindStatus} from '../entities';
 import {BaseStoreModelService} from './baseStoreModel.service';
 import {CsvExporter, Exporter, isTxExporter} from './exporters';
 import {MetadataModel} from './metadata/metadata';
