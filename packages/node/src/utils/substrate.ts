@@ -39,7 +39,9 @@ const INTERVAL_THRESHOLD = BN_THOUSAND.div(BN_TWO);
 const DEFAULT_TIME = new BN(6_000);
 const A_DAY = new BN(24 * 60 * 60 * 1000);
 
-export function substrateHeaderToHeader(header: SubstrateHeader): Header {
+type MissTsHeader = Omit<Header, 'timestamp'>;
+
+export function substrateHeaderToHeader(header: SubstrateHeader): MissTsHeader {
   return {
     blockHeight: header.number.toNumber(),
     blockHash: header.hash.toHex(),
@@ -48,9 +50,15 @@ export function substrateHeaderToHeader(header: SubstrateHeader): Header {
 }
 
 export function substrateBlockToHeader(block: SignedBlock): Header {
+  const timestamp = getTimestamp(block);
+  assert(
+    timestamp,
+    'Failed to retrieve a reliable timestamp. This issue is more likely to occur on networks like Shiden',
+  );
+
   return {
     ...substrateHeaderToHeader(block.block.header),
-    timestamp: getTimestamp(block),
+    timestamp,
   };
 }
 
@@ -88,6 +96,22 @@ export function getTimestamp({
   // See test `return undefined if no timestamp set extrinsic`
   // E.g Shiden
   return undefined;
+}
+
+export async function getHeaderForHash(
+  api: ApiPromise,
+  blockHash: string,
+): Promise<Header> {
+  const block = await api.rpc.chain.getBlock(blockHash).catch((e) => {
+    logger.error(
+      `failed to fetch Block hash="${blockHash}" ${getApiDecodeErrMsg(
+        e.message,
+      )}`,
+    );
+    throw ApiPromiseConnection.handleError(e);
+  });
+
+  return substrateBlockToHeader(block);
 }
 
 export function wrapExtrinsics(
@@ -394,6 +418,10 @@ export async function fetchBlocksBatches(
       : fetchRuntimeVersionRange(api, parentBlockHashs),
   ]);
 
+  const blockHeaderMap: Header[] = blocks.map((block, idx) =>
+    substrateBlockToHeader(block),
+  );
+
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
     const parentSpecVersion =
@@ -405,7 +433,7 @@ export async function fetchBlocksBatches(
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
 
     return {
-      getHeader: () => substrateBlockToHeader(wrappedBlock),
+      getHeader: () => blockHeaderMap[idx],
       block: {
         block: wrappedBlock,
         extrinsics: wrappedExtrinsics,
@@ -425,7 +453,7 @@ export async function fetchLightBlock(
     throw ApiPromiseConnection.handleError(e);
   });
 
-  const [header, events] = await Promise.all([
+  const [header, events, timestamp] = await Promise.all([
     api.rpc.chain.getHeader(blockHash).catch((e) => {
       logger.error(
         `failed to fetch Block Header hash="${blockHash}" height="${height}"`,
@@ -436,6 +464,8 @@ export async function fetchLightBlock(
       logger.error(`failed to fetch events at block ${blockHash}`);
       throw ApiPromiseConnection.handleError(e);
     }),
+    // TODO: Maybe api.query.timestamp.now.at(blockHash) is the only option. If we do use it we need sufficient tests and errors if a chain doesn't support getting the timestamp.
+    (await api.at(blockHash)).query.timestamp.now(),
   ]);
 
   const blockHeader: BlockHeader = {
@@ -448,7 +478,10 @@ export async function fetchLightBlock(
       events: events.map((evt, idx) => merge(evt, { idx, block: blockHeader })),
     },
     getHeader: () => {
-      return substrateHeaderToHeader(blockHeader.block.header);
+      return {
+        ...substrateHeaderToHeader(blockHeader.block.header),
+        timestamp: new Date(timestamp.toNumber()),
+      };
     },
   };
 }

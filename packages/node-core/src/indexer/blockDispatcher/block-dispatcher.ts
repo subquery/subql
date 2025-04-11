@@ -9,7 +9,7 @@ import {IBlockchainService} from '../../blockchain.service';
 import {NodeConfig} from '../../configure';
 import {IProjectUpgradeService} from '../../configure/ProjectUpgrade.service';
 import {IndexerEvent} from '../../events';
-import {getBlockHeight, IBlock, PoiSyncService, StoreService} from '../../indexer';
+import {getBlockHeight, IBlock, MultiChainRewindService, PoiSyncService, StoreService} from '../../indexer';
 import {getLogger} from '../../logger';
 import {exitWithError, monitorWrite} from '../../process';
 import {profilerWrap} from '../../profiler';
@@ -46,7 +46,8 @@ export class BlockDispatcher<B, DS extends BaseDataSource>
     poiSyncService: PoiSyncService,
     project: ISubqueryProject,
     blockchainService: IBlockchainService<DS>,
-    private indexerManager: IIndexerManager<B, DS>
+    private indexerManager: IIndexerManager<B, DS>,
+    multiChainRewindService: MultiChainRewindService
   ) {
     super(
       nodeConfig,
@@ -57,7 +58,9 @@ export class BlockDispatcher<B, DS extends BaseDataSource>
       new Queue(nodeConfig.batchSize * 3),
       storeService,
       storeModelProvider,
-      poiSyncService
+      poiSyncService,
+      blockchainService,
+      multiChainRewindService
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3, 1, nodeConfig.timeout, 'Process');
     this.fetchQueue = new RampQueue(

@@ -4,6 +4,7 @@
 import assert from 'assert';
 
 import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
+import {ICoreBlockchainService} from '@subql/node-core/blockchain.service';
 import {hexToU8a, u8aEq} from '@subql/utils';
 import {Transaction} from '@subql/x-sequelize';
 import {NodeConfig, IProjectUpgradeService} from '../../configure';
@@ -11,6 +12,7 @@ import {AdminEvent, IndexerEvent, PoiEvent, TargetBlockPayload} from '../../even
 import {getLogger} from '../../logger';
 import {exitWithError, monitorCreateBlockFork, monitorCreateBlockStart, monitorWrite} from '../../process';
 import {AutoQueue, IQueue, isTaskFlushedError, mainThreadOnly} from '../../utils';
+import {MultiChainRewindService} from '../multiChainRewind.service';
 import {PoiBlock, PoiSyncService} from '../poi';
 import {StoreService} from '../store.service';
 import {IStoreModelProvider, StoreCacheService} from '../storeModelProvider';
@@ -34,6 +36,7 @@ export interface IBlockDispatcher<B> {
   latestBufferedHeight: number;
   batchSize: number;
 
+  setLatestProcessedHeight(height: number): void;
   // Remove all enqueued blocks, used when a dynamic ds is created
   flushQueue(height: number): void;
 }
@@ -65,8 +68,10 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     private projectUpgradeService: IProjectUpgradeService,
     protected queue: Q,
     protected storeService: StoreService,
-    protected storeModelProvider: IStoreModelProvider,
-    private poiSyncService: PoiSyncService
+    private storeModelProvider: IStoreModelProvider,
+    private poiSyncService: PoiSyncService,
+    private blockChainService: ICoreBlockchainService,
+    private multiChainRewindService: MultiChainRewindService
   ) {}
 
   abstract enqueueBlocks(heights: (IBlock<B> | number)[], latestBufferHeight?: number): void | Promise<void>;
@@ -170,7 +175,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     const {blockHash, blockHeight: height} = header;
     const {dynamicDsCreated, reindexBlockHeader: processReindexBlockHeader} = processBlockResponse;
     // Rewind height received from admin api have higher priority than processed reindexBlockHeight
-    const reindexBlockHeader = this._pendingRewindHeader ?? processReindexBlockHeader;
+    const reindexBlockHeader =
+      this._pendingRewindHeader ?? this.multiChainRewindService.waitRewindHeader ?? processReindexBlockHeader;
     monitorWrite(`Finished block ${height}`);
     if (reindexBlockHeader !== null && reindexBlockHeader !== undefined) {
       try {
@@ -226,7 +232,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   }
 
   @OnEvent(AdminEvent.rewindTarget)
-  handleAdminRewind(blockPayload: TargetBlockPayload): void {
+  async handleAdminRewind(blockPayload: TargetBlockPayload) {
     if (this.currentProcessingHeight < blockPayload.height) {
       // this will throw back to admin controller, will NOT lead current indexing exit
       throw new Error(
@@ -235,9 +241,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
     }
 
     // TODO can this work without
-    this._pendingRewindHeader = {
-      blockHeight: Number(blockPayload.height),
-    } as Header;
+    this._pendingRewindHeader = await this.blockChainService.getHeaderForHeight(blockPayload.height);
     const message = `Received admin command to rewind to block ${blockPayload.height}`;
     monitorWrite(`***** [ADMIN] ${message}`);
     logger.warn(message);
