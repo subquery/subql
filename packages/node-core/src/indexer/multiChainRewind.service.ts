@@ -24,11 +24,7 @@ export interface IMultiChainRewindService {
   chainId: string;
   status: MultiChainRewindStatus;
   waitRewindHeader?: Header;
-  /**
-   * Set the rewind event hook.
-   * It should only be called when indexing, and there is no need to set it when using the rewind command.
-   **/
-  setRewindEventHook(fn: (height: number) => void): void;
+
   setGlobalRewindLock(rewindTimestamp: Date): Promise<boolean>;
   /**
    * Check if the height is consistent before unlocking.
@@ -168,7 +164,6 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
 
           this.status = MultiChainRewindStatus.Incomplete;
           this.waitRewindHeader = await this.searchWaitRewindHeader(chainRewindInfo.rewindTimestamp);
-          // this.handleRewindEvent?.(this.waitRewindHeader.blockHeight);
           break;
         }
         case MultiChainRewindEvent.RewindComplete:
@@ -195,15 +190,6 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     return {...rewindBlockHeader, timestamp: rewindTimestamp};
   }
 
-  setRewindEventHook(fn: (height: number) => void) {
-    assert(
-      this.handleRewindEvent === undefined,
-      'setRewindAfterHook can only be set once, please check the code logic'
-    );
-    logger.info(`setRewindAfterHook success, chainId: ${this.chainId}`);
-    this.handleRewindEvent = fn;
-  }
-
   /**
    * If the set rewindTimestamp is greater than or equal to the current blockHeight, we do nothing because we will roll back to an earlier time.
    * If the set rewindTimestamp is less than the current blockHeight, we should roll back to the earlier rewindTimestamp.
@@ -214,7 +200,6 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     const needRewind = lockTimestamp <= rewindTimestamp;
     if (needRewind) {
       logger.info(`setGlobalRewindLock success chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`);
-      this.status = MultiChainRewindStatus.Rewinding;
     }
     return needRewind;
   }

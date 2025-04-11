@@ -10,8 +10,6 @@ export enum MultiChainRewindStatus {
   Complete = 'complete',
   /** Unprocessed rewind task. The rollback height can be determined using rewindTimestamp. */
   Incomplete = 'incomplete',
-  /** The current chain is executing rewind. */
-  Rewinding = 'rewinding',
 }
 
 export interface GlobalData {

@@ -203,28 +203,15 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
 
       // If we're rewinding, we should wait until it's done
       const multiChainStatus = this.multiChainRewindService.status;
-
-      if (MultiChainRewindStatus.Incomplete === multiChainStatus) {
-        // assert(this.multiChainRewindService.waitRewindHeader, 'Multi chain Rewind header is not set');
-        if (!this.multiChainRewindService.waitRewindHeader) {
-          logger.info(`Multi chain Rewind header is not set, Waiting for it to be set`);
-          await delay(multiChainRewindDelay);
-          continue;
-        }
-        await this.projectService.reindex(this.multiChainRewindService.waitRewindHeader);
-        continue;
-      }
-
+      // if (MultiChainRewindStatus.Incomplete === multiChainStatus) {
+      //   logger.info(`Rewinding, current chainId: ${this.multiChainRewindService.chainId}`);
+      //   await delay(multiChainRewindDelay);
+      //   continue;
+      // }
       if (MultiChainRewindStatus.Complete === multiChainStatus) {
         logger.info(
           `Waiting for all chains to complete rewind, current chainId: ${this.multiChainRewindService.chainId}`
         );
-        await delay(multiChainRewindDelay);
-        continue;
-      }
-
-      if (MultiChainRewindStatus.Rewinding === multiChainStatus) {
-        logger.info(`Rewinding, current chainId: ${this.multiChainRewindService.chainId}`);
         await delay(multiChainRewindDelay);
         continue;
       }
