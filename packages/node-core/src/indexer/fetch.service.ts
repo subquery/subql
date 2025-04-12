@@ -203,11 +203,6 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
 
       // If we're rewinding, we should wait until it's done
       const multiChainStatus = this.multiChainRewindService.status;
-      // if (MultiChainRewindStatus.Incomplete === multiChainStatus) {
-      //   logger.info(`Rewinding, current chainId: ${this.multiChainRewindService.chainId}`);
-      //   await delay(multiChainRewindDelay);
-      //   continue;
-      // }
       if (MultiChainRewindStatus.Complete === multiChainStatus) {
         logger.info(
           `Waiting for all chains to complete rewind, current chainId: ${this.multiChainRewindService.chainId}`

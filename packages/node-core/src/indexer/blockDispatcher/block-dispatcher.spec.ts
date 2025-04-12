@@ -210,7 +210,8 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
           id: 'id',
         } as any, // ISubqueryProject
         blockchainService,
-        indexerManager
+        indexerManager,
+        {} as any
       );
     },
   ],
@@ -235,6 +236,7 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
           id: 'id',
         } as any, // ISubqueryProject
         blockchainService,
+        {} as any,
         '', // workerPath
         [] // workerFns
       );

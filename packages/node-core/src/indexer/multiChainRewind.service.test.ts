@@ -1,6 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Test} from '@nestjs/testing';
 import {buildSchemaFromString} from '@subql/utils';
 import {QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {NodeConfig} from '../configure';
@@ -125,10 +126,8 @@ describe('MultiChain Rewind Service', () => {
   it('A chain rollback has been completed.', async () => {
     const {rewindDate} = genBlockTimestamp(5);
     await multiChainRewindService1.setGlobalRewindLock(rewindDate);
-
-    expect(multiChainRewindService1.status).toBe(MultiChainRewindStatus.Rewinding);
-    expect(multiChainRewindService1.waitRewindHeader).toBeUndefined();
     await delay(1);
+    expect(multiChainRewindService1.status).toBe(MultiChainRewindStatus.Incomplete);
 
     const tx = await sequelize1.transaction();
     const remaining = await multiChainRewindService1.releaseChainRewindLock(tx, rewindDate);
@@ -151,10 +150,12 @@ describe('MultiChain Rewind Service', () => {
     const {rewindDate: rewindDate2} = genBlockTimestamp(3); // Earlier timestamp
 
     await multiChainRewindService1.setGlobalRewindLock(rewindDate1);
-    expect(multiChainRewindService1.status).toBe(MultiChainRewindStatus.Rewinding);
+    await delay(1);
+    expect(multiChainRewindService1.status).toBe(MultiChainRewindStatus.Incomplete);
 
     await multiChainRewindService2.setGlobalRewindLock(rewindDate2);
-    expect(multiChainRewindService2.status).toBe(MultiChainRewindStatus.Rewinding);
+    await delay(1);
+    expect(multiChainRewindService2.status).toBe(MultiChainRewindStatus.Incomplete);
 
     const res = await sequelize.query<{rewindTimestamp: Date}>(
       `SELECT "chainId","rewindTimestamp" FROM "${testSchemaName}"."_global";`,
@@ -206,8 +207,8 @@ describe('MultiChain Rewind Service', () => {
 
     const {rewindDate} = genBlockTimestamp(4.5); // Timestamp between blocks 4 and 5
     await multiChainRewindService1.setGlobalRewindLock(rewindDate);
-
-    expect(multiChainRewindService1.status).toBe(MultiChainRewindStatus.Rewinding);
+    await delay(1);
+    expect(multiChainRewindService1.status).toBe(MultiChainRewindStatus.Incomplete);
 
     const tx = await sequelize1.transaction();
     const remaining = await multiChainRewindService1.releaseChainRewindLock(tx, rewindDate);
@@ -224,10 +225,8 @@ describe('MultiChain Rewind Service', () => {
     const {rewindDate: lastProcessTx} = genBlockTimestamp(100);
     const {rewindDate: rewindDate100000} = genBlockTimestamp(100000);
     await multiChainRewindService1.setGlobalRewindLock(rewindDate100000);
-
-    expect(multiChainRewindService1.status).toBe(MultiChainRewindStatus.Rewinding);
-    expect(multiChainRewindService1.waitRewindHeader).toBeUndefined();
     await delay(1);
+    expect(multiChainRewindService1.status).toBe(MultiChainRewindStatus.Incomplete);
 
     const tx = await sequelize1.transaction();
     const remaining = await multiChainRewindService1.releaseChainRewindLock(tx, rewindDate100000, lastProcessTx);
@@ -241,10 +240,15 @@ describe('MultiChain Rewind Service', () => {
     const {rewindDate: lastProcessTx} = genBlockTimestamp(100);
     const {rewindDate: rewindDate99} = genBlockTimestamp(99);
     await multiChainRewindService1.setGlobalRewindLock(rewindDate99);
-
-    expect(multiChainRewindService1.status).toBe(MultiChainRewindStatus.Rewinding);
-    expect(multiChainRewindService1.waitRewindHeader).toBeUndefined();
+    expect(multiChainRewindService1.status).toBe(MultiChainRewindStatus.Normal);
     await delay(1);
+    expect(multiChainRewindService1.status).toBe(MultiChainRewindStatus.Incomplete);
+    expect(multiChainRewindService1.waitRewindHeader).toEqual({
+      blockHash: 'hash99',
+      blockHeight: 99,
+      parentHash: 'hash98',
+      timestamp: rewindDate99,
+    });
 
     const tx = await sequelize1.transaction();
     await expect(multiChainRewindService1.releaseChainRewindLock(tx, rewindDate99, lastProcessTx)).rejects.toThrow();

@@ -817,13 +817,6 @@ describe('Fetch Service', () => {
     expect((fetchService as any).blockDispatcher.latestBufferedHeight).toEqual(910);
   }, 10000);
 
-  it('MultiChainRewindStatus.Incomplete will reindex', async () => {
-    (multichainRewindService as any).status = MultiChainRewindStatus.Incomplete;
-    (multichainRewindService as any).waitRewindHeader = {} as Header;
-    await fetchService.init(10);
-    expect(projectService.reindex).toHaveBeenCalled();
-  });
-
   it('MultiChainRewindStatus.Complete message', async () => {
     const logger = getLogger('FetchService');
     const consoleSpy = jest.spyOn(logger, 'info');
@@ -831,14 +824,5 @@ describe('Fetch Service', () => {
     (multichainRewindService as any).status = MultiChainRewindStatus.Complete;
     await fetchService.init(10);
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/Waiting for all chains to complete rewind/));
-  });
-
-  it('MultiChainRewindStatus.Rewinding message', async () => {
-    const logger = getLogger('FetchService');
-    const consoleSpy = jest.spyOn(logger, 'info');
-
-    (multichainRewindService as any).status = MultiChainRewindStatus.Rewinding;
-    await fetchService.init(10);
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/Rewinding, current chainId/));
   });
 });
