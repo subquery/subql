@@ -411,14 +411,14 @@ describe('MultiChain Rewind Service', () => {
       jest.clearAllMocks();
     });
 
-    it('默认状态', async () => {
+    it('Default state', async () => {
       // Initialize the service
       await multiChainRewindService.init(chainId1, reindex);
 
       expect(reindex).toHaveBeenCalledTimes(0);
     });
 
-    it('存在锁，还没完成rewind', async () => {
+    it('Lock exists but rewind is not completed yet', async () => {
       const {rewindDate} = genBlockTimestamp(5);
       await multiChainRewindService1.acquireGlobalRewindLock(rewindDate);
 
@@ -435,7 +435,7 @@ describe('MultiChain Rewind Service', () => {
       });
     });
 
-    it('存在锁，已经完成会滚', async () => {
+    it('Lock exists but rewind is already completed', async () => {
       const {rewindDate} = genBlockTimestamp(5);
       await multiChainRewindService1.acquireGlobalRewindLock(rewindDate);
       const tx = await sequelize1.transaction();
