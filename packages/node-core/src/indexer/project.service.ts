@@ -139,10 +139,11 @@ export class ProjectService<
       }
 
       const reindexedUpgrade = await this.initUpgradeService(this.startHeight);
-      // Unfinalized is dependent on POI in some cases, it needs to be init after POI is init
-      const reindexedUnfinalized = await this.initUnfinalizedInternal();
 
       const reindexMultiChain = await this.initMultiChainRewindService();
+
+      // Unfinalized is dependent on POI in some cases, it needs to be init after POI is init
+      const reindexedUnfinalized = await this.initUnfinalizedInternal();
 
       if (reindexedUnfinalized !== undefined) {
         this._startHeight = reindexedUnfinalized.blockHeight;

@@ -25,15 +25,15 @@ export interface IMultiChainRewindService {
   status: MultiChainRewindStatus;
   waitRewindHeader?: Header;
 
-  setGlobalRewindLock(rewindTimestamp: Date): Promise<boolean>;
+  acquireGlobalRewindLock(rewindTimestamp: Date): Promise<boolean>;
   /**
    * Check if the height is consistent before unlocking.
    * @param tx
    * @param rewindTimestamp The timestamp to roll back to.
-   * @param forceRewindTimestamp The timestamp to force roll back to.
+   * @param allowRewindTimestamp Set a rewind-allowed height; only heights greater than or equal this can be released.
    * @returns the number of remaining rewind chains
    */
-  releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, forceRewindTimestamp?: Date): Promise<number>;
+  releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, allowRewindTimestamp?: Date): Promise<number>;
 }
 
 /**
@@ -49,8 +49,8 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
   private _chainId?: string;
   private dbSchema: string;
   private rewindTriggerName: string;
+  private startHeight = 0;
   private pgListener?: PoolClient;
-  private handleRewindEvent?: (height: number) => void;
   private _globalModel?: PlainGlobalModel = undefined;
   private processingPromise: Promise<void> = Promise.resolve();
   waitRewindHeader?: Header;
@@ -108,6 +108,10 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
       await this.sequelize.query(`${createRewindTrigger(this.dbSchema)}`);
     }
 
+    const startHeight = await this.storeService.modelProvider.metadata.find('startHeight');
+    assert(startHeight !== undefined, 'startHeight is not set');
+    this.startHeight = startHeight;
+
     // Register a listener and create a schema notification sending function.
     await this.registerPgListener();
 
@@ -160,21 +164,14 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
           const chainRewindInfo = await this.globalModel.getChainRewindInfo();
           assert(chainRewindInfo, `Not registered rewind timestamp in global data, chainId: ${this.chainId}`);
 
-          if (chainRewindInfo?.status === MultiChainRewindStatus.Complete) break;
-
-          this.status = MultiChainRewindStatus.Incomplete;
-          this.waitRewindHeader = await this.searchWaitRewindHeader(chainRewindInfo.rewindTimestamp);
+          await this.setStatus(MultiChainRewindStatus.Incomplete, chainRewindInfo.rewindTimestamp);
           break;
         }
         case MultiChainRewindEvent.RewindComplete:
-          // recover indexing status
-          this.waitRewindHeader = undefined;
-          this.status = MultiChainRewindStatus.Complete;
+          await this.setStatus(MultiChainRewindStatus.Complete);
           break;
         case MultiChainRewindEvent.FullyRewind:
-          // recover indexing status
-          this.waitRewindHeader = undefined;
-          this.status = MultiChainRewindStatus.Normal;
+          await this.setStatus(MultiChainRewindStatus.Normal);
           break;
         default:
           throw new Error(`Unknown rewind event: ${eventType}`);
@@ -195,22 +192,34 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
    * If the set rewindTimestamp is less than the current blockHeight, we should roll back to the earlier rewindTimestamp.
    * @param rewindTimestamp rewindTimestamp in milliseconds
    */
-  async setGlobalRewindLock(rewindTimestamp: Date) {
-    const {lockTimestamp} = await this.globalModel.setGlobalRewindLock(rewindTimestamp);
-    const needRewind = lockTimestamp <= rewindTimestamp;
-    if (needRewind) {
+  async acquireGlobalRewindLock(rewindTimestamp: Date): Promise<boolean> {
+    const {lockTimestamp} = await this.globalModel.acquireGlobalRewindLock(rewindTimestamp);
+
+    const existEarlierLock = lockTimestamp < rewindTimestamp;
+    if (!existEarlierLock) {
       logger.info(`setGlobalRewindLock success chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`);
     }
-    return needRewind;
+    return !existEarlierLock;
   }
 
-  async releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, forceRewindTimestamp?: Date): Promise<number> {
-    const chainsCount = await this.globalModel.releaseChainRewindLock(tx, rewindTimestamp, forceRewindTimestamp);
+  async releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, allowRewindTimestamp?: Date): Promise<number> {
+    const chainsCount = await this.globalModel.releaseChainRewindLock(tx, rewindTimestamp, allowRewindTimestamp);
     // The current chain has completed the rewind, and we still need to wait for other chains to finish.
     // When fully synchronized, set the status back to normal by pgListener.
-    this.status = MultiChainRewindStatus.Complete;
+    await this.setStatus(MultiChainRewindStatus.Complete);
     logger.info(`Rewind success chainId: ${JSON.stringify({chainsCount, chainId: this.chainId, rewindTimestamp})}`);
     return chainsCount;
+  }
+
+  private async setStatus(status: MultiChainRewindStatus, rewindTimestamp?: Date) {
+    if (status === MultiChainRewindStatus.Incomplete) {
+      assert(rewindTimestamp, 'rewindTimestamp is not set');
+      this.status = MultiChainRewindStatus.Incomplete;
+      this.waitRewindHeader = await this.searchWaitRewindHeader(rewindTimestamp);
+    } else {
+      this.status = status;
+      this.waitRewindHeader = undefined;
+    }
   }
 
   /**
@@ -219,10 +228,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
    * @returns
    */
   private async getHeaderByBinarySearch(timestamp: Header['timestamp']): Promise<Header> {
-    const startHeight = await this.storeService.modelProvider.metadata.find('startHeight');
-    assert(startHeight !== undefined, 'startHeight is not set');
-
-    let left = startHeight;
+    let left = this.startHeight;
     let {height: right} = await this.storeService.getLastProcessedBlock();
     let searchNum = 0;
     while (left < right) {

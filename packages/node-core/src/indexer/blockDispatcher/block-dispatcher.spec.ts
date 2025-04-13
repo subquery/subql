@@ -7,6 +7,7 @@ import {isTaskFlushedError, TaskFlushedError} from '@subql/node-core/utils';
 import {NodeConfig} from '../../configure';
 import {exitWithError} from '../../process';
 import {ConnectionPoolStateManager} from '../connectionPoolState.manager';
+import {MultiChainRewindService} from '../multiChainRewind.service';
 import {Header, IBlock} from '../types';
 import {BaseWorkerService, BlockUnavailableError, IBaseIndexerWorker, WorkerStatusResponse} from '../worker';
 import {IBlockDispatcher, ProcessBlockResponse} from './base-block-dispatcher';
@@ -82,7 +83,7 @@ const blockchainService = {
   },
   fetchBlockWorker: (worker: TestWorker, height: number) => worker.fetchBlock(height),
 } as any;
-
+const multichainRewindService = {waitRewindHeader: undefined} as MultiChainRewindService;
 class TestWorkerService extends BaseWorkerService<number, Header> {
   async fetchChainBlock(height: number): Promise<IBlock<number>> {
     return fetchBlocksFunction(height);
@@ -211,7 +212,7 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
         } as any, // ISubqueryProject
         blockchainService,
         indexerManager,
-        {} as any
+        multichainRewindService
       );
     },
   ],
@@ -236,7 +237,7 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
           id: 'id',
         } as any, // ISubqueryProject
         blockchainService,
-        {} as any,
+        multichainRewindService,
         '', // workerPath
         [] // workerFns
       );
@@ -575,8 +576,6 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
     it('should call _onDynamicDsCreated when dynamic datasource is created', async () => {
       dynamicDsCreatedBlock = [7];
       const onDynamicDsCreatedSpy = jest.spyOn(blockDispatcher as any, '_onDynamicDsCreated');
-      // await Promise.all([
-      // ]);
       await blockDispatcher.enqueueBlocks([7], 7);
       await blockDispatcher.enqueueBlocks([8], 8);
       await delay(2);
@@ -584,6 +583,30 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
       const queueName = blockDispatcher instanceof BlockDispatcher ? 'Process' : 'Fetch';
       expect(onDynamicDsCreatedSpy).toHaveBeenCalledWith(7);
       expect(isTaskFlushedError).toHaveBeenCalledWith(new TaskFlushedError(queueName));
+    });
+  });
+
+  describe('Multi chain rewind', () => {
+    beforeEach(() => {
+      multichainRewindService.waitRewindHeader = {
+        blockHeight: 10,
+        blockHash: '0xhash',
+        parentHash: '0xparenthash',
+        timestamp: new Date(),
+      };
+      jest.clearAllMocks();
+    });
+    afterAll(() => {
+      multichainRewindService.waitRewindHeader = undefined;
+    });
+    it('Data before the rollback height is reached can be written normally', async () => {
+      await blockDispatcher.enqueueBlocks([7, 8, 9], 9);
+      await delay(2);
+      expect(projectService.reindex).toHaveBeenCalledTimes(0);
+
+      await blockDispatcher.enqueueBlocks([10], 10);
+      await delay(2);
+      expect(projectService.reindex).toHaveBeenCalledWith(multichainRewindService.waitRewindHeader);
     });
   });
 });
