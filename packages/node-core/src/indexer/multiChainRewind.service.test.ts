@@ -380,4 +380,73 @@ describe('MultiChain Rewind Service', () => {
       });
     });
   });
+
+  describe('Init', () => {
+    const reindex = jest.fn();
+    let multiChainRewindService: MultiChainRewindService;
+
+    beforeEach(async () => {
+      const nodeConfig = new NodeConfig({
+        subquery: 'test',
+        dbSchema: testSchemaName,
+        proofOfIndex: true,
+        enableCache: false,
+        multiChain: true,
+      });
+      const project = {network: {chainId: chainId1}, schema} as any;
+      const dbModel = new PlainStoreModelService(sequelize, nodeConfig);
+      const storeService = new StoreService(sequelize, nodeConfig, dbModel, project);
+      await storeService.initCoreTables(testSchemaName);
+      await storeService.init(testSchemaName);
+
+      multiChainRewindService = new MultiChainRewindService(
+        nodeConfig,
+        sequelize,
+        storeService,
+        mockBlockchainService as any
+      );
+    });
+    afterEach(() => {
+      multiChainRewindService.onApplicationShutdown();
+      jest.clearAllMocks();
+    });
+
+    it('默认状态', async () => {
+      // Initialize the service
+      await multiChainRewindService.init(chainId1, reindex);
+
+      expect(reindex).toHaveBeenCalledTimes(0);
+    });
+
+    it('存在锁，还没完成rewind', async () => {
+      const {rewindDate} = genBlockTimestamp(5);
+      await multiChainRewindService1.acquireGlobalRewindLock(rewindDate);
+
+      // Initialize the service
+      await multiChainRewindService.init(chainId1, reindex);
+
+      expect(reindex).toHaveBeenCalledTimes(1);
+      expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Incomplete);
+      expect(multiChainRewindService.waitRewindHeader).toEqual({
+        blockHeight: 5,
+        timestamp: rewindDate,
+        blockHash: 'hash5',
+        parentHash: 'hash4',
+      });
+    });
+
+    it('存在锁，已经完成会滚', async () => {
+      const {rewindDate} = genBlockTimestamp(5);
+      await multiChainRewindService1.acquireGlobalRewindLock(rewindDate);
+      const tx = await sequelize1.transaction();
+      await multiChainRewindService1.releaseChainRewindLock(tx, rewindDate);
+      await tx.commit();
+
+      // Initialize the service
+      await multiChainRewindService.init(chainId1, reindex);
+
+      expect(multiChainRewindService.status).toBe(MultiChainRewindStatus.Complete);
+      expect(reindex).toHaveBeenCalledTimes(0);
+    });
+  });
 });
