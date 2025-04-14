@@ -507,11 +507,6 @@ group by
     return getHistoricalUnit(this.historical, this.blockHeader);
   }
 
-  private async getRewindTimestamp(tx?: Transaction): Promise<Date | undefined> {
-    const record = await this.globalDataRepo.findByPk(this.subqueryProject.network.chainId, {transaction: tx});
-    return record?.rewindTimestamp;
-  }
-
   async getLastProcessedBlock(): Promise<{height: number; timestamp?: number}> {
     const {lastProcessedBlockTimestamp: timestamp, lastProcessedHeight: height} = await this.metadataModel.findMany([
       'lastProcessedHeight',
@@ -521,7 +516,7 @@ group by
     return {height: height || 0, timestamp};
   }
 
-  async setMultiChainProject() {
+  private async setMultiChainProject() {
     if (this.config.multiChain) {
       this._isMultichain = true;
       return;

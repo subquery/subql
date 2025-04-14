@@ -64,10 +64,6 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     this.rewindTriggerName = hashName(this.dbSchema, 'rewind_trigger', '_global');
   }
 
-  set chainId(chainId: string) {
-    this._chainId = chainId;
-  }
-
   get chainId(): string {
     assert(this._chainId, 'chainId is not set');
     return this._chainId;
@@ -89,12 +85,15 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     return this._globalModel;
   }
 
-  onApplicationShutdown() {
-    this.sequelize.connectionManager.releaseConnection(this.pgListener as Connection);
+  async onApplicationShutdown() {
+    await this.processingPromise;
+    if (this.pgListener) {
+      this.sequelize.connectionManager.releaseConnection(this.pgListener as Connection);
+    }
   }
 
   async init(chainId: string, reindex?: (targetHeader: Header) => Promise<void>) {
-    this.chainId = chainId;
+    this._chainId = chainId;
 
     if (reindex === undefined) {
       // When using the reindex command, this parameter is not required.

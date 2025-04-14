@@ -119,10 +119,9 @@ describe('MultiChain Rewind Service', () => {
   });
 
   afterEach(async () => {
-    await delay(0.2);
+    await multiChainRewindService1.onApplicationShutdown();
+    await multiChainRewindService2.onApplicationShutdown();
     await sequelize.query(`DROP SCHEMA ${testSchemaName} CASCADE;`);
-    multiChainRewindService1.onApplicationShutdown();
-    multiChainRewindService2.onApplicationShutdown();
     await sequelize.close();
   });
 
@@ -141,7 +140,7 @@ describe('MultiChain Rewind Service', () => {
       );
     });
 
-    it('Allow locking further forward', async () => {
+    it('A rewind can be moved further back when there is already one in progress.', async () => {
       const {rewindDate: rewindDate10} = genBlockTimestamp(10);
       const {rewindDate: rewindDate5} = genBlockTimestamp(5);
 
@@ -406,8 +405,8 @@ describe('MultiChain Rewind Service', () => {
         mockBlockchainService as any
       );
     });
-    afterEach(() => {
-      multiChainRewindService.onApplicationShutdown();
+    afterEach(async () => {
+      await multiChainRewindService.onApplicationShutdown();
       jest.clearAllMocks();
     });
 

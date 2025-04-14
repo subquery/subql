@@ -418,10 +418,6 @@ export async function fetchBlocksBatches(
       : fetchRuntimeVersionRange(api, parentBlockHashs),
   ]);
 
-  const blockHeaderMap: Header[] = blocks.map((block, idx) =>
-    substrateBlockToHeader(block),
-  );
-
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
     const parentSpecVersion =
@@ -433,7 +429,7 @@ export async function fetchBlocksBatches(
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
 
     return {
-      getHeader: () => blockHeaderMap[idx],
+      getHeader: () => substrateBlockToHeader(wrappedBlock),
       block: {
         block: wrappedBlock,
         extrinsics: wrappedExtrinsics,
