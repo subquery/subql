@@ -5152,9 +5152,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/common@npm:^11.0.7":
-  version: 11.0.7
-  resolution: "@nestjs/common@npm:11.0.7"
+"@nestjs/common@npm:^11.0.17":
+  version: 11.0.17
+  resolution: "@nestjs/common@npm:11.0.17"
   dependencies:
     iterare: 1.2.1
     tslib: 2.8.1
@@ -5162,6 +5162,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
+    file-type: ^20.4.1
     reflect-metadata: ^0.1.12 || ^0.2.0
     rxjs: ^7.1.0
   peerDependenciesMeta:
@@ -5169,31 +5170,9 @@ __metadata:
       optional: true
     class-validator:
       optional: true
-  checksum: 57ea234a5a2b9417fc076db2d18e6b45b952611b1589a09852ab4b0f167d7bc6dff12aa54dab3c9017097e42d460de644994e0c36a7ab00bfc00d20455f225a4
-  languageName: node
-  linkType: hard
-
-"@nestjs/common@npm:^9.4.0":
-  version: 9.4.3
-  resolution: "@nestjs/common@npm:9.4.3"
-  dependencies:
-    iterare: 1.2.1
-    tslib: 2.5.3
-    uid: 2.0.2
-  peerDependencies:
-    cache-manager: <=5
-    class-transformer: "*"
-    class-validator: "*"
-    reflect-metadata: ^0.1.12
-    rxjs: ^7.1.0
-  peerDependenciesMeta:
-    cache-manager:
+    file-type:
       optional: true
-    class-transformer:
-      optional: true
-    class-validator:
-      optional: true
-  checksum: 45ccb5acac2521a05576f37b37ab94c63a83aefb1839ed670635090bb934c1bd532852cb7be9863ee3b9d1ad80aa84e0602be023c626623f9233257dcb754914
+  checksum: 284571343ef3fe47823b34acb28e02d5ffd4c11d77ca6c56228227e5ad9fe3f8bee0fc6e9574afdd5c5710f79efd9bcb7e3d7fdfdf13a9cf4a9f4470279d0f6a
   languageName: node
   linkType: hard
 
@@ -7209,7 +7188,7 @@ __metadata:
   resolution: "@subql/node-core@workspace:packages/node-core"
   dependencies:
     "@apollo/client": ^3.11.2
-    "@nestjs/common": ^11.0.7
+    "@nestjs/common": ^11.0.17
     "@nestjs/event-emitter": ^3.0.0
     "@nestjs/schedule": ^5.0.1
     "@subql/common": "workspace:*"
@@ -7240,7 +7219,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/node@workspace:packages/node"
   dependencies:
-    "@nestjs/common": ^11.0.7
+    "@nestjs/common": ^11.0.17
     "@nestjs/core": ^11.0.7
     "@nestjs/event-emitter": ^3.0.0
     "@nestjs/platform-express": ^11.0.7
@@ -7278,7 +7257,7 @@ __metadata:
     "@graphile-contrib/pg-simplify-inflector": ^6.1.0
     "@graphile/pg-aggregates": ^0.1.1
     "@graphile/pg-pubsub": ^4.13.0
-    "@nestjs/common": ^9.4.0
+    "@nestjs/common": ^11.0.17
     "@nestjs/core": ^9.4.0
     "@nestjs/platform-express": ^9.4.0
     "@nestjs/schematics": ^9.2.0
