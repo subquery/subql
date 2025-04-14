@@ -380,7 +380,7 @@ describe('MultiChain Rewind Service', () => {
     });
   });
 
-  describe('Init', () => {
+  describe('Project initialization', () => {
     const reindex = jest.fn();
     let multiChainRewindService: MultiChainRewindService;
 
@@ -410,14 +410,14 @@ describe('MultiChain Rewind Service', () => {
       jest.clearAllMocks();
     });
 
-    it('Default state', async () => {
+    it('Normal startup, starting will not trigger a reindex.', async () => {
       // Initialize the service
       await multiChainRewindService.init(chainId1, reindex);
 
       expect(reindex).toHaveBeenCalledTimes(0);
     });
 
-    it('Lock exists but rewind is not completed yet', async () => {
+    it('After another chain undergoes a rewind, the current chain starts, which can trigger a reindex.', async () => {
       const {rewindDate} = genBlockTimestamp(5);
       await multiChainRewindService1.acquireGlobalRewindLock(rewindDate);
 
@@ -434,7 +434,7 @@ describe('MultiChain Rewind Service', () => {
       });
     });
 
-    it('Lock exists but rewind is already completed', async () => {
+    it('The current chain has already completed the rewind, and there are still other chains that need to rewind. In this case, starting will not trigger a reindex.', async () => {
       const {rewindDate} = genBlockTimestamp(5);
       await multiChainRewindService1.acquireGlobalRewindLock(rewindDate);
       const tx = await sequelize1.transaction();
