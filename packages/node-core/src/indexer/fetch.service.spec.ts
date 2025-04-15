@@ -216,8 +216,8 @@ const getBlockDispatcher = () => {
   return inst;
 };
 
-jest.mock('../utils', () => {
-  const original = jest.requireActual('../utils');
+jest.mock('../utils/promise', () => {
+  const original = jest.requireActual('../utils/promise');
   return {
     ...original,
     delay: jest.fn(original.delay),
