@@ -8,7 +8,7 @@ import {MultichainProjectManifest, ProjectManifestV1_0_0} from '@subql/types-cor
 import {Scalar, Document, parseDocument, YAMLSeq, YAMLMap} from 'yaml';
 
 const nodeToDockerImage: Record<string, string> = {
-  '@subql/node': 'subquerynetwork/subql-node',
+  '@subql/node': 'subquerynetwork/subql-node-substrate',
   '@subql/node-ethereum': 'subquerynetwork/subql-node-ethereum',
   '@subql/node-cosmos': 'subquerynetwork/subql-node-cosmos',
   '@subql/node-algorand': 'subquerynetwork/subql-node-algorand',
