@@ -1,15 +1,17 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {NETWORK_FAMILY} from '@subql/common';
+import {NETWORK_FAMILY, runnerMapping} from '@subql/common';
 
-export const networkPackages: {[key in NETWORK_FAMILY]: string} = {
-  [NETWORK_FAMILY.algorand]: '@subql/common-algorand',
-  [NETWORK_FAMILY.concordium]: '@subql/common-concordium',
-  [NETWORK_FAMILY.cosmos]: '@subql/common-cosmos',
-  [NETWORK_FAMILY.ethereum]: '@subql/common-ethereum',
-  [NETWORK_FAMILY.near]: '@subql/common-near',
-  [NETWORK_FAMILY.stellar]: '@subql/common-stellar',
-  [NETWORK_FAMILY.substrate]: '@subql/common-substrate',
-  [NETWORK_FAMILY.starknet]: '@subql/common-starknet',
-};
+export const networkPackages = Object.entries(runnerMapping).reduce(
+  (acc, [runner, family]) => {
+    // Special case because substrate has 2 runners
+    if (runner === '@subql/node' && family === NETWORK_FAMILY.substrate) {
+      acc[family] = '@subql/common-substrate';
+      return acc;
+    }
+    acc[family] = runner.replace('@subql/node-', '@subql/common-');
+    return acc;
+  },
+  {} as Record<NETWORK_FAMILY, string>
+);
