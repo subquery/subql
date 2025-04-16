@@ -8,14 +8,15 @@ import {MultichainProjectManifest, ProjectManifestV1_0_0} from '@subql/types-cor
 import {Scalar, Document, parseDocument, YAMLSeq, YAMLMap} from 'yaml';
 
 const nodeToDockerImage: Record<string, string> = {
-  '@subql/node': 'onfinality/subql-node',
-  '@subql/node-ethereum': 'onfinality/subql-node-ethereum',
-  '@subql/node-cosmos': 'onfinality/subql-node-cosmos',
-  '@subql/node-algorand': 'onfinality/subql-node-algorand',
-  '@subql/node-near': 'onfinality/subql-node-near',
+  '@subql/node': 'subquerynetwork/subql-node-substrate',
+  '@subql/node-ethereum': 'subquerynetwork/subql-node-ethereum',
+  '@subql/node-cosmos': 'subquerynetwork/subql-node-cosmos',
+  '@subql/node-algorand': 'subquerynetwork/subql-node-algorand',
+  '@subql/node-near': 'subquerynetwork/subql-node-near',
   '@subql/node-stellar': 'subquerynetwork/subql-node-stellar',
   '@subql/node-concordium': 'subquerynetwork/subql-node-concordium',
   '@subql/node-starknet': 'subquerynetwork/subql-node-starknet',
+  '@subql/node-solana': 'subquerynetwork/subql-node-solana',
 };
 
 type DockerComposeDependsOn = {
