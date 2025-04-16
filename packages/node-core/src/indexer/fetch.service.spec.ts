@@ -1,9 +1,9 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { BaseCustomDataSource, BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry } from '@subql/types-core';
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {SchedulerRegistry} from '@nestjs/schedule';
+import {BaseCustomDataSource, BaseDataSource, BaseHandler, BaseMapping, DictionaryQueryEntry} from '@subql/types-core';
 import {
   UnfinalizedBlocksService,
   BlockDispatcher,
@@ -18,10 +18,14 @@ import {
   DatasourceParams,
   IBaseIndexerWorker,
   BypassBlocks,
+  MultiChainRewindService,
+  MultiChainRewindStatus,
+  reindex,
+  getLogger,
 } from '../';
-import { BlockHeightMap } from '../utils/blockHeightMap';
-import { DictionaryService } from './dictionary/dictionary.service';
-import { FetchService } from './fetch.service';
+import {BlockHeightMap} from '../utils/blockHeightMap';
+import {DictionaryService} from './dictionary/dictionary.service';
+import {FetchService} from './fetch.service';
 
 const CHAIN_INTERVAL = 100; // 100ms
 
@@ -73,7 +77,7 @@ class TestBlockchainService implements IBlockchainService {
   fetchBlockWorker(
     worker: IBaseIndexerWorker,
     blockNum: number,
-    context: { workers: IBaseIndexerWorker[] }
+    context: {workers: IBaseIndexerWorker[]}
   ): Promise<Header> {
     throw new Error('Method not implemented.');
   }
@@ -82,7 +86,7 @@ class TestBlockchainService implements IBlockchainService {
       blockHeight: this.finalizedHeight,
       blockHash: '0xxx',
       parentHash: '0xxx',
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
   async getBestHeight(): Promise<number> {
@@ -124,8 +128,12 @@ class TestBlockchainService implements IBlockchainService {
     throw new Error('Method not implemented.');
   }
   // eslint-disable-next-line @typescript-eslint/promise-function-async
-  getBlockTimestamp(height: number): Promise<Date | undefined> {
+  getBlockTimestamp(height: number): Promise<Date> {
     throw new Error('Method not implemented.');
+  }
+
+  async getRequiredHeaderForHeight(height: number): Promise<Header & {timestamp: Date}> {
+    return (await this.getHeaderForHeight(height)) as any;
   }
 }
 
@@ -161,7 +169,7 @@ function mockModuloDs(startBlock: number, endBlock: number, modulo: number): Bas
         {
           kind: 'mock/Handler',
           handler: 'mockFunction',
-          filter: { modulo: modulo },
+          filter: {modulo: modulo},
         },
       ],
     },
@@ -208,6 +216,14 @@ const getBlockDispatcher = () => {
   return inst;
 };
 
+jest.mock('../utils/promise', () => {
+  const original = jest.requireActual('../utils/promise');
+  return {
+    ...original,
+    delay: jest.fn(original.delay),
+  };
+});
+
 describe('Fetch Service', () => {
   let fetchService: TestFetchService;
   let blockDispatcher: IBlockDispatcher<any>;
@@ -215,6 +231,8 @@ describe('Fetch Service', () => {
   let dataSources: BaseDataSource[];
   let unfinalizedBlocksService: UnfinalizedBlocksService<any>;
   let blockchainService: TestBlockchainService;
+  const multichainRewindService: MultiChainRewindService = {} as MultiChainRewindService;
+  let projectService: IProjectService<any>;
 
   let spyOnEnqueueSequential: jest.SpyInstance<
     void | Promise<void>,
@@ -231,7 +249,7 @@ describe('Fetch Service', () => {
     const eventEmitter = new EventEmitter2();
     const schedulerRegistry = new SchedulerRegistry();
 
-    const projectService = {
+    projectService = {
       getStartBlockFromDataSources: jest.fn(() => Math.min(...dataSources.map((ds) => ds.startBlock ?? 0))),
       getAllDataSources: jest.fn(() => dataSources),
       getDataSourcesMap: jest.fn(() => {
@@ -246,6 +264,7 @@ describe('Fetch Service', () => {
         return new BlockHeightMap(x);
       }),
       bypassBlocks: [],
+      reindex: jest.fn(),
     } as any as IProjectService<any>;
 
     blockDispatcher = getBlockDispatcher();
@@ -268,7 +287,8 @@ describe('Fetch Service', () => {
           set: jest.fn(),
         },
       } as any,
-      blockchainService
+      blockchainService,
+      multichainRewindService
     );
 
     spyOnEnqueueSequential = jest.spyOn(fetchService as any, 'enqueueSequential') as any;
@@ -302,20 +322,20 @@ describe('Fetch Service', () => {
 
   const moduloBlockHeightMap = new BlockHeightMap(
     new Map([
-      [1, [{ ...mockModuloDs(1, 100, 20), startBlock: 1, endBlock: 100 }]],
+      [1, [{...mockModuloDs(1, 100, 20), startBlock: 1, endBlock: 100}]],
       [
         101, // empty gap for discontinuous block
         [],
       ],
-      [201, [{ ...mockModuloDs(201, 500, 30), startBlock: 201, endBlock: 500 }]],
+      [201, [{...mockModuloDs(201, 500, 30), startBlock: 201, endBlock: 500}]],
       // to infinite
-      [500, [{ ...mockModuloDs(500, Number.MAX_SAFE_INTEGER, 99), startBlock: 500 }]],
+      [500, [{...mockModuloDs(500, Number.MAX_SAFE_INTEGER, 99), startBlock: 500}]],
       // multiple ds
       [
         600,
         [
-          { ...mockModuloDs(500, 800, 99), startBlock: 600, endBlock: 800 },
-          { ...mockModuloDs(700, Number.MAX_SAFE_INTEGER, 101), startBlock: 700 },
+          {...mockModuloDs(500, 800, 99), startBlock: 600, endBlock: 800},
+          {...mockModuloDs(700, Number.MAX_SAFE_INTEGER, 101), startBlock: 700},
         ],
       ],
     ])
@@ -333,43 +353,43 @@ describe('Fetch Service', () => {
           [
             1,
             [
-              { ...mockDs, startBlock: 1, endBlock: 300 },
-              { ...mockDs, startBlock: 1, endBlock: 100 },
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
             ],
           ],
           [
             10,
             [
-              { ...mockDs, startBlock: 1, endBlock: 300 },
-              { ...mockDs, startBlock: 1, endBlock: 100 },
-              { ...mockDs, startBlock: 10, endBlock: 20 },
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
+              {...mockDs, startBlock: 10, endBlock: 20},
             ],
           ],
           [
             21,
             [
-              { ...mockDs, startBlock: 1, endBlock: 300 },
-              { ...mockDs, startBlock: 1, endBlock: 100 },
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
             ],
           ],
           [
             50,
             [
-              { ...mockDs, startBlock: 1, endBlock: 300 },
-              { ...mockDs, startBlock: 1, endBlock: 100 },
-              { ...mockDs, startBlock: 50, endBlock: 200 },
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 1, endBlock: 100},
+              {...mockDs, startBlock: 50, endBlock: 200},
             ],
           ],
           [
             101,
             [
-              { ...mockDs, startBlock: 1, endBlock: 300 },
-              { ...mockDs, startBlock: 50, endBlock: 200 },
+              {...mockDs, startBlock: 1, endBlock: 300},
+              {...mockDs, startBlock: 50, endBlock: 200},
             ],
           ],
-          [201, [{ ...mockDs, startBlock: 1, endBlock: 300 }]],
+          [201, [{...mockDs, startBlock: 1, endBlock: 300}]],
           [301, []],
-          [500, [{ ...mockDs, startBlock: 500 }]],
+          [500, [{...mockDs, startBlock: 500}]],
         ])
       )
     );
@@ -505,7 +525,7 @@ describe('Fetch Service', () => {
                   {
                     kind: 'mock/BlockHandler',
                     handler: 'mockFunction',
-                    filter: { modulo: 3 },
+                    filter: {modulo: 3},
                   },
                   {
                     kind: 'mock/CallHandler',
@@ -638,7 +658,7 @@ describe('Fetch Service', () => {
 
   it('enqueues modulo blocks with furture dataSources', async () => {
     fetchService.mockGetModulos([3]);
-    dataSources.push({ ...mockDs, startBlock: 20 });
+    dataSources.push({...mockDs, startBlock: 20});
 
     await fetchService.init(1);
 
@@ -651,7 +671,7 @@ describe('Fetch Service', () => {
   it('at the end of modulo block filter, enqueue END should be min of data source range end height and api last height', async () => {
     // So this will skip next data source
     fetchService.mockGetModulos([10]);
-    dataSources.push({ ...mockDs, startBlock: 200 });
+    dataSources.push({...mockDs, startBlock: 200});
     await fetchService.init(191);
 
     expect((fetchService as any).useDictionary).toBeFalsy();
@@ -796,4 +816,13 @@ describe('Fetch Service', () => {
     expect(spyOnEnqueueSequential).toHaveBeenCalledTimes(1);
     expect((fetchService as any).blockDispatcher.latestBufferedHeight).toEqual(910);
   }, 10000);
+
+  it('MultiChainRewindStatus.Complete message', async () => {
+    const logger = getLogger('FetchService');
+    const consoleSpy = jest.spyOn(logger, 'info');
+
+    (multichainRewindService as any).status = MultiChainRewindStatus.Complete;
+    await fetchService.init(10);
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/Waiting for all chains to complete rewind/));
+  });
 });

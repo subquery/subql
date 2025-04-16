@@ -135,11 +135,6 @@ export function yargsBuilder<
                 describe: 'Specify the dictionary api for this network',
                 type: 'string',
               },
-              'network-endpoint': {
-                demandOption: false,
-                type: 'string',
-                describe: 'Blockchain network endpoint to connect',
-              },
               'primary-network-endpoint': {
                 demandOption: false,
                 type: 'string',
@@ -379,6 +374,11 @@ export function yargsBuilder<
           default: process.cwd(),
           describe: 'Local path or IPFS cid of the subquery project',
           type: 'string',
+        },
+        'network-endpoint': {
+          demandOption: false,
+          type: 'string',
+          describe: 'Blockchain network endpoint to connect',
         },
       })
   );

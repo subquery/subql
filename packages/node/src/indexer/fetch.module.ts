@@ -19,6 +19,7 @@ import {
   DynamicDsService,
   FetchService,
   DictionaryService,
+  MultiChainRewindService,
   blockDispatcherFactory,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
@@ -62,6 +63,7 @@ import { IIndexerWorker } from './worker/worker';
       useClass: ProjectService,
       provide: 'IProjectService',
     },
+    MultiChainRewindService,
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
@@ -89,6 +91,7 @@ import { IIndexerWorker } from './worker/worker';
         ConnectionPoolStateManager,
         'IBlockchainService',
         IndexerManager,
+        MultiChainRewindService,
         MonitorService,
       ],
     },

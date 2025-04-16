@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
-import {EventEmitter2} from '@nestjs/event-emitter';
+import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {BaseDataSource} from '@subql/types-core';
 import {range} from 'lodash';
@@ -16,12 +16,15 @@ import {IBlockDispatcher} from './blockDispatcher';
 import {mergeNumAndBlocksToNums} from './dictionary';
 import {DictionaryService} from './dictionary/dictionary.service';
 import {mergeNumAndBlocks} from './dictionary/utils';
+import {MultiChainRewindStatus} from './entities';
+import {MultiChainRewindService} from './multiChainRewind.service';
 import {IStoreModelProvider} from './storeModelProvider';
 import {BypassBlocks, IBlock, IProjectService} from './types';
 import {IUnfinalizedBlocksServiceUtil} from './unfinalizedBlocks.service';
 
 const logger = getLogger('FetchService');
-
+// Unit is ms
+const multiChainRewindDelay = 3;
 @Injectable()
 export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<FB>, FB>
   implements OnApplicationShutdown
@@ -39,7 +42,8 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
     private schedulerRegistry: SchedulerRegistry,
     @Inject('IUnfinalizedBlocksService') private unfinalizedBlocksService: IUnfinalizedBlocksServiceUtil,
     @Inject('IStoreModelProvider') private storeModelProvider: IStoreModelProvider,
-    @Inject('IBlockchainService') private blockchainSevice: IBlockchainService<DS>
+    @Inject('IBlockchainService') private blockchainSevice: IBlockchainService<DS>,
+    private multiChainRewindService: MultiChainRewindService
   ) {}
 
   private get latestBestHeight(): number {
@@ -196,6 +200,16 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
 
       // Update the target height, this happens here to stay in sync with the rest of indexing
       void this.storeModelProvider.metadata.set('targetHeight', latestHeight);
+
+      // If we're rewinding, we should wait until it's done
+      const multiChainStatus = this.multiChainRewindService.status;
+      if (MultiChainRewindStatus.Complete === multiChainStatus) {
+        logger.info(
+          `Waiting for all chains to complete rewind, current chainId: ${this.multiChainRewindService.chainId}`
+        );
+        await delay(multiChainRewindDelay);
+        continue;
+      }
 
       // This could be latestBestHeight, dictionary should never include finalized blocks
       // TODO add buffer so dictionary not used when project synced
@@ -378,10 +392,5 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
 
   getLatestFinalizedHeight(): number {
     return this.latestFinalizedHeight;
-  }
-
-  resetForIncorrectBestBlock(blockHeight: number): void {
-    this.updateDictionary();
-    this.blockDispatcher.flushQueue(blockHeight);
   }
 }

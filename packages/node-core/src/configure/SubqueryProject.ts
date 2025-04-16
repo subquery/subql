@@ -124,7 +124,7 @@ export class BaseSubqueryProject<
     return this.#dataSources;
   }
 
-  async applyCronTimestamps(getTimestamp: (height: number) => Promise<Date | undefined>): Promise<void> {
+  async applyCronTimestamps(getTimestamp: (height: number) => Promise<Date>): Promise<void> {
     this.#dataSources = await insertBlockFiltersCronSchedules(
       this.dataSources,
       getTimestamp,

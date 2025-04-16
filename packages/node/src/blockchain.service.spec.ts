@@ -55,4 +55,9 @@ describe('BlockchainService', () => {
     const interval = await blockchainService.getChainInterval();
     expect(interval).toEqual(5000);
   });
+
+  it('can get the chain create time', async () => {
+    const requiredHeader = await blockchainService.getHeaderForHeight(24723095);
+    expect(requiredHeader.timestamp.getTime()).toEqual(1739501268001);
+  }, 10000);
 });

@@ -4,7 +4,9 @@
 import {INestApplication} from '@nestjs/common';
 import {Test} from '@nestjs/testing';
 import {delay} from '@subql/common';
+import {hashName} from '@subql/utils';
 import {Sequelize} from '@subql/x-sequelize';
+import {PoolClient} from 'pg';
 import {NodeConfig} from '../configure/NodeConfig';
 import {DbModule} from './db.module';
 import {createSendNotificationTriggerFunction, createNotifyTrigger, getDbSizeAndUpdateMetadata} from './sync-helper';
@@ -45,7 +47,7 @@ describe('sync helper test', () => {
   }, 50000);
 
   describe('has the correct notification trigger payload', () => {
-    let client: unknown;
+    let client: PoolClient;
 
     afterEach(async () => {
       if (client) {
@@ -76,11 +78,11 @@ describe('sync helper test', () => {
       await sequelize.query(createSendNotificationTriggerFunction(schema));
       await sequelize.query(createNotifyTrigger(schema, tableName));
 
-      client = await sequelize.connectionManager.getConnection({
+      client = (await sequelize.connectionManager.getConnection({
         type: 'read',
-      });
+      })) as PoolClient;
 
-      await (client as any).query('LISTEN "0xc4e66f9e1358fa3c"');
+      await client.query('LISTEN "0xc4e66f9e1358fa3c"');
 
       const listener = jest.fn();
       (client as any).on('notification', (msg: any) => {
@@ -130,9 +132,9 @@ describe('sync helper test', () => {
       await sequelize.query(createSendNotificationTriggerFunction(schema));
       await sequelize.query(createNotifyTrigger(schema, tableName));
 
-      client = await sequelize.connectionManager.getConnection({
+      client = (await sequelize.connectionManager.getConnection({
         type: 'read',
-      });
+      })) as PoolClient;
 
       await (client as any).query('LISTEN "0xc4e66f9e1358fa3c"');
 

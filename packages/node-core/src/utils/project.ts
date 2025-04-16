@@ -232,7 +232,7 @@ export type IsRuntimeDs<DS> = (ds: DS) => ds is DS;
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource = BaseDataSource>(
   dataSources: DS[],
-  getBlockTimestamp: (height: number) => Promise<Date | undefined>,
+  getBlockTimestamp: (height: number) => Promise<Date>,
   isRuntimeDs: IsRuntimeDs<DS>,
   blockHandlerKind: string
 ): Promise<DS[]> {
@@ -248,13 +248,7 @@ export async function insertBlockFiltersCronSchedules<DS extends BaseDataSource 
               if (handler.filter?.timestamp) {
                 if (!timestampReference) {
                   const blockTimestamp = await getBlockTimestamp(startBlock);
-                  if (!blockTimestamp) {
-                    throw new Error(
-                      `Could not apply cronSchedule, failed to get block timestamp for block ${startBlock}`
-                    );
-                  } else {
-                    timestampReference = blockTimestamp;
-                  }
+                  timestampReference = blockTimestamp;
                 }
 
                 let cronArr: number[][];

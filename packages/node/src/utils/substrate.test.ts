@@ -9,6 +9,7 @@ import {
   fetchBlocksBatches,
   filterExtrinsic,
   getBlockByHeight,
+  getHeaderForHash,
   getTimestamp,
 } from './substrate';
 
@@ -100,6 +101,18 @@ describe('substrate utils', () => {
     const api = await ApiPromise.create({ provider });
     const block1 = await getBlockByHeight(api, 1);
     expect(getTimestamp(block1)).toBeUndefined();
+    await api.disconnect();
+  });
+
+  it('return defined if no timestamp set extrinsic', async () => {
+    const provider = new WsProvider(ENDPOINT_SHIDEN);
+    const api = await ApiPromise.create({ provider });
+    const block1 = await getBlockByHeight(api, 999999);
+    const { timestamp } = await getHeaderForHash(
+      api,
+      block1.block.header.hash.toString(),
+    );
+    expect(timestamp).toBeDefined();
     await api.disconnect();
   });
 });

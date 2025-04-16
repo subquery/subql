@@ -31,11 +31,20 @@ import {
   getDbSizeAndUpdateMetadata,
   getTriggers,
   SchemaMigrationService,
+  tableExistsQuery,
 } from '../db';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
-import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit} from '../utils';
-import {MetadataFactory, MetadataRepo, PoiFactory, PoiFactoryDeprecate, PoiRepo} from './entities';
+import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit, hasValue} from '../utils';
+import {
+  GlobalDataFactory,
+  GlobalDataRepo,
+  MetadataFactory,
+  MetadataRepo,
+  PoiFactory,
+  PoiFactoryDeprecate,
+  PoiRepo,
+} from './entities';
 import {Store} from './store';
 import {IMetadata, IStoreModelProvider, PlainStoreModelService} from './storeModelProvider';
 import {StoreOperations} from './StoreOperations';
@@ -63,10 +72,12 @@ export class StoreService {
   poiRepo?: PoiRepo;
   private _modelIndexedFields?: IndexField[];
   private _modelsRelations?: GraphQLModelsRelationsEnums;
+  private _globalDataRepo?: GlobalDataRepo;
   private _metaDataRepo?: MetadataRepo;
   private _historical?: HistoricalMode;
   private _metadataModel?: IMetadata;
   private _schema?: string;
+  private _isMultichain?: boolean;
   // Should be updated each block
   private _blockHeader?: Header;
   private _operationStack?: StoreOperations;
@@ -104,6 +115,11 @@ export class StoreService {
     return this._operationStack;
   }
 
+  get globalDataRepo(): GlobalDataRepo {
+    assert(this._globalDataRepo, new NoInitError());
+    return this._globalDataRepo;
+  }
+
   get blockHeader(): Header {
     assert(this._blockHeader, new Error('StoreService.setBlockHeader has not been called'));
     return this._blockHeader;
@@ -116,6 +132,11 @@ export class StoreService {
 
   get transaction(): Transaction | undefined {
     return this.#transaction;
+  }
+
+  get isMultichain(): boolean {
+    assert(this._isMultichain !== undefined, new NoInitError());
+    return this._isMultichain;
   }
 
   async syncDbSize(): Promise<bigint> {
@@ -151,14 +172,20 @@ export class StoreService {
       this.poiRepo = usePoiFactory(this.sequelize, schema);
     }
 
+    this._schema = schema;
+
+    await this.setMultiChainProject();
+
     this._metaDataRepo = await MetadataFactory(
       this.sequelize,
       schema,
-      this.config.multiChain,
+      this.isMultichain,
       this.subqueryProject.network.chainId
     );
 
-    this._schema = schema;
+    if (this.isMultichain) {
+      this._globalDataRepo = GlobalDataFactory(this.sequelize, schema);
+    }
 
     await this.sequelize.sync();
 
@@ -293,10 +320,7 @@ export class StoreService {
     const {historical, multiChain} = this.config;
 
     try {
-      const tableRes = await this.sequelize.query<Array<string>>(
-        `SELECT table_name FROM information_schema.tables where table_schema='${schema}'`,
-        {type: QueryTypes.SELECT}
-      );
+      const tableRes = await this.sequelize.query<Array<string>>(tableExistsQuery(schema), {type: QueryTypes.SELECT});
 
       const metadataTableNames = flatten(tableRes).filter(
         (value: string) => METADATA_REGEX.test(value) || MULTI_METADATA_REGEX.test(value)
@@ -481,6 +505,28 @@ group by
   getHistoricalUnit(): number {
     // Cant throw here because even with historical disabled the current height is used by the store
     return getHistoricalUnit(this.historical, this.blockHeader);
+  }
+
+  async getLastProcessedBlock(): Promise<{height: number; timestamp?: number}> {
+    const {lastProcessedBlockTimestamp: timestamp, lastProcessedHeight: height} = await this.metadataModel.findMany([
+      'lastProcessedHeight',
+      'lastProcessedBlockTimestamp',
+    ]);
+
+    return {height: height || 0, timestamp};
+  }
+
+  private async setMultiChainProject() {
+    if (this.config.multiChain) {
+      this._isMultichain = true;
+      return;
+    }
+
+    const tableRes = await this.sequelize.query<Array<string>>(tableExistsQuery(this.schema), {
+      type: QueryTypes.SELECT,
+    });
+
+    this._isMultichain = !!flatten(tableRes).find((value: string) => MULTI_METADATA_REGEX.test(value));
   }
 }
 
