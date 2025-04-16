@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.0.0] - 2025-04-16
 ### Added
 - Support for Solana (#2745)
 
@@ -448,7 +450,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/5.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/6.0.0...HEAD
+[6.0.0]: https://github.com/subquery/subql/compare/common/5.4.0...common/6.0.0
 [5.4.0]: https://github.com/subquery/subql/compare/common/5.3.1...common/5.4.0
 [5.3.1]: https://github.com/subquery/subql/compare/common/5.3.0...common/5.3.1
 [5.3.0]: https://github.com/subquery/subql/compare/common/5.2.2...common/5.3.0

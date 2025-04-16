@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [18.0.0] - 2025-04-16
+### Added
+- Support multi chain project reindex
+
 ## [17.2.2] - 2025-04-08
 ### Fixed
 - Fix TaskFlushedError caused by DynamicDsCreated
@@ -953,7 +957,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/17.2.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.0.0...HEAD
+[18.0.0]: https://github.com/subquery/subql/compare/node-core/17.2.2...node-core/18.0.0
 [17.2.2]: https://github.com/subquery/subql/compare/node-core/17.2.1...node-core/17.2.2
 [17.2.1]: https://github.com/subquery/subql/compare/node-core/17.2.0...node-core/17.2.1
 [17.2.0]: https://github.com/subquery/subql/compare/node-core/17.1.0...node-core/17.2.0
