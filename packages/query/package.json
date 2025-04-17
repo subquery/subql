@@ -36,7 +36,7 @@
     "@graphile/pg-aggregates": "^0.1.1",
     "@graphile/pg-pubsub": "^4.13.0",
     "@nestjs/common": "^9.4.0",
-    "@nestjs/core": "^9.4.0",
+    "@nestjs/core": "^11.0.17",
     "@nestjs/platform-express": "^9.4.0",
     "@subql/common": "workspace:*",
     "@subql/utils": "workspace:*",
