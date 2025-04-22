@@ -23,6 +23,7 @@ import {
   DsProcessorService,
   FetchService,
   DictionaryService,
+  MultiChainRewindService,
 } from '@subql/node-core';
 import { BlockchainService } from '../blockchain.service';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -50,6 +51,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
       useClass: BlockchainService,
     },
     IndexerManager,
+    MultiChainRewindService,
     {
       provide: 'IBlockDispatcher',
       useFactory: (
@@ -67,6 +69,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         connectionPoolState: ConnectionPoolStateManager<EthereumApiConnection>,
         blockchainService: BlockchainService,
         indexerManager: IndexerManager,
+        multiChainRewindService: MultiChainRewindService,
         monitorService?: MonitorService,
       ) =>
         nodeConfig.workers
@@ -84,6 +87,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               connectionPoolState,
               project,
               blockchainService,
+              multiChainRewindService,
               path.resolve(__dirname, '../../dist/indexer/worker/worker.js'),
               [],
               monitorService,
@@ -99,6 +103,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               project,
               blockchainService,
               indexerManager,
+              multiChainRewindService,
             ),
       inject: [
         NodeConfig,

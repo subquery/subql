@@ -3031,7 +3031,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-ethereum@workspace:packages/common-ethereum"
   dependencies:
-    "@subql/common": ^5.4.0
+    "@subql/common": ^5.5.0
     "@subql/types-ethereum": "workspace:*"
     "@typechain/ethers-v5": ^11.1.1
     "@types/ejs": ^3.1.2
@@ -3052,12 +3052,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:5.4.0, @subql/common@npm:^5.4.0":
-  version: 5.4.0
-  resolution: "@subql/common@npm:5.4.0"
+"@subql/common@npm:5.5.0, @subql/common@npm:^5.5.0":
+  version: 5.5.0
+  resolution: "@subql/common@npm:5.5.0"
   dependencies:
-    "@subql/types-core": 2.0.1
-    axios: ^0.28.0
+    "@subql/types-core": 2.0.2
+    axios: ^1.8.3
     class-transformer: ^0.5.1
     class-validator: ^0.14.1
     form-data: ^4.0.1
@@ -3065,19 +3065,19 @@ __metadata:
     reflect-metadata: ^0.1.14
     semver: ^7.6.3
     update-notifier: ^5.1.0
-  checksum: 69bec37d8484c9b4526cfbe850c8fc50a3cf419f6d1a375e663dd2bd9d8d5a3f578292b96f583b850a8a3173437e70c171b3b77f18d61ad99f277c425c244728
+  checksum: d52d92b955b68ef51b0750fb8eba63565df19b9c13eb90d69ca828a9187646a0ef4ec8fee60573b605518f0d131ee171f576725333432aef06e3a014a565ed1b
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:^17.2.2":
-  version: 17.2.2
-  resolution: "@subql/node-core@npm:17.2.2"
+"@subql/node-core@npm:18":
+  version: 18.0.0
+  resolution: "@subql/node-core@npm:18.0.0"
   dependencies:
     "@apollo/client": ^3.11.2
     "@nestjs/common": ^11.0.7
     "@nestjs/event-emitter": ^3.0.0
     "@nestjs/schedule": ^5.0.1
-    "@subql/common": 5.4.0
+    "@subql/common": 5.5.0
     "@subql/testing": 2.2.4
     "@subql/types": 3.12.1
     "@subql/utils": 2.18.0
@@ -3097,7 +3097,7 @@ __metadata:
     toposort-class: ^1.0.1
     vm2: ^3.9.19
     yargs: ^16.2.0
-  checksum: a9cb66cbcb297fa65adec8c54037d521ebedecc858fec78bb2509cec036b0ab9fba5cd7e859f4de2792ae5a867d681a221e463f794a65c05d036d9b07979f9e8
+  checksum: b3905310a651b4334d5dc570d766b01931396fbe756f03fef88843b3dab503c544a09db9c12d75f5be158d6f936bab0fcb44b1b5d3e63188eabded659d947114
   languageName: node
   linkType: hard
 
@@ -3112,9 +3112,9 @@ __metadata:
     "@nestjs/schedule": ^5.0.1
     "@nestjs/schematics": ^11.0.0
     "@nestjs/testing": ^11.0.8
-    "@subql/common": ^5.4.0
+    "@subql/common": ^5.5.0
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": ^17.2.2
+    "@subql/node-core": 18
     "@subql/testing": ^2.2.1
     "@subql/types-ethereum": "workspace:*"
     "@types/express": ^4.17.13
@@ -3158,13 +3158,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:2.0.1, @subql/types-core@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "@subql/types-core@npm:2.0.1"
-  checksum: e9727804c720bbb55f90afc220940da5ef31c2a3c659d22c3756b9dc6e48ed50bf54858c66e6e9a380a6996c26452f8cd3c055531d6af80fa23569df2fecfea0
-  languageName: node
-  linkType: hard
-
 "@subql/types-core@npm:2.0.2, @subql/types-core@npm:^2.0.2":
   version: 2.0.2
   resolution: "@subql/types-core@npm:2.0.2"
@@ -3178,6 +3171,13 @@ __metadata:
   dependencies:
     package-json-type: ^1.0.3
   checksum: cb6ae7220f02e76f8a05bdb5572b2864c8686523c756aadbcd0f3aeab5099acd93eac1cba04a81e2cb02e5e07bd9569ec46565ba78bf1f6213cb2dc2476951f7
+  languageName: node
+  linkType: hard
+
+"@subql/types-core@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@subql/types-core@npm:2.0.1"
+  checksum: e9727804c720bbb55f90afc220940da5ef31c2a3c659d22c3756b9dc6e48ed50bf54858c66e6e9a380a6996c26452f8cd3c055531d6af80fa23569df2fecfea0
   languageName: node
   linkType: hard
 
@@ -4494,14 +4494,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^0.28.0":
-  version: 0.28.0
-  resolution: "axios@npm:0.28.0"
+"axios@npm:^1.8.3":
+  version: 1.8.4
+  resolution: "axios@npm:1.8.4"
   dependencies:
-    follow-redirects: ^1.15.0
+    follow-redirects: ^1.15.6
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
-  checksum: d3782377512e67510787bf325b664f16c8b595ccdbcf52fca58433fbd082e33c3ef58a19e7d016ce92666be5a1a5ea82028add0cb841077981df9617bd071615
+  checksum: e901dc1730bdcd769839b3d93ae6d6457a53d79b19a0eb623ebfea333441259ab51e63ca118baa47a5156567401466ac739f31087b4ee5e6770ab2e227484538
   languageName: node
   linkType: hard
 
@@ -6965,13 +6965,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.15.0":
-  version: 1.15.5
-  resolution: "follow-redirects@npm:1.15.5"
+"follow-redirects@npm:^1.15.6":
+  version: 1.15.9
+  resolution: "follow-redirects@npm:1.15.9"
   peerDependenciesMeta:
     debug:
       optional: true
-  checksum: 5ca49b5ce6f44338cbfc3546823357e7a70813cecc9b7b768158a1d32c1e62e7407c944402a918ea8c38ae2e78266312d617dc68783fac502cbb55e1047b34ec
+  checksum: 859e2bacc7a54506f2bf9aacb10d165df78c8c1b0ceb8023f966621b233717dab56e8d08baadc3ad3b9db58af290413d585c999694b7c146aaf2616340c3d2a6
   languageName: node
   linkType: hard
 

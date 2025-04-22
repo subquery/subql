@@ -16,6 +16,7 @@ import {
   ConnectionPoolStateManager,
   DynamicDsService,
   DsProcessorService,
+  MultiChainRewindService,
 } from '@subql/node-core';
 import { Sequelize } from '@subql/x-sequelize';
 import { BlockchainService } from '../blockchain.service';
@@ -60,6 +61,7 @@ import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
       useClass: BlockchainService,
     },
     SchedulerRegistry,
+    MultiChainRewindService,
   ],
   controllers: [],
 })

@@ -108,7 +108,7 @@ export class BlockchainService
     return this.apiService.safeApi(block.number);
   }
 
-  async getBlockTimestamp(height: number): Promise<Date | undefined> {
+  async getBlockTimestamp(height: number): Promise<Date> {
     const block = await this.apiService.unsafeApi.api.getBlock(height);
 
     return new Date(block.timestamp * 1000); // TODO test and make sure its in MS not S
