@@ -85,7 +85,6 @@ const DEFAULT_CONFIG = {
   subscription: false,
   historical: 'height',
   multiChain: false,
-  unfinalizedBlocks: false,
   storeCacheThreshold: 1000,
   storeCacheUpperLimit: 10000,
   storeGetCacheSize: 500,
@@ -287,7 +286,13 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
   }
 
   get unfinalizedBlocks(): boolean {
-    return this._isTest ? false : !!this._config.unfinalizedBlocks;
+    if (this._isTest) return false;
+
+    if (this._config.unfinalizedBlocks === false) {
+      return false;
+    }
+
+    return this.historical !== false;
   }
 
   get isPostgresSecureConnection(): boolean {
