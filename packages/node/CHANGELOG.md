@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Enable unfinalized blocks by default when historical indexing is enabled (#2755)
+- Update polkadot dependencies
 
 ## [6.0.0] - 2025-04-16
 ### Added
