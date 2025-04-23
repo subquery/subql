@@ -138,6 +138,7 @@ export class StellarApi implements ApiWrapper {
     sequence: number,
   ): Promise<Horizon.ServerApi.EffectRecord[]> {
     const effects: Horizon.ServerApi.EffectRecord[] = [];
+
     let effectsPage = await this.api
       .effects()
       .forLedger(sequence)
@@ -149,19 +150,6 @@ export class StellarApi implements ApiWrapper {
     }
 
     return effects;
-  }
-
-  private getOperationIndex(id: string) {
-    // Pick the first part of the ID before the '-' character
-    const idPart = id.split('-')[0];
-
-    // Create a mask for 12 bits to isolate the Operation Index
-    const mask = BigInt((1 << 12) - 1);
-
-    // Apply bitwise AND operation with the mask to get the Operation Index
-    const operationIndex = BigInt(idPart) & mask;
-
-    return Number(operationIndex);
   }
 
   async getAndWrapEvents(height: number): Promise<SorobanEvent[]> {
@@ -182,34 +170,20 @@ export class StellarApi implements ApiWrapper {
     });
   }
 
-  private wrapEffectsForOperation(
-    operationIndex: number,
-    effectsForSequence: Horizon.ServerApi.EffectRecord[],
-  ): StellarEffect[] {
-    return effectsForSequence
-      .filter((effect) => this.getOperationIndex(effect.id) === operationIndex)
-      .map((effect) => ({
-        ...effect,
-        ledger: null,
-        transaction: null,
-        operation: null,
-      }));
+  private wrapEffect(effect: Horizon.ServerApi.EffectRecord): StellarEffect {
+    return {
+      ...effect,
+      ledger: null,
+      transaction: null,
+      operation: null,
+    };
   }
 
   private wrapOperationsForTx(
-    transactionId: string,
-    operationsForSequence: Horizon.ServerApi.OperationRecord[],
-    effectsForSequence: Horizon.ServerApi.EffectRecord[],
-    eventsForSequence: SorobanEvent[],
+    operations: Horizon.ServerApi.OperationRecord[],
+    effectsForSequence: Record<string, Horizon.ServerApi.EffectRecord[]>,
+    events: SorobanEvent[],
   ): StellarOperation[] {
-    const operations = operationsForSequence.filter(
-      (op) => op.transaction_hash === transactionId,
-    );
-
-    const events = eventsForSequence.filter(
-      (evt) => evt.txHash === transactionId,
-    );
-
     // If there are soroban events then there should only be a single operation.
     // This check is here in case there are furture changes to the network.
     assert(
@@ -218,7 +192,10 @@ export class StellarApi implements ApiWrapper {
     );
 
     return operations.map((op, index) => {
-      const effects = this.wrapEffectsForOperation(index, effectsForSequence);
+      const effects = (effectsForSequence[op.id] ?? []).map(
+        this.wrapEffect.bind(this),
+      );
+      // const effects = this.wrapEffectsForOperation(index, effectsForSequence);
 
       const wrappedOp: StellarOperation = {
         ...op,
@@ -240,7 +217,6 @@ export class StellarApi implements ApiWrapper {
   }
 
   private wrapTransactionsForLedger(
-    sequence: number,
     transactions: Horizon.ServerApi.TransactionRecord[],
     operationsForSequence: Horizon.ServerApi.OperationRecord[],
     effectsForSequence: Horizon.ServerApi.EffectRecord[],
@@ -255,14 +231,39 @@ export class StellarApi implements ApiWrapper {
         events: [] as SorobanEvent[],
       };
 
+      // Effects grouped by the operation id
+      const groupedEffects = effectsForSequence.reduce((acc, item) => {
+        // BigInt conversion is for stripping leading 0s
+        const key = BigInt(item.id.split('-')[0]).toString();
+        acc[key] ??= [];
+        acc[key].push(item);
+
+        return acc;
+      }, {} as Record<string, Horizon.ServerApi.EffectRecord[]>);
+
+      // Operations grouped by the transaction hash
+      const groupedOperations = operationsForSequence.reduce((acc, item) => {
+        acc[item.transaction_hash] ??= [];
+        acc[item.transaction_hash].push(item);
+
+        return acc;
+      }, {} as Record<string, Horizon.ServerApi.OperationRecord[]>);
+
+      // Events grouped by the transaction hash
+      const groupedEvents = eventsForSequence.reduce((acc, item) => {
+        acc[item.txHash] ??= [];
+        acc[item.txHash].push(item);
+
+        return acc;
+      }, {} as Record<string, SorobanEvent[]>);
+
       const clonedTx = cloneDeep(wrappedTx);
       const operations = this.wrapOperationsForTx(
         // TODO, this include other attribute from HorizonApi.TransactionResponse, but type assertion incorrect
         // TransactionRecord extends Omit<HorizonApi.TransactionResponse, "created_at">
-        (tx as any).id,
-        operationsForSequence,
-        effectsForSequence,
-        eventsForSequence,
+        groupedOperations[tx.hash] ?? [],
+        groupedEffects,
+        groupedEvents[tx.hash] ?? [],
       ).map((op) => {
         op.transaction = clonedTx;
         op.effects = op.effects.map((effect) => {
@@ -337,7 +338,6 @@ export class StellarApi implements ApiWrapper {
     };
 
     const wrapperTxs = this.wrapTransactionsForLedger(
-      sequence,
       transactions,
       operations,
       effects,

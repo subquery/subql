@@ -29,7 +29,6 @@ import {
   DsProcessorService,
   DynamicDsService,
   UnfinalizedBlocksService,
-  ProjectService,
 } from '@subql/node-core';
 import {
   StellarBlockWrapper,
