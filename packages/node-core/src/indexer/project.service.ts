@@ -60,9 +60,6 @@ export class ProjectService<
     @Inject('IBlockchainService') private blockchainService: ICoreBlockchainService<DS>,
     private multiChainRewindService: MultiChainRewindService
   ) {
-    if (this.nodeConfig.unfinalizedBlocks && this.nodeConfig.allowSchemaMigration) {
-      throw new Error('Unfinalized Blocks and Schema Migration cannot be enabled at the same time');
-    }
     if (this.nodeConfig.unsafe) {
       logger.warn(
         'UNSAFE MODE IS ENABLED. This is not recommended for most projects and will not be supported by our hosted service'

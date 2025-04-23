@@ -251,12 +251,10 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
     transaction: Transaction | undefined
   ): Promise<void> {
     assert(this.config, 'NodeConfig is undefined');
-    if (!this.config.unfinalizedBlocks) {
-      assert(this.migrationService, 'MigrationService is undefined');
-      if (this.config.allowSchemaMigration) {
-        await this.migrationService.run(project.schema, newProject.schema, transaction);
-        await this.metadata.setIncrement('schemaMigrationCount', undefined, transaction);
-      }
+    assert(this.migrationService, 'MigrationService is undefined');
+    if (this.config.allowSchemaMigration) {
+      await this.migrationService.run(project.schema, newProject.schema, transaction);
+      await this.metadata.setIncrement('schemaMigrationCount', undefined, transaction);
     }
   }
 

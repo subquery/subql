@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Enable unfinalized blocks by default when historical indexing is enabled (#2755)
+- Update polkadot dependencies
 
 ## [6.0.0] - 2025-04-16
 ### Added

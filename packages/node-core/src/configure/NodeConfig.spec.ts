@@ -60,4 +60,24 @@ describe('NodeConfig', () => {
     });
     expect(config3.monitorFileSize).toEqual(200);
   });
+
+  it('Has the correct default behaviour for unfinalizedBlocks', () => {
+    const config = new NodeConfig({historical: false} as any);
+    expect(config.unfinalizedBlocks).toBe(false);
+
+    const config1 = new NodeConfig({historical: 'height'} as any);
+    expect(config1.unfinalizedBlocks).toBe(true);
+
+    const config2 = new NodeConfig({historical: 'timestamp'} as any);
+    expect(config2.unfinalizedBlocks).toBe(true);
+
+    const config3 = new NodeConfig({historical: 'timestamp', unfinalizedBlocks: false} as any);
+    expect(config3.unfinalizedBlocks).toBe(false);
+
+    const config4 = new NodeConfig({historical: false, unfinalizedBlocks: true} as any);
+    expect(config4.unfinalizedBlocks).toBe(false);
+
+    const config5 = new NodeConfig({historical: 'height', unfinalizedBlocks: true} as any, true);
+    expect(config5.unfinalizedBlocks).toBe(false);
+  });
 });

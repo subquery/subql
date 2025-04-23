@@ -110,7 +110,7 @@ export class StoreCacheService extends BaseCacheService implements IStoreModelPr
       await tx.commit();
     } catch (e: any) {
       if (e instanceof DatabaseError) {
-        this.logger.info(`Error: ${e}, Name: ${e.name}, Parent: ${e.parent}, Original: ${e.original}`);
+        this.logger.warn(`Error: ${e}, Name: ${e.name}, Parent: ${e.parent}, Original: ${e.original}`);
       }
       this.logger.error(e, 'Database transaction failed, rolling back');
       await tx.rollback();

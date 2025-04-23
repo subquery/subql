@@ -35,9 +35,10 @@ const mockInstance = async (
     dbSchema: schemaName,
     allowSchemaMigration: true,
     ipfs: 'https://unauthipfs.subquery.network/ipfs/api/v0',
-    networkEndpoint: 'wss://rpc.polkadot.io/public-ws',
+    networkEndpoint: 'https://rpc.polkadot.io/public',
     timestampField,
     subscription: useSubscription,
+    // unfinalizedBlocks: false,
   };
   return registerApp<SubqueryProject>(
     argv,
