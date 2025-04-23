@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.8.1] - 2025-04-24
+### Changed
+- Update @subql/utils
+
 ## [5.8.0] - 2025-04-17
 ### Added
 - Support for Solana (#2745)
@@ -744,7 +748,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.8.1...HEAD
+[5.8.1]: https://github.com/subquery/subql/compare/cli/5.8.0...cli/5.8.1
 [5.8.0]: https://github.com/subquery/subql/compare/cli/5.7.1...cli/5.8.0
 [5.7.1]: https://github.com/subquery/subql/compare/cli/5.7.0...cli/5.7.1
 [5.7.0]: https://github.com/subquery/subql/compare/cli/5.6.0...cli/5.7.0
