@@ -6,7 +6,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ConnectionPoolService,
   DsProcessorService,
-  MultiChainRewindService,
   NodeConfig,
   ProjectService,
   WorkerCoreModule,
@@ -40,7 +39,6 @@ import { WorkerService } from './worker.service';
       useClass: BlockchainService,
     },
     WorkerService,
-    MultiChainRewindService,
   ],
 })
 export class WorkerFetchModule {}

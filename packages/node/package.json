@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-ethereum",
-  "version": "5.6.3-0",
+  "version": "6.0.0",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -19,14 +19,14 @@
     "subql-node-ethereum": "./bin/run"
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.8",
-    "@nestjs/core": "^11.0.8",
-    "@nestjs/event-emitter": "^2.0.0",
-    "@nestjs/platform-express": "^11.0.8",
+    "@nestjs/common": "^11.0.16",
+    "@nestjs/core": "^11.0.7",
+    "@nestjs/event-emitter": "^3.0.0",
+    "@nestjs/platform-express": "^11.0.7",
     "@nestjs/schedule": "^5.0.1",
     "@subql/common": "^5.5.0",
     "@subql/common-ethereum": "workspace:*",
-    "@subql/node-core": "18",
+    "@subql/node-core": "^18.0.3",
     "@subql/testing": "^2.2.1",
     "@subql/types-ethereum": "workspace:*",
     "cacheable-lookup": "6",
@@ -59,6 +59,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "5.6.2"
+  ]
 }

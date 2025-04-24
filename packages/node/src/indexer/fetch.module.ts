@@ -4,30 +4,24 @@
 import path from 'node:path';
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SubqlEthereumDataSource } from '@subql/common-ethereum';
 import {
   StoreService,
   NodeConfig,
   ConnectionPoolService,
   ConnectionPoolStateManager,
-  IProjectUpgradeService,
   PoiSyncService,
   InMemoryCacheService,
   MonitorService,
   CoreModule,
-  IStoreModelProvider,
   ProjectService,
   DynamicDsService,
-  WorkerBlockDispatcher,
-  BlockDispatcher,
   DsProcessorService,
   FetchService,
   DictionaryService,
   MultiChainRewindService,
+  blockDispatcherFactory,
 } from '@subql/node-core';
 import { BlockchainService } from '../blockchain.service';
-import { SubqueryProject } from '../configure/SubqueryProject';
-import { EthereumApiConnection } from '../ethereum/api.connection';
 import { EthereumApiService } from '../ethereum/api.service.ethereum';
 import { EthDictionaryService } from './dictionary/ethDictionary.service';
 import { IndexerManager } from './indexer.manager';
@@ -54,57 +48,10 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     MultiChainRewindService,
     {
       provide: 'IBlockDispatcher',
-      useFactory: (
-        nodeConfig: NodeConfig,
-        eventEmitter: EventEmitter2,
-        projectService: ProjectService<SubqlEthereumDataSource>,
-        projectUpgradeService: IProjectUpgradeService,
-        cacheService: InMemoryCacheService,
-        storeService: StoreService,
-        storeModelProvider: IStoreModelProvider,
-        poiSyncService: PoiSyncService,
-        project: SubqueryProject,
-        dynamicDsService: DynamicDsService<SubqlEthereumDataSource>,
-        unfinalizedBlocks: UnfinalizedBlocksService,
-        connectionPoolState: ConnectionPoolStateManager<EthereumApiConnection>,
-        blockchainService: BlockchainService,
-        indexerManager: IndexerManager,
-        multiChainRewindService: MultiChainRewindService,
-        monitorService?: MonitorService,
-      ) =>
-        nodeConfig.workers
-          ? new WorkerBlockDispatcher(
-              nodeConfig,
-              eventEmitter,
-              projectService,
-              projectUpgradeService,
-              storeService,
-              storeModelProvider,
-              cacheService,
-              poiSyncService,
-              dynamicDsService,
-              unfinalizedBlocks,
-              connectionPoolState,
-              project,
-              blockchainService,
-              multiChainRewindService,
-              path.resolve(__dirname, '../../dist/indexer/worker/worker.js'),
-              [],
-              monitorService,
-            )
-          : new BlockDispatcher(
-              nodeConfig,
-              eventEmitter,
-              projectService,
-              projectUpgradeService,
-              storeService,
-              storeModelProvider,
-              poiSyncService,
-              project,
-              blockchainService,
-              indexerManager,
-              multiChainRewindService,
-            ),
+      useFactory: blockDispatcherFactory(
+        path.resolve(__dirname, '../../dist/indexer/worker/worker.js'),
+        [],
+      ),
       inject: [
         NodeConfig,
         EventEmitter2,
@@ -120,6 +67,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         ConnectionPoolStateManager,
         'IBlockchainService',
         IndexerManager,
+        MultiChainRewindService,
         MonitorService,
       ],
     },
