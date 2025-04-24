@@ -4,7 +4,6 @@
 import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {u8aToHex} from '@subql/utils';
 import {Op, QueryTypes, Transaction} from '@subql/x-sequelize';
-import {NodeConfig} from '../../configure';
 import {sqlIterator} from '../../db';
 import {getLogger} from '../../logger';
 import {PoiRepo} from '../entities';

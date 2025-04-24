@@ -43,7 +43,8 @@ export const blockDispatcherFactory =
     blockchainService: IBlockchainService<DS>,
     indexerManager: IIndexerManager<Block, DS>,
     multiChainRewindService: MultiChainRewindService,
-    monitorService?: MonitorService
+    monitorService?: MonitorService,
+    workerData?: unknown
   ): IBlockDispatcher<Block> => {
     return nodeConfig.workers
       ? new WorkerBlockDispatcher<DS, Worker, Block, ApiConn>(
@@ -63,7 +64,8 @@ export const blockDispatcherFactory =
           multiChainRewindService,
           workerPath,
           workerFns,
-          monitorService
+          monitorService,
+          workerData
         )
       : new BlockDispatcher(
           nodeConfig,

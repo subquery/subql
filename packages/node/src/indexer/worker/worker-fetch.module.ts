@@ -9,7 +9,6 @@ import {
   WorkerCoreModule,
   ProjectService,
   DsProcessorService,
-  MultiChainRewindService,
 } from '@subql/node-core';
 import { BlockchainService } from '../../blockchain.service';
 import { ApiService } from '../api.service';
@@ -49,7 +48,6 @@ import { WorkerService } from './worker.service';
       provide: 'IBlockchainService',
       useClass: BlockchainService,
     },
-    MultiChainRewindService,
     WorkerService,
   ],
   exports: [],

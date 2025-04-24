@@ -13,28 +13,13 @@ import {NodeConfig} from '../configure';
 import {createRewindTrigger, createRewindTriggerFunction, getTriggers} from '../db';
 import {MultiChainRewindEvent} from '../events';
 import {getLogger} from '../logger';
+import {mainThreadOnly} from '../utils';
 import {MultiChainRewindStatus} from './entities';
 import {StoreService} from './store.service';
 import {PlainGlobalModel} from './storeModelProvider/global/global';
 import {Header} from './types';
 
 const logger = getLogger('MultiChainRewindService');
-
-export interface IMultiChainRewindService {
-  chainId: string;
-  status: MultiChainRewindStatus;
-  waitRewindHeader?: Header;
-
-  acquireGlobalRewindLock(rewindTimestamp: Date): Promise<boolean>;
-  /**
-   * Check if the height is consistent before unlocking.
-   * @param tx
-   * @param rewindTimestamp The timestamp to roll back to.
-   * @param allowRewindTimestamp Set a rewind-allowed height; only heights greater than or equal this can be released.
-   * @returns the number of remaining rewind chains
-   */
-  releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, allowRewindTimestamp?: Date): Promise<number>;
-}
 
 /**
  * Working principle:
@@ -44,7 +29,7 @@ export interface IMultiChainRewindService {
  * During the next fillNextBlockBuffer loop, if it detects the rewinding state, it will execute the rollback.
  */
 @Injectable()
-export class MultiChainRewindService implements IMultiChainRewindService, OnApplicationShutdown {
+export class MultiChainRewindService implements OnApplicationShutdown {
   private _status: MultiChainRewindStatus = MultiChainRewindStatus.Normal;
   private _chainId?: string;
   private dbSchema: string;
@@ -92,6 +77,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     }
   }
 
+  @mainThreadOnly()
   async init(chainId: string, reindex?: (targetHeader: Header) => Promise<void>) {
     this._chainId = chainId;
 
@@ -191,6 +177,7 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
    * If the set rewindTimestamp is less than the current blockHeight, we should roll back to the earlier rewindTimestamp.
    * @param rewindTimestamp rewindTimestamp in milliseconds
    */
+  @mainThreadOnly()
   async acquireGlobalRewindLock(rewindTimestamp: Date): Promise<boolean> {
     const {lockTimestamp} = await this.globalModel.acquireGlobalRewindLock(rewindTimestamp);
 
@@ -201,6 +188,14 @@ export class MultiChainRewindService implements IMultiChainRewindService, OnAppl
     return !existEarlierLock;
   }
 
+  @mainThreadOnly()
+  /**
+   * Check if the height is consistent before unlocking.
+   * @param tx
+   * @param rewindTimestamp The timestamp to roll back to.
+   * @param allowRewindTimestamp Set a rewind-allowed height; only heights greater than or equal this can be released.
+   * @returns the number of remaining rewind chains
+   */
   async releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, allowRewindTimestamp?: Date): Promise<number> {
     const chainsCount = await this.globalModel.releaseChainRewindLock(tx, rewindTimestamp, allowRewindTimestamp);
     // The current chain has completed the rewind, and we still need to wait for other chains to finish.
