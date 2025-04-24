@@ -58,7 +58,7 @@ export class ProjectService<
     private eventEmitter: EventEmitter2,
     @Inject('IUnfinalizedBlocksService') private readonly unfinalizedBlockService: UnfinalizedBlocksService,
     @Inject('IBlockchainService') private blockchainService: ICoreBlockchainService<DS>,
-    private multiChainRewindService: MultiChainRewindService
+    @Inject(isMainThread ? MultiChainRewindService : 'Null') private multiChainRewindService: MultiChainRewindService
   ) {
     if (this.nodeConfig.unsafe) {
       logger.warn(
