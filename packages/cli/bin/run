@@ -3,7 +3,7 @@
 const pjson = require('../package.json');
 const updateNotifier = require('update-notifier');
 const chalk = require('chalk');
-const boxen = require('boxen');
+const boxen = import('boxen');
 const semver = require('semver');
 
 const notifier = updateNotifier({pkg: pjson, updateCheckInterval: 0});
