@@ -25,7 +25,8 @@ import {WorkerBlockDispatcher} from './worker-block-dispatcher';
 export const blockDispatcherFactory =
   <DS extends BaseDataSource, Block, ApiConn extends IApiConnectionSpecific, Worker extends IBaseIndexerWorker>(
     workerPath: string,
-    workerFns: Parameters<typeof createIndexerWorker<Worker, ApiConn, Block, DS>>[1]
+    workerFns: Parameters<typeof createIndexerWorker<Worker, ApiConn, Block, DS>>[1],
+    workerData?: unknown
   ) =>
   (
     nodeConfig: NodeConfig,
@@ -43,8 +44,7 @@ export const blockDispatcherFactory =
     blockchainService: IBlockchainService<DS>,
     indexerManager: IIndexerManager<Block, DS>,
     multiChainRewindService: MultiChainRewindService,
-    monitorService?: MonitorService,
-    workerData?: unknown
+    monitorService?: MonitorService
   ): IBlockDispatcher<Block> => {
     return nodeConfig.workers
       ? new WorkerBlockDispatcher<DS, Worker, Block, ApiConn>(
