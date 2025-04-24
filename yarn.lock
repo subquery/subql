@@ -5152,9 +5152,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/common@npm:^11.0.7":
-  version: 11.0.7
-  resolution: "@nestjs/common@npm:11.0.7"
+"@nestjs/common@npm:^11.0.16":
+  version: 11.0.16
+  resolution: "@nestjs/common@npm:11.0.16"
   dependencies:
     iterare: 1.2.1
     tslib: 2.8.1
@@ -5162,6 +5162,7 @@ __metadata:
   peerDependencies:
     class-transformer: "*"
     class-validator: "*"
+    file-type: ^20.4.1
     reflect-metadata: ^0.1.12 || ^0.2.0
     rxjs: ^7.1.0
   peerDependenciesMeta:
@@ -5169,7 +5170,7 @@ __metadata:
       optional: true
     class-validator:
       optional: true
-  checksum: 57ea234a5a2b9417fc076db2d18e6b45b952611b1589a09852ab4b0f167d7bc6dff12aa54dab3c9017097e42d460de644994e0c36a7ab00bfc00d20455f225a4
+  checksum: 1f414221a07eebdd16177326c2f3f8f83fd3575da55e4754cd6118659efdd65619ef7718abeeaf065c21fc488ea19b41faa56183fc60975a7e0ce8b4ffbcc430
   languageName: node
   linkType: hard
 
@@ -7146,7 +7147,7 @@ __metadata:
   resolution: "@subql/node-core@workspace:packages/node-core"
   dependencies:
     "@apollo/client": ^3.11.2
-    "@nestjs/common": ^11.0.7
+    "@nestjs/common": ^11.0.16
     "@nestjs/event-emitter": ^3.0.0
     "@nestjs/schedule": ^5.0.1
     "@subql/common": "workspace:*"
@@ -7177,7 +7178,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/node@workspace:packages/node"
   dependencies:
-    "@nestjs/common": ^11.0.7
+    "@nestjs/common": ^11.0.16
     "@nestjs/core": ^11.0.7
     "@nestjs/event-emitter": ^3.0.0
     "@nestjs/platform-express": ^11.0.7
