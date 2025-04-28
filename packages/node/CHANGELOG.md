@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0] - 2025-04-24
+### Added
+- Support for rewinds and unfinalized blocks with multichain projects
+
 ## [4.6.1] - 2025-04-24
 ### Fixed
 - Not associating effects to operations so they weren't being indexed (#115)
@@ -210,7 +214,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - rename `soroban` to `sorobanEndpoint` in network config (#16)
 
 ## [2.12.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.6.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/node-stellar/5.0.0...HEAD
+[5.0.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.6.1...node-stellar/5.0.0
 [4.6.1]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.6.0...node-stellar/4.6.1
 [4.6.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.5.0...node-stellar/4.6.0
 [4.5.0]: https://github.com/subquery/subql-stellar/compare/node-stellar/4.4.0...node-stellar/4.5.0

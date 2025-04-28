@@ -20,6 +20,7 @@ import {
   DsProcessorService,
   ProjectService,
   UnfinalizedBlocksService,
+  MultiChainRewindService,
 } from '@subql/node-core';
 import { BlockchainService } from '../blockchain.service';
 import { StellarApiService } from '../stellar/api.service.stellar';
@@ -44,6 +45,7 @@ import { IndexerManager } from './indexer.manager';
       useClass: BlockchainService,
     },
     IndexerManager,
+    MultiChainRewindService,
     {
       provide: 'IBlockDispatcher',
       useFactory: blockDispatcherFactory(
@@ -65,6 +67,7 @@ import { IndexerManager } from './indexer.manager';
         ConnectionPoolStateManager,
         'IBlockchainService',
         IndexerManager,
+        MultiChainRewindService,
         MonitorService,
       ],
     },

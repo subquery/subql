@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-stellar",
-  "version": "4.6.1",
+  "version": "5.0.0",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -19,15 +19,15 @@
     "subql-node-stellar": "./bin/run"
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.11",
+    "@nestjs/common": "^11.0.16",
     "@nestjs/core": "^11.0.11",
     "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/platform-express": "^11.0.11",
     "@nestjs/schedule": "^5.0.1",
     "@stellar/stellar-sdk": "^13.1.0",
-    "@subql/common": "^5.4.0",
+    "@subql/common": "^5.5.0",
     "@subql/common-stellar": "workspace:*",
-    "@subql/node-core": "^17.1.0",
+    "@subql/node-core": "^18.0.3",
     "@subql/testing": "^2.2.0",
     "@subql/types-stellar": "workspace:*",
     "lodash": "^4.17.21",
