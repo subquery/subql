@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
-import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
+import {EventEmitter2} from '@nestjs/event-emitter';
 import {SchedulerRegistry} from '@nestjs/schedule';
 import {BaseDataSource} from '@subql/types-core';
 import {range} from 'lodash';

@@ -12,7 +12,7 @@ const median = (arr: number[]): number => {
 };
 
 const MAX_SIZES = 1000;
-const MIN_SIZES = 20;
+const MIN_SIZES = 5;
 
 const logger = getLogger('RampQueue');
 

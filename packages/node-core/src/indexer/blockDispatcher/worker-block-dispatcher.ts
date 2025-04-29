@@ -42,7 +42,9 @@ function initAutoQueue<T>(
   name?: string
 ): AutoQueue<T> {
   assert(workers && workers > 0, 'Number of workers must be greater than 0');
-  return new AutoQueue(workers * batchSize * 2, workers * batchSize * 2, timeout, name);
+  const capacity = workers * batchSize * 2;
+  // Concurrency is the same as capacity here, we want maximum throughput
+  return new AutoQueue(capacity, capacity, timeout, name);
 }
 
 @Injectable()
@@ -50,7 +52,7 @@ export class WorkerBlockDispatcher<
     DS extends BaseDataSource = BaseDataSource,
     Worker extends IBaseIndexerWorker = IBaseIndexerWorker,
     Block = any,
-    ApiConn extends IApiConnectionSpecific = IApiConnectionSpecific
+    ApiConn extends IApiConnectionSpecific = IApiConnectionSpecific,
   >
   extends BaseBlockDispatcher<AutoQueue<Header>, DS, Block>
   implements OnApplicationShutdown
@@ -114,6 +116,14 @@ export class WorkerBlockDispatcher<
     // initAutoQueue will assert that workers is set. unfortunately we cant do anything before the super call
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.numWorkers = nodeConfig.workers!;
+  }
+
+  get freeSize(): number {
+    assert(
+      this.queue.freeSpace !== undefined && this.processQueue.freeSpace !== undefined,
+      'Queues for worker block dispatcher must have a capacity set'
+    );
+    return this.queue.freeSpace + this.processQueue.freeSpace;
   }
 
   async init(onDynamicDsCreated: (height: number) => void): Promise<void> {
@@ -208,10 +218,15 @@ export class WorkerBlockDispatcher<
 
   @Interval(15000)
   async sampleWorkerStatus(): Promise<void> {
-    for (const worker of this.workers) {
-      const status = await worker.getStatus();
-      logger.info(JSON.stringify(status));
-    }
+    const statuses = await Promise.all(this.workers.map((worker) => worker.getStatus()));
+    if (!statuses.length) return;
+    logger.info(`
+Host Status:
+  Total Fetching: ${this.queue.size}
+  Awaiting process: ${this.processQueue.size}
+Worker Status:
+  ${statuses.map((s) => `Worker ${s.threadId} - To Fetch: ${s.toFetchBlocks} blocks, Ready to process: ${s.fetchedBlocks} blocks`).join('\n  ')}
+`);
   }
 
   // Getter doesn't seem to cary from abstract class
@@ -231,7 +246,6 @@ export class WorkerBlockDispatcher<
   private async getNextWorkerIndex(): Promise<number> {
     const statuses = await Promise.all(this.workers.map((worker) => worker.getStatus()));
     const metric = statuses.map((s) => s.toFetchBlocks);
-    console.log('METRIC', metric);
     const lowest = statuses.filter((s) => s.toFetchBlocks === Math.min(...metric));
     const randIndex = Math.floor(Math.random() * lowest.length);
 

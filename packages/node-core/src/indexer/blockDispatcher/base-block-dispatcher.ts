@@ -149,6 +149,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   }
 
   flushQueue(height: number): void {
+    logger.info(`Queue flushed, height="${height}"`);
     this.latestBufferedHeight = height;
     this.queue.flush();
   }
