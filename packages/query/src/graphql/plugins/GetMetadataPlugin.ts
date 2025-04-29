@@ -8,7 +8,6 @@ import {Build} from '@subql/x-postgraphile-core';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import {FieldNode, SelectionNode} from 'graphql';
 import {uniq} from 'lodash';
-import fetch, {Response} from 'node-fetch';
 import {Client} from 'pg';
 import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
@@ -241,8 +240,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
         _metadatas(
           after: Cursor
           before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter # first: Int # offset: Int
-          # last: Int
-        ): # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
+          # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
+        ): # last: Int
         _Metadatas
       }
     `,
