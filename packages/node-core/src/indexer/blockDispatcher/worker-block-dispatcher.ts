@@ -42,7 +42,7 @@ function initAutoQueue<T>(
   name?: string
 ): AutoQueue<T> {
   assert(workers && workers > 0, 'Number of workers must be greater than 0');
-  return new AutoQueue(workers * batchSize * 2, 1, timeout, name);
+  return new AutoQueue(workers * batchSize * 2, workers * batchSize * 2, timeout, name);
 }
 
 @Injectable()
@@ -50,7 +50,7 @@ export class WorkerBlockDispatcher<
     DS extends BaseDataSource = BaseDataSource,
     Worker extends IBaseIndexerWorker = IBaseIndexerWorker,
     Block = any,
-    ApiConn extends IApiConnectionSpecific = IApiConnectionSpecific,
+    ApiConn extends IApiConnectionSpecific = IApiConnectionSpecific
   >
   extends BaseBlockDispatcher<AutoQueue<Header>, DS, Block>
   implements OnApplicationShutdown
@@ -95,7 +95,7 @@ export class WorkerBlockDispatcher<
       multiChainRewindService
     );
 
-    this.processQueue = initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Process');
+    this.processQueue = new AutoQueue(this.queue.capacity, 1, nodeConfig.timeout, 'Process');
 
     this.createWorker = () =>
       createIndexerWorker<Worker, ApiConn, Block, DS>(
@@ -145,7 +145,7 @@ export class WorkerBlockDispatcher<
       heights = [latestBufferHeight];
     }
 
-    logger.info(`Enqueueing blocks ${heights[0]}...${last(heights)}, total ${heights.length} blocks`);
+    logger.info(`Enqueuing blocks ${heights[0]}...${last(heights)}, total ${heights.length} blocks`);
 
     // Needs to happen before enqueuing heights so discardBlock check works.
     // Unlike with the normal dispatcher there is not a queue ob blockHeights to delay this.
@@ -231,6 +231,7 @@ export class WorkerBlockDispatcher<
   private async getNextWorkerIndex(): Promise<number> {
     const statuses = await Promise.all(this.workers.map((worker) => worker.getStatus()));
     const metric = statuses.map((s) => s.toFetchBlocks);
+    console.log('METRIC', metric);
     const lowest = statuses.filter((s) => s.toFetchBlocks === Math.min(...metric));
     const randIndex = Math.floor(Math.random() * lowest.length);
 
