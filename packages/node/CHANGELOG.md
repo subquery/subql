@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.0.1] - 2025-04-29
 ### Fixed
 - OOM issue with large RPC responses (#375)
 
@@ -614,7 +616,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.0.1...HEAD
+[6.0.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.0.0...node-ethereum/6.0.1
 [6.0.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.6.2...node-ethereum/6.0.0
 [5.6.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.6.1...node-ethereum/5.6.2
 [5.6.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.6.0...node-ethereum/5.6.1
