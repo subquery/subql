@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.1] - 2025-04-29
+### Changed
+- Update `@subql/types-core`
+
 ## [4.1.0] - 2025-02-25
 ### Changed
 - Update header year to 2025 (#362)
@@ -158,7 +162,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/4.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/4.1.1...HEAD
+[4.1.1]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/4.1.0...types-ethereum/4.1.1
 [4.1.0]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/4.0.0...types-ethereum/4.1.0
 [4.0.0]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/3.13.1...types-ethereum/4.0.0
 [3.13.1]: https://github.com/subquery/subql-ethereum/compare/types-ethereum/3.13.0...types-ethereum/3.13.1
