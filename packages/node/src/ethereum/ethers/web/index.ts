@@ -474,7 +474,8 @@ export function fetchJson(
     let result: any = null;
     if (value != null) {
       try {
-        result = JSON.parse(toUtf8String(value));
+        // This is modified from the ethers source, the previous code caused a massive memory leak with logs for this block https://sonicscan.org/block/20222346
+        result = JSON.parse(new TextDecoder('utf8').decode(value));
       } catch (error) {
         logger.throwError('invalid JSON', Logger.errors.SERVER_ERROR, {
           body: value,
