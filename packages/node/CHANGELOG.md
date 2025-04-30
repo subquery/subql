@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.3] - 2025-05-01
+### Changed
+- Update `@subql/node-core` with workers performance fix
+
 ## [6.0.2] - 2025-04-29
 ### Fixed
 - Failed previous release with reference to unpublished dependency
@@ -620,7 +624,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.0.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.0.3...HEAD
+[6.0.3]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.0.2...node-ethereum/6.0.3
 [6.0.2]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.0.1...node-ethereum/6.0.2
 [6.0.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.0.0...node-ethereum/6.0.1
 [6.0.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/5.6.2...node-ethereum/6.0.0
