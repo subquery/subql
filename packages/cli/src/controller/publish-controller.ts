@@ -30,7 +30,7 @@ export async function createIPFSFile(root: string, manifest: string, cid: string
 
 export async function uploadToIpfs(
   projectPaths: string[],
-  authToken: string,
+  authToken?: string,
   multichainProjectPath?: string,
   ipfsEndpoint?: string,
   directory?: string
@@ -100,7 +100,7 @@ export async function uploadToIpfs(
 async function replaceFileReferences<T extends Record<string, any>>(
   projectDir: string,
   input: T,
-  authToken: string,
+  authToken?: string,
   ipfs?: IPFSHTTPClientLite
 ): Promise<T> {
   if (Array.isArray(input)) {
@@ -134,7 +134,7 @@ const fileMap = new Map<string | fs.ReadStream, Promise<string>>();
 
 export async function uploadFiles(
   contents: {path: string; content: string}[],
-  authToken: string,
+  authToken?: string,
   isMultichain?: boolean,
   ipfs?: IPFSHTTPClientLite
 ): Promise<Map<string, string>> {
@@ -154,7 +154,7 @@ export async function uploadFiles(
 
   const ipfsWrite = new IPFSHTTPClientLite({
     url: IPFS_WRITE_ENDPOINT,
-    headers: {Authorization: `Bearer ${authToken}`},
+    headers: authToken ? {Authorization: `Bearer ${authToken}`} : undefined,
   });
 
   try {
@@ -177,7 +177,7 @@ export async function uploadFiles(
 
 export async function uploadFile(
   contents: {path: string; content: string},
-  authToken: string,
+  authToken?: string,
   ipfs?: IPFSHTTPClientLite
 ): Promise<string> {
   const pathPromise = fileMap.get(contents.path);
@@ -197,7 +197,7 @@ export async function uploadFile(
 
   const ipfsWrite = new IPFSHTTPClientLite({
     url: IPFS_WRITE_ENDPOINT,
-    headers: {Authorization: `Bearer ${authToken}`},
+    headers: authToken ? {Authorization: `Bearer ${authToken}`} : undefined,
   });
 
   const pendingCid = ipfsWrite

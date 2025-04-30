@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused node-fetch dependency (#2772)
 - Problematic boxen dependency (#2774)
 
+### Changed
+- Remove requirement for SUBQL_ACCESS_TOKEN with publish command (#2773)
+
 ## [5.8.1] - 2025-04-24
 ### Changed
 - Update @subql/utils

@@ -74,6 +74,23 @@ export async function checkToken(token_path: string = ACCESS_TOKEN_PATH): Promis
   }
 }
 
+export function getOptionalToken(token_path: string = ACCESS_TOKEN_PATH): string | undefined {
+  const envToken = process.env.SUBQL_ACCESS_TOKEN;
+  if (envToken) return envToken;
+  if (existsSync(token_path)) {
+    try {
+      const authToken = readFileSync(token_path, 'utf8');
+      if (!authToken) {
+        return undefined;
+      }
+      return authToken.trim();
+    } catch (e) {
+      return undefined;
+    }
+  }
+  return undefined;
+}
+
 export function errorHandle(e: any, msg: string): Error {
   if (axios.isAxiosError(e) && e?.response?.data) {
     return new Error(`${msg} ${e.response.data.message ?? e.response.data}`);
