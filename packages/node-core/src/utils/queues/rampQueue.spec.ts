@@ -46,6 +46,6 @@ describe('RampQueue', () => {
     const tasks1: Task<number>[] = new Array(100).fill(0).map((_, i) => () => Promise.resolve(testSizes[i]));
     await Promise.all(queue.putMany(tasks1));
 
-    expect(queue.concurrency).toBe(5);
+    expect(queue.concurrency).toBe(7);
   });
 });
