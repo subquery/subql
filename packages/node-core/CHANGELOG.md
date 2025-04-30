@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [18.0.4] - 2025-04-30
 ### Fixed
 - Regression with workers concurrency leading to bad performance (#2771)
 
@@ -971,7 +973,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.0.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.0.4...HEAD
+[18.0.4]: https://github.com/subquery/subql/compare/node-core/18.0.3...node-core/18.0.4
 [18.0.3]: https://github.com/subquery/subql/compare/node-core/18.0.2...node-core/18.0.3
 [18.0.2]: https://github.com/subquery/subql/compare/node-core/18.0.1...node-core/18.0.2
 [18.0.1]: https://github.com/subquery/subql/compare/node-core/18.0.0...node-core/18.0.1

@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.0.3] - 2025-04-30
 ### Fixed
 - Regression with workers leading to bad performance (#2771)
 
@@ -1421,7 +1423,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/6.0.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/6.0.3...HEAD
+[6.0.3]: https://github.com/subquery/subql/compare/node/6.0.2...node/6.0.3
 [6.0.2]: https://github.com/subquery/subql/compare/node/6.0.1...node/6.0.2
 [6.0.1]: https://github.com/subquery/subql/compare/node/6.0.0...node/6.0.1
 [6.0.0]: https://github.com/subquery/subql/compare/node/5.11.2...node/6.0.0
