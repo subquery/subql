@@ -6,7 +6,7 @@ import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import {createIPFSFile, uploadToIpfs} from '../controller/publish-controller';
-import {checkToken, resolveToAbsolutePath} from '../utils';
+import {getOptionalToken, resolveToAbsolutePath} from '../utils';
 import Build from './build';
 
 export default class Publish extends Command {
@@ -32,7 +32,7 @@ export default class Publish extends Command {
     // Make sure build first, generated project yaml could be added to the project (instead of ts)
     const project = getProjectRootAndManifest(location);
 
-    const authToken = await checkToken();
+    const authToken = getOptionalToken();
 
     const fullPaths = project.manifests.map((manifest) => path.join(project.root, manifest));
 
@@ -41,7 +41,7 @@ export default class Publish extends Command {
       multichainManifestPath = path.join(project.root, multichainManifestPath);
     }
 
-    const fileToCidMap = await uploadToIpfs(fullPaths, authToken.trim(), multichainManifestPath, flags.ipfs).catch(
+    const fileToCidMap = await uploadToIpfs(fullPaths, authToken?.trim(), multichainManifestPath, flags.ipfs).catch(
       (e) => {
         // log further cause from error
         if (e.cause) {
