@@ -1,3 +1,4 @@
+name: "Sync SDK Deps"
 on:
   workflow_dispatch:
 
@@ -10,7 +11,7 @@ jobs:
           curl -X POST \
             -H "Authorization: token ${{ secrets.SUBQL_SDK_CI }}" \
             -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/subquery/subql/dispatches \
+            https://api.github.com/repos/subquery/subql-ethereum/dispatches \
             -d '{"event_type":"trigger-workflow"}'
 
       # - name: Trigger repo B
