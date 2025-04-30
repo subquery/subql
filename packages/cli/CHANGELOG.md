@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.9.0] - 2025-04-30
 ### Removed
 - Unused node-fetch dependency (#2772)
 - Problematic boxen dependency (#2774)
@@ -754,7 +756,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.8.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.9.0...HEAD
+[5.9.0]: https://github.com/subquery/subql/compare/cli/5.8.1...cli/5.9.0
 [5.8.1]: https://github.com/subquery/subql/compare/cli/5.8.0...cli/5.8.1
 [5.8.0]: https://github.com/subquery/subql/compare/cli/5.7.1...cli/5.8.0
 [5.7.1]: https://github.com/subquery/subql/compare/cli/5.7.0...cli/5.7.1
