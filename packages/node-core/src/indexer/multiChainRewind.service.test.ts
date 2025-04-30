@@ -299,6 +299,7 @@ describe('MultiChain Rewind Service', () => {
       tx = await sequelize2.transaction();
       remaining = await multiChainRewindService2.releaseChainRewindLock(tx, rewindDate2);
       await tx.commit();
+      // This can fail because the notification has already come in and the status is back to normal
       expect(multiChainRewindService2.status).toBe(MultiChainRewindStatus.Complete);
 
       await delay(notifyHandleDelay);
