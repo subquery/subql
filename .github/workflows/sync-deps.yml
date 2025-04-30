@@ -1,6 +1,8 @@
 name: Sync Deps
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: [trigger-workflow]
 jobs:
   code-style:
     name: update deps
