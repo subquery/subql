@@ -89,7 +89,7 @@ export class AutoQueue<T> implements IQueue {
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   putMany(tasks: Array<Task<T>>): Promise<T>[] {
     if (this.freeSpace && tasks.length > this.freeSpace) {
-      throw new Error(`${this.name} Queue exceeds max size`);
+      throw new Error(`${this.name} Queue exceeds max size of ${this.capacity}`);
     }
 
     if (this._abort) {

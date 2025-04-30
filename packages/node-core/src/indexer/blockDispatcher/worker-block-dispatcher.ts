@@ -42,7 +42,9 @@ function initAutoQueue<T>(
   name?: string
 ): AutoQueue<T> {
   assert(workers && workers > 0, 'Number of workers must be greater than 0');
-  return new AutoQueue(workers * batchSize * 2, 1, timeout, name);
+  const capacity = workers * batchSize * 2;
+  // Concurrency is the same as capacity here, we want maximum throughput
+  return new AutoQueue(capacity, capacity, timeout, name);
 }
 
 @Injectable()
@@ -95,7 +97,7 @@ export class WorkerBlockDispatcher<
       multiChainRewindService
     );
 
-    this.processQueue = initAutoQueue(nodeConfig.workers, nodeConfig.batchSize, nodeConfig.timeout, 'Process');
+    this.processQueue = new AutoQueue(this.queue.capacity, 1, nodeConfig.timeout, 'Process');
 
     this.createWorker = () =>
       createIndexerWorker<Worker, ApiConn, Block, DS>(
@@ -116,6 +118,14 @@ export class WorkerBlockDispatcher<
     this.numWorkers = nodeConfig.workers!;
   }
 
+  get freeSize(): number {
+    assert(
+      this.queue.freeSpace !== undefined && this.processQueue.freeSpace !== undefined,
+      'Queues for worker block dispatcher must have a capacity set'
+    );
+    return Math.min(this.queue.freeSpace, this.processQueue.freeSpace);
+  }
+
   async init(onDynamicDsCreated: (height: number) => void): Promise<void> {
     this.workers = await Promise.all(new Array(this.numWorkers).fill(0).map(() => this.createWorker()));
     return super.init(onDynamicDsCreated);
@@ -125,6 +135,7 @@ export class WorkerBlockDispatcher<
     this.isShutdown = true;
     // Stop processing blocks
     this.queue.abort();
+    this.processQueue.abort();
 
     // Stop all workers
     if (this.workers) {
@@ -145,7 +156,7 @@ export class WorkerBlockDispatcher<
       heights = [latestBufferHeight];
     }
 
-    logger.info(`Enqueueing blocks ${heights[0]}...${last(heights)}, total ${heights.length} blocks`);
+    logger.info(`Enqueuing blocks ${heights[0]}...${last(heights)}, total ${heights.length} blocks`);
 
     // Needs to happen before enqueuing heights so discardBlock check works.
     // Unlike with the normal dispatcher there is not a queue ob blockHeights to delay this.
@@ -206,12 +217,22 @@ export class WorkerBlockDispatcher<
     });
   }
 
+  flushQueue(height: number): void {
+    super.flushQueue(height);
+    this.processQueue.flush();
+  }
+
   @Interval(15000)
   async sampleWorkerStatus(): Promise<void> {
-    for (const worker of this.workers) {
-      const status = await worker.getStatus();
-      logger.info(JSON.stringify(status));
-    }
+    const statuses = await Promise.all(this.workers.map((worker) => worker.getStatus()));
+    if (!statuses.length) return;
+    logger.info(`
+Host Status:
+  Total Fetching: ${this.queue.size}
+  Awaiting process: ${this.processQueue.size}
+Worker Status:
+  ${statuses.map((s) => `Worker ${s.threadId} - To Fetch: ${s.toFetchBlocks} blocks, Ready to process: ${s.fetchedBlocks} blocks`).join('\n  ')}
+`);
   }
 
   // Getter doesn't seem to cary from abstract class

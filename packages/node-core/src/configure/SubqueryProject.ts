@@ -102,7 +102,7 @@ export class BaseSubqueryProject<
     const runner = manifest.runner;
     assert(
       validateSemver(config.nodeSemver, runner.node.version),
-      new Error(`Runner require node version ${runner.node.version}, current node ${config.nodeSemver}`)
+      new Error(`Runner requires node version ${runner.node.version}, current node ${config.nodeSemver}`)
     );
 
     return new BaseSubqueryProject(
@@ -112,7 +112,6 @@ export class BaseSubqueryProject<
       schema,
       dataSources,
       templates,
-      // chainTypes,
       config.blockHandlerKind,
       config.isRuntimeDs,
       runner,
