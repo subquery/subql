@@ -135,6 +135,7 @@ export class WorkerBlockDispatcher<
     this.isShutdown = true;
     // Stop processing blocks
     this.queue.abort();
+    this.processQueue.abort();
 
     // Stop all workers
     if (this.workers) {
@@ -214,6 +215,11 @@ export class WorkerBlockDispatcher<
       getHeader: (header) => header,
       height,
     });
+  }
+
+  flushQueue(height: number): void {
+    super.flushQueue(height);
+    this.processQueue.flush();
   }
 
   @Interval(15000)
