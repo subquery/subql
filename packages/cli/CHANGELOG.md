@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Removed
 - Unused node-fetch dependency (#2772)
+- Problematic boxen dependency (#2774)
 
 ## [5.8.1] - 2025-04-24
 ### Changed
