@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { BaseCustomDataSource, BaseDataSource, IProjectNetworkConfig } from '@subql/types-core';
-import { IApi } from '../api.service';
-import { IBlockchainService } from '../blockchain.service';
-import { NodeConfig } from '../configure';
-import { getLogger } from '../logger';
-import { exitWithError, monitorWrite } from '../process';
-import { profilerWrap } from '../profiler';
-import { handledStringify } from './../utils';
-import { ProcessBlockResponse } from './blockDispatcher';
-import { asSecondLayerHandlerProcessor_1_0_0, DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
-import { IndexerSandbox } from './sandbox';
-import { Header, IBlock, IIndexerManager, ISubqueryProject } from './types';
-import { IUnfinalizedBlocksService } from './unfinalizedBlocks.service';
+import {BaseCustomDataSource, BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
+import {IApi} from '../api.service';
+import {IBlockchainService} from '../blockchain.service';
+import {NodeConfig} from '../configure';
+import {getLogger} from '../logger';
+import {exitWithError, monitorWrite} from '../process';
+import {profilerWrap} from '../profiler';
+import {handledStringify} from './../utils';
+import {ProcessBlockResponse} from './blockDispatcher';
+import {asSecondLayerHandlerProcessor_1_0_0, DsProcessorService} from './ds-processor.service';
+import {DynamicDsService} from './dynamic-ds.service';
+import {IndexerSandbox} from './sandbox';
+import {Header, IBlock, IIndexerManager, ISubqueryProject} from './types';
+import {IUnfinalizedBlocksService} from './unfinalizedBlocks.service';
 
 const logger = getLogger('indexer');
 
@@ -27,7 +27,7 @@ export type FilterTypeMap<DS extends BaseDataSource = BaseDataSource> = Record<
 export type ProcessorTypeMap<DS extends BaseDataSource, FM extends FilterTypeMap<DS>> = {
   [K in keyof FM]: (data: any) => boolean;
 };
-export type HandlerInputTypeMap<DS extends BaseDataSource, FM extends FilterTypeMap<DS>> = { [K in keyof FM]: any };
+export type HandlerInputTypeMap<DS extends BaseDataSource, FM extends FilterTypeMap<DS>> = {[K in keyof FM]: any};
 
 export interface CustomHandler<K extends string = string, F = Record<string, unknown>> {
   handler: string;
@@ -45,7 +45,8 @@ export abstract class BaseIndexerManager<
   FilterMap extends FilterTypeMap<DS>,
   ProcessorMap extends ProcessorTypeMap<DS, FilterMap>,
   HandlerInputMap extends HandlerInputTypeMap<DS, FilterMap>,
-> implements IIndexerManager<B, DS> {
+> implements IIndexerManager<B, DS>
+{
   abstract indexBlock(block: IBlock<B>, datasources: DS[]): Promise<ProcessBlockResponse>;
 
   protected abstract indexBlockData(
@@ -60,7 +61,7 @@ export abstract class BaseIndexerManager<
   constructor(
     protected readonly apiService: API,
     protected readonly nodeConfig: NodeConfig,
-    protected sandboxService: { getDsProcessor: (ds: DS, api: SA, unsafeApi: A) => IndexerSandbox },
+    protected sandboxService: {getDsProcessor: (ds: DS, api: SA, unsafeApi: A) => IndexerSandbox},
     private dsProcessorService: DsProcessorService<DS, CDS>,
     private dynamicDsService: DynamicDsService<DS>,
     private unfinalizedBlocksService: IUnfinalizedBlocksService<B>,
@@ -174,7 +175,6 @@ export abstract class BaseIndexerManager<
     ds: DS,
     getVM: (ds: DS) => Promise<IndexerSandbox>
   ): Promise<void> {
-    let vm: IndexerSandbox;
     assert(this.filterMap[kind], `Unsupported handler kind: ${kind.toString()}`);
 
     if (this.blockchainService.isRuntimeDs(ds)) {
@@ -182,33 +182,37 @@ export abstract class BaseIndexerManager<
         (h) => h.kind === kind && this.filterMap[kind](data as any, h.filter, ds)
       );
 
+      if (!handlers.length) {
+        return;
+      }
+
+      const parsedData = await this.prepareFilteredData(kind, data, ds);
+      const vm = await getVM(ds);
       for (const handler of handlers) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        vm ??= await getVM(ds);
-
-        const parsedData = await this.prepareFilteredData(kind, data, ds);
-
         monitorWrite(
           () => `- Handler: ${handler.handler}, args:${handledStringify(data, this.nodeConfig.monitorObjectMaxDepth)}`
         );
         this.nodeConfig.profiler
           ? await profilerWrap(
-            vm.securedExec.bind(vm),
-            'handlerPerformance',
-            handler.handler
-          )(handler.handler, [parsedData])
+              vm.securedExec.bind(vm),
+              'handlerPerformance',
+              handler.handler
+            )(handler.handler, [parsedData])
           : await vm.securedExec(handler.handler, [parsedData]);
       }
     } else if (this.blockchainService.isCustomDs(ds)) {
       const handlers = this.filterCustomDsHandlers<K>(ds, data, this.processorMap[kind], (data, baseFilter) => {
         if (!baseFilter.length) return true;
-
         return baseFilter.find((filter) => this.filterMap[kind](data, filter, ds));
       });
 
+      if (!handlers.length) {
+        return;
+      }
+
+      const vm = await getVM(ds);
       for (const handler of handlers) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        vm ??= await getVM(ds);
         monitorWrite(
           () => `- Handler: ${handler.handler}, args:${handledStringify(data, this.nodeConfig.monitorObjectMaxDepth)}`
         );
