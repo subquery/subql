@@ -5,7 +5,7 @@ CLI for SubQuery
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/@subql/cli.svg)](https://npmjs.org/package/@subql/cli)
 [![Downloads/week](https://img.shields.io/npm/dw/@subql/cli.svg)](https://npmjs.org/package/@subql/cli)
-[![License](https://img.shields.io/npm/l/@subql/cli.svg)](https://github.com/packages/cli/blob/master/package.json)
+[![License](https://img.shields.io/npm/l/@subql/cli.svg)](https://github.com/subquery/subql/blob/main/packages/cli/LICENSE)
 
 <!-- toc -->
 
