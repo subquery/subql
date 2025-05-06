@@ -102,8 +102,8 @@ export abstract class DictionaryV2<
     this.setDictionaryStartHeight(this._metadata.start);
   }
 
-  getQueryEndBlock(targetBlockHeight: number, apiFinalizedHeight: number): number {
-    return Math.min(targetBlockHeight, this.metadata.end, apiFinalizedHeight);
+  getQueryEndBlock(targetBlockHeight: number, apiHeadHeight: number): number {
+    return Math.min(targetBlockHeight, this.metadata.end, apiHeadHeight);
   }
 
   protected abstract convertResponseBlocks<RFB>(

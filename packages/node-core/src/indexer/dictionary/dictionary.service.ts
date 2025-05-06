@@ -114,10 +114,10 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
   async scopedDictionaryEntries(
     startBlockHeight: number,
     scaledBatchSize: number,
-    latestFinalizedHeight: number //api FinalizedHeight
+    chainHeadHeight: number //api FinalizedHeight
   ): Promise<DictionaryResponse<number | IBlock<FB>> | undefined> {
     const skipDictionaryIndex: Set<number> = new Set<number>();
-    return this._scopedDictionaryEntries(startBlockHeight, scaledBatchSize, latestFinalizedHeight, skipDictionaryIndex);
+    return this._scopedDictionaryEntries(startBlockHeight, scaledBatchSize, chainHeadHeight, skipDictionaryIndex);
   }
 
   /**
@@ -126,12 +126,11 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
   private async _scopedDictionaryEntries(
     startBlockHeight: number,
     scaledBatchSize: number,
-    latestFinalizedHeight: number, //api FinalizedHeight
+    chainHeadHeight: number, //api FinalizedHeight
     skipDictionaryIndex: Set<number> = new Set<number>()
   ): Promise<DictionaryResponse<number | IBlock<FB>> | undefined> {
     // Initialize skipDictionaryIndex as an empty array
     // Attempt to get data from the current dictionary
-    // const result = await this.tryGetDictionaryData(startBlockHeight, scaledBatchSize, latestFinalizedHeight, skipDictionaryIndex);
     const dictionary = this.getDictionary(startBlockHeight, skipDictionaryIndex);
     if (!dictionary) {
       return undefined;
@@ -139,7 +138,7 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
     try {
       const queryEndBlock = dictionary.getQueryEndBlock(
         startBlockHeight + this.nodeConfig.dictionaryQuerySize,
-        latestFinalizedHeight
+        chainHeadHeight
       );
       return await dictionary.getData(startBlockHeight, queryEndBlock, scaledBatchSize);
     } catch (error: any) {
@@ -148,12 +147,7 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
         throw new Error(`try get next dictionary but _currentDictionaryIndex is undefined`);
       }
       skipDictionaryIndex.add(this._currentDictionaryIndex);
-      return this._scopedDictionaryEntries(
-        startBlockHeight,
-        scaledBatchSize,
-        latestFinalizedHeight,
-        skipDictionaryIndex
-      );
+      return this._scopedDictionaryEntries(startBlockHeight, scaledBatchSize, chainHeadHeight, skipDictionaryIndex);
     }
   }
 

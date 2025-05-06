@@ -218,7 +218,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
           const dictionary = await this.dictionaryService.scopedDictionaryEntries(
             startBlockHeight,
             scaledBatchSize,
-            this.latestFinalizedHeight
+            latestHeight
           );
 
           if (startBlockHeight !== getStartBlockHeight()) {
