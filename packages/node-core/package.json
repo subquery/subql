@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-core",
-  "version": "18.0.5-0",
+  "version": "18.0.5-1",
   "description": "Common node features that are agnostic to blockchains",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -48,5 +48,5 @@
   "devDependencies": {
     "@types/yargs": "^16.0.9"
   },
-  "stableVersion": "18.0.4"
+  "stableVersion": "18.0.5-0"
 }
