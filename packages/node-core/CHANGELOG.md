@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move function calls outside of loops in indexer manager (#2780)
 
+### Fixed
+- Max queue size error with workers (#2783)
+
 ## [18.0.4] - 2025-04-30
 ### Fixed
 - Regression with workers concurrency leading to bad performance (#2771)
