@@ -123,7 +123,8 @@ export class WorkerBlockDispatcher<
       this.queue.freeSpace !== undefined && this.processQueue.freeSpace !== undefined,
       'Queues for worker block dispatcher must have a capacity set'
     );
-    return Math.min(this.queue.freeSpace, this.processQueue.freeSpace);
+    // These queues have the same capacity, we need to consider the known items from the queue that will occupy the process queue
+    return this.processQueue.freeSpace - this.queue.size;
   }
 
   async init(onDynamicDsCreated: (height: number) => void): Promise<void> {
