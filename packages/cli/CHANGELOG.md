@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.9.1] - 2025-05-08
+### Changed
+- Updated readme (#2781)
+
 ## [5.9.0] - 2025-04-30
 ### Removed
 - Unused node-fetch dependency (#2772)
@@ -756,7 +760,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.9.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.9.1...HEAD
+[5.9.1]: https://github.com/subquery/subql/compare/cli/5.9.0...cli/5.9.1
 [5.9.0]: https://github.com/subquery/subql/compare/cli/5.8.1...cli/5.9.0
 [5.8.1]: https://github.com/subquery/subql/compare/cli/5.8.0...cli/5.8.1
 [5.8.0]: https://github.com/subquery/subql/compare/cli/5.7.1...cli/5.8.0
