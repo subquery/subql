@@ -105,6 +105,11 @@ export function buildProjectKey(org: string, projectName: string): string {
 
 export async function renderTemplate(templatePath: string, outputPath: string, templateData: ejs.Data): Promise<void> {
   const data = await ejs.renderFile(templatePath, templateData);
+  // Ensure the output directory exists
+  const outputDir = path.dirname(outputPath);
+  if (!fs.existsSync(outputDir)) {
+    await fs.promises.mkdir(outputDir, {recursive: true});
+  }
   await fs.promises.writeFile(outputPath, data);
 }
 
