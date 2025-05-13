@@ -19,6 +19,7 @@ import type {
   SubqlDatasource,
   SubqlRuntimeDatasource as EthereumDs,
 } from '@subql/types-ethereum';
+import type {SubqlRuntimeDatasource as SolanaDs} from '@subql/types-solana';
 import {
   getAllEntitiesRelations,
   getAllEnums,
@@ -249,6 +250,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
   }
   // TODO what about custom datasource processors, e.g. FrontierEvmProcessor, EthermintProcessor
   const ethManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.ethereum);
+  const solanaManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.solana);
 
   // Todo, starknet codegen not supported yet
   const starknetManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.starknet);
@@ -258,6 +260,11 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
     const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
 
     await ethModule.generateAbis(datasources as EthereumDs[], projectPath, prepareDirPath, upperFirst, renderTemplate);
+  }
+
+  if (solanaManifests.length) {
+    const solModule = loadDependency(NETWORK_FAMILY.solana);
+    await solModule.generateIDLInterfaces(datasources as SolanaDs[], projectPath, renderTemplate);
   }
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {

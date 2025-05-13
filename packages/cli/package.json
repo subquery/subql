@@ -41,6 +41,7 @@
     "@subql/common-cosmos": "^5.2.0",
     "@subql/common-ethereum": "^4.6.1",
     "@subql/common-near": "^4.2.1",
+    "@subql/common-solana": "^0.0.0-2",
     "@subql/common-stellar": "^4.2.2",
     "@subql/common-substrate": "workspace:*",
     "@types/ejs": "^3.1.5",
