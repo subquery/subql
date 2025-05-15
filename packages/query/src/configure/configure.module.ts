@@ -5,6 +5,7 @@ import {ConnectionOptions} from 'tls';
 import {DynamicModule, Global, Module} from '@nestjs/common';
 import {getFileContent, CONNECTION_SSL_ERROR_REGEX} from '@subql/common';
 import {Pool, PoolConfig} from 'pg';
+import {DataSource} from 'typeorm';
 import {getLogger} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {Config} from './config';
@@ -85,6 +86,17 @@ export class ConfigureModule {
         pgClient._explainResults = [];
       });
     }
+    // todo: support ssl
+    const dataSource = new DataSource({
+      type: 'postgres',
+      host: config.get('DB_HOST_READ'),
+      port: config.get('DB_PORT'),
+      username: config.get('DB_USER'),
+      password: config.get('DB_PASS'),
+      database: config.get('DB_DATABASE'),
+      schema: config.get<string>('name'),
+    });
+    await dataSource.initialize();
     return {
       module: ConfigureModule,
       providers: [
@@ -96,8 +108,12 @@ export class ConfigureModule {
           provide: Pool,
           useValue: pgPool,
         },
+        {
+          provide: DataSource,
+          useValue: dataSource,
+        },
       ],
-      exports: [Config, Pool],
+      exports: [Config, Pool, DataSource],
     };
   }
 }
