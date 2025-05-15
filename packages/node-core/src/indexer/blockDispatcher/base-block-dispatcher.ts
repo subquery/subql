@@ -233,7 +233,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
   }
 
   @OnEvent(AdminEvent.rewindTarget)
-  async handleAdminRewind(blockPayload: TargetBlockPayload) {
+  async handleAdminRewind(blockPayload: TargetBlockPayload): Promise<void> {
     if (this.currentProcessingHeight < blockPayload.height) {
       // this will throw back to admin controller, will NOT lead current indexing exit
       throw new Error(

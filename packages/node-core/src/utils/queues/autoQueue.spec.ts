@@ -209,4 +209,39 @@ describe('AutoQueue', () => {
 
     await expect(pendingIdle).resolves.toBeUndefined();
   });
+
+  it('correctly processes out of order tasks', async () => {
+    // This test fills up the queue with tasks, all but the first one completes then the rest should resolve
+    let firstTask: (value: unknown) => void = () => {
+      /* Nothing*/
+    };
+    let lastResolve: (value: unknown) => void;
+
+    const lastDone = new Promise((resolve) => (lastResolve = resolve));
+
+    const numTasks = 1000;
+
+    const tasks = new Array(numTasks).fill(0).map((_, i) => async () => {
+      if (i === 0) {
+        await new Promise((resolve) => {
+          firstTask = resolve;
+        });
+        return i;
+      } else {
+        if (i === numTasks - 1) {
+          lastResolve(i);
+        }
+        return i;
+      }
+    });
+
+    const autoQueue = new AutoQueue<number>(numTasks, numTasks);
+    const pendingTasks = autoQueue.putMany(tasks);
+
+    await lastDone;
+
+    firstTask(undefined);
+
+    await expect(Promise.all(pendingTasks)).resolves.not.toThrow();
+  });
 });
