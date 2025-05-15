@@ -232,7 +232,7 @@ Host Status:
   Total Fetching: ${this.queue.size}
   Awaiting process: ${this.processQueue.size}
 Worker Status:
-  ${statuses.map((s) => `Worker ${s.threadId} - To Fetch: ${s.toFetchBlocks} blocks, Ready to process: ${s.fetchedBlocks} blocks`).join('\n  ')}
+  ${statuses.map((s) => `Worker ${s.threadId} - To Fetch: ${s.toFetchBlocks} blocks, Fetched: ${s.fetchedBlocks} blocks`).join('\n  ')}
 `);
   }
 

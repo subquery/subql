@@ -48,6 +48,8 @@ export class AutoQueue<T> implements IQueue {
   private nextIndex = 0;
   // Next task to resolve, used to order the outOfOrderTasks
   private nextTask = 0;
+  // Flag to ensure processOutOfOrderTasks is not re-entrant
+  private isProcessingOutOfOrder = false;
 
   /**
    * @param {number} capacity - The size limit of the queue, if undefined there is no limit
@@ -107,20 +109,29 @@ export class AutoQueue<T> implements IQueue {
   }
 
   private processOutOfOrderTasks() {
-    const next = this.outOfOrderTasks[this.nextTask];
+    // If already processing, let the existing call handle it.
+    if (this.isProcessingOutOfOrder) return;
+    this.isProcessingOutOfOrder = true;
 
-    if (!next) return;
+    try {
+      // Loop as long as the next task in sequence is present in the outOfOrderTasks map
+      let record = this.outOfOrderTasks[this.nextTask];
+      while (record !== undefined) {
+        if (record.error !== undefined) {
+          record.action.reject(record.error);
+        } else if (record.result !== undefined) {
+          record.action.resolve(record.result);
+        }
 
-    const {action: nextAction, error, result: nextResult} = next;
-    if (nextResult) {
-      nextAction.resolve(nextResult);
-    } else if (error) {
-      nextAction.reject(error);
+        delete this.outOfOrderTasks[this.nextTask];
+        this.nextTask++;
+
+        // Check for the next record for the next iteration
+        record = this.outOfOrderTasks[this.nextTask];
+      }
+    } finally {
+      this.isProcessingOutOfOrder = false;
     }
-    delete this.outOfOrderTasks[this.nextTask];
-    this.nextTask++;
-    // Check if next task ready
-    this.processOutOfOrderTasks();
   }
 
   private async take(): Promise<void> {
