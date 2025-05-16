@@ -90,23 +90,45 @@ When generating SQL queries:
           }
 
           // Convert OpenAI format messages to LangChain format
-          const lastMessage = messages[messages.length - 1];
-          const question = lastMessage.content;
+          // const lastMessage = messages[messages.length - 1];
+          // const question = lastMessage.content;
 
           res.setHeader('Content-Type', 'text/event-stream');
           res.setHeader('Cache-Control', 'no-cache');
           res.setHeader('Connection', 'keep-alive');
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const result = await this.agent!.stream({ messages: [['user', question]] }, { streamMode: 'values' });
+
+          const result = await this.agent!.stream({ messages }, { streamMode: 'values' });
 
           let fullResponse = '';
+          let first = true;
+          let thinking = false;
           for await (const event of result) {
             const lastMsg: BaseMessage = event.messages[event.messages.length - 1];
-            if (lastMsg.content) {
-              fullResponse = lastMsg.content as string;
-              logger.info(`Streaming response: ${JSON.stringify(lastMsg)}`);
-              if (argv['llm-debug'] && stream) {
+            fullResponse = lastMsg.content as string;
+            if (lastMsg.content && lastMsg.getType() === 'tool') {
+              if (argv['chat-debug'] && stream && lastMsg.response_metadata?.finish_reason !== 'stop') {
+                if (first) {
+                  res.write(
+                    `data: ${JSON.stringify({
+                      id: `chatcmpl-${Date.now()}`,
+                      object: 'chat.completion.chunk',
+                      created: Math.floor(Date.now() / 1000),
+                      model: process.env.OPENAI_MODEL,
+                      choices: [
+                        {
+                          index: 0,
+                          delta: { role: 'assistant', content: '<think>\n\n' },
+                          finish_reason: null,
+                        },
+                      ],
+                    })}\n\n`
+                  );
+                  first = false;
+                  thinking = true;
+                }
                 // todo: send them as thinking details
+                logger.info(`Streaming response: ${JSON.stringify(lastMsg)}`);
                 res.write(
                   `data: ${JSON.stringify({
                     id: `chatcmpl-${Date.now()}`,
@@ -116,7 +138,7 @@ When generating SQL queries:
                     choices: [
                       {
                         index: 0,
-                        delta: { content: lastMsg.content },
+                        delta: { content: `${lastMsg.name}: ${lastMsg.content} \n\n` },
                         finish_reason: null,
                       },
                     ],
@@ -124,10 +146,28 @@ When generating SQL queries:
                 );
               }
             }
+            if (lastMsg.response_metadata?.finish_reason === 'stop' && thinking) {
+              res.write(
+                `data: ${JSON.stringify({
+                  id: `chatcmpl-${Date.now()}`,
+                  object: 'chat.completion.chunk',
+                  created: Math.floor(Date.now() / 1000),
+                  model: process.env.OPENAI_MODEL,
+                  choices: [
+                    {
+                      index: 0,
+                      delta: { content: '</think>\n\n' },
+                      finish_reason: null,
+                    },
+                  ],
+                })}\n\n`
+              );
+            }
           }
 
           // Send final message
           if (stream) {
+            logger.info(`Final response: ${JSON.stringify(fullResponse)}`);
             res.write(
               `data: ${JSON.stringify({
                 id: `chatcmpl-${Date.now()}`,
@@ -137,7 +177,7 @@ When generating SQL queries:
                 choices: [
                   {
                     index: 0,
-                    message: { role: 'assistant', content: fullResponse },
+                    delta: { role: 'assistant', content: fullResponse },
                     finish_reason: 'stop',
                   },
                 ],
