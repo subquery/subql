@@ -26,6 +26,13 @@ export class ConfigureModule {
   static async register(): Promise<DynamicModule> {
     const { nodeConfig, project } = await ConfigureModule.getInstance();
 
+    return this.registerManual(nodeConfig, project);
+  }
+  // Used for testing where args/yargs cannot be used
+  static registerManual(
+    nodeConfig: NodeConfig,
+    project: SubqueryProject,
+  ): DynamicModule {
     return {
       module: ConfigureModule,
       providers: [
