@@ -1,8 +1,10 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 import {
   NodeConfig,
@@ -10,11 +12,25 @@ import {
   NestLogger,
   TestRunner,
   ProjectService,
+  DbModule,
 } from '@subql/node-core';
 import { SubstrateDatasource } from '@subql/types';
+import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiAt, BlockContent, LightBlockContent } from '../indexer/types';
-import { TestingModule } from './testing.module';
+import { TestingFeatureModule } from './testing.module';
+
+@Module({
+  imports: [
+    DbModule.forRoot(),
+    ConfigureModule.register(),
+    EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
+    TestingFeatureModule,
+  ],
+  controllers: [],
+})
+export class TestingModule {}
 
 @Injectable()
 export class TestingService extends BaseTestingService<
