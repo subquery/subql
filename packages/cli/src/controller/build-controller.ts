@@ -5,6 +5,7 @@ import assert from 'assert';
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {globSync} from 'glob';
+import {parse} from 'jsonc-parser';
 import TerserPlugin from 'terser-webpack-plugin';
 import {TsconfigPathsPlugin} from 'tsconfig-paths-webpack-plugin';
 import webpack, {Configuration} from 'webpack';
@@ -65,6 +66,16 @@ const getBaseConfig = (
   },
 });
 
+export function loadTsConfig(projectDir: string): any | undefined {
+  const tsconfigPath = path.join(projectDir, 'tsconfig.json');
+  if (existsSync(tsconfigPath)) {
+    const tsconfig = readFileSync(tsconfigPath, 'utf-8');
+    const tsconfigJson = parse(tsconfig);
+
+    return tsconfigJson;
+  }
+}
+
 export async function runWebpack(
   buildEntries: Configuration['entry'],
   projectDir: string,
@@ -77,13 +88,10 @@ export async function runWebpack(
     {output: {clean}}
     // Can allow projects to override webpack config here
   );
-  const tsconfigPath = path.join(projectDir, 'tsconfig.json');
-  if (existsSync(tsconfigPath)) {
-    const tsconfig = readFileSync(tsconfigPath, 'utf-8');
-    const tsconfigJson = JSON.parse(tsconfig);
-    if (tsconfigJson.compilerOptions?.paths && config.resolve && config.resolve.plugins) {
-      config.resolve.plugins.push(new TsconfigPathsPlugin());
-    }
+
+  const tsConfig = loadTsConfig(projectDir);
+  if (tsConfig?.compilerOptions?.paths && config.resolve && config.resolve.plugins) {
+    config.resolve.plugins.push(new TsconfigPathsPlugin());
   }
 
   await new Promise((resolve, reject) => {
