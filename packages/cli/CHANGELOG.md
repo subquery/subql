@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Support for Solana Codegen (#2787)
+- Support for jsonc tsconfigs in projects (#2796)
 
 ## [5.9.1] - 2025-05-08
 ### Changed
