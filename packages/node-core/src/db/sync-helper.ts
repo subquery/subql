@@ -648,6 +648,8 @@ export const dropEnumQuery = (enumTypeValue: string, schema: string): string =>
 export const commentOnEnumQuery = (type: string, comment: string): string => `COMMENT ON TYPE ${type} IS E${comment};`;
 export const createEnumQuery = (type: string, enumValues: string): string =>
   `CREATE TYPE ${type} AS ENUM (${enumValues});`;
+export const addEnumValueQuery = (type: string, newValue: string): string =>
+  `ALTER TYPE ${type} ADD VALUE IF NOT EXISTS '${newValue}';`;
 
 // relations
 export const dropRelationQuery = (schemaName: string, tableName: string, fkConstraint: string): string =>

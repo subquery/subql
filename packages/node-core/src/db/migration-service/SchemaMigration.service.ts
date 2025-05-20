@@ -97,14 +97,6 @@ export class SchemaMigrationService {
       return;
     }
 
-    if (modifiedEnums.length > 0) {
-      throw new Error(
-        `Modifying enums is currently not supported. Please revert the changes to the following enums: ${modifiedEnums
-          .map((e) => e.name)
-          .join(', ')}`
-      );
-    }
-
     const sortedSchemaModels = this.orderModelsByRelations(
       getAllEntitiesRelations(nextSchema).models,
       getAllEntitiesRelations(nextSchema).relations
@@ -124,6 +116,10 @@ export class SchemaMigrationService {
     try {
       for (const enumValue of addedEnums) {
         migrationAction.createEnum(enumValue);
+      }
+
+      for (const enumValue of modifiedEnums) {
+        migrationAction.modifyEnum(enumValue);
       }
 
       for (const model of removedModels) {
