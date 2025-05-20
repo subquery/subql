@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.10.0] - 2025-05-20
 ### Added
 - Support for Solana Codegen (#2787)
 - Support for jsonc tsconfigs in projects (#2796)
@@ -763,7 +765,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.9.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.10.0...HEAD
+[5.10.0]: https://github.com/subquery/subql/compare/cli/5.9.1...cli/5.10.0
 [5.9.1]: https://github.com/subquery/subql/compare/cli/5.9.0...cli/5.9.1
 [5.9.0]: https://github.com/subquery/subql/compare/cli/5.8.1...cli/5.9.0
 [5.8.1]: https://github.com/subquery/subql/compare/cli/5.8.0...cli/5.8.1
