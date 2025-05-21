@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [18.1.0] - 2025-05-21
 ### Added
 - Support for adding new enum values in migrations (#2798)
 
@@ -986,7 +988,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.0.6...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.1.0...HEAD
+[18.1.0]: https://github.com/subquery/subql/compare/node-core/18.0.6...node-core/18.1.0
 [18.0.6]: https://github.com/subquery/subql/compare/node-core/18.0.5...node-core/18.0.6
 [18.0.5]: https://github.com/subquery/subql/compare/node-core/18.0.4...node-core/18.0.5
 [18.0.4]: https://github.com/subquery/subql/compare/node-core/18.0.3...node-core/18.0.4
