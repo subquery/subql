@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.0] - 2025-05-21
+### Added
+- Support for adding new enum values in migrations
+
 ## [6.0.5] - 2025-05-20
 ### Fixed
 - Missing dependency for testing subcommand (#2795)
@@ -1431,7 +1435,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/6.0.5...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/6.1.0...HEAD
+[6.1.0]: https://github.com/subquery/subql/compare/node/6.0.5...node/6.1.0
 [6.0.5]: https://github.com/subquery/subql/compare/node/6.0.4...node/6.0.5
 [6.0.4]: https://github.com/subquery/subql/compare/node/6.0.3...node/6.0.4
 [6.0.3]: https://github.com/subquery/subql/compare/node/6.0.2...node/6.0.3
