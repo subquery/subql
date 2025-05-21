@@ -1,0 +1,46 @@
+type Transfer @entity {
+  """
+  id field is always required and must look like this
+  """
+  id: ID!
+  """
+  Amount that is transferred
+  """
+  amount: BigInt!
+  """
+  The block height of the transfer
+  """
+  blockNumber: Int!
+  """
+  The date of the transfer
+  """
+  date: Date!
+  """
+  The account that transfers are made from
+  """
+  #  from: Account!
+  from: String
+  """
+  The account that transfers are made to
+  """
+  #  to: Account!
+
+  to: String
+  #  accountValue: Account
+}
+
+type ManyToManyTestEntity @entity {
+  id: ID!
+  transfer: Transfer!
+  exampleEnum: ModifyEnumType
+}
+
+enum ModifyEnumType {
+  GOOD
+  BAD
+  # """
+  # Added in migration
+  # """
+  # NEUTRAL
+  # CHAOS
+}

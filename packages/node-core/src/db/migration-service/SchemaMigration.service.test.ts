@@ -442,16 +442,10 @@ WHERE event_object_table = :table AND event_object_schema = :schema ;
     expect(result[0]).toEqual({trigger_name: '0x36bc022fc662d7ff'});
   });
 
-  it('support enum drop and enum creation', async () => {
-    schemaName = 'test-migrations-17';
-
-    const initialSchema = loadGqlSchema('test_17_1.graphql');
-    const migrationService = await setup(schemaName, initialSchema, sequelize);
-
-    await migrationService.run(initialSchema, loadGqlSchema('test_17_2000.graphql'));
-
-    const result = await sequelize.query<{enum_type: string; enum_value: string}>(
-      `
+  describe('enum migrations', () => {
+    async function queryEnums(): Promise<{enum_type: string; enum_value: string}[]> {
+      return sequelize.query<{enum_type: string; enum_value: string}>(
+        `
       SELECT
        t.typname AS enum_type,
        e.enumlabel AS enum_value
@@ -460,14 +454,62 @@ JOIN pg_enum e ON t.oid = e.enumtypid
 JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
 WHERE n.nspname = :schema -- Replace 'public' with your schema name if different
 ORDER BY t.typname, e.enumsortorder;`,
-      {type: QueryTypes.SELECT, replacements: {schema: schemaName}}
-    );
+        {type: QueryTypes.SELECT, replacements: {schema: schemaName}}
+      );
+    }
 
-    expect(result.length).toBe(5);
-    expect(result.find((e) => e.enum_type === '5fcf5d7ab8')).toEqual({
-      enum_type: '5fcf5d7ab8',
-      enum_value: 'CREATED',
+    it('support enum drop and enum creation', async () => {
+      schemaName = 'test-migrations-17';
+
+      const initialSchema = loadGqlSchema('test_17_1.graphql');
+      const migrationService = await setup(schemaName, initialSchema, sequelize);
+
+      await migrationService.run(initialSchema, loadGqlSchema('test_17_2000.graphql'));
+
+      const result = await queryEnums();
+
+      expect(result.length).toBe(5);
+      expect(result.find((e) => e.enum_type === '5fcf5d7ab8')).toEqual({
+        enum_type: '5fcf5d7ab8',
+        enum_value: 'CREATED',
+      });
+      expect(result.find((e) => e.enum_type === 'e9b7360cdc')).toBeUndefined();
     });
-    expect(result.find((e) => e.enum_type === 'e9b7360cdc')).toBeUndefined();
+
+    it('supports enum value additions', async () => {
+      schemaName = 'test-migrations-18';
+
+      const initialSchema = loadGqlSchema('test_18_1.graphql');
+      const migrationService = await setup(schemaName, initialSchema, sequelize);
+
+      await migrationService.run(initialSchema, loadGqlSchema('test_18_2000.graphql'));
+
+      const result = await queryEnums();
+
+      expect(result.length).toBe(4);
+      expect(result.map((r) => r.enum_value)).toEqual(['GOOD', 'BAD', 'NEUTRAL', 'CHAOS']);
+    });
+
+    it('throws when enum values are removed', async () => {
+      schemaName = 'test-migrations-19';
+
+      const initialSchema = loadGqlSchema('test_19_1.graphql');
+      const migrationService = await setup(schemaName, initialSchema, sequelize);
+
+      await expect(migrationService.run(initialSchema, loadGqlSchema('test_19_2000.graphql'))).rejects.toThrow(
+        'Enums cannot have values removed. Only adding new values is supported.'
+      );
+    });
+
+    it('throws when enum values are reordered', async () => {
+      schemaName = 'test-migrations-20';
+
+      const initialSchema = loadGqlSchema('test_20_1.graphql');
+      const migrationService = await setup(schemaName, initialSchema, sequelize);
+
+      await expect(migrationService.run(initialSchema, loadGqlSchema('test_20_2000.graphql'))).rejects.toThrow(
+        'Enums cannot have their order changed.'
+      );
+    });
   });
 });

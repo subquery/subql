@@ -394,6 +394,33 @@ export class Migration {
     });
   }
 
+  modifyEnum(e: GraphQLEnumsType): void {
+    const enumName = enumNameToHash(e.name);
+    const existingEnum = this.enumTypeMap.get(enumName);
+    if (!existingEnum) {
+      throw new Error(`Enum ${e.name} does not exist`);
+    }
+
+    const newValues = e.values.filter((value) => !existingEnum.enumValues.includes(value));
+    if (newValues.length === 0) {
+      return;
+    }
+
+    // Add each new value in a separate ALTER TYPE query
+    const typeName = `"${this.schemaName}"."${enumName}"`;
+    for (const value of newValues) {
+      this.mainQueries.push(syncHelper.addEnumValueQuery(typeName, value));
+      // this.mainQueries.push(`ALTER TYPE "${this.schemaName}"."${enumName}" ADD VALUE IF NOT EXISTS '${value}';`);
+    }
+
+    // Update the enum type map
+    this.enumTypeMap.set(enumName, {
+      name: enumName,
+      type: typeName,
+      enumValues: e.values,
+    });
+  }
+
   dropEnum(e: GraphQLEnumsType): void {
     const enumTypeName = enumNameToHash(e.name);
     const enumTypeNameDeprecated = `${this.schemaName}_enum_${enumNameToHash(e.name)}`;

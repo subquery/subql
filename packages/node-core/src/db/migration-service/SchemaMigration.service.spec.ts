@@ -62,13 +62,13 @@ describe('SchemaMigration', () => {
     const currentEnums = [
       {
         name: 'TestEnum',
-        values: ['GOOD', 'BAD', 'NEUTRAL', 'CHAOS'],
+        values: ['GOOD', 'BAD', 'NEUTRAL'],
       } as GraphQLEnumsType,
     ];
     const nextEnum = [
       {
         name: 'TestEnum',
-        values: ['GOOD', 'BAD', 'NEUTRAL'],
+        values: ['GOOD', 'BAD', 'NEUTRAL', 'CHAOS'],
       } as GraphQLEnumsType,
     ];
 
@@ -81,7 +81,7 @@ describe('SchemaMigration', () => {
     expect(changes).toStrictEqual({
       addedEnums: [],
       removedEnums: [],
-      modifiedEnums: [{name: 'TestEnum', values: ['GOOD', 'BAD', 'NEUTRAL']}],
+      modifiedEnums: [{name: 'TestEnum', values: ['GOOD', 'BAD', 'NEUTRAL', 'CHAOS']}],
     });
   });
 });

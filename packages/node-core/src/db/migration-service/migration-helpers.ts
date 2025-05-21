@@ -81,6 +81,12 @@ export function compareEnums(
       const nextEnum = nextEnums.find((e) => e.name === currentEnum.name);
       // Check if there's a difference in the values arrays
       if (nextEnum && !isEqual(currentEnum.values, nextEnum.values)) {
+        if (currentEnum.values.length > nextEnum.values.length) {
+          throw new Error('Enums cannot have values removed. Only adding new values is supported.');
+        }
+        if (!currentEnum.values.every((current, idx) => nextEnum.values.indexOf(current) === idx)) {
+          throw new Error('Enums cannot have their order changed.');
+        }
         changes.modifiedEnums.push(nextEnum); // Add the nextEnum to modifiedEnums
       }
     }
