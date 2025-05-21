@@ -4,8 +4,8 @@
 import {blake2AsHex} from '@polkadot/util-crypto';
 
 export const METADATA_REGEX = /^_metadata$/;
-
 export const MULTI_METADATA_REGEX = /^_metadata_[a-zA-Z0-9-]+$/;
+export const MULTI_GLOBAL_REGEX = /^_global$/;
 
 export function getMetadataTableName(chainId: string): string {
   const hash = blake2AsHex(chainId, 64);
