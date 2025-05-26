@@ -32,8 +32,8 @@ export async function timeout<T>(promise: Promise<T>, sec: number, errMsg = 'tim
 export class BackoffError extends Error {
   readonly lastError: any;
 
-  constructor(lastError: any) {
-    super('Maximum number of retries reached');
+  constructor(lastError: any, options?: ErrorOptions) {
+    super('Maximum number of retries reached', options);
     this.lastError = lastError;
   }
 }
@@ -47,7 +47,7 @@ async function backoffRetryInternal<T>(fn: () => Promise<T>, maxAttempts: number
     return await fn();
   } catch (e) {
     if (maxAttempts - 1 === currentAttempt) {
-      throw new BackoffError(e);
+      throw new BackoffError(e, {cause: e});
     }
     await delay(Math.pow(2, currentAttempt));
     return backoffRetryInternal(fn, maxAttempts, currentAttempt + 1);
