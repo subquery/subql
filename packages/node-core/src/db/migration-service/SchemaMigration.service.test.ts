@@ -4,10 +4,11 @@
 import {readFileSync} from 'fs';
 import * as path from 'path';
 import {EventEmitter2} from '@nestjs/event-emitter';
+import {CommonProjectManifestV1_0_0Impl, IPFSReader} from '@subql/common';
 import {buildSchemaFromString} from '@subql/utils';
 import {IndexesOptions, QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
-import {NodeConfig} from '../../configure';
+import {NodeConfig, ProjectUpgradeService} from '../../configure';
 import {ISubqueryProject, StoreCacheService, StoreService} from '../../indexer';
 import {initDbSchema} from '../../utils/project';
 import {DbOption} from '../db.module';
@@ -71,6 +72,29 @@ describe('SchemaMigration integration tests', () => {
   afterEach(async () => {
     await sequelize.dropSchema(schemaName, {logging: false});
     await sequelize?.close();
+  });
+
+  // Use this test for potentially debugging user projects
+  it.skip('Can migrate user project', async () => {
+    schemaName = 'test-migration-user';
+
+    const schemas: GraphQLSchema[] = [];
+
+    let cid: string | undefined = 'ipfs://QmTXkSagBTzFQdPQqK6aMZZs8FUKWniccdCPaiyAUAVaxP';
+    while (cid) {
+      const reader = new IPFSReader(cid);
+      const project = (await reader.getProjectSchema()) as CommonProjectManifestV1_0_0Impl;
+      schemas.unshift(buildSchemaFromString(await reader.getFile(project.schema.file)));
+      cid = project.parent?.reference;
+    }
+
+    expect(schemas.length).toBeGreaterThan(1);
+
+    const migrationService = await setup(schemaName, schemas[0], sequelize);
+
+    for (let i = 1; i < schemas.length; i++) {
+      await expect(migrationService.run(schemas[i - 1], schemas[i])).resolves.not.toThrow();
+    }
   });
 
   it('Migrate to new schema', async () => {
