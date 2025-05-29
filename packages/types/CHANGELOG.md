@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.0.0] - 2025-05-29
 ### Removed
 - Redundant APIWrapper interface (#124)
 
@@ -81,7 +83,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use @subql/types-core (#18)
 
 ## [2.3.0] - 2023-09-12
-[Unreleased]: https://github.com/subquery/subql-stellar/compare/types-stellar/4.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-stellar/compare/types-stellar/5.0.0...HEAD
+[5.0.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/4.4.0...types-stellar/5.0.0
 [4.4.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/4.3.0...types-stellar/4.4.0
 [4.3.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/4.2.0...types-stellar/4.3.0
 [4.2.0]: https://github.com/subquery/subql-stellar/compare/types-stellar/4.1.0...types-stellar/4.2.0
