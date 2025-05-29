@@ -27,7 +27,7 @@
     "@stellar/stellar-sdk": "^13.1.0",
     "@subql/common": "^5.6.0",
     "@subql/common-stellar": "workspace:*",
-    "@subql/node-core": "^18.0.4",
+    "@subql/node-core": "^18.1.0",
     "@subql/testing": "^2.2.0",
     "@subql/types-stellar": "workspace:*",
     "lodash": "^4.17.21",

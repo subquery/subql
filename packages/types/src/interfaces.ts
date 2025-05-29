@@ -17,15 +17,4 @@ export interface BlockWrapper<
   events?: E[];
 }
 
-export interface ApiWrapper {
-  init: () => Promise<void>;
-  getGenesisHash: () => string;
-  getRuntimeChain: () => string;
-  getChainId: () => string;
-  getSpecName: () => string;
-  getFinalizedBlockHeight: () => Promise<number>;
-  getBestBlockHeight: () => Promise<number>;
-  //getBlockByHeightOrHash: (hashOrHeight: number | string) => Promise<Block>;
-}
-
 export type DynamicDatasourceCreator = (name: string, args: Record<string, unknown>) => Promise<void>;

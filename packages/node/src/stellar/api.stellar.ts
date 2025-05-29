@@ -5,7 +5,6 @@ import assert from 'assert';
 import { Horizon } from '@stellar/stellar-sdk';
 import { getLogger, IBlock } from '@subql/node-core';
 import {
-  ApiWrapper,
   SorobanEvent,
   StellarBlock,
   StellarBlockWrapper,
@@ -23,8 +22,7 @@ import { DEFAULT_PAGE_SIZE, formatBlockUtil } from './utils.stellar';
 
 const logger = getLogger('api.Stellar');
 
-export class StellarApi implements ApiWrapper {
-  //private client: Server;
+export class StellarApi {
   private stellarClient: StellarServer;
 
   private chainId?: string;

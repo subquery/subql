@@ -3,11 +3,7 @@
 
 import { Horizon } from '@stellar/stellar-sdk';
 import { Header, IBlock } from '@subql/node-core';
-import {
-  ApiWrapper,
-  StellarBlock,
-  StellarBlockWrapper,
-} from '@subql/types-stellar';
+import { StellarBlock, StellarBlockWrapper } from '@subql/types-stellar';
 
 export function stellarBlockToHeader(
   block: StellarBlock | Horizon.ServerApi.LedgerRecord,
@@ -33,7 +29,7 @@ export function formatBlockUtil<
   };
 }
 
-export function calcInterval(api: ApiWrapper): number {
+export function calcInterval(): number {
   return 6000;
 }
 

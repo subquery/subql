@@ -86,7 +86,7 @@ export class BlockchainService
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async getChainInterval(): Promise<number> {
-    const CHAIN_INTERVAL = calcInterval(this.apiService.api) * INTERVAL_PERCENT;
+    const CHAIN_INTERVAL = calcInterval() * INTERVAL_PERCENT;
 
     return Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
   }

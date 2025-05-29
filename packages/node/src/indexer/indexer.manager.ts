@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Inject, Injectable } from '@nestjs/common';
+import { Horizon } from '@stellar/stellar-sdk';
 import {
   isCustomDs,
   isRuntimeDs,
@@ -45,7 +46,7 @@ import {
   SorobanEventFilter,
 } from '@subql/types-stellar';
 import { BlockchainService } from '../blockchain.service';
-import { StellarApi } from '../stellar';
+import { StellarApi, StellarApiService } from '../stellar';
 import { StellarBlockWrapped } from '../stellar/block.stellar';
 import SafeStellarProvider from '../stellar/safe-api';
 
@@ -56,7 +57,7 @@ export class IndexerManager extends BaseIndexerManager<
   StellarApi,
   SafeStellarProvider | null,
   StellarBlockWrapper,
-  ApiService,
+  StellarApiService,
   SubqlStellarDataSource,
   SubqlStellarCustomDataSource,
   typeof FilterTypeMap,
@@ -67,7 +68,7 @@ export class IndexerManager extends BaseIndexerManager<
   protected isCustomDs = isCustomDs;
 
   constructor(
-    @Inject('APIService') apiService: ApiService,
+    @Inject('APIService') apiService: StellarApiService,
     nodeConfig: NodeConfig,
     sandboxService: SandboxService<SafeStellarProvider | null, StellarApi>,
     dsProcessorService: DsProcessorService,
@@ -97,6 +98,22 @@ export class IndexerManager extends BaseIndexerManager<
     return super.internalIndexBlock(block, dataSources, () =>
       this.getApi(block.block),
     );
+  }
+
+  protected getDsProcessor(
+    ds: SubqlStellarDataSource,
+    safeApi: SafeStellarProvider,
+  ): IndexerSandbox {
+    // Expand on the type here to allow for extra injections, we also change the unsafeApi type
+    const sandbox = this.sandboxService as unknown as SandboxService<
+      SafeStellarProvider | null,
+      Horizon.Server
+    >;
+    return sandbox.getDsProcessor(ds, safeApi, this.apiService.unsafeApi.api, {
+      unsafeSorobanApi: this.nodeConfig.unsafe
+        ? this.apiService.unsafeApi.sorobanClient
+        : undefined,
+    });
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await

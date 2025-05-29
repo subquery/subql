@@ -1,6 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {Horizon} from '@stellar/stellar-sdk';
 import {
   BaseTemplateDataSource,
   IProjectNetworkConfig,
@@ -17,7 +18,6 @@ import {
   BaseCustomDataSource,
   IEndpointConfig,
 } from '@subql/types-core';
-import {ApiWrapper} from './interfaces';
 import {
   StellarBlock,
   StellarBlockFilter,
@@ -289,8 +289,24 @@ export type SecondLayerHandlerProcessor<
   E,
   DS extends SubqlCustomDatasource = SubqlCustomDatasource
 > =
-  | SecondLayerHandlerProcessor_0_0_0<K, StellarRuntimeHandlerInputMap, StellarRuntimeFilterMap, F, E, DS, ApiWrapper>
-  | SecondLayerHandlerProcessor_1_0_0<K, StellarRuntimeHandlerInputMap, StellarRuntimeFilterMap, F, E, DS, ApiWrapper>;
+  | SecondLayerHandlerProcessor_0_0_0<
+      K,
+      StellarRuntimeHandlerInputMap,
+      StellarRuntimeFilterMap,
+      F,
+      E,
+      DS,
+      Horizon.Server
+    >
+  | SecondLayerHandlerProcessor_1_0_0<
+      K,
+      StellarRuntimeHandlerInputMap,
+      StellarRuntimeFilterMap,
+      F,
+      E,
+      DS,
+      Horizon.Server
+    >;
 export type SecondLayerHandlerProcessorArray<
   K extends string,
   F extends Record<string, unknown>,
@@ -312,7 +328,7 @@ export type SubqlDatasourceProcessor<
     string,
     SecondLayerHandlerProcessorArray<K, F, any, DS>
   >
-> = DsProcessor<DS, P, ApiWrapper>;
+> = DsProcessor<DS, P, Horizon.Server>;
 
 export interface IStellarEndpointConfig extends IEndpointConfig {
   /**

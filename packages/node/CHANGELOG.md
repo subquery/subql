@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Update `@subql/node-core` (#124)
+
+### Added
+- Sandbox now has access to Horizon and Soroban Server APIs via `unsafeApi` and `unsafeSorobanApi` (#124)
 
 ## [5.0.2] - 2025-05-01
 ### Changed
