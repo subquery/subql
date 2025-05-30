@@ -40,7 +40,7 @@ prepare_package_release() {
     exit 1
   fi
 
-  # Movde into the directory in the path
+  # Move into the directory in the path
   cd "$dir"
 
   # Get the version from package.json
