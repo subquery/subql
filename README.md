@@ -9,7 +9,7 @@ SubQuery allows teams across multiple blockchain ecosystems to process and query
 The future is multi-chain - SubQuery is no different. SubQuery is well on our way to support all leading blockchain networks with support for the following:
 
 - [Polkadot (and all Substrate networks)](https://academy.subquery.network/quickstart/quickstart_chains/polkadot.html)
-- [Ethereum](https://academy.subquery.network/quickstart/quickstart_chains/ethereum-gravatar.html)
+- [Ethereum (and all EVM compatible networks)](https://academy.subquery.network/quickstart/quickstart_chains/ethereum-gravatar.html)
 - [Cosmos (and all CosmWasm and Ethermint networks)](https://academy.subquery.network/indexer/quickstart/quickstart_chains/cosmos-other.html)
 - [Algorand](https://academy.subquery.network/quickstart/quickstart_chains/algorand.html)
 - [NEAR](https://academy.subquery.network/quickstart/quickstart_chains/near.html)
