@@ -60,7 +60,7 @@ For more detail on the specific network implementations please see their respect
 * [`@subql/node-near`](https://github.com/subquery/subql-near)
 * [`@subql/node-stellar`](https://github.com/subquery/subql-stellar)
 * [`@subql/node-solana`](https://github.com/subquery/subql-solana)
-* [`@subql/node-concorium`](https://github.com/subquery/subql-concordium)
+* [`@subql/node-concordium`](https://github.com/subquery/subql-concordium)
 
 Other Components:
 
