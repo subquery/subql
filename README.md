@@ -37,15 +37,15 @@ Take advantage of the decentralized SubQuery Network to host your project withou
 ### Publish to managed hosting providers
 
 If you prefer a managed hosting option for your indexer deployment, contact our managed hosting partners.
-[Learn more](https://subquery.network/doc/indexer/run_publish/introduction.html#other-hosting-providers-in-the-subquery-community)
+[Learn more](https://subquery.network/doc/indexer/run_publish/introduction.html#other-hosting-providers-in-the-subquery-community).
 
 ### Run your own Indexer and Query Service
 
-[Follow our guide](https://subquery.network/doc/indexer/run_publish/run.html) to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
+[Follow our guide](https://subquery.network/doc/indexer/run_publish/run.html) to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server.
 You're going to need to a Postgres database, a node to extract chain data, and a moderately powerful computer to run the indexer in the background.
 You'll also use our custom-built GraphQL query service [`@subql/query`](https://www.npmjs.com/package/@subql/query) to interact with your SubQuery project.
 
-### Components
+## Components
 
 This repository contains all the core components of the SubQuery SDK as well as the Substrate implementation. It includes the following packages:
 
@@ -69,7 +69,7 @@ For more detail on the specific network implementations please see their respect
 * [`@subql/node-starknet`](https://github.com/subquery/subql-starknet)
 * [`@subql/node-concordium`](https://github.com/subquery/subql-concordium)
 
-#### Other Components:
+### Other Components:
 
 * [`@subql/query-subgraph`](https://github.com/subquery/query-subgraph/) - A Subgraph compatible query service for SubQuery projects.
 
