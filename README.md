@@ -54,17 +54,17 @@ This repository contains all the core components of the SubQuery SDK as well as 
 
 For more detail on the specific network implementations please see their respective repositories:
 
-* [Ethereum](https://github.com/subquery/subql-ethereum)
-* [Cosmos](https://github.com/subquery/subql-cosmos)
-* [Algorand](https://github.com/subquery/subql-algorand)
-* [NEAR](https://github.com/subquery/subql-near)
-* [Stellar](https://github.com/subquery/subql-stellar)
-* [Solana](https://github.com/subquery/subql-solana)
-* [Concorium](https://github.com/subquery/subql-concordium)
+* [`@subql/node-ethereum`](https://github.com/subquery/subql-ethereum)
+* [`@subql/node-cosmos`](https://github.com/subquery/subql-cosmos)
+* [`@subql/node-algorand`](https://github.com/subquery/subql-algorand)
+* [`@subql/node-near`](https://github.com/subquery/subql-near)
+* [`@subql/node-stellar`](https://github.com/subquery/subql-stellar)
+* [`@subql/node-solana`](https://github.com/subquery/subql-solana)
+* [`@subql/node-concorium`](https://github.com/subquery/subql-concordium)
 
 Other Components:
 
-* [Subgraph compatible query service](https://github.com/subquery/query-subgraph/)
+* [`@subql/query-subgraph`](https://github.com/subquery/query-subgraph/) - A Subgraph compatible query service for SubQuery projects.
 
 ## Support
 
