@@ -9,7 +9,7 @@ SubQuery allows teams across multiple blockchain ecosystems to process and query
 The future is multi-chain - SubQuery is no different. SubQuery is well on our way to support all leading blockchain networks with support for the following:
 
 - [Polkadot (and all Substrate networks)](https://academy.subquery.network/quickstart/quickstart_chains/polkadot.html)
-- [Ethereum (and all EVM compatible networks)](https://academy.subquery.network/quickstart/quickstart_chains/ethereum-gravatar.html)
+- [Ethereum (and all EVM-compatible networks)](https://academy.subquery.network/quickstart/quickstart_chains/ethereum-gravatar.html)
 - [Cosmos (and all CosmWasm and Ethermint networks)](https://academy.subquery.network/indexer/quickstart/quickstart_chains/cosmos-other.html)
 - [Algorand](https://academy.subquery.network/quickstart/quickstart_chains/algorand.html)
 - [NEAR](https://academy.subquery.network/quickstart/quickstart_chains/near.html)
@@ -19,19 +19,19 @@ The future is multi-chain - SubQuery is no different. SubQuery is well on our wa
 
 ## Get Started
 
-#### Create a SubQuery project
+### Create a SubQuery project
 
 You can follow our [Quick Start Guide](https://academy.subquery.network/quickstart/quickstart.html) to learn how to create, initialize, build, and publish a new SubQuery Project using the `@subql/cli` tool.
 
-#### Learn and improve with our comprehensive documentation
+### Learn and improve with our comprehensive documentation
 
 Dig into every term, usecases, and best-practices that help you build a dApp which your users love. Take a look at our [detailed technical documentation](https://academy.subquery.network/build/introduction.html).
 
-#### Publish your SubQuery Project to the SubQuery Network
+### Publish your SubQuery Project to the SubQuery Network
 
 Take advantage of the decentralized SubQuery Network to host your project without managing any infrastructure. By publishing to the [SubQuery Network](https://app.subquery.network), you'll benefit from a reliable, scalable, and censorship-resistant indexing service. Follow our comprehensive [publishing guide](https://subquery.network/doc/subquery_network/architects/publish.html) to learn how to upload your project to the network and start leveraging its distributed infrastructure today.
 
-#### Run your own Indexer and Query Service
+### Run your own Indexer and Query Service
 
 [Follow our guide](https://academy.subquery.network/run_publish/run.html) to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
 
@@ -39,13 +39,13 @@ You're going to need to a Postgres database, a node to extract chain data, and a
 
 You'll also use our custom-built GraphQL query service [`@subql/query`](https://www.npmjs.com/package/@subql/query) to interact with your SubQuery project.
 
-#### Components
+### Components
 
 This repository contains all the core components of the SubQuery SDK as well as the Substrate implementation. It includes the following packages:
 
 * [`@subql/cli`](packages/cli) - The command line interface for SubQuery, used to create, build, and publish SubQuery projects
 * [`@subql/node`](packages/node) - The Substrate SubQuery SDK, which provides the indexing functionality for Substrate-based chains
-* [`@subql/node-core`](packages/node) - Core indexing functionality that is chain agnostic
+* [`@subql/node-core`](packages/node-core) - Core indexing functionality that is chain agnostic
 * [`@subql/query`](packages/query) - The GraphQL query service for SubQuery projects, allowing you to interact with your indexed data.
 * [`@subql/common`](packages/common) - Common utilities and types used across SubQuery packages
 * [`@subql/common-substrate`](packages/common-substrate) - Common utilities and types specifically for Substrate-based chains
@@ -62,7 +62,7 @@ For more detail on the specific network implementations please see their respect
 * [`@subql/node-solana`](https://github.com/subquery/subql-solana)
 * [`@subql/node-concordium`](https://github.com/subquery/subql-concordium)
 
-Other Components:
+#### Other Components:
 
 * [`@subql/query-subgraph`](https://github.com/subquery/query-subgraph/) - A Subgraph compatible query service for SubQuery projects.
 
