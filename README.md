@@ -8,35 +8,41 @@ SubQuery allows teams across multiple blockchain ecosystems to process and query
 
 The future is multi-chain - SubQuery is no different. SubQuery is well on our way to support all leading blockchain networks with support for the following:
 
-- [Polkadot (and all Substrate networks)](https://academy.subquery.network/quickstart/quickstart_chains/polkadot.html)
-- [Ethereum (and all EVM-compatible networks)](https://academy.subquery.network/quickstart/quickstart_chains/ethereum-gravatar.html)
-- [Cosmos (and all CosmWasm and Ethermint networks)](https://academy.subquery.network/indexer/quickstart/quickstart_chains/cosmos-other.html)
-- [Algorand](https://academy.subquery.network/quickstart/quickstart_chains/algorand.html)
-- [NEAR](https://academy.subquery.network/quickstart/quickstart_chains/near.html)
-- [Stellar (including Soroban)](https://academy.subquery.network/quickstart/quickstart_chains/stellar.html)
-- [Solana (Beta)](https://academy.subquery.network/quickstart/quickstart_chains/solana.html)
-- [Concordium](https://academy.subquery.network/quickstart/quickstart_chains/concordium.html)
+- [Polkadot (and all Substrate networks)](https://subquery.network/doc/indexer/quickstart/quickstart_chains/polkadot.html)
+- [Ethereum (and all EVM-compatible networks)](https://subquery.network/doc/indexer/quickstart/quickstart_chains/ethereum-gravatar.html)
+- [Cosmos (and all CosmWasm and Ethermint networks)](https://subquery.network/doc/indexer/quickstart/quickstart_chains/cosmos-osmosis.html)
+- [Algorand](https://subquery.network/doc/indexer/quickstart/quickstart_chains/algorand.html)
+- [NEAR](https://subquery.network/doc/indexer/quickstart/quickstart_chains/near.html)
+- [Stellar (including Soroban)](https://subquery.network/doc/indexer/quickstart/quickstart_chains/stellar.html)
+- [Solana (Beta)](https://subquery.network/doc/indexer/quickstart/quickstart_chains/solana.html)
+- [Starknet](https://subquery.network/doc/indexer/quickstart/quickstart_chains/starknet.html)
+- [Concordium](https://subquery.network/doc/indexer/quickstart/quickstart_chains/concordium.html)
+
+You can also use SubQuery to index data from multiple networks in any combination of the above SDKs. See our [Multi-Chain Indexing Quickstart](https://subquery.network/doc/indexer/quickstart/quickstart_multichain/galxe-nft.html) for more details.
 
 ## Get Started
 
 ### Create a SubQuery project
 
-You can follow our [Quick Start Guide](https://academy.subquery.network/quickstart/quickstart.html) to learn how to create, initialize, build, and publish a new SubQuery Project using the `@subql/cli` tool.
+You can follow our [Quick Start Guide](https://subquery.network/doc/indexer/quickstart/quickstart.html) to learn how to create, initialize, build, and publish a new SubQuery Project using the `@subql/cli` tool.
 
 ### Learn and improve with our comprehensive documentation
 
-Dig into every term, usecases, and best-practices that help you build a dApp which your users love. Take a look at our [detailed technical documentation](https://academy.subquery.network/build/introduction.html).
+Dig into every term, usecases, and best-practices that help you build a dApp which your users love. Take a look at our [detailed technical documentation](https://subquery.network/doc/indexer/build/introduction.html).
 
 ### Publish your SubQuery Project to the SubQuery Network
 
-Take advantage of the decentralized SubQuery Network to host your project without managing any infrastructure. By publishing to the [SubQuery Network](https://app.subquery.network), you'll benefit from a reliable, scalable, and censorship-resistant indexing service. Follow our comprehensive [publishing guide](https://subquery.network/doc/subquery_network/architects/publish.html) to learn how to upload your project to the network and start leveraging its distributed infrastructure today.
+Take advantage of the decentralized SubQuery Network to host your project without managing any infrastructure. By publishing to the [SubQuery Network](https://app.subquery.network), you'll benefit from a reliable, scalable, cost-optimised, and censorship-resistant indexing service. Follow our comprehensive [publishing guide](https://subquery.network/doc/subquery_network/architects/publish.html) to learn how to upload your project to the network and start leveraging its distributed infrastructure today.
+
+### Publish to managed hosting providers
+
+If you prefer a managed hosting option for your indexer deployment, contact our managed hosting partners.
+[Learn more](https://subquery.network/doc/indexer/run_publish/introduction.html#other-hosting-providers-in-the-subquery-community)
 
 ### Run your own Indexer and Query Service
 
-[Follow our guide](https://academy.subquery.network/run_publish/run.html) to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
-
+[Follow our guide](https://subquery.network/doc/indexer/run_publish/run.html) to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
 You're going to need to a Postgres database, a node to extract chain data, and a moderately powerful computer to run the indexer in the background.
-
 You'll also use our custom-built GraphQL query service [`@subql/query`](https://www.npmjs.com/package/@subql/query) to interact with your SubQuery project.
 
 ### Components
@@ -60,6 +66,7 @@ For more detail on the specific network implementations please see their respect
 * [`@subql/node-near`](https://github.com/subquery/subql-near)
 * [`@subql/node-stellar`](https://github.com/subquery/subql-stellar)
 * [`@subql/node-solana`](https://github.com/subquery/subql-solana)
+* [`@subql/node-starknet`](https://github.com/subquery/subql-starknet)
 * [`@subql/node-concordium`](https://github.com/subquery/subql-concordium)
 
 #### Other Components:
