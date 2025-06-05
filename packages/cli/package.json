@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "5.10.1-0",
+  "version": "5.11.0",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -87,6 +87,5 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql\" --release-prefix=\"cli/\""
   },
-  "types": "lib/index.d.ts",
-  "stableVersion": "5.10.0"
+  "types": "lib/index.d.ts"
 }
