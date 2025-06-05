@@ -147,7 +147,7 @@ export class WorkerBlockDispatcher<
   async enqueueBlocks(heights: (IBlock<Block> | number)[], latestBufferHeight?: number): Promise<void> {
     assert(
       heights.every((h) => typeof h === 'number'),
-      'Worker block dispatcher only supports enqueuing numbers, not blocks.'
+      `Workers don't support full blocks. Because of the dictionary providing full blocks, the workers flag should be removed.`
     );
 
     // In the case where factors of batchSize is equal to bypassBlock or when heights is []
