@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - cause to BackoffError (#2805)
 
+### Changed
+- Improve error messages with workers (#2809)
+
 ## [18.1.0] - 2025-05-21
 ### Added
 - Support for adding new enum values in migrations (#2798)
