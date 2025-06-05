@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.11.0] - 2025-06-05
 ### Changed
 - Init command to have more arguments and avoid interaction (#2809)
 
@@ -767,7 +769,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/5.10.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/5.11.0...HEAD
+[5.11.0]: https://github.com/subquery/subql/compare/cli/5.10.0...cli/5.11.0
 [5.10.0]: https://github.com/subquery/subql/compare/cli/5.9.1...cli/5.10.0
 [5.9.1]: https://github.com/subquery/subql/compare/cli/5.9.0...cli/5.9.1
 [5.9.0]: https://github.com/subquery/subql/compare/cli/5.8.1...cli/5.9.0
