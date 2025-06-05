@@ -188,21 +188,30 @@ export default class Init extends Command {
 
       project.endpoint = projectEndpoints;
     }
-    const descriptionHint = defaultDescription.substring(0, 40).concat('...');
+
     const username = os.userInfo().username;
-    project.author =
-      flags.author ?? (flags.force ? username : await input({message: 'Author', required: true, default: username}));
-    project.description =
-      flags.description ??
-      (flags.force
-        ? defaultDescription
-        : await input({
-            message: 'Description',
-            required: false,
-            default: descriptionHint,
-          }).then((description) => {
-            return description === descriptionHint ? defaultDescription : description;
-          }));
+    if (flags.author) {
+      project.author = flags.author;
+    } else if (flags.force) {
+      project.author = username;
+    } else {
+      project.author = await input({message: 'Author', required: true, default: username});
+    }
+
+    const descriptionHint = defaultDescription.substring(0, 40).concat('...');
+    if (flags.description) {
+      project.description = flags.description;
+    } else if (flags.force) {
+      project.description = defaultDescription;
+    } else {
+      project.description = await input({
+        message: 'Description',
+        required: false,
+        default: descriptionHint,
+      }).then((description) => {
+        return description === descriptionHint ? defaultDescription : description;
+      });
+    }
 
     const spinner = ora('Preparing project').start();
     await prepare(projectPath, project, isMultiChainProject);
