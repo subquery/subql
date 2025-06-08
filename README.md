@@ -4,7 +4,7 @@
 
 SubQuery is an Open, Flexible, Fast and Universal data indexing framework for web3. Our mission is to help developers create the decentralised products of the future. 
 
-SubQuery allows teams across multiple blockchain ecosystems to process and query their data. The project is inspired by the growth of data protocols serving the application layer and its aim is to help web3 projects build better dApps by allowing anyone to reliably find and consume data faster. Today, anyone can query and extract blockchain data from various supported networks in only minutes and at no cost.
+SubQuery allows teams across multiple blockchain architectures to process and query their data. The project is inspired by the growth of data protocols serving the application layer and its aim is to help web3 projects build better dApps by allowing anyone to reliably find and consume data faster. Today, anyone can query and extract blockchain data from various supported networks in only minutes and at no cost.
 
 The future is multi-chain - SubQuery is no different. SubQuery is well on our way to support all leading blockchain networks with support for the following:
 
