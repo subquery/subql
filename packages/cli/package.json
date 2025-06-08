@@ -67,7 +67,11 @@
     "/oclif.manifest.json"
   ],
   "homepage": "https://github.com/subquery/subql",
-  "repository": "packages/cli",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subquery/subql.git",
+    "directory": "packages/cli"
+  },
   "keywords": [
     "oclif"
   ],
@@ -75,7 +79,8 @@
   "main": "lib/index.js",
   "oclif": {
     "commands": "./lib/commands",
-    "bin": "subql"
+    "bin": "subql",
+    "repositoryPrefix": "<%- repo %>/blob/cli/<%- version %>/packages/cli/<%- commandPath.replace('lib/', 'src/').replace(/\\.js$/, '.ts') %>"
   },
   "scripts": {
     "build": "rm -rf lib && tsc -b && cp -r src/template lib/",
