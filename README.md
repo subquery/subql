@@ -55,8 +55,7 @@ This repository contains all the core components of the SubQuery SDK as well as 
 * [`@subql/query`](packages/query) - The GraphQL query service for SubQuery projects, allowing you to interact with your indexed data.
 * [`@subql/common`](packages/common) - Common utilities and types used across SubQuery packages
 * [`@subql/common-substrate`](packages/common-substrate) - Common utilities and types specifically for Substrate-based chains
-* [`@subql/types-substrate`](packages/types-substrate) - Type definitions for Substrate-based chains
-* [`@subql/types`](packages/types) - Type definitions for SubQuery projects, including the project manifest and data models
+* [`@subql/types`](packages/types) - Type definitions for Substrate-based chains and SubQuery projects, including the project manifest and data models
 
 For more detail on the specific network implementations please see their respective repositories:
 
