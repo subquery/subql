@@ -30,7 +30,6 @@ import {playgroundPlugin} from './plugins/PlaygroundPlugin';
 import {queryAliasLimit} from './plugins/QueryAliasLimitPlugin';
 import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
 import {queryDepthLimitPlugin} from './plugins/QueryDepthLimitPlugin';
-import {ProjectService} from './project.service';
 
 const {argv} = getYargsOption();
 const logger = getLogger('graphql-module');
@@ -45,7 +44,7 @@ class NoInitError extends Error {
   }
 }
 @Module({
-  providers: [ProjectService],
+  providers: [],
 })
 export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
   private _apolloServer?: ApolloServer;
@@ -53,8 +52,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly config: Config,
-    private readonly pgPool: Pool,
-    private readonly projectService: ProjectService
+    private readonly pgPool: Pool
   ) {}
 
   private get apolloServer(): ApolloServer {
@@ -138,7 +136,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const schemaName = this.config.get<string>('name');
     if (!schemaName) throw new Error('Unable to get schema name from config');
 
-    const dbSchema = await this.projectService.getProjectSchema(schemaName);
+    const dbSchema = schemaName;
     let options: PostGraphileCoreOptions = {
       replaceAllPlugins: plugins,
       subscriptions: true,

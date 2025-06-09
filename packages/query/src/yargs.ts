@@ -16,6 +16,18 @@ export function getYargsOption() {
         describe: 'Enable aggregate feature',
         type: 'boolean',
       },
+      chat: {
+        demandOption: false,
+        describe: 'enable openai compatible chat api, /v1/chat/completions',
+        type: 'boolean',
+        default: true,
+      },
+      'chat-debug': {
+        demandOption: false,
+        default: false,
+        describe: 'Enable debug for llm chat feature',
+        type: 'boolean',
+      },
       'disable-hot-schema': {
         demandOption: false,
         describe: 'Hot reload schema on schema-changes',

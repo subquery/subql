@@ -1,10 +1,11 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ConnectionOptions} from 'tls';
+import {CommonConnectionOptions, SecureContextOptions} from 'tls';
 import {DynamicModule, Global, Module} from '@nestjs/common';
 import {getFileContent, CONNECTION_SSL_ERROR_REGEX} from '@subql/common';
 import {Pool, PoolConfig} from 'pg';
+import {DataSource} from 'typeorm';
 import {getLogger} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {Config} from './config';
@@ -40,7 +41,8 @@ export class ConfigureModule {
     });
 
     const dbSslOption = () => {
-      const sslConfig: ConnectionOptions = {rejectUnauthorized: false};
+      // This is a subset of ConnectionOptions and TlsOptions to satisfy PgPool and DataSource
+      const sslConfig: SecureContextOptions & CommonConnectionOptions = {rejectUnauthorized: false};
       if (opts['pg-ca']) {
         try {
           sslConfig.ca = getFileContent(opts['pg-ca'], 'postgres ca cert');
@@ -85,6 +87,24 @@ export class ConfigureModule {
         pgClient._explainResults = [];
       });
     }
+
+    // Only establish connection if chat is enabled
+    let dataSource: DataSource | undefined;
+    console.log('sslConfig', dbSslOption());
+    if (opts.chat) {
+      dataSource = new DataSource({
+        type: 'postgres',
+        host: config.get('DB_HOST_READ'),
+        port: config.get('DB_PORT'),
+        username: config.get('DB_USER'),
+        password: config.get('DB_PASS'),
+        database: config.get('DB_DATABASE'),
+        schema: config.get<string>('name'),
+        ssl: opts['pg-ca'] ? dbSslOption() : undefined, // Cannot be an empty object
+      });
+      await dataSource.initialize();
+    }
+
     return {
       module: ConfigureModule,
       providers: [
@@ -96,8 +116,12 @@ export class ConfigureModule {
           provide: Pool,
           useValue: pgPool,
         },
+        {
+          provide: DataSource,
+          useValue: dataSource,
+        },
       ],
-      exports: [Config, Pool],
+      exports: [Config, Pool, DataSource],
     };
   }
 }
