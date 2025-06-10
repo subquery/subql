@@ -14,10 +14,10 @@ function extractAllAbiFiles(dataSources: SubgraphDataSource[]): string[] {
 async function copyAbiFilesToTargetPathAsync(abiFiles: string[], targetPath: string): Promise<void> {
   try {
     await Promise.all(
-      abiFiles.map((file) => {
+      abiFiles.map(async (file) => {
         const fileName = path.basename(file);
         const targetFilePath = path.join(targetPath, fileName);
-        fs.promises.copyFile(file, targetFilePath);
+        await fs.promises.copyFile(file, targetFilePath);
       })
     );
     console.log(

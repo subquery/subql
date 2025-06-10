@@ -8,7 +8,7 @@ import {errorHandle} from '../utils';
 interface CreateProjectResponse {
   key: string;
 }
-export const suffixFormat = (value: string) => {
+export const suffixFormat = (value: string): string => {
   return value
     .replace(/(^\s*)|(\s*$)/g, '')
     .replace(/\s+/g, '-')
