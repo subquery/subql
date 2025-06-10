@@ -80,12 +80,7 @@
   "oclif": {
     "commands": "./lib/commands",
     "bin": "subql",
-    "repositoryPrefix": "<%- repo %>/blob/cli/<%- version %>/packages/cli/<%- commandPath.replace('lib/', 'src/').replace(/\\.js$/, '.ts') %>",
-    "topics": {
-      "codegen:generate": {
-        "description": "Generate handlers and datasources from and ethereum abi"
-      }
-    }
+    "repositoryPrefix": "<%- repo %>/blob/cli/<%- version %>/packages/cli/<%- commandPath.replace('lib/', 'src/').replace(/\\.js$/, '.ts') %>"
   },
   "scripts": {
     "build": "rm -rf lib && tsc -b && cp -r src/template lib/",

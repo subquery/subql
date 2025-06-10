@@ -26,5 +26,3 @@ if (notifier.update) {
   const oclif = await import('@oclif/core');
   await oclif.execute({development: false, dir: __dirname});
 })();
-// const oclif = require('@oclif/core');
-// oclif.run().then(oclif.flush).catch(oclif.Errors.handle);

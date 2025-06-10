@@ -119,8 +119,6 @@ export default class Generate extends Command {
       //
       throw new Error('For multichain projects a specific manifest must be provided');
     }
-    // TODO ensure we still use TS path
-    // TODO ensure if it is multichain and speific manifest is provided we use that
     const yamlManifest = getManifestPath(root, manifests[0]);
     const manifest = tsManifest ?? yamlManifest;
 
