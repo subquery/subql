@@ -7,7 +7,7 @@ import {deleteDeployment} from '../../controller/deploy-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
 
 export default class Delete extends Command {
-  static description = 'Delete Deployment';
+  static description = 'Delete a deployment from the OnFinality managed services';
 
   static flags = {
     org: Flags.string({description: 'Enter organization name'}),

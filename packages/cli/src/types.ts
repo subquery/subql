@@ -163,7 +163,7 @@ export interface ProjectDeploymentInterface {
   ipfsCID: string;
   queryVersion: string;
   authToken: string;
-  log: any;
+  log: (message?: string, ...args: unknown[]) => void;
 }
 
 export interface DeploymentFlagsInterface {
@@ -175,23 +175,23 @@ export interface DeploymentFlagsInterface {
   queryVersion?: string;
   dict?: string;
   endpoint?: string;
-  indexerUnsafe: boolean;
+  indexerUnsafe?: boolean;
   indexerBatchSize?: number;
-  indexerSubscription: boolean;
-  disableHistorical: boolean;
-  indexerUnfinalized: boolean;
+  indexerSubscription?: boolean;
+  disableHistorical?: boolean;
+  indexerUnfinalized?: boolean;
   indexerStoreCacheThreshold?: number;
-  disableIndexerStoreCacheAsync: boolean;
+  disableIndexerStoreCacheAsync?: boolean;
   indexerWorkers?: number;
   ipfsCID?: string;
   location?: string;
-  queryUnsafe: boolean;
-  querySubscription: boolean;
+  queryUnsafe?: boolean;
+  querySubscription?: boolean;
   queryTimeout?: number;
   queryMaxConnection?: number;
-  queryAggregate: boolean;
+  queryAggregate?: boolean;
   queryLimit?: number;
-  useDefaults: boolean;
+  useDefaults?: boolean;
 }
 
 export interface GenerateDeploymentChainInterface {

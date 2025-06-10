@@ -19,7 +19,7 @@ import {V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, valueOrPrompt} from '../../utils';
 
 export default class Deploy extends Command {
-  static description = 'Deployment to hosted service';
+  static description = 'Deployment a project to the OnFinality managed services';
 
   static flags = {
     ...DefaultDeployFlags,
@@ -111,7 +111,7 @@ export default class Deploy extends Command {
 export async function promptImageVersion(
   runner: string,
   version: string,
-  useDefaults: boolean,
+  useDefaults: boolean | undefined,
   authToken: string,
   message: string
 ): Promise<string> {

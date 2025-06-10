@@ -8,7 +8,7 @@ import {createProject} from '../../controller/project-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
 
 export default class Create_project extends Command {
-  static description = 'Create Project on Hosted Service';
+  static description = 'Create a project on OnFinality managed services';
 
   static flags = {
     org: Flags.string({description: 'Enter organization name'}),

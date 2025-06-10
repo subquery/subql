@@ -48,6 +48,9 @@ export function removeKeyword(inputString: string): string {
   return inputString.replace(/^(event|function) /, '');
 }
 
+/**
+ * Copies the provided ABI file to the default ABI directory in the project root.
+ */
 export async function prepareAbiDirectory(abiPath: string, rootPath: string): Promise<void> {
   const abiDirPath = path.join(rootPath, DEFAULT_ABI_DIR);
 
@@ -63,13 +66,29 @@ export async function prepareAbiDirectory(abiPath: string, rootPath: string): Pr
   const ensuredAbiPath = resolveToAbsolutePath(abiPath);
 
   try {
-    const abiFileContent = await fs.promises.readFile(ensuredAbiPath, 'utf8');
-    await fs.promises.writeFile(path.join(abiDirPath, path.basename(ensuredAbiPath)), abiFileContent);
+    await fs.promises.copyFile(ensuredAbiPath, path.join(abiDirPath, path.basename(ensuredAbiPath)));
   } catch (e: any) {
     if (e.code === 'ENOENT') {
       throw new Error(`Unable to find abi at: ${abiPath}`);
     }
+    throw new Error(`Unable to copy abi file: ${e.message}`);
   }
+}
+
+/**
+ * Saves the provided ABI to a file in the default ABI directory.
+ * @param abi - The ABI to save.
+ * @param addressOrName - The name or address to use as the filename.
+ * @param rootPath - The root path of the project.
+ * @returns The path to the saved ABI file.
+ */
+export async function saveAbiToFile(abi: unknown, addressOrName: string, rootPath: string): Promise<string> {
+  const abiDirPath = path.join(rootPath, DEFAULT_ABI_DIR);
+  const filePath = path.join(abiDirPath, `${addressOrName}.abi.json`);
+
+  await fs.promises.writeFile(filePath, JSON.stringify(abi, null, 2));
+
+  return filePath;
 }
 
 export function constructMethod<T extends ConstructorFragment | Fragment>(

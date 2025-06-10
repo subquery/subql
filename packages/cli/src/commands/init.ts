@@ -37,7 +37,7 @@ function filterInput<T>(arr: T[]) {
 type InitFlags = Interfaces.InferredFlags<typeof Init.flags>;
 
 export default class Init extends Command {
-  static description = 'Initialize a scaffold subquery project';
+  static description = 'Initialize a SubQuery project from a template';
 
   static flags = {
     force: Flags.boolean({

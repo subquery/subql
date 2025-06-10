@@ -1,12 +1,20 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs, {lstatSync} from 'fs';
+import fs from 'fs';
 import path from 'path';
 import type {EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {Command, Flags} from '@oclif/core';
-import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsTs, NETWORK_FAMILY} from '@subql/common';
+import {
+  NETWORK_FAMILY,
+  getProjectRootAndManifest,
+  getProjectNetwork,
+  getManifestPath,
+  loadFromJsonOrYaml,
+} from '@subql/common';
+import type {ProjectManifestV1_0_0} from '@subql/types-core';
 import type {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
+import ora from 'ora';
 import {
   constructMethod,
   filterExistingMethods,
@@ -20,9 +28,11 @@ import {
   prepareInputFragments,
   tsExtractor,
   yamlExtractor,
+  saveAbiToFile,
 } from '../../controller/generate-controller';
 import {loadDependency} from '../../modulars';
-import {extractFromTs} from '../../utils';
+import {extractFromTs, buildManifestFromLocation, getTsManifest} from '../../utils';
+import {fetchContractDeployHeight, tryFetchAbiFromExplorer} from '../../utils/etherscan';
 
 export interface SelectedMethod {
   name: string;
@@ -37,16 +47,22 @@ export interface UserInput {
 }
 
 export default class Generate extends Command {
-  static description = 'Generate Project.yaml and mapping functions based on provided ABI';
+  static description =
+    'Generate project handlers and mapping functions based on an Ethreum ABI. If address is provided, it will attempt to fetch the ABI and start block from the Etherscan.';
 
   static flags = {
-    file: Flags.string({char: 'f', description: 'specify manifest file path'}),
-    events: Flags.string({description: 'abi events, --events="approval, transfer"'}),
-    functions: Flags.string({description: 'abi functions,  --functions="approval, transfer"'}),
-    abiPath: Flags.string({description: 'path to abi from root', required: true}),
-    startBlock: Flags.integer({description: 'startBlock', required: true}),
-    address: Flags.string({description: 'contract address'}),
+    file: Flags.string({char: 'f', description: 'Project folder or manifest file'}),
+    address: Flags.string({description: 'The contracts address'}),
+    startBlock: Flags.integer({
+      description: 'The start block of the handler, generally the block the contract is deployed.',
+    }),
+    abiPath: Flags.string({description: 'The path to the ABI file'}),
+    events: Flags.string({description: 'ABI events to generate handlers for, --events="approval, transfer"'}),
+    functions: Flags.string({description: 'ABI functions to generate handlers for,  --functions="approval, transfer"'}),
   };
+
+  // This command needs a better name, having the alias also puts this in the top level help
+  static aliases = ['import-abi'];
 
   private prepareUserInput<T>(
     selectedEvents: Record<string, EventFragment>,
@@ -78,28 +94,80 @@ export default class Generate extends Command {
   }
   async run(): Promise<void> {
     const {flags} = await this.parse(Generate);
-    const {abiPath, address, events, file, functions, startBlock} = flags;
-    let manifest: string, root: string;
-    let isTs: boolean;
+    const {address, events, file, functions} = flags;
+    let {abiPath, startBlock} = flags;
+    // let manifest: string, root: string;
+    let isTs = false;
 
     const projectPath = path.resolve(file ?? process.cwd());
 
-    if (lstatSync(projectPath).isDirectory()) {
-      if (fs.existsSync(path.join(projectPath, DEFAULT_TS_MANIFEST))) {
-        manifest = path.join(projectPath, DEFAULT_TS_MANIFEST);
-        isTs = true;
-      } else {
-        manifest = path.join(projectPath, DEFAULT_MANIFEST);
-        isTs = false;
+    /*
+      ts manifest can be either single chain ts manifest
+      or multichain ts manifest
+      or multichain yaml manifest containing single chain ts project paths
+    */
+    const tsManifest = getTsManifest(projectPath);
+
+    // Ensure the manifest is built so we can extract data
+    if (tsManifest) {
+      isTs = true;
+      await buildManifestFromLocation(tsManifest, this.log.bind(this));
+    }
+
+    const {manifests, root} = getProjectRootAndManifest(projectPath);
+    if (manifests.length > 1) {
+      //
+      throw new Error('For multichain projects a specific manifest must be provided');
+    }
+    // TODO ensure we still use TS path
+    // TODO ensure if it is multichain and speific manifest is provided we use that
+    const yamlManifest = getManifestPath(root, manifests[0]);
+    const manifest = tsManifest ?? yamlManifest;
+
+    const project = loadFromJsonOrYaml(yamlManifest) as ProjectManifestV1_0_0;
+
+    if (getProjectNetwork(project) !== NETWORK_FAMILY.ethereum) {
+      throw new Error('ABI generation is only supported for Ethereum projects');
+    }
+
+    if (!abiPath) {
+      if (!address) {
+        this.error('Please provide the ABI file path using --abiPath flag, or address to fetch the ABI from Ethersacn');
       }
-      root = projectPath;
-    } else if (lstatSync(projectPath).isFile()) {
-      const {dir, ext} = path.parse(projectPath);
-      root = dir;
-      isTs = extensionIsTs(ext);
-      manifest = projectPath;
-    } else {
-      this.error('Invalid manifest path');
+      const spinner = ora('Finding ABI from Etherscan').start();
+      try {
+        const abi = await tryFetchAbiFromExplorer(address, project.network.chainId);
+        if (!abi) {
+          spinner.stop();
+          this.error(`Unable to fetch ABI from Etherscan, please provide the ABI file path using --abiPath flag`);
+        }
+
+        abiPath = await saveAbiToFile(abi, address, root);
+        spinner.succeed('Found ABI from Etherscan');
+      } catch (e) {
+        spinner.stop();
+        throw e;
+      }
+    }
+
+    if (!startBlock) {
+      if (!address) {
+        // Cannot fetch start block without address
+        this.error('Please provide the start block using the --startBlock flag');
+      }
+      const spinner = ora('Finding start height from explorer').start();
+      try {
+        startBlock = await fetchContractDeployHeight(address, project.network.chainId);
+        if (!startBlock) {
+          throw new Error(`Unable to find start block for contract ${address}`);
+        }
+        spinner.succeed(`Found contract deployed at height ${startBlock}, using as start block.`);
+      } catch (e) {
+        spinner.stop();
+        this.error(
+          `Unable to fetch start block from block explorer, please provide the start block using --startBlock flag`
+        );
+      }
     }
 
     const ethModule = loadDependency(NETWORK_FAMILY.ethereum);

@@ -7,12 +7,13 @@ import {codegen} from '../../controller/codegen-controller';
 import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils';
 
 export default class Codegen extends Command {
-  static description = 'Generate schemas for graph node';
+  static description = 'Generate entity types from the graphql schema';
 
   static flags = {
     location: Flags.string({
       char: 'l',
-      description: '[deprecated] local folder to run codegen in. please use file flag instead',
+      description: 'local folder to run codegen in. please use file flag instead',
+      deprecated: true,
     }),
     file: Flags.string({char: 'f', description: 'specify manifest file path (will overwrite -l if both used)'}),
   };
