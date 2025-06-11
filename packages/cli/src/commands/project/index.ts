@@ -9,7 +9,7 @@ import Delete_project from './delete-project';
 type projectOptions = 'create' | 'delete';
 
 export default class Project extends Command {
-  static description = 'Create/Delete project';
+  static description = 'Create/Delete projects on the OnFinality managed services';
   static flags = {
     options: Flags.string({
       options: ['create', 'delete'],

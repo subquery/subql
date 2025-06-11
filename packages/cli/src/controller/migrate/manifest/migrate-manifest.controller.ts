@@ -99,7 +99,11 @@ export async function renderManifest(projectPath: string, project: CommonSubquer
  * @param inputPath file path to subgraph.yaml
  * @param outputPath file path to project.ts
  */
-export async function migrateManifest(chainInfo: ChainInfo, subgraphManifest: SubgraphProject, outputPath: string) {
+export async function migrateManifest(
+  chainInfo: ChainInfo,
+  subgraphManifest: SubgraphProject,
+  outputPath: string
+): Promise<void> {
   await prepareDirPath(outputPath, false);
   await renderManifest(outputPath, graphManifestToSubqlManifest(chainInfo, subgraphManifest));
 }

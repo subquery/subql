@@ -1,15 +1,15 @@
 {
   "name": "@subql/cli",
-  "description": "cli for subquery",
+  "description": "CLI for SubQuery",
   "version": "5.11.0",
-  "author": "Ian He",
+  "author": "SubQuery Pte Ltd.",
   "bin": {
     "subql": "./bin/run"
   },
   "bugs": "https://github.com/subquery/subql/issues",
   "dependencies": {
     "@inquirer/prompts": "^5.3.6",
-    "@oclif/core": "^2.16.0",
+    "@oclif/core": "^4.3.3",
     "@subql/common": "workspace:*",
     "@subql/utils": "workspace:*",
     "chalk": "^4",

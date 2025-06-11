@@ -8,9 +8,8 @@ import {DeploymentType} from './types';
 //DEPLOYMENT
 export const DEFAULT_DEPLOYMENT_TYPE = 'primary' satisfies DeploymentType;
 //PROJECT
-export const ROOT_API_URL_PROD = 'https://api.subquery.network';
-
-export const BASE_PROJECT_URL = 'https://managedservice.subquery.network';
+export const ROOT_API_URL_PROD = 'https://index-api.onfinality.io';
+export const BASE_PROJECT_URL = 'https://indexing.onfinality.io';
 
 export const BASE_TEMPLATE_URl = 'https://templates.subquery.network';
 

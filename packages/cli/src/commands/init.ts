@@ -37,7 +37,7 @@ function filterInput<T>(arr: T[]) {
 type InitFlags = Interfaces.InferredFlags<typeof Init.flags>;
 
 export default class Init extends Command {
-  static description = 'Initialize a scaffold subquery project';
+  static description = 'Initialize a SubQuery project from a template';
 
   static flags = {
     force: Flags.boolean({
@@ -142,14 +142,17 @@ export default class Init extends Command {
     assert(selectedProject, 'No project selected');
     const projectPath: string = await cloneProjectTemplate(location, project.name, selectedProject);
     const {isMultiChainProject} = await this.setupProject(project, projectPath, flags);
-    if (isMultiChainProject) return;
+    if (isMultiChainProject) {
+      this.log('Multi-chain project successfully created!');
+      return;
+    }
 
     if (await validateEthereumProjectManifest(projectPath)) {
       if (flags.abiPath) {
         await this.createProjectScaffold(projectPath, flags.abiPath);
       } else if (!flags.force) {
         const loadAbi = await confirm({
-          message: 'Do you want to generate scaffolding from an existing contract abi?',
+          message: 'Do you want to generate datasources and handlers from an existing contract ABI?',
           default: false,
         });
 
@@ -158,6 +161,8 @@ export default class Init extends Command {
         }
       }
     }
+
+    this.log('Project successfully created!');
   }
 
   async setupProject(
@@ -235,6 +240,12 @@ export default class Init extends Command {
         message: 'Path to ABI',
       }));
 
+    // If user doesn't enter anything skip the generation
+    if (!abiFilePath) {
+      this.log('ABI not provided. You can add ABIs at a later stage with the `import-abi` command.');
+      return;
+    }
+
     const contractAddress = await input({
       message: 'Please provide a contract address (optional)',
     });
@@ -246,7 +257,7 @@ export default class Init extends Command {
 
     const cleanedContractAddress = contractAddress.replace(/[`'"]/g, '');
 
-    this.log(`Generating scaffold handlers and manifest from ${abiFilePath}`);
+    this.log(`Generating handlers and manifest from ${abiFilePath}`);
     await Generate.run([
       '-f',
       projectPath,

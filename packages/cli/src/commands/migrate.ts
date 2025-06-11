@@ -29,11 +29,11 @@ import {
 import {migrateMapping} from '../controller/migrate/mapping/migrate-mapping.controller';
 
 export default class Migrate extends Command {
-  static description = 'Schema subgraph project to subquery project';
+  static description = 'Migrate a Subgraph project to a SubQuery project, including the manifest and schema.';
 
   static flags = {
-    gitSubDirectory: Flags.string({char: 'd', description: 'specify git subdirectory path'}),
-    file: Flags.string({char: 'f', description: 'specify subgraph git/directory path'}),
+    gitSubDirectory: Flags.string({char: 'd', description: 'Specify git subdirectory path'}),
+    file: Flags.string({char: 'f', description: 'Specify subgraph git/directory path'}),
     output: Flags.string({char: 'o', description: 'Output subquery project path', required: false}),
   };
 

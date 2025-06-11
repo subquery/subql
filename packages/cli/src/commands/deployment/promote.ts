@@ -7,7 +7,7 @@ import {promoteDeployment} from '../../controller/deploy-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
 
 export default class Promote extends Command {
-  static description = 'Promote Deployment';
+  static description = 'Promote a deployment on the OnFinality managed services from a Stage environment to Production';
 
   static flags = {
     org: Flags.string({description: 'Enter organization name'}),

@@ -10,7 +10,7 @@ import {getOptionalToken, resolveToAbsolutePath} from '../utils';
 import Build from './build';
 
 export default class Publish extends Command {
-  static description = 'Upload this SubQuery project to IPFS';
+  static description = 'Upload this SubQuery project to IPFS for distribution';
 
   static flags = {
     location: Flags.string({char: 'f', description: 'from project folder or specify manifest file'}),

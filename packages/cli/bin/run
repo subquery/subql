@@ -5,10 +5,10 @@ const updateNotifier = require('update-notifier');
 const chalk = require('chalk');
 const semver = require('semver');
 
-const notifier = updateNotifier({ pkg: pjson, updateCheckInterval: 0 });
+const notifier = updateNotifier({pkg: pjson, updateCheckInterval: 0});
 
 if (notifier.update) {
-  const { current, latest, name } = notifier.update;
+  const {current, latest, name} = notifier.update;
 
   if (semver.lt(current, latest)) {
     const message = `
@@ -21,5 +21,8 @@ if (notifier.update) {
   }
 }
 
-const oclif = require('@oclif/core');
-oclif.run().then(oclif.flush).catch(oclif.Errors.handle);
+// eslint-disable-next-line unicorn/prefer-top-level-await
+(async () => {
+  const oclif = await import('@oclif/core');
+  await oclif.execute({development: false, dir: __dirname});
+})();

@@ -7,7 +7,7 @@ import {deleteProject} from '../../controller/project-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
 
 export default class Delete_project extends Command {
-  static description = 'Delete Project on Hosted Service';
+  static description = 'Delete a project on OnFinality managed services';
 
   static flags = {
     org: Flags.string({description: 'Enter organization name'}),

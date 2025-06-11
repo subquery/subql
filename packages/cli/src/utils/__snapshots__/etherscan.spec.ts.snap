@@ -1,0 +1,210 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`etherscan api ABI fetching can fetch the ABI 1`] = `
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "tokenAddress",
+        "type": "address",
+      },
+      {
+        "internalType": "address",
+        "name": "prizePoolAddress",
+        "type": "address",
+      },
+      {
+        "internalType": "uint256",
+        "name": "poolFeePerc_",
+        "type": "uint256",
+      },
+      {
+        "internalType": "address",
+        "name": "shieldAddress",
+        "type": "address",
+      },
+      {
+        "internalType": "uint256",
+        "name": "shieldFeePerc_",
+        "type": "uint256",
+      },
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor",
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address",
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "hashedPrompt",
+        "type": "bytes32",
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256",
+      },
+    ],
+    "name": "BuyIn",
+    "type": "event",
+  },
+  {
+    "stateMutability": "payable",
+    "type": "fallback",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "hashedPrompt",
+        "type": "bytes32",
+      },
+    ],
+    "name": "buyIn",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function",
+  },
+  {
+    "inputs": [],
+    "name": "operator",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [],
+    "name": "poolFeePerc",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [],
+    "name": "prizePool",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "prizePoolAddress",
+        "type": "address",
+      },
+      {
+        "internalType": "address",
+        "name": "shieldAddress",
+        "type": "address",
+      },
+    ],
+    "name": "setAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "poolFeePerc_",
+        "type": "uint256",
+      },
+      {
+        "internalType": "uint256",
+        "name": "shieldFeePerc_",
+        "type": "uint256",
+      },
+    ],
+    "name": "setFees",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "operator_",
+        "type": "address",
+      },
+    ],
+    "name": "setOperator",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+  },
+  {
+    "inputs": [],
+    "name": "shield",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [],
+    "name": "shieldFeePerc",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "inputs": [],
+    "name": "token",
+    "outputs": [
+      {
+        "internalType": "contract Token",
+        "name": "",
+        "type": "address",
+      },
+    ],
+    "stateMutability": "view",
+    "type": "function",
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive",
+  },
+]
+`;
