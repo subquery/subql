@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Update `oclif` dependency (#2817)
+- Update command descriptions (#2817)
+- Alias `codegen:generate` to `abi-import` (#2817)
+
+### Added
+- The `codegen:generate` command can now attempt to pull ABIs from etherscan (#2817)
 
 ## [5.11.0] - 2025-06-05
 ### Changed
