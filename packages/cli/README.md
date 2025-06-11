@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (--version)
-@subql/cli/5.10.1-0 linux-x64 node-v22.16.0
+@subql/cli/5.11.1-0 linux-x64 node-v22.16.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -43,6 +43,7 @@ USAGE
 - [`subql deployment:delete`](#subql-deploymentdelete)
 - [`subql deployment:deploy`](#subql-deploymentdeploy)
 - [`subql deployment:promote`](#subql-deploymentpromote)
+- [`subql import-abi`](#subql-import-abi)
 - [`subql init [PROJECTNAME]`](#subql-init-projectname)
 - [`subql migrate`](#subql-migrate)
 - [`subql multi-chain:add`](#subql-multi-chainadd)
@@ -71,11 +72,11 @@ DESCRIPTION
   Build this SubQuery project code
 ```
 
-_See code: [lib/commands/build/index.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/build/index.js)_
+_See code: [lib/commands/build/index.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/build/index.ts)_
 
 ## `subql codegen`
 
-Generate schemas for graph node
+Generate entity types from the GraphQL schema
 
 ```
 USAGE
@@ -83,40 +84,44 @@ USAGE
 
 FLAGS
   -f, --file=<value>      specify manifest file path (will overwrite -l if both used)
-  -l, --location=<value>  [deprecated] local folder to run codegen in. please use file flag instead
+  -l, --location=<value>  local folder to run codegen in. please use file flag instead
 
 DESCRIPTION
-  Generate schemas for graph node
+  Generate entity types from the GraphQL schema
 ```
 
-_See code: [lib/commands/codegen/index.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/codegen/index.js)_
+_See code: [lib/commands/codegen/index.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/codegen/index.ts)_
 
 ## `subql codegen:generate`
 
-Generate Project.yaml and mapping functions based on provided ABI
+Generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to fetch the ABI and start block from the Etherscan.
 
 ```
 USAGE
-  $ subql codegen:generate --abiPath <value> --startBlock <value> [-f <value>] [--events <value>] [--functions
-    <value>] [--address <value>]
+  $ subql codegen:generate [-f <value>] [--address <value>] [--startBlock <value>] [--abiPath <value>] [--events
+    <value>] [--functions <value>]
 
 FLAGS
-  -f, --file=<value>    specify manifest file path
-  --abiPath=<value>     (required) path to abi from root
-  --address=<value>     contract address
-  --events=<value>      abi events, --events="approval, transfer"
-  --functions=<value>   abi functions,  --functions="approval, transfer"
-  --startBlock=<value>  (required) startBlock
+  -f, --file=<value>    Project folder or manifest file
+  --abiPath=<value>     The path to the ABI file
+  --address=<value>     The contracts address
+  --events=<value>      ABI events to generate handlers for, --events="approval, transfer"
+  --functions=<value>   ABI functions to generate handlers for,  --functions="approval, transfer"
+  --startBlock=<value>  The start block of the handler, generally the block the contract is deployed.
 
 DESCRIPTION
-  Generate Project.yaml and mapping functions based on provided ABI
+  Generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to
+  fetch the ABI and start block from the Etherscan.
+
+ALIASES
+  $ subql import-abi
 ```
 
-_See code: [lib/commands/codegen/generate.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/codegen/generate.js)_
+_See code: [lib/commands/codegen/generate.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/codegen/generate.ts)_
 
 ## `subql deployment`
 
-Deploy to hosted service
+Deploy to OnFinality managed services
 
 ```
 USAGE
@@ -158,14 +163,14 @@ FLAGS
                                         <options: stage|primary>
 
 DESCRIPTION
-  Deploy to hosted service
+  Deploy to OnFinality managed services
 ```
 
-_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/deployment/index.js)_
+_See code: [lib/commands/deployment/index.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/deployment/index.ts)_
 
 ## `subql deployment:delete`
 
-Delete Deployment
+Delete a deployment from the OnFinality managed services
 
 ```
 USAGE
@@ -177,14 +182,14 @@ FLAGS
   --project_name=<value>  Enter project name
 
 DESCRIPTION
-  Delete Deployment
+  Delete a deployment from the OnFinality managed services
 ```
 
-_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/deployment/delete.js)_
+_See code: [lib/commands/deployment/delete.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/deployment/delete.ts)_
 
 ## `subql deployment:deploy`
 
-Deployment to hosted service
+Deploy a project to the OnFinality managed services
 
 ```
 USAGE
@@ -222,14 +227,14 @@ FLAGS
                                         <options: stage|primary>
 
 DESCRIPTION
-  Deployment to hosted service
+  Deploy a project to the OnFinality managed services
 ```
 
-_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/deployment/deploy.js)_
+_See code: [lib/commands/deployment/deploy.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/deployment/deploy.ts)_
 
 ## `subql deployment:promote`
 
-Promote Deployment
+Promote a deployment on the OnFinality managed services from a Stage environment to Production
 
 ```
 USAGE
@@ -241,14 +246,39 @@ FLAGS
   --project_name=<value>  Enter project name
 
 DESCRIPTION
-  Promote Deployment
+  Promote a deployment on the OnFinality managed services from a Stage environment to Production
 ```
 
-_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/deployment/promote.js)_
+_See code: [lib/commands/deployment/promote.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/deployment/promote.ts)_
+
+## `subql import-abi`
+
+Generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to fetch the ABI and start block from the Etherscan.
+
+```
+USAGE
+  $ subql import-abi [-f <value>] [--address <value>] [--startBlock <value>] [--abiPath <value>] [--events
+    <value>] [--functions <value>]
+
+FLAGS
+  -f, --file=<value>    Project folder or manifest file
+  --abiPath=<value>     The path to the ABI file
+  --address=<value>     The contracts address
+  --events=<value>      ABI events to generate handlers for, --events="approval, transfer"
+  --functions=<value>   ABI functions to generate handlers for,  --functions="approval, transfer"
+  --startBlock=<value>  The start block of the handler, generally the block the contract is deployed.
+
+DESCRIPTION
+  Generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to
+  fetch the ABI and start block from the Etherscan.
+
+ALIASES
+  $ subql import-abi
+```
 
 ## `subql init [PROJECTNAME]`
 
-Initialize a scaffold subquery project
+Initialize a SubQuery project from a template
 
 ```
 USAGE
@@ -270,29 +300,29 @@ FLAGS
   --npm                   Force using NPM instead of yarn, only works with `install-dependencies` flag
 
 DESCRIPTION
-  Initialize a scaffold subquery project
+  Initialize a SubQuery project from a template
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/init.js)_
+_See code: [lib/commands/init.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/init.ts)_
 
 ## `subql migrate`
 
-Schema subgraph project to subquery project
+Migrate a Subgraph project to a SubQuery project, including the manifest and schema.
 
 ```
 USAGE
   $ subql migrate [-d <value>] [-f <value>] [-o <value>]
 
 FLAGS
-  -d, --gitSubDirectory=<value>  specify git subdirectory path
-  -f, --file=<value>             specify subgraph git/directory path
+  -d, --gitSubDirectory=<value>  Specify git subdirectory path
+  -f, --file=<value>             Specify subgraph git/directory path
   -o, --output=<value>           Output subquery project path
 
 DESCRIPTION
-  Schema subgraph project to subquery project
+  Migrate a Subgraph project to a SubQuery project, including the manifest and schema.
 ```
 
-_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/migrate.js)_
+_See code: [lib/commands/migrate.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/migrate.ts)_
 
 ## `subql multi-chain:add`
 
@@ -311,7 +341,7 @@ DESCRIPTION
   Add new chain manifest to multi-chain configuration
 ```
 
-_See code: [lib/commands/multi-chain/add.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/multi-chain/add.js)_
+_See code: [lib/commands/multi-chain/add.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/multi-chain/add.ts)_
 
 ## `subql multi-chain:deploy`
 
@@ -357,11 +387,11 @@ DESCRIPTION
   Multi-chain deployment to hosted service
 ```
 
-_See code: [lib/commands/multi-chain/deploy.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/multi-chain/deploy.js)_
+_See code: [lib/commands/multi-chain/deploy.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/multi-chain/deploy.ts)_
 
 ## `subql project`
 
-Create/Delete project
+Create/Delete projects on the OnFinality managed services
 
 ```
 USAGE
@@ -379,14 +409,14 @@ FLAGS
   --subtitle=<value>     Enter subtitle
 
 DESCRIPTION
-  Create/Delete project
+  Create/Delete projects on the OnFinality managed services
 ```
 
-_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/project/index.js)_
+_See code: [lib/commands/project/index.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/project/index.ts)_
 
 ## `subql project:create-project`
 
-Create Project on Hosted Service
+Create a project on OnFinality managed services
 
 ```
 USAGE
@@ -403,14 +433,14 @@ FLAGS
   --subtitle=<value>     Enter subtitle
 
 DESCRIPTION
-  Create Project on Hosted Service
+  Create a project on OnFinality managed services
 ```
 
-_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/project/create-project.js)_
+_See code: [lib/commands/project/create-project.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/project/create-project.ts)_
 
 ## `subql project:delete-project`
 
-Delete Project on Hosted Service
+Delete a project on OnFinality managed services
 
 ```
 USAGE
@@ -421,14 +451,14 @@ FLAGS
   --projectName=<value>  Enter project name
 
 DESCRIPTION
-  Delete Project on Hosted Service
+  Delete a project on OnFinality managed services
 ```
 
-_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/project/delete-project.js)_
+_See code: [lib/commands/project/delete-project.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/project/delete-project.ts)_
 
 ## `subql publish`
 
-Upload this SubQuery project to IPFS
+Upload this SubQuery project to IPFS for distribution
 
 ```
 USAGE
@@ -440,9 +470,9 @@ FLAGS
   --ipfs=<value>          IPFS gateway endpoint
 
 DESCRIPTION
-  Upload this SubQuery project to IPFS
+  Upload this SubQuery project to IPFS for distribution
 ```
 
-_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v5.10.1-0/lib/commands/publish.js)_
+_See code: [lib/commands/publish.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/publish.ts)_
 
 <!-- commandsstop -->
