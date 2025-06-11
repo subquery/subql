@@ -7,7 +7,7 @@ import {codegen} from '../../controller/codegen-controller';
 import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils';
 
 export default class Codegen extends Command {
-  static description = 'Generate entity types from the graphql schema';
+  static description = 'Generate entity types from the GraphQL schema';
 
   static flags = {
     location: Flags.string({

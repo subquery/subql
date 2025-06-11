@@ -45,6 +45,7 @@ jobs:
       SUBQL_ACCESS_TOKEN: ${{ secrets.SUBQL_ACCESS_TOKEN }}
       SUBQL_ACCESS_TOKEN_TEST: ${{ secrets.SUBQL_ACCESS_TOKEN_TEST }}
       SUBQL_ORG_TEST: ${{ secrets.SUBQL_ORG_TEST }}
+      ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
     steps:
       - uses: actions/checkout@v4
 

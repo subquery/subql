@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update `oclif` dependency (#2817)
 - Update command descriptions (#2817)
-- Alias `codegen:generate` to `abi-import` (#2817)
+- Alias `codegen:generate` to `import-abi` (#2817)
 
 ### Added
 - The `codegen:generate` command can now attempt to pull ABIs from etherscan (#2817)

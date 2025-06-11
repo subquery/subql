@@ -19,7 +19,7 @@ import {V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken, valueOrPrompt} from '../../utils';
 
 export default class Deploy extends Command {
-  static description = 'Deployment a project to the OnFinality managed services';
+  static description = 'Deploy a project to the OnFinality managed services';
 
   static flags = {
     ...DefaultDeployFlags,

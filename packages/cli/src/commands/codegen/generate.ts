@@ -48,7 +48,7 @@ export interface UserInput {
 
 export default class Generate extends Command {
   static description =
-    'Generate project handlers and mapping functions based on an Ethreum ABI. If address is provided, it will attempt to fetch the ABI and start block from the Etherscan.';
+    'Generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to fetch the ABI and start block from the Etherscan.';
 
   static flags = {
     file: Flags.string({char: 'f', description: 'Project folder or manifest file'}),
@@ -130,7 +130,7 @@ export default class Generate extends Command {
 
     if (!abiPath) {
       if (!address) {
-        this.error('Please provide the ABI file path using --abiPath flag, or address to fetch the ABI from Ethersacn');
+        this.error('Please provide the ABI file path using --abiPath flag, or address to fetch the ABI from Etherscan');
       }
       const spinner = ora('Finding ABI from Etherscan').start();
       try {
