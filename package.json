@@ -24,7 +24,7 @@
     "jest": "^29.5.0",
     "lint-staged": "^15.2.7",
     "prettier": "^3.3.3",
-    "pretty-quick": "^4.0.0",
+    "pretty-quick": "^4.2.2",
     "regenerator-runtime": "^0.13.11",
     "ts-jest": "^29.2.4",
     "ts-loader": "^9.5.1",
