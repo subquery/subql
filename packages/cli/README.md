@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (--version)
-@subql/cli/5.11.1-0 linux-x64 node-v22.16.0
+@subql/cli/5.12.1-0 linux-x64 node-v22.16.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -72,7 +72,7 @@ DESCRIPTION
   Build this SubQuery project code
 ```
 
-_See code: [lib/commands/build/index.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/build/index.ts)_
+_See code: [lib/commands/build/index.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/build/index.ts)_
 
 ## `subql codegen`
 
@@ -90,7 +90,7 @@ DESCRIPTION
   Generate entity types from the GraphQL schema
 ```
 
-_See code: [lib/commands/codegen/index.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/codegen/index.ts)_
+_See code: [lib/commands/codegen/index.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/codegen/index.ts)_
 
 ## `subql codegen:generate`
 
@@ -117,7 +117,7 @@ ALIASES
   $ subql import-abi
 ```
 
-_See code: [lib/commands/codegen/generate.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/codegen/generate.ts)_
+_See code: [lib/commands/codegen/generate.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/codegen/generate.ts)_
 
 ## `subql deployment`
 
@@ -166,7 +166,7 @@ DESCRIPTION
   Deploy to OnFinality managed services
 ```
 
-_See code: [lib/commands/deployment/index.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/deployment/index.ts)_
+_See code: [lib/commands/deployment/index.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/deployment/index.ts)_
 
 ## `subql deployment:delete`
 
@@ -185,7 +185,7 @@ DESCRIPTION
   Delete a deployment from the OnFinality managed services
 ```
 
-_See code: [lib/commands/deployment/delete.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/deployment/delete.ts)_
+_See code: [lib/commands/deployment/delete.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/deployment/delete.ts)_
 
 ## `subql deployment:deploy`
 
@@ -230,7 +230,7 @@ DESCRIPTION
   Deploy a project to the OnFinality managed services
 ```
 
-_See code: [lib/commands/deployment/deploy.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/deployment/deploy.ts)_
+_See code: [lib/commands/deployment/deploy.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/deployment/deploy.ts)_
 
 ## `subql deployment:promote`
 
@@ -249,7 +249,7 @@ DESCRIPTION
   Promote a deployment on the OnFinality managed services from a Stage environment to Production
 ```
 
-_See code: [lib/commands/deployment/promote.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/deployment/promote.ts)_
+_See code: [lib/commands/deployment/promote.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/deployment/promote.ts)_
 
 ## `subql import-abi`
 
@@ -303,7 +303,7 @@ DESCRIPTION
   Initialize a SubQuery project from a template
 ```
 
-_See code: [lib/commands/init.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/init.ts)_
+_See code: [lib/commands/init.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/init.ts)_
 
 ## `subql migrate`
 
@@ -322,7 +322,7 @@ DESCRIPTION
   Migrate a Subgraph project to a SubQuery project, including the manifest and schema.
 ```
 
-_See code: [lib/commands/migrate.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/migrate.ts)_
+_See code: [lib/commands/migrate.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/migrate.ts)_
 
 ## `subql multi-chain:add`
 
@@ -341,7 +341,7 @@ DESCRIPTION
   Add new chain manifest to multi-chain configuration
 ```
 
-_See code: [lib/commands/multi-chain/add.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/multi-chain/add.ts)_
+_See code: [lib/commands/multi-chain/add.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/multi-chain/add.ts)_
 
 ## `subql multi-chain:deploy`
 
@@ -387,7 +387,7 @@ DESCRIPTION
   Multi-chain deployment to hosted service
 ```
 
-_See code: [lib/commands/multi-chain/deploy.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/multi-chain/deploy.ts)_
+_See code: [lib/commands/multi-chain/deploy.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/multi-chain/deploy.ts)_
 
 ## `subql project`
 
@@ -412,7 +412,7 @@ DESCRIPTION
   Create/Delete projects on the OnFinality managed services
 ```
 
-_See code: [lib/commands/project/index.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/project/index.ts)_
+_See code: [lib/commands/project/index.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/project/index.ts)_
 
 ## `subql project:create-project`
 
@@ -436,7 +436,7 @@ DESCRIPTION
   Create a project on OnFinality managed services
 ```
 
-_See code: [lib/commands/project/create-project.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/project/create-project.ts)_
+_See code: [lib/commands/project/create-project.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/project/create-project.ts)_
 
 ## `subql project:delete-project`
 
@@ -454,7 +454,7 @@ DESCRIPTION
   Delete a project on OnFinality managed services
 ```
 
-_See code: [lib/commands/project/delete-project.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/project/delete-project.ts)_
+_See code: [lib/commands/project/delete-project.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/project/delete-project.ts)_
 
 ## `subql publish`
 
@@ -473,6 +473,6 @@ DESCRIPTION
   Upload this SubQuery project to IPFS for distribution
 ```
 
-_See code: [lib/commands/publish.js](https://github.com/subquery/subql/blob/cli/5.11.1-0/packages/cli/src/commands/publish.ts)_
+_See code: [lib/commands/publish.js](https://github.com/subquery/subql/blob/cli/5.12.1-0/packages/cli/src/commands/publish.ts)_
 
 <!-- commandsstop -->
