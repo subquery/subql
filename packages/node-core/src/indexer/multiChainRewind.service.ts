@@ -7,7 +7,7 @@ import {hashName} from '@subql/utils';
 import {Transaction, Sequelize} from '@subql/x-sequelize';
 import {Connection} from '@subql/x-sequelize/types/dialects/abstract/connection-manager';
 import {uniqueId} from 'lodash';
-import {PoolClient} from 'pg';
+import {Notification, PoolClient} from 'pg';
 import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
 import {createRewindTrigger, createRewindTriggerFunction, getTriggers} from '../db';
@@ -30,6 +30,7 @@ const logger = getLogger('MultiChainRewindService');
  */
 @Injectable()
 export class MultiChainRewindService implements OnApplicationShutdown {
+  private _shutdown = false;
   private _status: MultiChainRewindStatus = MultiChainRewindStatus.Normal;
   private _chainId?: string;
   private dbSchema: string;
@@ -58,27 +59,29 @@ export class MultiChainRewindService implements OnApplicationShutdown {
     this._status = status;
   }
 
-  get status() {
+  get status(): MultiChainRewindStatus {
     assert(this._status, 'status is not set');
     return this._status;
   }
 
-  get globalModel() {
+  get globalModel(): PlainGlobalModel {
     if (!this._globalModel) {
       this._globalModel = new PlainGlobalModel(this.dbSchema, this.chainId, this.storeService.globalDataRepo);
     }
     return this._globalModel;
   }
 
-  async onApplicationShutdown() {
+  async onApplicationShutdown(): Promise<void> {
+    this._shutdown = true;
     await this.processingPromise;
     if (this.pgListener) {
       this.sequelize.connectionManager.releaseConnection(this.pgListener as Connection);
+      this.pgListener = undefined;
     }
   }
 
   @mainThreadOnly()
-  async init(chainId: string, reindex?: (targetHeader: Header) => Promise<void>) {
+  async init(chainId: string, reindex?: (targetHeader: Header) => Promise<void>): Promise<Header | undefined> {
     this._chainId = chainId;
 
     if (reindex === undefined) {
@@ -135,8 +138,10 @@ export class MultiChainRewindService implements OnApplicationShutdown {
     }
   }
 
-  private notifyHandle(msg: any) {
+  private notifyHandle(msg: Notification) {
     this.processingPromise = this.processingPromise.then(async () => {
+      // We're shutdown but still receiving messages, so we ignore them.
+      if (this._shutdown) return;
       assert(msg.payload, 'Payload is empty');
       const {chainId, event: eventType} = JSON.parse(msg.payload) as {chainId: string; event: MultiChainRewindEvent};
       if (chainId !== this.chainId) return;
