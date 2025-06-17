@@ -7,7 +7,6 @@ import * as path from 'path';
 import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, loadFromJsonOrYaml, makeTempDir, NETWORK_FAMILY} from '@subql/common';
 import {ProjectManifestV1_0_0, ProjectNetworkConfig} from '@subql/types-core';
 import axios from 'axios';
-import {copySync} from 'fs-extra';
 import {rimraf} from 'rimraf';
 import git from 'simple-git';
 import {parseDocument, YAMLMap, YAMLSeq} from 'yaml';
@@ -133,7 +132,7 @@ export async function cloneProjectTemplate(
   await git(tempPath).raw('sparse-checkout', 'set', selectedProject.path);
   await git(tempPath).raw('pull', 'origin', 'main');
   // Copy content to project path
-  copySync(path.join(tempPath, selectedProject.path), projectPath);
+  await fs.promises.cp(path.join(tempPath, selectedProject.path), projectPath, {recursive: true});
   // Clean temp folder
   fs.rmSync(tempPath, {recursive: true, force: true});
   return projectPath;

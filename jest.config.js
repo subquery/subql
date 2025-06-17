@@ -171,7 +171,7 @@ module.exports = {
   testPathIgnorePatterns: [
     '.*\\.fixtures\\.ts$',
     'packages/cli/test/build/src/test/mappingHandler.test.ts',
-    "/node_modules/"
+    '/node_modules/',
   ],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
@@ -194,10 +194,9 @@ module.exports = {
     '^.+\\.(ts|tsx)?$': [
       'ts-jest',
       {
-        tsconfig: 'tsconfig.test.json'
-      }
+        tsconfig: 'tsconfig.test.json',
+      },
     ],
-    '^.+\\.(js|jsx)$': 'babel-jest',
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
@@ -206,9 +205,7 @@ module.exports = {
   //   "\\.pnp\\.[^\\/]+$"
   // ],
 
-  "transformIgnorePatterns": [
-    "node_modules/(?!(@polkadot|@babel/runtime/helpers/esm)/)"
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(@polkadot)/)'],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,
