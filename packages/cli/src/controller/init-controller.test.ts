@@ -4,7 +4,6 @@
 import * as fs from 'fs';
 import path from 'path';
 import {makeTempDir} from '@subql/common';
-import {copySync} from 'fs-extra';
 import {rimraf} from 'rimraf';
 import git from 'simple-git';
 import {parseDocument, Document} from 'yaml';
@@ -102,7 +101,7 @@ describe('Cli can create project', () => {
     await git(tempPath).raw('sparse-checkout', 'set', `${projects[0].path}`);
     await git(tempPath).raw('pull', 'origin', 'd2868e9e46371f0ce45e52acae2ace6cb97296a0');
 
-    copySync(path.join(tempPath, `${projects[0].path}`), projectPath);
+    await fs.promises.cp(path.join(tempPath, `${projects[0].path}`), projectPath, {recursive: true});
     fs.rmSync(tempPath, {recursive: true, force: true});
 
     const output = await testYAML(path.join(localPath, projectSpec.name), projectSpec);
