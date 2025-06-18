@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - fs-extra dependency in favour of fs (#2824)
 
+### Changed
+- Switch build command from webpack to esbuild and support projects using pnpm (#2825)
+
 ## [5.12.0] - 2025-06-12
 ### Changed
 - Update `oclif` dependency (#2817)
