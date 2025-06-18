@@ -79,6 +79,12 @@ export function filterTransactionsProcessor(
     return false;
   }
 
+  if (filter.type) {
+    if (transaction.type !== filter.type) {
+      return false;
+    }
+  }
+
   return true;
 }
 

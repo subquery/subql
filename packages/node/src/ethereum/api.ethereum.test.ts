@@ -19,7 +19,7 @@ import {
 } from './block.ethereum';
 
 // Add api key to work
-const HTTP_ENDPOINT = 'https://ethereum.rpc.subquery.network/public';
+const HTTP_ENDPOINT = 'https://ethereum-rpc.publicnode.com';
 const BLOCK_CONFIRMATIONS = 20;
 const MOONBEAM_ENDPOINT = 'https://rpc.api.moonbeam.network';
 
@@ -315,40 +315,36 @@ describe('Api.ethereum', () => {
     expect(result.length).toBe(2);
   });
 
-  it('Resolves the correct tags for finalization', async () => {
-    // Ethereum
-    expect((ethApi as any).supportsFinalization).toBeTruthy();
+  it('Filters transaction type correctly', async () => {
+    blockData = await fetchBlock(22678424);
+    const result = blockData.transactions.filter((tx) => {
+      if (filterTransactionsProcessor(tx, { type: '0x3' })) {
+        return tx.hash;
+      }
+    });
 
-    // Moonbeam
-    ethApi = new EthereumApi(
-      MOONBEAM_ENDPOINT,
-      BLOCK_CONFIRMATIONS,
-      eventEmitter,
+    expect(result.length).toBe(3);
+    expect(result[1].hash).toBe(
+      '0x6ae305d4cc361c24b24953b59a84a9ea5cb02792d3ad1576c1e2b81a456169db',
     );
-    await ethApi.init();
-
-    expect((ethApi as any).supportsFinalization).toBeTruthy();
-
-    // BSC
-    ethApi = new EthereumApi(
-      'https://binance.llamarpc.com',
-      BLOCK_CONFIRMATIONS,
-      eventEmitter,
-    );
-    await ethApi.init();
-
-    expect((ethApi as any).supportsFinalized).toBeFalsy();
-
-    // Polygon
-    ethApi = new EthereumApi(
-      'https://polygon.llamarpc.com',
-      BLOCK_CONFIRMATIONS,
-      eventEmitter,
-    );
-    await ethApi.init();
-
-    expect((ethApi as any).supportsFinalized).toBeFalsy();
   });
+
+  it.each([
+    // TODO all these networs now support finalization tags, need to find one that does not
+    [HTTP_ENDPOINT, true],
+    [MOONBEAM_ENDPOINT, true],
+    ['https://binance.llamarpc.com', true],
+    ['https://polygon-rpc.com', true],
+  ])(
+    'Resolve the correct finalization tags for %s',
+    async (endpoint, finalization) => {
+      ethApi = new EthereumApi(endpoint, BLOCK_CONFIRMATIONS, eventEmitter);
+      await ethApi.init();
+
+      expect(ethApi.supportsFinalization).toEqual(finalization);
+    },
+  );
+
   it('Assert blockHash on logs and block', async () => {
     ethApi = new EthereumApi(
       'https://rpc.ankr.com/xdc',
@@ -396,5 +392,25 @@ describe('Api.ethereum', () => {
       .block;
     expect(isFullBlock(block10001)).toBeFalsy();
     expect(isFullBlock(lightBlock10001)).toBeFalsy();
+  });
+
+  it('Should have the ERC-4844 Fields', async () => {
+    blockData = await fetchBlock(22678424);
+
+    expect(blockData.blobGasUsed).toBe(655360n);
+    expect(blockData.excessBlobGas).toBe(0n);
+
+    const tx = blockData.transactions.find(
+      (tx) =>
+        tx.hash ===
+        '0x6ae305d4cc361c24b24953b59a84a9ea5cb02792d3ad1576c1e2b81a456169db',
+    )!;
+
+    expect(tx.blobVersionedHashes).toEqual([
+      '0x017c682fba2cea00c4ad7ed2888ed2eb7116595e6a995500bd105e842b041340',
+      '0x01585afe4cada3a77e5f07c73fb4d10e0a908ad22e7af13ff988569b842de17a',
+      '0x01248e92f9bec9ee102717029519bc38cda783a7df3b70d90e86ef4d8ead450c',
+    ]);
+    expect(tx.maxFeePerBlobGas).toEqual(1000000000n);
   });
 });

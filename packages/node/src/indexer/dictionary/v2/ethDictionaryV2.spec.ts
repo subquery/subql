@@ -122,15 +122,17 @@ function makeBlockHeightMap(mockDs: SubqlDatasource[]): BlockHeightMap<any> {
 // enable this once dictionary v2 is online
 describe('eth dictionary v2', () => {
   let ethDictionaryV2: EthDictionaryV2;
+  let ethApi: EthereumApi;
 
   const dsMap = makeBlockHeightMap(mockDs);
 
   beforeAll(async () => {
+    ethApi = new EthereumApi(HTTP_ENDPOINT, 1, new EventEmitter2());
     ethDictionaryV2 = await EthDictionaryV2.create(
       DEFAULT_DICTIONARY,
       nodeConfig,
       { network: { chainId: '1' } } as SubqueryProject,
-      new EthereumApi(HTTP_ENDPOINT, 1, new EventEmitter2()),
+      ethApi,
     );
   }, 10000);
 
@@ -168,7 +170,20 @@ describe('eth dictionary v2', () => {
       ).length,
     ).toBe(4);
 
-    expect(ethBlock19217804.logs.length).toBe(233);
+    // Run the same filters on an RPC block to compare results
+    const rpcBlock19217804 = await ethApi.fetchBlock(19217804);
+    const rpcLogs19217804 = [
+      ...rpcBlock19217804.block.transactions
+        .filter((tx) => tx.input.indexOf('0x095ea7b3') === 0)
+        .flatMap((tx) => tx.logs),
+      ...rpcBlock19217804.block.logs.filter(
+        (l) =>
+          l.topics[0] ===
+          '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+      ),
+    ];
+
+    expect(ethBlock19217804.logs.length).toBe(rpcLogs19217804.length);
 
     // This matches with dictionaryQueryEntries[0].topics
     expect(ethBlock19217804.logs[0].topics).toContain(
@@ -315,7 +330,7 @@ describe('eth dictionary v2', () => {
 
     expect(res?.batchBlocks.length).toEqual(0);
     expect(res?.lastBufferedHeight).toEqual(18733210);
-  });
+  }, 10_000);
 });
 
 describe('buildDictionaryV2QueryEntry', () => {

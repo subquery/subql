@@ -15,8 +15,7 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiService } from './api.service.ethereum';
 
 // Add api key to work
-const WS_ENDPOINT = 'wss://eth.api.onfinality.io/ws?apikey=';
-const HTTP_ENDPOINT = 'https://ethereum.rpc.subquery.network/public';
+const HTTP_ENDPOINT = 'https://eth.llamarpc.com';
 
 function testSubqueryProject(endpoint: string): SubqueryProject {
   return {

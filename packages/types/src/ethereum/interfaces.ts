@@ -33,6 +33,11 @@ export interface EthereumTransactionFilter {
    * function: '0x, // This will filter transactions that have no input
    * */
   function?: string | null;
+
+  /**
+   * The transaction type, 0x0 for legacy, 0x1 for access type lists, 0x2 for dynamic fees and 0x3 for blob transactions
+   */
+  type?: `0x${string}`;
 }
 
 /**
@@ -82,6 +87,9 @@ export type EthereumBlock = {
   uncles: string[];
   baseFeePerGas?: bigint;
   blockGasCost?: bigint;
+
+  blobGasUsed?: bigint;
+  excessBlobGas?: bigint;
 };
 
 export type EthereumTransaction<T extends EthereumResult = EthereumResult> = {
@@ -111,6 +119,9 @@ export type EthereumTransaction<T extends EthereumResult = EthereumResult> = {
   maxFeePerGas?: bigint;
   maxPriorityFeePerGas?: bigint;
   args?: T;
+
+  blobVersionedHashes?: string[];
+  maxFeePerBlobGas?: bigint;
 };
 
 export type EthereumReceipt = {

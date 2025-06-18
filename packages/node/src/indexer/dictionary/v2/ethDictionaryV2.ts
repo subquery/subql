@@ -9,6 +9,7 @@ import {
   DictionaryResponse,
   getLogger,
   IBlock,
+  V2MetadataFilters,
 } from '@subql/node-core';
 import {
   EthereumBlock,
@@ -59,6 +60,7 @@ function applyAddresses(
 function callFilterToDictionaryCondition(
   filter?: EthereumTransactionFilter,
   addresses?: (string | undefined | null)[],
+  availableFilters?: string[],
 ): EthDictionaryTxConditions {
   const txConditions: EthDictionaryTxConditions = {};
   const toArray: (string | null)[] = [];
@@ -93,15 +95,24 @@ function callFilterToDictionaryCondition(
     funcArray.push(functionToSighash(filter.function));
   }
 
-  if (toArray.length !== 0) {
-    txConditions.to = toArray;
-  }
-  if (fromArray.length !== 0) {
-    txConditions.from = fromArray;
-  }
+  const setValue = <K extends keyof EthDictionaryTxConditions>(
+    key: K,
+    value: EthDictionaryTxConditions[K],
+  ) => {
+    if (availableFilters && !availableFilters.includes(key)) {
+      return;
+    }
+    if (Array.isArray(value) && value.length === 0) {
+      return;
+    }
+    txConditions[key] = value;
+  };
 
-  if (funcArray.length !== 0) {
-    txConditions.data = funcArray;
+  setValue('to', toArray);
+  setValue('from', fromArray);
+  setValue('data', funcArray);
+  if (filter?.type) {
+    setValue('type', [filter.type]);
   }
 
   return txConditions;
@@ -110,9 +121,13 @@ function callFilterToDictionaryCondition(
 function eventFilterToDictionaryCondition(
   filter?: EthereumLogFilter,
   addresses?: (string | undefined | null)[],
+  availableFilters?: string[],
 ): EthDictionaryLogConditions {
   const logConditions: EthDictionaryLogConditions = {};
-  logConditions.address = applyAddresses(addresses);
+
+  if (!availableFilters || availableFilters.includes('address')) {
+    logConditions.address = applyAddresses(addresses);
+  }
   if (filter?.topics) {
     for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
       const topic = filter.topics[i];
@@ -120,6 +135,9 @@ function eventFilterToDictionaryCondition(
         continue;
       }
       const field = `topics${i}`;
+      if (availableFilters && !availableFilters.includes(field)) {
+        continue;
+      }
       // Initialized
       if (!logConditions[field]) {
         logConditions[field] = [];
@@ -159,6 +177,7 @@ function sanitiseDictionaryConditions(
 
 export function buildDictionaryV2QueryEntry(
   dataSources: EthereumProjectDs[],
+  availableFilters?: V2MetadataFilters,
 ): EthDictionaryV2QueryEntry {
   const dictionaryConditions: EthDictionaryV2QueryEntry = {
     logs: [],
@@ -185,7 +204,11 @@ export function buildDictionaryV2QueryEntry(
         ) {
           dictionaryConditions.transactions ??= [];
           dictionaryConditions.transactions.push(
-            callFilterToDictionaryCondition(handler.filter, addresses),
+            callFilterToDictionaryCondition(
+              handler.filter,
+              addresses,
+              availableFilters?.transactions,
+            ),
           );
         }
         break;
@@ -197,7 +220,11 @@ export function buildDictionaryV2QueryEntry(
         ) {
           dictionaryConditions.logs ??= [];
           dictionaryConditions.logs.push(
-            eventFilterToDictionaryCondition(handler.filter, addresses),
+            eventFilterToDictionaryCondition(
+              handler.filter,
+              addresses,
+              availableFilters?.logs,
+            ),
           );
         }
 
@@ -242,7 +269,7 @@ export class EthDictionaryV2 extends DictionaryV2<
   buildDictionaryQueryEntries(
     dataSources: (EthereumProjectDs | EthereumProjectDsTemplate)[],
   ): EthDictionaryV2QueryEntry {
-    return buildDictionaryV2QueryEntry(dataSources);
+    return buildDictionaryV2QueryEntry(dataSources, this._metadata?.filters);
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await

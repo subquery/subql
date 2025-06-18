@@ -59,7 +59,13 @@ export function formatBlock(block: any): EthereumBlock {
     blockGasCost: block.blockGasCost
       ? handleNumber(block.blockGasCost).toBigInt()
       : undefined,
-    logs: [], // Filled in at AvalancheBlockWrapped constructor
+    blobGasUsed: block.blobGasUsed
+      ? handleNumber(block.blobGasUsed).toBigInt()
+      : undefined,
+    excessBlobGas: block.excessBlobGas
+      ? handleNumber(block.excessBlobGas).toBigInt()
+      : undefined,
+    logs: [],
   } as EthereumBlock;
 }
 
@@ -127,6 +133,9 @@ export function formatTransaction(
       ? handleNumber(tx.maxPriorityFeePerGas).toBigInt()
       : undefined,
     receipt: undefined, // Filled in at Etheruem.fetchBlocks
+    maxFeePerBlobGas: tx.maxFeePerBlobGas
+      ? handleNumber(tx.maxFeePerBlobGas).toBigInt()
+      : undefined,
     toJSON(): string {
       return JSON.stringify(omit(this, ['block', 'receipt', 'toJSON']));
     },

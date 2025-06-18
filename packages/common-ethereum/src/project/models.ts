@@ -60,6 +60,9 @@ export class TransactionFilter implements EthereumTransactionFilter {
   @IsOptional()
   @IsString()
   function?: string | null;
+  @IsOptional()
+  @IsString()
+  type?: `0x${string}`;
 }
 
 export function forbidNonWhitelisted(keys: any, validationOptions?: ValidationOptions) {
@@ -99,7 +102,7 @@ export class BlockHandler implements SubqlBlockHandler {
 }
 
 export class CallHandler implements SubqlCallHandler {
-  @forbidNonWhitelisted({from: '', to: '', function: ''})
+  @forbidNonWhitelisted({from: '', to: '', function: '', type: ''})
   @IsOptional()
   @ValidateNested()
   @Type(() => TransactionFilter)

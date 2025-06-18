@@ -81,4 +81,5 @@ export interface EthDictionaryTxConditions {
   to?: (string | null)[];
   from?: string[];
   data?: string[];
+  type?: string[];
 }

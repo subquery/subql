@@ -20,10 +20,7 @@ module.exports = {
   // collectCoverage: false,
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
-  collectCoverageFrom: [
-    'packages/common-ethereum/src/**/*.ts',
-    'packages/node/src/**/*.ts',
-  ],
+  collectCoverageFrom: ['packages/common-ethereum/src/**/*.ts', 'packages/node/src/**/*.ts'],
 
   // The directory where Jest should output its coverage files
   coverageDirectory: 'coverage',
@@ -81,7 +78,7 @@ module.exports = {
   // moduleNameMapper: {},
   moduleNameMapper: {
     '@subql/common-ethereum': '<rootDir>/packages/common-ethereum/src',
-    '@subql/types-ethereum': '<rootDir>/packages/types/src'
+    '@subql/types-ethereum': '<rootDir>/packages/types/src',
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
@@ -176,11 +173,7 @@ module.exports = {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    '^.+\\.(ts|tsx)?$': [
-      'ts-jest',
-      { tsconfig: 'tsconfig.test.json'}
-    ],
-    '^.+\\.(js|jsx)$': 'babel-jest',
+    '^.+\\.(ts|tsx)?$': ['ts-jest', {tsconfig: 'tsconfig.test.json'}],
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
@@ -189,9 +182,7 @@ module.exports = {
   //   "\\.pnp\\.[^\\/]+$"
   // ],
 
-  "transformIgnorePatterns": [
-    "node_modules/(?!(@polkadot|@babel/runtime/helpers/esm)/)"
-  ],
+  transformIgnorePatterns: ['node_modules/(?!(@polkadot)/)'],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,
