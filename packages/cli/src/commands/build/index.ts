@@ -5,7 +5,7 @@ import assert from 'assert';
 import {existsSync, lstatSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {getBuildEntries, runWebpack} from '../../controller/build-controller';
+import {getBuildEntries, runBundle} from '../../controller/build-controller';
 import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils';
 
 export default class Build extends Command {
@@ -43,7 +43,7 @@ export default class Build extends Command {
       const buildEntries = getBuildEntries(directory);
       const outputDir = path.resolve(directory, flags.output ?? 'dist');
 
-      await runWebpack(buildEntries, directory, outputDir, isDev, true);
+      await runBundle(buildEntries, directory, outputDir, isDev, true);
       if (!flags.silent) {
         this.log('Building and packing code ...');
         this.log('Done!');
