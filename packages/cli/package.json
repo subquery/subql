@@ -28,8 +28,7 @@
     "typescript": "^5.7.3",
     "update-notifier": "^5.1.0",
     "websocket": "^1.0.35",
-    "yaml": "^2.5.0",
-    "yaml-loader": "^0.8.1"
+    "yaml": "^2.5.0"
   },
   "devDependencies": {
     "@subql/common-algorand": "^4.3.1",
