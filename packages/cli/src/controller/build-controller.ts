@@ -1,117 +1,64 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import {readFileSync, existsSync} from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import * as esbuild from 'esbuild';
 import {globSync} from 'glob';
-import {parse} from 'jsonc-parser';
-import TerserPlugin from 'terser-webpack-plugin';
-import {TsconfigPathsPlugin} from 'tsconfig-paths-webpack-plugin';
-import webpack, {Configuration} from 'webpack';
-import {merge} from 'webpack-merge';
+import * as yaml from 'js-yaml';
 
-const getBaseConfig = (
-  buildEntries: Configuration['entry'],
-  projectDir: string,
-  outputDir: string,
-  development?: boolean
-): webpack.Configuration => ({
-  target: 'node',
-  mode: development ? 'development' : 'production',
-  context: projectDir,
-  entry: buildEntries,
-  devtool: 'inline-source-map',
-  optimization: {
-    minimize: true,
-    minimizer: [
-      new TerserPlugin({
-        terserOptions: {
-          sourceMap: true,
-          format: {
-            beautify: true,
-          },
-        },
-      }),
-    ],
-  },
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        loader: require.resolve('ts-loader'),
-        options: {
-          compilerOptions: {
-            declaration: false,
-          },
-        },
-      },
-      {
-        test: /\.ya?ml$/,
-        use: 'yaml-loader',
-      },
-    ],
-  },
-
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.json'],
-    plugins: [],
-  },
-
-  output: {
-    path: outputDir,
-    filename: '[name].js',
-    libraryTarget: 'commonjs',
-  },
-});
-
-export function loadTsConfig(projectDir: string): any | undefined {
-  const tsconfigPath = path.join(projectDir, 'tsconfig.json');
-  if (existsSync(tsconfigPath)) {
-    const tsconfig = readFileSync(tsconfigPath, 'utf-8');
-    const tsconfigJson = parse(tsconfig);
-
-    return tsconfigJson;
-  }
-}
-
-export async function runWebpack(
-  buildEntries: Configuration['entry'],
+export async function runBundle(
+  buildEntries: Record<string, string>,
   projectDir: string,
   outputDir: string,
   isDev = false,
   clean = false
 ): Promise<void> {
-  const config = merge(
-    getBaseConfig(buildEntries, projectDir, outputDir, isDev),
-    {output: {clean}}
-    // Can allow projects to override webpack config here
-  );
-
-  const tsConfig = loadTsConfig(projectDir);
-  if (tsConfig?.compilerOptions?.paths && config.resolve && config.resolve.plugins) {
-    config.resolve.plugins.push(new TsconfigPathsPlugin());
+  // Create output directory if it doesn't exist
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, {recursive: true});
+  } else if (clean) {
+    // Simple clean implementation - could be enhanced for more selective cleaning
+    const files = fs.readdirSync(outputDir);
+    files.forEach((file) => {
+      fs.rmSync(path.join(outputDir, file), {force: true, recursive: true});
+    });
   }
 
-  await new Promise((resolve, reject) => {
-    webpack(config).run((error, stats) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      assert(stats, 'Webpack stats is undefined');
+  // Setup plugins for yaml support
+  const yamlPlugin = {
+    name: 'yaml',
+    setup(build: esbuild.PluginBuild) {
+      build.onLoad({filter: /\.ya?ml$/}, (args) => {
+        const source = fs.readFileSync(args.path, 'utf8');
+        const contents = `export default ${JSON.stringify(yaml.load(source))}`;
+        return {contents, loader: 'js'};
+      });
+    },
+  };
 
-      if (stats.hasErrors()) {
-        const info = stats.toJson();
-
-        reject(info.errors?.map((e) => e.message).join('\n') ?? 'Unknown error');
-        return;
-      }
-
-      resolve(true);
-    });
+  // Build each entry point separately
+  const buildPromises = Object.entries(buildEntries).map(async ([name, entry]) => {
+    try {
+      await esbuild.build({
+        entryPoints: [entry],
+        bundle: true,
+        platform: 'node',
+        outfile: path.join(outputDir, `${name}.js`),
+        sourcemap: 'inline',
+        minify: !isDev,
+        treeShaking: true,
+        format: 'cjs',
+        plugins: [yamlPlugin],
+        tsconfig: path.join(projectDir, 'tsconfig.json'),
+        target: 'node22',
+      });
+    } catch (error) {
+      throw new Error(`Error building ${name}: ${error}`);
+    }
   });
+
+  await Promise.all(buildPromises);
 }
 
 export function getBuildEntries(directory: string): Record<string, string> {
@@ -132,7 +79,7 @@ export function getBuildEntries(directory: string): Record<string, string> {
   });
 
   // Get the output location from the project package.json main field
-  const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
+  const pjson = JSON.parse(fs.readFileSync(path.join(directory, 'package.json')).toString());
   if (pjson.exports && typeof pjson.exports !== 'string') {
     buildEntries = Object.entries(pjson.exports as Record<string, string>).reduce(
       (acc, [key, value]) => {
