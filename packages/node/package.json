@@ -32,7 +32,7 @@
     "@subql/utils": "workspace:*",
     "fetch-h2": "3.0.2",
     "lodash": "^4.17.21",
-    "reflect-metadata": "^0.1.14"
+    "reflect-metadata": "^0.2.2"
   },
   "peerDependencies": {
     "@apollo/client": "^3.7.16"
