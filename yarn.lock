@@ -7253,7 +7253,7 @@ __metadata:
     class-validator: ^0.14.1
     form-data: ^4.0.1
     js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.14
+    reflect-metadata: ^0.2.2
     semver: ^7.6.3
     update-notifier: ^5.1.0
   languageName: unknown
@@ -7349,7 +7349,7 @@ __metadata:
     fetch-h2: 3.0.2
     lodash: ^4.17.21
     nodemon: ^3.1.4
-    reflect-metadata: ^0.1.14
+    reflect-metadata: ^0.2.2
     rimraf: ^5.0.10
   peerDependencies:
     "@apollo/client": ^3.7.16
@@ -19940,6 +19940,13 @@ __metadata:
   version: 0.1.14
   resolution: "reflect-metadata@npm:0.1.14"
   checksum: 155ad339319cec3c2d9d84719f730f8b6a6cd2a074733ec29dbae6c89d48a2914c7d07a2350212594f3aae160fa4da4f903e6512f27ceaf968443a7c692bcad0
+  languageName: node
+  linkType: hard
+
+"reflect-metadata@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "reflect-metadata@npm:0.2.2"
+  checksum: a66c7b583e4efdd8f3c3124fbff33da2d0c86d8280617516308b32b2159af7a3698c961db3246387f56f6316b1d33a608f39bb2b49d813316dfc58f6d3bf3210
   languageName: node
   linkType: hard
 
