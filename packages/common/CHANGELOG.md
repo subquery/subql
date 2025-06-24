@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.6.1] - 2025-06-25
+### Changed
+- Update reflect-metadata dependency (#2826)
+
 ## [5.6.0] - 2025-04-30
 ### Changed
 - Update axios dependency
@@ -454,7 +458,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/5.6.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/5.6.1...HEAD
+[5.6.1]: https://github.com/subquery/subql/compare/common/5.6.0...common/5.6.1
 [5.6.0]: https://github.com/subquery/subql/compare/common/5.5.0...common/5.6.0
 [5.5.0]: https://github.com/subquery/subql/compare/common/5.4.0...common/5.5.0
 [5.4.0]: https://github.com/subquery/subql/compare/common/5.3.1...common/5.4.0
