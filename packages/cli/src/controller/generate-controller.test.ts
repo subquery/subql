@@ -159,7 +159,7 @@ const originalManifestData2 = {
   ],
 };
 
-const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+const ethModule = loadDependency(NETWORK_FAMILY.ethereum, process.cwd());
 const abiName = ethModule.parseContractPath('./erc721.json').name;
 
 const mockUserInput: UserInput = {

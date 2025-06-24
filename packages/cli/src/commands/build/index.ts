@@ -5,6 +5,7 @@ import assert from 'assert';
 import {existsSync, lstatSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {SILENT_FLAG} from '../../constants';
 import {getBuildEntries, runBundle} from '../../controller/build-controller';
 import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils';
 
@@ -15,10 +16,11 @@ export default class Build extends Command {
     location: Flags.string({char: 'f', description: 'local folder or manifest file to run build'}),
     output: Flags.string({char: 'o', description: 'output folder of build e.g. dist'}),
     mode: Flags.string({options: ['production', 'prod', 'development', 'dev'], default: 'production'}),
-    silent: Flags.boolean({char: 's', description: 'silent mode'}),
+    silent: SILENT_FLAG,
   };
 
   async run(): Promise<void> {
+    Build.flags.mode;
     try {
       const {flags} = await this.parse(Build);
       const location = flags.location ? resolveToAbsolutePath(flags.location) : process.cwd();

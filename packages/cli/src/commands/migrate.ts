@@ -67,7 +67,7 @@ export default class Migrate extends Command {
         subgraphDir = tempSubgraphDir;
         await git().clone(link, subgraphDir, branch ? ['-b', branch, '--single-branch'] : ['--single-branch']);
       }
-      console.log(
+      this.log(
         `* Pull subgraph project from git: ${link}, branch: ${branch ?? 'default branch'}${
           gitSubDirectory ? `, subdirectory:${gitSubDirectory}` : '.'
         }`

@@ -11,6 +11,7 @@ import {ProjectNetworkConfig} from '@subql/types-core';
 import chalk from 'chalk';
 import fuzzy from 'fuzzy';
 import ora from 'ora';
+import {FORCE_FLAG, MCP_FLAG} from '../constants';
 import {
   installDependencies,
   cloneProjectTemplate,
@@ -40,24 +41,25 @@ export default class Init extends Command {
   static description = 'Initialize a SubQuery project from a template';
 
   static flags = {
-    force: Flags.boolean({
-      char: 'f',
-      description: 'Force using all the default options, except the name and network',
-      default: false,
-    }),
+    force: FORCE_FLAG,
     location: Flags.string({char: 'l', description: 'local folder to create the project in'}),
     'install-dependencies': Flags.boolean({description: 'Install dependencies as well', default: false}),
-    npm: Flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
+    npm: Flags.boolean({
+      description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag',
+      dependsOn: ['install-dependencies'],
+    }),
     abiPath: Flags.string({description: 'A path to an ABI file that will be used to scaffold the project'}),
     network: Flags.string({description: 'The name of the network to initialise a project with'}),
     description: Flags.string({description: 'The description for your project'}),
     author: Flags.string({description: 'The author of the project, defaults to your computer username'}),
     endpoint: Flags.string({description: 'The RPC endpoint for your project'}),
+    mcp: MCP_FLAG,
   };
 
   static args = {
     projectName: Args.string({
       description: 'Give the starter project name',
+      required: true,
     }),
   };
 
@@ -148,8 +150,9 @@ export default class Init extends Command {
     }
 
     if (await validateEthereumProjectManifest(projectPath)) {
+      const extraFlags = flags.mcp ? ['--mcp'] : [];
       if (flags.abiPath) {
-        await this.createProjectScaffold(projectPath, flags.abiPath);
+        await this.createProjectScaffold(projectPath, flags.abiPath, extraFlags);
       } else if (!flags.force) {
         const loadAbi = await confirm({
           message: 'Do you want to generate datasources and handlers from an existing contract ABI?',
@@ -157,7 +160,7 @@ export default class Init extends Command {
         });
 
         if (loadAbi) {
-          await this.createProjectScaffold(projectPath);
+          await this.createProjectScaffold(projectPath, undefined, extraFlags);
         }
       }
     }
@@ -218,12 +221,12 @@ export default class Init extends Command {
       });
     }
 
-    const spinner = ora('Preparing project').start();
+    const spinner = ora({text: 'Preparing project', isSilent: flags.mcp}).start();
     await prepare(projectPath, project, isMultiChainProject);
     spinner.stop();
     if (flags['install-dependencies']) {
-      const spinner = ora('Installing dependencies').start();
-      installDependencies(projectPath, flags.npm);
+      const spinner = ora({text: 'Installing dependencies', isSilent: flags.mcp}).start();
+      installDependencies(projectPath, flags.npm, flags.mcp);
       spinner.stop();
     }
     this.log(`${project.name} is ready${isMultiChainProject ? ' as a multi-chain project' : ''}`);
@@ -231,7 +234,7 @@ export default class Init extends Command {
     return {isMultiChainProject};
   }
 
-  async createProjectScaffold(projectPath: string, abiPath?: string): Promise<void> {
+  async createProjectScaffold(projectPath: string, abiPath?: string, extraFlags: string[] = []): Promise<void> {
     await prepareProjectScaffold(projectPath);
 
     const abiFilePath =
@@ -267,6 +270,7 @@ export default class Init extends Command {
       `${cleanedContractAddress}`,
       '--startBlock',
       `${startBlock}`,
+      ...extraFlags,
     ]);
   }
 

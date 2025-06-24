@@ -339,14 +339,14 @@ export async function prepareGitIgnore(projectPath: string): Promise<void> {
   }
 }
 
-export function installDependencies(projectPath: string, useNpm?: boolean): void {
+export function installDependencies(projectPath: string, useNpm?: boolean, silent = false): void {
   let command = 'yarn install';
 
   if (useNpm || !checkYarnExists()) {
     command = 'npm install';
   }
 
-  childProcess.execSync(command, {cwd: projectPath});
+  childProcess.execSync(command, {cwd: projectPath, stdio: silent ? 'ignore' : undefined});
 }
 
 function checkYarnExists(): boolean {
@@ -404,7 +404,7 @@ export async function validateEthereumProjectManifest(projectPath: string): Prom
   try {
     return isTs
       ? validateEthereumTsManifest(manifest)
-      : !!loadDependency(NETWORK_FAMILY.ethereum).parseProjectManifest(manifest);
+      : !!loadDependency(NETWORK_FAMILY.ethereum, projectPath).parseProjectManifest(manifest);
   } catch (e) {
     return false;
   }
