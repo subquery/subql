@@ -35,7 +35,65 @@ jobs:
             echo "changes_found=true" >> "$GITHUB_OUTPUT"
           fi
 
-  query-build-push-docker:
+  # query-build-push-docker:
+  #   needs: check
+  #   if: needs.check.outputs.changes_found == 'true'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 100
+  #         token: ${{ secrets.REPO_TOKEN }}
+
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v3
+
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+
+  #     - name: Login to DockerHub
+  #       uses: docker/login-action@v3
+  #       with:
+  #         username: onfinality
+  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  #     ## query
+  #     - name: Get updated query version
+  #       id: get-query-version
+  #       run: |
+  #         sh .github/workflows/scripts/queryVersion.sh
+
+  #     - run: yarn
+  #     - name: build
+  #       run: yarn build
+
+  #     - name: Build and push
+  #       if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
+  #       uses: docker/build-push-action@v6
+  #       with:
+  #         context: .
+  #         push: true
+  #         platforms: arm64,amd64
+  #         file: ./packages/query/Dockerfile
+  #         tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }}
+  #         build-args: RELEASE_VERSION=${{ steps.get-query-version.outputs.QUERY_VERSION }}
+
+  #     - name: Build and push
+  #       if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'true')
+  #       uses: docker/build-push-action@v6
+  #       with:
+  #         context: .
+  #         push: true
+  #         platforms: arm64,amd64
+  #         file: ./packages/query/Dockerfile
+  #         tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }},onfinality/subql-query:latest
+  #         build-args: RELEASE_VERSION=${{ steps.get-query-version.outputs.QUERY_VERSION }}
+
+  #     - name: Image digest
+  #       if: steps.changed-query.outputs.changed == 'true'
+  #       run: echo ${{ steps.docker_build.outputs.digest }}
+
+  query-build-push-docker-blockops:
     needs: check
     if: needs.check.outputs.changes_found == 'true'
     runs-on: ubuntu-latest
@@ -43,7 +101,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 100
-          token: ${{ secrets.REPO_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -54,7 +112,7 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
-          username: onfinality
+          username: blockopsnetwork
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       ## query
@@ -75,7 +133,7 @@ jobs:
           push: true
           platforms: arm64,amd64
           file: ./packages/query/Dockerfile
-          tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }}
+          tags: blockopsnetwork/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }}
           build-args: RELEASE_VERSION=${{ steps.get-query-version.outputs.QUERY_VERSION }}
 
       - name: Build and push
@@ -86,65 +144,7 @@ jobs:
           push: true
           platforms: arm64,amd64
           file: ./packages/query/Dockerfile
-          tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }},onfinality/subql-query:latest
-          build-args: RELEASE_VERSION=${{ steps.get-query-version.outputs.QUERY_VERSION }}
-
-      - name: Image digest
-        if: steps.changed-query.outputs.changed == 'true'
-        run: echo ${{ steps.docker_build.outputs.digest }}
-
-  query-build-push-docker-subquery:
-    needs: check
-    if: needs.check.outputs.changes_found == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 100
-          token: ${{ secrets.REPO_TOKEN }}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: subquerynetwork
-          password: ${{ secrets.SQ_DOCKERHUB_TOKEN }}
-
-      ## query
-      - name: Get updated query version
-        id: get-query-version
-        run: |
-          sh .github/workflows/scripts/queryVersion.sh
-
-      - run: yarn
-      - name: build
-        run: yarn build
-
-      - name: Build and push
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'false'
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          platforms: arm64,amd64
-          file: ./packages/query/Dockerfile
-          tags: subquerynetwork/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }}
-          build-args: RELEASE_VERSION=${{ steps.get-query-version.outputs.QUERY_VERSION }}
-
-      - name: Build and push
-        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.isLatest == 'true')
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          platforms: arm64,amd64
-          file: ./packages/query/Dockerfile
-          tags: subquerynetwork/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }},subquerynetwork/subql-query:latest
+          tags: blockopsnetwork/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }},blockopsnetwork/subql-query:latest
           build-args: RELEASE_VERSION=${{ steps.get-query-version.outputs.QUERY_VERSION }}
 
       - name: Image digest

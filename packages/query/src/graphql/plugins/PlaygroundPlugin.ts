@@ -62,21 +62,21 @@ export function playgroundPlugin(options: {url: string; subscriptionUrl?: string
       favored resource bundler.
      -->
     <script
-      src="https://unpkg.com/graphiql/graphiql.min.js"
+      src="https://unpkg.com/graphiql@4.1.2/graphiql.min.js"
       type="application/javascript"
     ></script>
-    <link rel="stylesheet" href="https://unpkg.com/graphiql/graphiql.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/graphiql@4.1.2/graphiql.min.css" />
     <!--
       These are imports for the GraphIQL Explorer plugin.
      -->
     <script
-      src="https://unpkg.com/@graphiql/plugin-explorer/dist/index.umd.js"
+      src="https://unpkg.com/@graphiql/plugin-explorer@4.0.6/dist/index.umd.js"
       crossorigin
     ></script>
 
     <link
       rel="stylesheet"
-      href="https://unpkg.com/@graphiql/plugin-explorer/dist/style.css"
+      href="https://unpkg.com/@graphiql/plugin-explorer@4.0.6/dist/style.css"
     />
   </head>
 
