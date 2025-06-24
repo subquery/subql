@@ -15,6 +15,7 @@ import {
 import type {ProjectManifestV1_0_0} from '@subql/types-core';
 import type {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import ora from 'ora';
+import {MCP_FLAG} from '../../constants';
 import {
   constructMethod,
   filterExistingMethods,
@@ -59,6 +60,7 @@ export default class Generate extends Command {
     abiPath: Flags.string({description: 'The path to the ABI file'}),
     events: Flags.string({description: 'ABI events to generate handlers for, --events="approval, transfer"'}),
     functions: Flags.string({description: 'ABI functions to generate handlers for,  --functions="approval, transfer"'}),
+    mcp: MCP_FLAG,
   };
 
   // This command needs a better name, having the alias also puts this in the top level help
@@ -132,7 +134,7 @@ export default class Generate extends Command {
       if (!address) {
         this.error('Please provide the ABI file path using --abiPath flag, or address to fetch the ABI from Etherscan');
       }
-      const spinner = ora('Finding ABI from Etherscan').start();
+      const spinner = ora({text: 'Finding ABI from Etherscan', isSilent: flags.mcp}).start();
       try {
         const abi = await tryFetchAbiFromExplorer(address, project.network.chainId);
         if (!abi) {
@@ -153,7 +155,7 @@ export default class Generate extends Command {
         // Cannot fetch start block without address
         this.error('Please provide the start block using the --startBlock flag');
       }
-      const spinner = ora('Finding start height from explorer').start();
+      const spinner = ora({text: 'Finding start height from explorer', isSilent: flags.mcp}).start();
       try {
         startBlock = await fetchContractDeployHeight(address, project.network.chainId);
         if (!startBlock) {
@@ -168,7 +170,7 @@ export default class Generate extends Command {
       }
     }
 
-    const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+    const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
     const abiName = ethModule.parseContractPath(abiPath).name;
 
     if (fs.existsSync(path.join(root, 'src/mappings/', `${abiName}Handlers.ts`))) {

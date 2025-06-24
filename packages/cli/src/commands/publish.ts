@@ -45,7 +45,7 @@ export default class Publish extends Command {
       (e) => {
         // log further cause from error
         if (e.cause) {
-          console.error(e.cause);
+          this.error(e.cause);
         }
         return this.error(e);
       }

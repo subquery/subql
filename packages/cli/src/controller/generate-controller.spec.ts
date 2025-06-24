@@ -126,7 +126,7 @@ const mockDsStr =
 describe('CLI codegen:generate', () => {
   const projectPath = path.join(__dirname, '../../test/schemaTest');
   const abiInterface = getAbiInterface(projectPath, './erc721.json');
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum, process.cwd());
   const abiName = ethModule.parseContractPath('./erc721.json').name;
   const eventFragments = abiInterface.events;
   const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
@@ -139,7 +139,7 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    const constructedDs = constructDatasourcesYaml(mockUserInput);
+    const constructedDs = constructDatasourcesYaml(mockUserInput, process.cwd());
     const expectedAsset = new Map();
     expectedAsset.set('Erc721', {file: './abis/erc721.json'});
     expect(constructedDs).toStrictEqual({
@@ -517,7 +517,7 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    expect(constructDatasourcesTs(mockUserInput)).toStrictEqual(
+    expect(constructDatasourcesTs(mockUserInput, process.cwd())).toStrictEqual(
       `{
     kind: EthereumDatasourceKind.Runtime,
     startBlock: 1,
@@ -558,7 +558,7 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    expect(constructDatasourcesYaml(mockUserInput)).toStrictEqual({
+    expect(constructDatasourcesYaml(mockUserInput, process.cwd())).toStrictEqual({
       kind: EthereumDatasourceKind.Runtime,
       startBlock: 1,
       options: {

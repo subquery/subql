@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 import path from 'path';
+import {Flags} from '@oclif/core';
 import {DeploymentType} from './types';
 
 //DEPLOYMENT
@@ -32,3 +33,19 @@ export const DEFAULT_SUBGRAPH_MANIFEST = 'subgraph.yaml';
 export const DEFAULT_SUBGRAPH_SCHEMA = 'schema.graphql';
 export const DEFAULT_SUBQL_MANIFEST = 'project.ts';
 export const DEFAULT_SUBQL_SCHEMA = 'schema.graphql';
+
+/**
+ * Common flags used in various commands
+ */
+export const SILENT_FLAG = Flags.boolean({name: 'silent', char: 's', description: 'silent mode, disables all logging'});
+export const FORCE_FLAG = Flags.boolean({
+  name: 'force',
+  description: 'force the command to run, ignoring any warnings or prompts',
+  default: false,
+});
+export const MCP_FLAG = Flags.boolean({
+  name: 'mcp',
+  description: 'Run the command in Model Context Protocol (MCP) mode',
+  default: false,
+  hidden: true,
+});

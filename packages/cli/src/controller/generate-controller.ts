@@ -167,8 +167,8 @@ function generateFormattedHandlers(
   return formattedHandlers;
 }
 
-export function constructDatasourcesTs(userInput: UserInput): string {
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+export function constructDatasourcesTs(userInput: UserInput, projectPath: string): string {
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => kind);
   const handlersString = tsStringify(formattedHandlers);
@@ -188,8 +188,8 @@ export function constructDatasourcesTs(userInput: UserInput): string {
   }`;
 }
 
-export function constructDatasourcesYaml(userInput: UserInput): EthereumDs {
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+export function constructDatasourcesYaml(userInput: UserInput, projectPath: string): EthereumDs {
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => {
     if (kind === 'EthereumHandlerKind.Call') return 'ethereum/TransactionHandler' as EthereumHandlerKind.Call;
@@ -361,7 +361,7 @@ export async function generateManifestTs(
   userInput: UserInput,
   existingManifestData: string
 ): Promise<void> {
-  const inputDs = constructDatasourcesTs(userInput);
+  const inputDs = constructDatasourcesTs(userInput, manifestPath);
 
   const extractedDs = extractFromTs(existingManifestData, {dataSources: undefined}) as {dataSources: string};
   const v = prependDatasources(extractedDs.dataSources, inputDs);
@@ -374,7 +374,7 @@ export async function generateManifestYaml(
   userInput: UserInput,
   existingManifestData: Document
 ): Promise<void> {
-  const inputDs = constructDatasourcesYaml(userInput);
+  const inputDs = constructDatasourcesYaml(userInput, manifestPath);
   const dsNode = existingManifestData.get('dataSources') as YAMLSeq;
   if (!dsNode || !dsNode.items.length) {
     // To ensure output is in yaml format
