@@ -223,10 +223,6 @@ export async function loadDataSourceScript(reader: Reader, file?: string): Promi
   return entryScript;
 }
 
-export async function initDbSchema(schema: string, storeService: StoreService): Promise<void> {
-  await storeService.init(schema);
-}
-
 export type IsRuntimeDs<DS> = (ds: DS) => ds is DS;
 
 // eslint-disable-next-line @typescript-eslint/require-await

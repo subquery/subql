@@ -20,7 +20,7 @@ import {
 import {DynamicDsService} from '../indexer/dynamic-ds.service';
 import {getLogger} from '../logger';
 import {exitWithError, monitorWrite} from '../process';
-import {getExistingProjectSchema, initDbSchema, reindex} from '../utils';
+import {getExistingProjectSchema, reindex} from '../utils';
 import {ForceCleanService} from './forceClean.service';
 
 const logger = getLogger('Reindex');
@@ -61,7 +61,9 @@ export class ReindexService<P extends ISubqueryProject, DS extends BaseDataSourc
     if (this.nodeConfig.proofOfIndex) {
       await this.poiService.init(schema);
     }
-    await initDbSchema(schema, this.storeService);
+    const tx = await this.sequelize.transaction();
+    await this.storeService.init(schema, tx);
+    await tx.commit();
 
     this._metadataRepo = this.storeService.modelProvider.metadata;
 

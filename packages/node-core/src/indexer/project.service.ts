@@ -13,7 +13,7 @@ import {IProjectUpgradeService, NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {getLogger} from '../logger';
 import {exitWithError, monitorWrite} from '../process';
-import {getExistingProjectSchema, getStartHeight, hasValue, initDbSchema, mainThreadOnly, reindex} from '../utils';
+import {getExistingProjectSchema, getStartHeight, hasValue, mainThreadOnly, reindex} from '../utils';
 import {BlockHeightMap} from '../utils/blockHeightMap';
 import {DsProcessorService} from './ds-processor.service';
 import {DynamicDsService} from './dynamic-ds.service';
@@ -200,7 +200,9 @@ export class ProjectService<
   }
 
   private async initDbSchema(): Promise<void> {
-    await initDbSchema(this.schema, this.storeService);
+    const tx = await this.sequelize.transaction();
+    await this.storeService.init(this.schema, tx);
+    await tx.commit();
   }
 
   private async ensureMetadata(): Promise<void> {

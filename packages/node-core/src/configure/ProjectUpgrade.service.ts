@@ -108,6 +108,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
   #currentProject: P;
 
   #modelProvider?: IStoreModelProvider;
+  #sequelize?: Sequelize;
   #initialized = false;
 
   private config?: NodeConfig;
@@ -152,6 +153,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
     this.#initialized = true;
     this.#modelProvider = storeService.modelProvider;
     this.config = config;
+    this.#sequelize = sequelize;
 
     this.migrationService = new SchemaMigrationService(sequelize, storeService, schema, config);
 
@@ -233,7 +235,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
 
       if (currentProject && nextProject) {
         if (this.config?.dbSchema) {
-          await storeService.init(this.config.dbSchema);
+          await storeService.init(this.config.dbSchema, transaction);
         }
         await this.migrate(currentProject, nextProject, transaction);
       }
@@ -248,7 +250,7 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
   private async migrate(
     project: ISubqueryProject,
     newProject: ISubqueryProject,
-    transaction: Transaction | undefined
+    transaction: Transaction
   ): Promise<void> {
     assert(this.config, 'NodeConfig is undefined');
     assert(this.migrationService, 'MigrationService is undefined');
@@ -286,7 +288,12 @@ export class ProjectUpgradeService<P extends ISubqueryProject = ISubqueryProject
       try {
         await this.onProjectUpgrade?.(startHeight, newProject);
         if (isMainThread) {
-          await this.migrate(project, newProject, undefined);
+          if (!this.#sequelize) {
+            throw new Error('Sequelize is not available to run migration');
+          }
+          const tx = await this.#sequelize.transaction();
+          await this.migrate(project, newProject, tx);
+          await tx.commit();
         }
       } catch (e: any) {
         exitWithError(new Error(`Failed to complete upgrading project`, {cause: e}), logger, 1);

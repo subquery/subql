@@ -47,14 +47,17 @@ async function createChainProject(chainId: string, mockBlockchainService: any, s
   const dbModel = new PlainStoreModelService(sequelize, nodeConfig);
   const storeService = new StoreService(sequelize, nodeConfig, dbModel, project);
   await storeService.initCoreTables(testSchemaName);
-  await storeService.init(testSchemaName);
-  await storeService.modelProvider.metadata.set('chain', chainId);
-  await storeService.modelProvider.metadata.set('startHeight', 1);
-  await storeService.modelProvider.metadata.set('lastProcessedHeight', 10000);
+  const tx = await sequelize.transaction();
+  await storeService.init(testSchemaName, tx);
+  await storeService.modelProvider.metadata.set('chain', chainId, tx);
+  await storeService.modelProvider.metadata.set('startHeight', 1, tx);
+  await storeService.modelProvider.metadata.set('lastProcessedHeight', 10000, tx);
   await storeService.modelProvider.metadata.set(
     'lastProcessedBlockTimestamp',
-    genBlockTimestamp(10000).rewindTimestamp
+    genBlockTimestamp(10000).rewindTimestamp,
+    tx
   );
+  await tx.commit();
 
   const multiChainRewindService = new MultiChainRewindService(
     nodeConfig,
@@ -397,7 +400,9 @@ describe('MultiChain Rewind Service', () => {
       const dbModel = new PlainStoreModelService(sequelize, nodeConfig);
       const storeService = new StoreService(sequelize, nodeConfig, dbModel, project);
       await storeService.initCoreTables(testSchemaName);
-      await storeService.init(testSchemaName);
+      const tx = await sequelize.transaction();
+      await storeService.init(testSchemaName, tx);
+      await tx.commit();
 
       multiChainRewindService = new MultiChainRewindService(
         nodeConfig,

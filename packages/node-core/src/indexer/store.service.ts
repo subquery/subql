@@ -35,7 +35,7 @@ import {
 } from '../db';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
-import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit, hasValue} from '../utils';
+import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit} from '../utils';
 import {
   GlobalDataFactory,
   GlobalDataRepo,
@@ -201,9 +201,8 @@ export class StoreService {
     await this.metadataModel.set('historicalStateEnabled', this.historical);
   }
 
-  async init(schema: string): Promise<void> {
+  async init(schema: string, tx: Transaction): Promise<void> {
     try {
-      const tx = await this.sequelize.transaction();
       if (this.historical) {
         const [results] = await this.sequelize.query(BTREE_GIST_EXTENSION_EXIST_QUERY);
         if (results.length === 0) {
@@ -227,8 +226,7 @@ export class StoreService {
         this.subqueryProject.id === this.subqueryProject.root ||
         last(Object.values(deployments)) !== this.subqueryProject.id
       ) {
-        // TODO this should run with the same db transaction as the migration
-        await this.metadataModel.setIncrement('schemaMigrationCount');
+        await this.metadataModel.setIncrement('schemaMigrationCount', undefined, tx);
       }
     } catch (e: any) {
       exitWithError(new Error(`Having a problem when syncing schema`, {cause: e}), logger);

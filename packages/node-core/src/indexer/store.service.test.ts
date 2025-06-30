@@ -47,7 +47,9 @@ describe('Check whether the db store and cache store are consistent.', () => {
     const dbModel = new PlainStoreModelService(sequelize, nodeConfig);
     storeService = new StoreService(sequelize, nodeConfig, dbModel, project);
     await storeService.initCoreTables(testSchemaName);
-    await storeService.init(testSchemaName);
+    const tx = await sequelize.transaction();
+    await storeService.init(testSchemaName, tx);
+    await tx.commit();
   });
   afterAll(async () => {
     await sequelize.query(`DROP SCHEMA ${testSchemaName} CASCADE;`);
@@ -205,7 +207,9 @@ describe('Cache Provider', () => {
     cacheModel = new StoreCacheService(sequelize, nodeConfig, new EventEmitter2());
     storeService = new StoreService(sequelize, nodeConfig, cacheModel, project);
     await storeService.initCoreTables(testSchemaName);
-    await storeService.init(testSchemaName);
+    const tx = await sequelize.transaction();
+    await storeService.init(testSchemaName, tx);
+    await tx.commit();
     Account = cacheModel.getModel('Account') as CachedModel<any>;
   });
   afterAll(async () => {
