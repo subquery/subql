@@ -78,7 +78,7 @@ export class SchemaMigrationService {
     }
   }
 
-  async run(currentSchema: GraphQLSchema | null, nextSchema: GraphQLSchema, transaction?: Transaction): Promise<void> {
+  async run(currentSchema: GraphQLSchema | null, nextSchema: GraphQLSchema, transaction: Transaction): Promise<void> {
     logger.info('Running schema migration');
     const schemaDifference = SchemaMigrationService.schemaComparator(currentSchema, nextSchema);
     const {

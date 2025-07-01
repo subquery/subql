@@ -20,5 +20,18 @@
   "peerDependencies": {
     "class-transformer": "*",
     "class-validator": "*"
-  }
+  },
+  "files": [
+    "/dist",
+    "!/dist/**/*.spec.js",
+    "!/dist/**/*.spec.d.ts",
+    "!/dist/**/*.spec.js.map",
+    "!/dist/**/*.test.js",
+    "!/dist/**/*.test.d.ts",
+    "!/dist/**/*.test.js.map",
+    "package.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ]
 }

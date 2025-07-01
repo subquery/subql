@@ -49,6 +49,16 @@
   },
   "files": [
     "/dist",
-    "/bin"
+    "!/dist/**/*.spec.js",
+    "!/dist/**/*.spec.d.ts",
+    "!/dist/**/*.spec.js.map",
+    "!/dist/**/*.test.js",
+    "!/dist/**/*.test.d.ts",
+    "!/dist/**/*.test.js.map",
+    "/bin",
+    "package.json",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
   ]
 }

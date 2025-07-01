@@ -16,8 +16,16 @@
   "files": [
     "src/global.d.ts",
     "/dist",
+    "!/dist/**/*.spec.js",
+    "!/dist/**/*.spec.d.ts",
+    "!/dist/**/*.spec.js.map",
+    "!/dist/**/*.test.js",
+    "!/dist/**/*.test.d.ts",
+    "!/dist/**/*.test.js.map",
     "logger.js",
-    "yargs.js"
+    "yargs.js",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "dependencies": {
     "@apollo/client": "^3.11.2",

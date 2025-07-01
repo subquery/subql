@@ -86,36 +86,26 @@ export class Migration {
     return new Migration(sequelize, storeService, schemaName, config, existingForeignKeys, enumTypeMap, indexesResult);
   }
 
-  async run(transaction?: Transaction): Promise<{modifiedModels: ModelStatic<any>[]; removedModels: string[]}> {
-    const effectiveTransaction = transaction ?? (await this.sequelize.transaction());
-
+  async run(transaction: Transaction): Promise<{modifiedModels: ModelStatic<any>[]; removedModels: string[]}> {
     if (this.historical) {
       // Comments should be added after
       this.addRelationComments();
     }
 
-    try {
-      for (const query of this.mainQueries) {
-        if (syncHelper.isQuery(query)) {
-          await this.sequelize.query(query.sql, {replacements: query.replacements, transaction: effectiveTransaction});
-        } else {
-          await this.sequelize.query(query, {transaction: effectiveTransaction});
-        }
+    for (const query of this.mainQueries) {
+      if (syncHelper.isQuery(query)) {
+        await this.sequelize.query(query.sql, {replacements: query.replacements, transaction});
+      } else {
+        await this.sequelize.query(query, {transaction});
       }
+    }
 
-      for (const query of uniq(this.extraQueries)) {
-        if (syncHelper.isQuery(query)) {
-          await this.sequelize.query(query.sql, {replacements: query.replacements, transaction: effectiveTransaction});
-        } else {
-          await this.sequelize.query(query, {transaction: effectiveTransaction});
-        }
+    for (const query of uniq(this.extraQueries)) {
+      if (syncHelper.isQuery(query)) {
+        await this.sequelize.query(query.sql, {replacements: query.replacements, transaction});
+      } else {
+        await this.sequelize.query(query, {transaction});
       }
-
-      await effectiveTransaction.commit();
-    } catch (e) {
-      await effectiveTransaction.rollback();
-
-      throw e;
     }
 
     return {

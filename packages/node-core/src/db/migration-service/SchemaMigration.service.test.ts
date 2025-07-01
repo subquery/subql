@@ -8,9 +8,8 @@ import {CommonProjectManifestV1_0_0Impl, IPFSReader} from '@subql/common';
 import {buildSchemaFromString} from '@subql/utils';
 import {IndexesOptions, QueryTypes, Sequelize} from '@subql/x-sequelize';
 import {GraphQLSchema} from 'graphql';
-import {NodeConfig, ProjectUpgradeService} from '../../configure';
+import {NodeConfig} from '../../configure';
 import {ISubqueryProject, StoreCacheService, StoreService} from '../../indexer';
-import {initDbSchema} from '../../utils/project';
 import {DbOption} from '../db.module';
 import {generateHashedIndexName} from '../sync-helper';
 import {SchemaMigrationService} from './SchemaMigration.service';
@@ -44,7 +43,9 @@ async function setup(
   await sequelize.createSchema(`"${schemaName}"`, {});
 
   await storeService.initCoreTables(schemaName);
-  await initDbSchema(schemaName, storeService);
+  const tx = await sequelize.transaction();
+  await storeService.init(schemaName, tx);
+  await tx.commit();
 
   return new SchemaMigrationService(sequelize, storeService, schemaName, config);
 }
@@ -92,9 +93,13 @@ describe('SchemaMigration integration tests', () => {
 
     const migrationService = await setup(schemaName, schemas[0], sequelize);
 
+    const tx = await sequelize.transaction();
+
     for (let i = 1; i < schemas.length; i++) {
-      await expect(migrationService.run(schemas[i - 1], schemas[i])).resolves.not.toThrow();
+      await expect(migrationService.run(schemas[i - 1], schemas[i], tx)).resolves.not.toThrow();
     }
+
+    await tx.commit();
   });
 
   it('Migrate to new schema', async () => {
@@ -103,7 +108,9 @@ describe('SchemaMigration integration tests', () => {
 
     const migrationService = await setup(schemaName, initialSchema, sequelize);
 
-    await migrationService.run(initialSchema, loadGqlSchema('test_1_1000.graphql'));
+    const tx = await sequelize.transaction();
+    await migrationService.run(initialSchema, loadGqlSchema('test_1_1000.graphql'), tx);
+    await tx.commit();
 
     const dbResults = await sequelize.query<string[]>(
       `SELECT table_name FROM information_schema.tables WHERE table_schema='${schemaName}';`,
@@ -189,7 +196,9 @@ describe('SchemaMigration integration tests', () => {
     const initialSchema = loadGqlSchema('test_2_1.graphql');
     const migrationService = await setup(schemaName, initialSchema, sequelize);
 
-    await migrationService.run(initialSchema, loadGqlSchema('test_2_1000.graphql'));
+    const tx = await sequelize.transaction();
+    await migrationService.run(initialSchema, loadGqlSchema('test_2_1000.graphql'), tx);
+    await tx.commit();
 
     const [exampleFieldColumn] = await sequelize.query<{data_type: string}>(
       `
@@ -210,7 +219,9 @@ describe('SchemaMigration integration tests', () => {
     const initialSchema = loadGqlSchema('test_5_1.graphql');
     const migrationService = await setup(schemaName, initialSchema, sequelize);
 
-    await migrationService.run(initialSchema, loadGqlSchema('test_5_1000.graphql'));
+    const tx = await sequelize.transaction();
+    await migrationService.run(initialSchema, loadGqlSchema('test_5_1000.graphql'), tx);
+    await tx.commit();
 
     const indexResult = await sequelize.query<{indexname: string; indexdef: string}>(
       `SELECT
@@ -253,7 +264,9 @@ describe('SchemaMigration integration tests', () => {
       new NodeConfig({historical: false} as any)
     );
 
-    await migrationService.run(initialSchema, loadGqlSchema('test_10_1000.graphql'));
+    const tx = await sequelize.transaction();
+    await migrationService.run(initialSchema, loadGqlSchema('test_10_1000.graphql'), tx);
+    await tx.commit();
 
     const results = await sequelize.query<{column_name: string}>(
       `SELECT
@@ -282,7 +295,9 @@ describe('SchemaMigration integration tests', () => {
     const initialSchema = loadGqlSchema('test_11_1.graphql');
     const migrationService = await setup(schemaName, initialSchema, sequelize);
 
-    await expect(migrationService.run(initialSchema, loadGqlSchema('test_11_2000.graphql'))).rejects.toThrow();
+    const tx = await sequelize.transaction();
+    await expect(migrationService.run(initialSchema, loadGqlSchema('test_11_2000.graphql'), tx)).rejects.toThrow();
+    await tx.commit();
 
     // expect(processExitSpy).toHaveBeenCalledTimes(1);
     // expect(processExitSpy).toHaveBeenCalledWith(1);
@@ -303,7 +318,9 @@ describe('SchemaMigration integration tests', () => {
     const initialSchema = loadGqlSchema('test_12_1.graphql');
     const migrationService = await setup(schemaName, initialSchema, sequelize);
 
-    await migrationService.run(initialSchema, loadGqlSchema('test_12_2000.graphql'));
+    const tx = await sequelize.transaction();
+    await migrationService.run(initialSchema, loadGqlSchema('test_12_2000.graphql'), tx);
+    await tx.commit();
 
     const [indexes] = await sequelize.query(
       `
@@ -349,7 +366,9 @@ WHERE
       new NodeConfig({historical: false} as any)
     );
 
-    await migrationService.run(initialSchema, loadGqlSchema('test_13_2000.graphql'));
+    const tx = await sequelize.transaction();
+    await migrationService.run(initialSchema, loadGqlSchema('test_13_2000.graphql'), tx);
+    await tx.commit();
 
     const result = await sequelize.query(
       `
@@ -389,7 +408,9 @@ WHERE
       new NodeConfig({historical: false} as any)
     );
 
-    await migrationService.run(initialSchema, loadGqlSchema('test_14_1000.graphql'));
+    const tx = await sequelize.transaction();
+    await migrationService.run(initialSchema, loadGqlSchema('test_14_1000.graphql'), tx);
+    await tx.commit();
 
     const [result] = await sequelize.query(`
     SELECT
@@ -418,9 +439,13 @@ WHERE
     const initialSchema = loadGqlSchema('test_15_1.graphql');
     const migrationService = await setup(schemaName, initialSchema, sequelize);
 
-    await migrationService.run(initialSchema, loadGqlSchema('test_15_2000.graphql'));
+    const tx = await sequelize.transaction();
+    await migrationService.run(initialSchema, loadGqlSchema('test_15_2000.graphql'), tx);
+    await tx.commit();
 
-    await migrationService.run(initialSchema, loadGqlSchema('test_15_4000.graphql'));
+    const tx2 = await sequelize.transaction();
+    await migrationService.run(initialSchema, loadGqlSchema('test_15_4000.graphql'), tx2);
+    await tx2.commit();
 
     const result = await sequelize.query<{table_name: string}>(
       `SELECT table_name
@@ -447,7 +472,9 @@ WHERE table_schema = :schema
       new NodeConfig({subscription: true} as any)
     );
 
-    await migrationService.run(initialSchema, loadGqlSchema('test_16_2000.graphql'));
+    const tx = await sequelize.transaction();
+    await migrationService.run(initialSchema, loadGqlSchema('test_16_2000.graphql'), tx);
+    await tx.commit();
 
     const result = await sequelize.query<{trigger_name: string}>(
       `SELECT trigger_name
@@ -488,7 +515,9 @@ ORDER BY t.typname, e.enumsortorder;`,
       const initialSchema = loadGqlSchema('test_17_1.graphql');
       const migrationService = await setup(schemaName, initialSchema, sequelize);
 
-      await migrationService.run(initialSchema, loadGqlSchema('test_17_2000.graphql'));
+      const tx = await sequelize.transaction();
+      await migrationService.run(initialSchema, loadGqlSchema('test_17_2000.graphql'), tx);
+      await tx.commit();
 
       const result = await queryEnums();
 
@@ -506,7 +535,9 @@ ORDER BY t.typname, e.enumsortorder;`,
       const initialSchema = loadGqlSchema('test_18_1.graphql');
       const migrationService = await setup(schemaName, initialSchema, sequelize);
 
-      await migrationService.run(initialSchema, loadGqlSchema('test_18_2000.graphql'));
+      const tx = await sequelize.transaction();
+      await migrationService.run(initialSchema, loadGqlSchema('test_18_2000.graphql'), tx);
+      await tx.commit();
 
       const result = await queryEnums();
 
@@ -520,9 +551,11 @@ ORDER BY t.typname, e.enumsortorder;`,
       const initialSchema = loadGqlSchema('test_19_1.graphql');
       const migrationService = await setup(schemaName, initialSchema, sequelize);
 
-      await expect(migrationService.run(initialSchema, loadGqlSchema('test_19_2000.graphql'))).rejects.toThrow(
+      const tx = await sequelize.transaction();
+      await expect(migrationService.run(initialSchema, loadGqlSchema('test_19_2000.graphql'), tx)).rejects.toThrow(
         'Enums cannot have values removed. Only adding new values is supported.'
       );
+      await tx.commit();
     });
 
     it('throws when enum values are reordered', async () => {
@@ -531,9 +564,11 @@ ORDER BY t.typname, e.enumsortorder;`,
       const initialSchema = loadGqlSchema('test_20_1.graphql');
       const migrationService = await setup(schemaName, initialSchema, sequelize);
 
-      await expect(migrationService.run(initialSchema, loadGqlSchema('test_20_2000.graphql'))).rejects.toThrow(
+      const tx = await sequelize.transaction();
+      await expect(migrationService.run(initialSchema, loadGqlSchema('test_20_2000.graphql'), tx)).rejects.toThrow(
         'Enums cannot have their order changed.'
       );
+      await tx.commit();
     });
   });
 });
