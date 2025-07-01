@@ -61,6 +61,15 @@ export async function buildManifestFromLocation(location: string, log: (...args:
   return directory;
 }
 
+export async function buildTsManifest(location: string, log: (...args: any[]) => void): Promise<void> {
+  const tsManifest = getTsManifest(location);
+  if (!tsManifest) {
+    return;
+  }
+
+  await buildManifestFromLocation(tsManifest, log);
+}
+
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function generateManifestFromTs(
   projectManifestEntry: string,

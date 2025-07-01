@@ -15,6 +15,7 @@ import {
 import type {ProjectManifestV1_0_0} from '@subql/types-core';
 import type {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import ora from 'ora';
+import {z} from 'zod';
 import {MCP_FLAG} from '../../constants';
 import {
   constructMethod,
@@ -34,6 +35,7 @@ import {
 import {loadDependency} from '../../modulars';
 import {extractFromTs, buildManifestFromLocation, getTsManifest} from '../../utils';
 import {fetchContractDeployHeight, tryFetchAbiFromExplorer} from '../../utils/etherscan';
+import {zodToFlags} from '../../adapters/utils';
 
 export interface SelectedMethod {
   name: string;
@@ -47,21 +49,39 @@ export interface UserInput {
   address?: string;
 }
 
+const x = z.object({
+  file: z.string({description: 'Project folder or manifest file'}).optional(),
+  address: z.string({description: 'The contracts address'}).optional(),
+  startBlock: z
+    .number({
+      description: 'The start block of the handler, generally the block the contract is deployed.',
+    })
+    .optional(),
+  abiPath: z.string({description: 'The path to the ABI file'}).optional(),
+  events: z.string({description: 'ABI events to generate handlers for, --events="approval, transfer"'}).optional(),
+  functions: z
+    .string({description: 'ABI functions to generate handlers for,  --functions="approval, transfer"'})
+    .optional(),
+});
+
+const flags = zodToFlags(x);
+
 export default class Generate extends Command {
   static description =
     'Generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to fetch the ABI and start block from the Etherscan.';
 
-  static flags = {
-    file: Flags.string({char: 'f', description: 'Project folder or manifest file'}),
-    address: Flags.string({description: 'The contracts address'}),
-    startBlock: Flags.integer({
-      description: 'The start block of the handler, generally the block the contract is deployed.',
-    }),
-    abiPath: Flags.string({description: 'The path to the ABI file'}),
-    events: Flags.string({description: 'ABI events to generate handlers for, --events="approval, transfer"'}),
-    functions: Flags.string({description: 'ABI functions to generate handlers for,  --functions="approval, transfer"'}),
-    mcp: MCP_FLAG,
-  };
+  static flags = zodToFlags(x);
+  // static flags = {
+  //   file: Flags.string({char: 'f', description: 'Project folder or manifest file'}),
+  //   address: Flags.string({description: 'The contracts address'}),
+  //   startBlock: Flags.integer({
+  //     description: 'The start block of the handler, generally the block the contract is deployed.',
+  //   }),
+  //   abiPath: Flags.string({description: 'The path to the ABI file'}),
+  //   events: Flags.string({description: 'ABI events to generate handlers for, --events="approval, transfer"'}),
+  //   functions: Flags.string({description: 'ABI functions to generate handlers for,  --functions="approval, transfer"'}),
+  //   mcp: MCP_FLAG,
+  // };
 
   // This command needs a better name, having the alias also puts this in the top level help
   static aliases = ['import-abi'];
