@@ -1,6 +1,6 @@
 {
   "name": "@subql/testing",
-  "version": "2.2.5-0",
+  "version": "2.3.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist && tsc -b",
@@ -24,6 +24,5 @@
   "packageManager": "yarn@3.1.1",
   "dependencies": {
     "@subql/types-core": "workspace:^"
-  },
-  "stableVersion": "2.2.4"
+  }
 }

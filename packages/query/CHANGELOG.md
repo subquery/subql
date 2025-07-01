@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.23.0] - 2025-07-01
 ### Removed
 - Test files and artifacts from published package (#2838)
 
@@ -425,7 +427,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.22.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.23.0...HEAD
+[2.23.0]: https://github.com/subquery/subql/compare/query/2.22.2...query/2.23.0
 [2.22.2]: https://github.com/subquery/subql/compare/query/2.22.1...query/2.22.2
 [2.22.1]: https://github.com/subquery/subql/compare/query/2.22.0...query/2.22.1
 [2.22.0]: https://github.com/subquery/subql/compare/query/2.21.2...query/2.22.0

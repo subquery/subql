@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.2.0] - 2025-07-01
 ### Removed
 - Test files and artifacts from published package (#2838)
 
@@ -1441,7 +1443,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/6.1.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/6.2.0...HEAD
+[6.2.0]: https://github.com/subquery/subql/compare/node/6.1.1...node/6.2.0
 [6.1.1]: https://github.com/subquery/subql/compare/node/6.1.0...node/6.1.1
 [6.1.0]: https://github.com/subquery/subql/compare/node/6.0.5...node/6.1.0
 [6.0.5]: https://github.com/subquery/subql/compare/node/6.0.4...node/6.0.5

@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.7.0] - 2025-07-01
 ### Removed
 - Test files and artifacts from published package (#2838)
 
@@ -460,7 +462,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/5.6.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/5.7.0...HEAD
+[5.7.0]: https://github.com/subquery/subql/compare/common/5.6.1...common/5.7.0
 [5.6.1]: https://github.com/subquery/subql/compare/common/5.6.0...common/5.6.1
 [5.6.0]: https://github.com/subquery/subql/compare/common/5.5.0...common/5.6.0
 [5.5.0]: https://github.com/subquery/subql/compare/common/5.4.0...common/5.5.0
