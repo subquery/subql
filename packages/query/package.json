@@ -27,7 +27,16 @@
   "license": "GPL-3.0",
   "files": [
     "/dist",
-    "/bin"
+    "!/dist/**/*.spec.js",
+    "!/dist/**/*.spec.d.ts",
+    "!/dist/**/*.spec.js.map",
+    "!/dist/**/*.test.js",
+    "!/dist/**/*.test.d.ts",
+    "!/dist/**/*.test.js.map",
+    "/bin",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
   ],
   "dependencies": {
     "@graphile-contrib/pg-many-to-many": "^1.0.2",

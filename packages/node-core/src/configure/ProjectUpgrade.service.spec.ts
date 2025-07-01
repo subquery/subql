@@ -291,7 +291,8 @@ describe('Project Upgrades', () => {
     let storeCache: IStoreModelProvider;
 
     beforeEach(async () => {
-      storeCache = new StoreCacheService({} as any, {} as any, {} as any);
+      const sequelize = {transaction: jest.fn(() => ({commit: jest.fn()}))} as any as Sequelize;
+      storeCache = new StoreCacheService(sequelize, {} as any, {} as any);
       // eslint-disable-next-line @typescript-eslint/dot-notation
       (storeCache as any).cachedModels['_metadata'] = mockMetadata();
 
@@ -302,7 +303,7 @@ describe('Project Upgrades', () => {
       );
       const storeService = new StoreService({} as any, {} as any, storeCache, project);
 
-      await upgradeService.init(storeService, 1, {} as NodeConfig, {} as Sequelize, '');
+      await upgradeService.init(storeService, 1, {} as NodeConfig, sequelize, '');
 
       project = upgradableSubqueryProject(upgradeService);
     });

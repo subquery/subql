@@ -9,7 +9,17 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "files": [
-    "/dist"
+    "/dist",
+    "!/dist/**/*.spec.js",
+    "!/dist/**/*.spec.d.ts",
+    "!/dist/**/*.spec.js.map",
+    "!/dist/**/*.test.js",
+    "!/dist/**/*.test.d.ts",
+    "!/dist/**/*.test.js.map",
+    "package.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "packageManager": "yarn@3.1.1",
   "dependencies": {
