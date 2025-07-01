@@ -301,7 +301,7 @@ describe('Project Upgrades', () => {
         (id) => Promise.resolve(demoProjects[parseInt(id, 10)]),
         1
       );
-      const storeService = new StoreService({} as any, {} as any, storeCache, project);
+      const storeService = new StoreService(sequelize, {} as any, storeCache, project);
 
       await upgradeService.init(storeService, 1, {} as NodeConfig, sequelize, '');
 
