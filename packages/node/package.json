@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-ethereum",
-  "version": "6.1.1-0",
+  "version": "6.1.1",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -57,8 +57,17 @@
     "node-fetch": "2.6.7"
   },
   "files": [
+    "/bin",
     "/dist",
-    "/bin"
-  ],
-  "stableVersion": "6.1.0"
+    "!/dist/**/*.spec.js",
+    "!/dist/**/*.spec.d.ts",
+    "!/dist/**/*.spec.js.map",
+    "!/dist/**/*.test.js",
+    "!/dist/**/*.test.d.ts",
+    "!/dist/**/*.test.js.map",
+    "package.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ]
 }
