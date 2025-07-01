@@ -18,6 +18,6 @@
   ],
   "dependencies": {
     "@stellar/stellar-sdk": "^13.1.0",
-    "@subql/types-core": "^2.0.2"
+    "@subql/types-core": "^2.1.0"
   }
 }
