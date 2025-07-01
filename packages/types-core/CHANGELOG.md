@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.1.0] - 2025-07-01
 ### Removed
 - Test files and artifacts from published package (#2838)
 
@@ -84,7 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of new package containing types common to all chains
 
-[Unreleased]: https://github.com/subquery/subql/compare/types-core/2.0.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types-core/2.1.0...HEAD
+[2.1.0]: https://github.com/subquery/subql/compare/types-core/2.0.2...types-core/2.1.0
 [2.0.2]: https://github.com/subquery/subql/compare/types-core/2.0.1...types-core/2.0.2
 [2.0.1]: https://github.com/subquery/subql/compare/types-core/2.0.0...types-core/2.0.1
 [2.0.0]: https://github.com/subquery/subql/compare/types-core/1.1.1...types-core/2.0.0
