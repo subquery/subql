@@ -7,29 +7,13 @@ import {Command, Config, Interfaces} from '@oclif/core';
 import {z} from 'zod';
 import {FORCE_FLAG, MCP_FLAG} from '../constants';
 import {fetchNetworks} from '../controller/init-controller';
+import {registerBuildMCPTool} from './build';
+import {registerPublishMCPTool} from './publish';
+import {registerInitMCPTool} from './init';
+import {mcpLogger} from '../adapters/utils';
 
 // const packageVersion = require('../../package.json').version;
 //
-
-function mcpLogger(server: McpServer['server'], namespace?: string): Interfaces.Logger {
-  const log =
-    (level: 'error' | 'debug' | 'info' | 'notice') =>
-    (...input: unknown[]) => {
-      void server.sendLoggingMessage({
-        level,
-        message: namespace ? `[${namespace}] ${input}` : input,
-      });
-    };
-  return {
-    debug: (formatter, ...args: unknown[]) => log('debug')(...args),
-    error: (formatter, ...args: unknown[]) => log('error')(...args),
-    info: (formatter, ...args: unknown[]) => log('info')(...args),
-    trace: (formatter, ...args: unknown[]) => log('debug')(...args),
-    warn: (formatter, ...args: unknown[]) => log('notice')(...args),
-    child: (childNamespace: string) => mcpLogger(server, childNamespace),
-    namespace: namespace ?? '',
-  };
-}
 
 /**
  * Converts mcp tool args to a string array that can be used as input for an oclif command.
@@ -158,6 +142,19 @@ export default class MCP extends Command {
         continue; // Skip the MCP command itself
       }
 
+      if (command.id === 'build') {
+        // registerBuildMCPTool(server);
+        continue;
+      }
+      if (command.id === 'publish') {
+        // registerPublishMCPTool(server);
+        continue;
+      }
+      if (command.id === 'init') {
+        // registerInitMCPTool(server);
+        continue;
+      }
+
       const inputSchema = getInputSchema(command);
 
       server.registerTool(
@@ -187,7 +184,7 @@ export default class MCP extends Command {
                 params: {
                   progressToken: meta._meta?.progressToken,
                   progress: progress++,
-                  steps,
+                  total: steps,
                   message: `Progress update ${progress}/${steps}`,
                 },
               });
@@ -197,7 +194,7 @@ export default class MCP extends Command {
           try {
             await inst.run(parsedArgs, {
               root: __dirname,
-              logger: mcpLogger(server.server),
+              // logger: mcpLogger(server.server),
             });
 
             return {
@@ -223,5 +220,17 @@ export default class MCP extends Command {
 
     const transport = new StdioServerTransport();
     await server.connect(transport);
+
+    /**
+     * MCP is intended to have 1 server per client
+     * We get the clients capabilities to determine the tools used
+     */
+    server.server.oninitialized = async () => {
+      const capabilities = server.server.getClientCapabilities();
+      registerBuildMCPTool(server);
+      registerPublishMCPTool(server);
+
+      registerInitMCPTool(server, capabilities?.elicitation !== undefined);
+    };
   }
 }

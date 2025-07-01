@@ -15,7 +15,10 @@ export default class Codegen extends Command {
       description: 'local folder to run codegen in. please use file flag instead',
       deprecated: true,
     }),
-    file: Flags.string({char: 'f', description: 'specify manifest file path (will overwrite -l if both used)'}),
+    file: Flags.string({
+      char: 'f',
+      description: 'The project directory or path to project manifest. (will overwrite -l if both used)',
+    }),
   };
 
   async run(): Promise<void> {
