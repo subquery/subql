@@ -24,7 +24,7 @@ describe('Integration test - Publish', () => {
     }
   });
 
-  it('overwrites any exisiting CID files', async () => {
+  it('overwrites any existing CID files', async () => {
     const initCID = 'QmWLxg7xV7ZWUyc7ZxZ8XuQQ7NmH8WQGXzg7VZ3QQNqF-testing';
     const cidFilePath = path.resolve(projectDir, '.project-cid');
     await fs.promises.writeFile(cidFilePath, initCID);

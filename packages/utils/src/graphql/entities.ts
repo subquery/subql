@@ -306,7 +306,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
           throw new Error(`fullText directive fields only supports String types`);
         }
 
-        // If the field is a realation, we rename the field to include _id
+        // If the field is a relation, we rename the field to include _id
         if (field.name === `${searchField}Id`) {
           fullTextDirectiveVal.fields[index] = `${searchField}_id`;
         }
