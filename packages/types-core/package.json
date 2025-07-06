@@ -25,7 +25,8 @@
     "CHANGELOG.md",
     "LICENSE"
   ],
-  "devDependencies": {
-    "package-json-type": "^1.0.3"
+  "dependencies": {
+    "package-json-type": "^1.0.3",
+    "pino": "^6.13.3"
   }
 }
