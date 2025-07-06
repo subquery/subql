@@ -9,7 +9,7 @@ import {getAbiInterface} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import {rimraf} from 'rimraf';
 import {Document, stringify} from 'yaml';
-import Generate, {SelectedMethod, UserInput} from '../commands/codegen/generate';
+import ImportAbi from '../commands/codegen/import-abi';
 import {loadDependency} from '../modulars';
 import {
   constructMethod,
@@ -23,6 +23,8 @@ import {
   prepareAbiDirectory,
   prepareInputFragments,
   yamlExtractor,
+  SelectedMethod,
+  UserInput,
 } from './generate-controller';
 
 const ROOT_MAPPING_DIR = 'src/mappings';
@@ -421,7 +423,7 @@ describe('CLI codegen:generate, Can write to file', () => {
     await fs.promises.mkdir(path.join(PROJECT_PATH, ROOT_MAPPING_DIR));
     await fs.promises.writeFile(path.join(PROJECT_PATH, 'src/index.ts'), 'export * from "./mappings/mappingHandlers"');
 
-    await Generate.run([
+    await ImportAbi.run([
       '-f',
       path.join(PROJECT_PATH, './generate-project-2.yaml'),
       '--events',
@@ -446,7 +448,7 @@ describe('CLI codegen:generate, Can write to file', () => {
     await fs.promises.writeFile(path.join(PROJECT_PATH, 'src/mappings/Erc721Handlers.ts'), 'zzzzzz');
 
     await expect(
-      Generate.run([
+      ImportAbi.run([
         '-f',
         path.join(PROJECT_PATH, './generate-project-2.yaml'),
         '--events',

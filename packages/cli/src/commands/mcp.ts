@@ -3,103 +3,26 @@
 
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
-import {Command, Config, Interfaces} from '@oclif/core';
-import {z} from 'zod';
-import {FORCE_FLAG, MCP_FLAG} from '../constants';
+import {Command} from '@oclif/core';
+import {getMCPWorkingDirectory, MCPToolOptions} from '../adapters/utils';
 import {fetchNetworks} from '../controller/init-controller';
 import {registerBuildMCPTool} from './build';
-import {registerPublishMCPTool} from './publish';
+import {registerCodegenMCPTool} from './codegen';
+import {registerImportAbiMCPTool} from './codegen/import-abi';
 import {registerInitMCPTool} from './init';
-import {mcpLogger} from '../adapters/utils';
-
-// const packageVersion = require('../../package.json').version;
-//
-
-/**
- * Converts mcp tool args to a string array that can be used as input for an oclif command.
- * @param positionalArgs - An array of positional arguments that are passed to the command, these don't include the flag.
- * @param args
- * @returns A string array to be used for an oclif command input.
- */
-function argsToCommandInput(positionalArgs: string[], args: Record<string, any>): string[] {
-  return Object.entries(args).flatMap(([flag, value]) => {
-    // Args are poitional and don't include the flag
-    if (positionalArgs.includes(flag)) {
-      return [value];
-    }
-
-    // Oclif boolean flags don't have a value
-    if (typeof value === 'boolean') {
-      if (value === false) {
-        return [];
-      }
-      return [`--${flag}`];
-    }
-
-    // TODO test integers and other non-string types
-    return [`--${flag}`, value.toString()];
-  });
-}
-
-/**
- * Generates a Zod schema for the input of a command based on its args and flags.
- * @param command - The command to generate the input schema for.
- * @returns A Zod schema representing the input of the command.
- */
-function getInputSchema(command: Command.Loadable): z.ZodRawShape {
-  const inputSchema: z.ZodRawShape = {};
-
-  Object.values(command.args).forEach((arg) => {
-    if (arg.hidden) {
-      return;
-    }
-    let valueType: z.ZodTypeAny = z.string({
-      description: arg.description,
-    });
-
-    if (!arg.required) {
-      valueType = valueType.optional();
-    }
-    if (arg.default) {
-      valueType = valueType.default(arg.default);
-    }
-
-    inputSchema[arg.name] = valueType;
-  });
-
-  Object.values(command.flags).forEach((flag) => {
-    // Hide force flag, were going add it manually
-    if (flag.hidden || flag.deprecated || flag.name === FORCE_FLAG.name) {
-      return;
-    }
-
-    // TODO handle other types, oclif doesn't keep this in its types
-    let valueType: z.ZodTypeAny =
-      flag.type === 'boolean'
-        ? z.boolean({description: flag.description})
-        : flag.options
-          ? z.union(flag.options.map((option) => z.literal(option)) as any)
-          : z.string({description: flag.description});
-    if (!flag.required) {
-      valueType = valueType.optional();
-    }
-    if (flag.default) {
-      valueType = valueType.default(flag.default);
-    }
-
-    inputSchema[flag.name] = valueType;
-  });
-
-  return inputSchema;
-}
+import {registerMigrateSubgraphMCPTool} from './migrate';
+import {registerMultichainAddMCPTool} from './multi-chain/add';
+import {registerCreateDeploymentMCPTool} from './onfinality/create-deployment';
+import {registerCreateMultichainDeploymentMCPTool} from './onfinality/create-multichain-deployment';
+import {registerCreateProjectMCPTool} from './onfinality/create-project';
+import {registerDeleteProjectMCPTool} from './onfinality/delete-project';
+import {registerPromoteDeploymentMCPTool} from './onfinality/promote-deployment';
+import {registerPublishMCPTool} from './publish';
 
 export default class MCP extends Command {
   static description = 'Runs an MCP (Model Context Protocol) over stdio';
 
   async run(): Promise<void> {
-    const config = await Config.load({
-      root: __dirname,
-    });
     const server = new McpServer(
       {
         name: 'SubQuery CLI',
@@ -137,86 +60,25 @@ export default class MCP extends Command {
       }
     );
 
-    for (const command of config.commands) {
-      if (command.id === this.id) {
-        continue; // Skip the MCP command itself
-      }
+    // There needs to be a tool registered before a client can connect otherwise tools arent discovered
+    server.registerTool('Echo Roots', {description: 'Echos user roots'}, async () => {
+      // const {roots} = await server.server.listRoots();
 
-      if (command.id === 'build') {
-        // registerBuildMCPTool(server);
-        continue;
-      }
-      if (command.id === 'publish') {
-        // registerPublishMCPTool(server);
-        continue;
-      }
-      if (command.id === 'init') {
-        // registerInitMCPTool(server);
-        continue;
-      }
+      const root = await getMCPWorkingDirectory(server);
 
-      const inputSchema = getInputSchema(command);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: root,
+          },
+        ],
+      };
+    });
 
-      server.registerTool(
-        command.id,
-        {
-          description: command.description,
-          inputSchema,
-        },
-        async (args, meta) => {
-          const inst = await command.load();
-
-          const parsedArgs = argsToCommandInput(Object.keys(command.args), args);
-          if (command.flags.mcp) {
-            parsedArgs.push(`--${MCP_FLAG.name}`);
-          }
-          if (command.flags.force) {
-            parsedArgs.push(`--force`);
-          }
-
-          // Mock progress because we have some long running tasks and progress resets timeouts
-          let progress = 0;
-          const steps = 100;
-          const interval = setInterval(() => {
-            if (meta._meta?.progressToken) {
-              void meta.sendNotification({
-                method: 'notifications/progress',
-                params: {
-                  progressToken: meta._meta?.progressToken,
-                  progress: progress++,
-                  total: steps,
-                  message: `Progress update ${progress}/${steps}`,
-                },
-              });
-            }
-          }, 2_000);
-
-          try {
-            await inst.run(parsedArgs, {
-              root: __dirname,
-              // logger: mcpLogger(server.server),
-            });
-
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: `Tool ${command.id} executed successfully!`,
-                },
-              ],
-            };
-          } catch (e) {
-            await server.server.sendLoggingMessage({
-              level: 'error',
-              message: `Error running command ${command.id}: ${e}: ${(e as any).stack}`,
-            });
-            throw e;
-          } finally {
-            clearInterval(interval);
-          }
-        }
-      );
-    }
+    registerCreateProjectMCPTool(server);
+    registerDeleteProjectMCPTool(server);
+    registerPromoteDeploymentMCPTool(server);
 
     const transport = new StdioServerTransport();
     await server.connect(transport);
@@ -225,12 +87,25 @@ export default class MCP extends Command {
      * MCP is intended to have 1 server per client
      * We get the clients capabilities to determine the tools used
      */
-    server.server.oninitialized = async () => {
+    server.server.oninitialized = () => {
       const capabilities = server.server.getClientCapabilities();
-      registerBuildMCPTool(server);
-      registerPublishMCPTool(server);
 
-      registerInitMCPTool(server, capabilities?.elicitation !== undefined);
+      const opts: MCPToolOptions = {
+        supportsElicitation: capabilities?.elicitation !== undefined,
+      };
+
+      registerCodegenMCPTool(server);
+      registerImportAbiMCPTool(server, opts);
+
+      registerMultichainAddMCPTool(server);
+
+      registerCreateDeploymentMCPTool(server, opts);
+      registerCreateMultichainDeploymentMCPTool(server, opts);
+
+      registerBuildMCPTool(server);
+      registerInitMCPTool(server, opts);
+      registerPublishMCPTool(server);
+      registerMigrateSubgraphMCPTool(server);
     };
   }
 }

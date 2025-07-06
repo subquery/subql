@@ -1,65 +1,95 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Command, Flags} from '@oclif/core';
+import assert from 'node:assert';
+import {existsSync} from 'node:fs';
+import path from 'node:path';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {Command} from '@oclif/core';
 import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
+import {z} from 'zod';
+import {commandLogger, getMCPWorkingDirectory, Logger, mcpLogger, zodToArgs, zodToFlags} from '../../adapters/utils';
 import {codegen} from '../../controller/codegen-controller';
 import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils';
 
-export default class Codegen extends Command {
-  static description = 'Generate entity types from the GraphQL schema';
+const codegenInputs = z.object({
+  location: z.string({description: 'The project directory or path to project manifest.'}).optional(),
+});
+type CodegenInputs = z.infer<typeof codegenInputs>;
 
-  static flags = {
-    location: Flags.string({
-      char: 'l',
-      description: 'local folder to run codegen in. please use file flag instead',
-      deprecated: true,
-    }),
-    file: Flags.string({
-      char: 'f',
-      description: 'The project directory or path to project manifest. (will overwrite -l if both used)',
-    }),
-  };
+const codegenOutputs = z.void();
+
+export async function codegenAdapter(
+  workingDir: string,
+  args: CodegenInputs,
+  logger: Logger
+): Promise<z.infer<typeof codegenOutputs>> {
+  const location = resolveToAbsolutePath(path.resolve(workingDir, args.location ?? ''));
+  assert(existsSync(location), 'Argument `location` is not a valid directory or file');
+
+  /*
+    ts manifest can be either single chain ts manifest
+    or multichain ts manifest
+    or multichain yaml manifest containing single chain ts project paths
+  */
+  const tsManifest = getTsManifest(location);
+
+  if (tsManifest) {
+    await buildManifestFromLocation(tsManifest, logger.info.bind(logger));
+  }
+
+  const {manifests, root} = getProjectRootAndManifest(location);
+
+  let firstSchemaPath: string | null = null;
+
+  for (const manifest of manifests) {
+    const schemaPath = getSchemaPath(root, manifest);
+
+    if (firstSchemaPath === null) {
+      firstSchemaPath = schemaPath;
+    } else if (schemaPath !== firstSchemaPath) {
+      throw new Error('All schema paths are not the same');
+    }
+  }
+
+  await codegen(root, manifests);
+}
+
+export default class Codegen extends Command {
+  static description = 'Generate entity types from the GraphQL schema and contract interfaces';
+  static flags = zodToFlags(codegenInputs);
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Codegen);
-    this.log('===============================');
-    this.log('---------Subql Codegen---------');
-    this.log('===============================');
-
-    const {file, location} = flags;
-
-    const projectPath = resolveToAbsolutePath(file ?? location ?? process.cwd());
-
-    /*
-      ts manifest can be either single chain ts manifest
-      or multichain ts manifest
-      or multichain yaml manifest containing single chain ts project paths
-    */
-    const tsManifest = getTsManifest(projectPath);
-
-    if (tsManifest) {
-      await buildManifestFromLocation(tsManifest, this.log.bind(this));
-    }
-
-    const {manifests, root} = getProjectRootAndManifest(projectPath);
-
-    let firstSchemaPath: string | null = null;
-
-    for (const manifest of manifests) {
-      const schemaPath = getSchemaPath(root, manifest);
-
-      if (firstSchemaPath === null) {
-        firstSchemaPath = schemaPath;
-      } else if (schemaPath !== firstSchemaPath) {
-        throw new Error('All schema paths are not the same');
-      }
-    }
 
     try {
-      await codegen(root, manifests);
+      await codegenAdapter(process.cwd(), flags, commandLogger(this));
     } catch (err: any) {
       this.error(`${err.message}, ${err.cause}`);
     }
   }
+}
+
+export function registerCodegenMCPTool(server: McpServer): RegisteredTool {
+  return server.registerTool(
+    Codegen.id,
+    {
+      description: Codegen.description,
+      inputSchema: codegenInputs.shape,
+    },
+    async (args, meta) => {
+      const cwd = await getMCPWorkingDirectory(server);
+
+      await codegenAdapter(cwd, args, mcpLogger(server.server));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `${Codegen.id} completed successfully.`,
+          },
+        ],
+      };
+    }
+  );
 }

@@ -14,7 +14,6 @@ import {
   EthereumTransactionFilter,
   SubqlRuntimeDatasource as EthereumDs,
 } from '@subql/types-ethereum';
-import {SelectedMethod, UserInput} from '../commands/codegen/generate';
 import {ENDPOINT_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
 import {loadDependency} from '../modulars';
 import {
@@ -38,6 +37,8 @@ import {
   tsExtractor,
   tsStringify,
   yamlExtractor,
+  SelectedMethod,
+  UserInput,
 } from './generate-controller';
 
 const mockConstructedFunctions: SelectedMethod[] = [

@@ -1,31 +1,63 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import {input} from '@inquirer/prompts';
-import {Command, Flags} from '@oclif/core';
+import path from 'node:path';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {Command} from '@oclif/core';
+import {z} from 'zod';
+import {getMCPWorkingDirectory, zodToFlags} from '../../adapters/utils';
 import {addChain} from '../../controller/add-chain-controller';
-import {resolveToAbsolutePath} from '../../utils';
+
+const multichainAddInputs = z.object({
+  location: z
+    .string({
+      description: 'The path to the multichain project, this can be a directory or a multichain manifest file.',
+    })
+    .optional(),
+  chainManifestFile: z.string({description: 'The path to the new chain manifest'}),
+});
+type MultichainAddInputs = z.infer<typeof multichainAddInputs>;
+
+const multichainAddOutputs = z.void();
+
+async function multichainAddAdapter(
+  workingDir: string,
+  args: MultichainAddInputs
+): Promise<z.infer<typeof multichainAddOutputs>> {
+  const location = path.resolve(workingDir, args.location ?? '');
+  const chainManifestFile = path.resolve(workingDir, args.chainManifestFile);
+  await addChain(location, chainManifestFile);
+}
 
 export default class MultiChainAdd extends Command {
-  static description = 'Add new chain manifest to multi-chain configuration';
-
-  static flags = {
-    multichain: Flags.string({char: 'f', description: 'specify multichain manifest file path', default: process.cwd()}),
-    chainManifestPath: Flags.string({char: 'c', description: 'path to the new chain manifest'}),
-  };
+  static description = 'Add new chain manifest to multi-chain project';
+  static flags = zodToFlags(multichainAddInputs);
 
   async run(): Promise<void> {
     const {flags} = await this.parse(MultiChainAdd);
 
-    const {multichain} = flags;
-    let {chainManifestPath} = flags;
-
-    if (!chainManifestPath) {
-      chainManifestPath = await input({message: 'Enter the path to the new chain manifest'});
-    }
-    assert(chainManifestPath, 'Chain manifest path is required');
-
-    await addChain(multichain, resolveToAbsolutePath(chainManifestPath));
+    return multichainAddAdapter(process.cwd(), flags);
   }
+}
+
+export function registerMultichainAddMCPTool(server: McpServer): RegisteredTool {
+  return server.registerTool(
+    MultiChainAdd.id,
+    {
+      description: MultiChainAdd.description,
+      inputSchema: multichainAddInputs.shape,
+    },
+    async (args) => {
+      const cwd = await getMCPWorkingDirectory(server);
+      await multichainAddAdapter(cwd, args);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Added chain to multi-chain project`,
+          },
+        ],
+      };
+    }
+  );
 }

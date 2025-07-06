@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {Flags} from '@oclif/core';
-import {FlagInput, OptionFlag} from '@oclif/core/lib/interfaces/parser';
 import axios, {Axios} from 'axios';
-import chalk from 'chalk';
-import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../constants';
+
+import {Prompt} from '../adapters/utils';
+import {ROOT_API_URL_PROD} from '../constants';
 import {
   DeploymentDataType,
   ProjectDataType,
@@ -215,54 +214,6 @@ export function splitMultichainDataFields(fieldStr = ''): MultichainDataFieldTyp
   return result;
 }
 
-export const DefaultDeployFlags = {
-  org: Flags.string({description: 'Enter organization name'}),
-  projectName: Flags.string({description: 'Enter project name'}),
-  // ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
-
-  type: Flags.string({
-    options: ['stage', 'primary'],
-    default: DEFAULT_DEPLOYMENT_TYPE,
-    required: false,
-  }) as OptionFlag<DeploymentType>,
-  indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
-  queryVersion: Flags.string({description: 'Enter query-version', required: false}),
-  dict: Flags.string({description: 'Enter dictionary', required: false}),
-  endpoint: Flags.string({description: 'Enter endpoint', required: false}),
-  //indexer set up flags
-  indexerUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
-  indexerBatchSize: Flags.integer({description: 'Enter batchSize from 1 to 30', required: false}),
-  indexerSubscription: Flags.boolean({description: 'Enable Indexer subscription', required: false}),
-  disableHistorical: Flags.boolean({description: 'Disable Historical Data', required: false}),
-  indexerUnfinalized: Flags.boolean({
-    description: 'Index unfinalized blocks (requires Historical to be enabled)',
-    required: false,
-  }),
-  indexerStoreCacheThreshold: Flags.integer({
-    description: 'The number of items kept in the cache before flushing',
-    required: false,
-  }),
-  disableIndexerStoreCacheAsync: Flags.boolean({
-    description: 'If enabled the store cache will flush data asynchronously relative to indexing data.',
-    required: false,
-  }),
-  indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 5', required: false, max: 5}),
-
-  //query flags
-  queryUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
-  querySubscription: Flags.boolean({description: 'Enable Query subscription', required: false}),
-  queryTimeout: Flags.integer({description: 'Enter timeout from 1000ms to 60000ms', required: false}),
-  queryMaxConnection: Flags.integer({description: 'Enter MaxConnection from 1 to 10', required: false}),
-  queryAggregate: Flags.boolean({description: 'Enable Aggregate', required: false}),
-  queryLimit: Flags.integer({description: 'Set the max number of results the query service returns', required: false}),
-
-  useDefaults: Flags.boolean({
-    char: 'd',
-    description: 'Use default values for indexerVersion, queryVersion, dictionary, endpoint',
-    required: false,
-  }),
-} satisfies FlagInput<DeploymentFlagsInterface>;
-
 export function generateDeploymentChain(row: GenerateDeploymentChainInterface): V3DeploymentIndexerType {
   return {
     cid: row.cid,
@@ -301,48 +252,62 @@ export function generateAdvancedQueryOptions(flags: DeploymentFlagsInterface): Q
   };
 }
 
-export async function executeProjectDeployment(data: ProjectDeploymentInterface): Promise<DeploymentDataType | void> {
+export async function executeProjectDeployment(
+  data: ProjectDeploymentInterface
+): Promise<DeploymentDataType | undefined> {
+  // This should not happe, the commands that call this should set the query version
+  if (!data.flags.queryVersion) {
+    throw new Error('Query version is required');
+  }
   if (data.projectInfo !== undefined) {
     await updateDeployment(
-      data.org,
-      data.projectName,
+      data.flags.org,
+      data.flags.projectName,
       data.projectInfo.id,
       data.authToken,
       data.ipfsCID,
-      data.queryVersion,
+      data.flags.queryVersion,
       generateAdvancedQueryOptions(data.flags),
       data.chains,
       ROOT_API_URL_PROD
     );
-    data.log(`Project: ${data.projectName} has been re-deployed`);
   } else {
     const deploymentOutput = await createDeployment(
-      data.org,
-      data.projectName,
+      data.flags.org,
+      data.flags.projectName,
       data.authToken,
       data.ipfsCID,
-      data.queryVersion,
+      data.flags.queryVersion,
       data.flags.type,
       generateAdvancedQueryOptions(data.flags),
       data.chains,
       ROOT_API_URL_PROD
     );
 
-    if (deploymentOutput) {
-      data.log(`Project: ${deploymentOutput.projectKey}
-Status: ${chalk.blue(deploymentOutput.status)}
-DeploymentID: ${deploymentOutput.id}
-Deployment Type: ${deploymentOutput.type}
-Indexer version: ${deploymentOutput.indexerImage}
-Query version: ${deploymentOutput.queryImage}
-Endpoint: ${deploymentOutput.endpoint}
-Dictionary Endpoint: ${deploymentOutput.dictEndpoint}
-Query URL: ${deploymentOutput.queryUrl}
-Project URL: ${BASE_PROJECT_URL}/org/${data.org}/project/${data.projectName}
-Advanced Settings for Query: ${JSON.stringify(deploymentOutput.configuration.config.query)}
-Advanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
-      `);
-    }
     return deploymentOutput;
   }
+}
+
+export async function promptImageVersion(
+  runner: string,
+  version: string,
+  useDefaults: boolean | undefined,
+  authToken: string,
+  type: 'indexer' | 'query',
+  prompt?: Prompt
+): Promise<string> {
+  const versions = await imageVersions(runner, version, authToken, ROOT_API_URL_PROD);
+  if (useDefaults) {
+    return versions[0];
+  }
+  if (!prompt) {
+    throw new Error(`${type} is required`);
+  }
+
+  return prompt({
+    message: `Enter ${type} version for ${runner}`,
+    type: 'string',
+    options: versions,
+    defaultValue: versions[0],
+  });
 }

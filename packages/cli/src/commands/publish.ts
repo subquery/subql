@@ -8,7 +8,17 @@ import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import {z} from 'zod';
-import {commandLogger, Logger, mcpLogger, silentLogger, zodToArgs, zodToFlags} from '../adapters/utils';
+import {
+  commandLogger,
+  getMCPStructuredResponse,
+  getMCPWorkingDirectory,
+  Logger,
+  mcpLogger,
+  silentLogger,
+  withStructuredResponse,
+  zodToArgs,
+  zodToFlags,
+} from '../adapters/utils';
 import {createIPFSFile, uploadToIpfs} from '../controller/publish-controller';
 import {getOptionalToken, resolveToAbsolutePath} from '../utils';
 import {buildAdapter, buildInputs} from './build';
@@ -27,12 +37,12 @@ const publishOutputs = z.object({
 });
 type PublishOutputs = z.infer<typeof publishOutputs>;
 
-export async function publishAdapter(args: PublishInputs, logger: Logger): Promise<PublishOutputs> {
-  const location = resolveToAbsolutePath(args.location);
+export async function publishAdapter(workingDir: string, args: PublishInputs, logger: Logger): Promise<PublishOutputs> {
+  const location = resolveToAbsolutePath(path.resolve(workingDir, args.location));
   assert(existsSync(location), 'Argument `location` is not a valid directory or file');
 
   // Ensure the project is built
-  await buildAdapter(buildInputs.parse({location}), logger);
+  await buildAdapter(workingDir, buildInputs.parse({location}), logger);
 
   const project = getProjectRootAndManifest(location);
 
@@ -75,7 +85,7 @@ export default class Publish extends Command {
 
     const logger = flags.silent ? silentLogger() : commandLogger(this);
 
-    const result = await publishAdapter({...flags, ...args}, logger);
+    const result = await publishAdapter(process.cwd(), {...flags, ...args}, logger);
 
     if (flags.silent) {
       this.log(result.directory);
@@ -93,66 +103,19 @@ export default class Publish extends Command {
   }
 }
 
-const mcpPublishInputs = publishInputs.merge(
-  z.object({
-    cwd: z.string({description: 'The current working directory.'}),
-  })
-);
-
-const mcpPublishOutputs = z.object({
-  result: z.optional(publishOutputs),
-  error: z.optional(z.string().describe('Error message if the command fails')),
-});
-
-function formatErrorCauses(e: Error): string {
-  let message = e.message;
-  while (e.cause) {
-    e = e.cause as Error;
-    message += `:\n cause: ${e.message}`;
-  }
-  return message;
-}
-
 export function registerPublishMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
     Publish.id,
     {
       description: Publish.description,
-      inputSchema: mcpPublishInputs.shape,
-      outputSchema: mcpPublishOutputs.shape,
+      inputSchema: publishInputs.shape,
+      outputSchema: getMCPStructuredResponse(publishOutputs).shape,
     },
-    async (args, meta) => {
-      try {
-        const {cwd, location, ...rest} = args;
-        const newLocation = path.resolve(cwd, location);
+    withStructuredResponse(async (args) => {
+      const cwd = await getMCPWorkingDirectory(server);
 
-        const logger = mcpLogger(server.server);
-        const result = await publishAdapter({...rest, location: newLocation}, logger);
-
-        return {
-          structuredContent: {
-            result,
-          },
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
-      } catch (e: any) {
-        return {
-          structuredContent: {
-            error: formatErrorCauses(e),
-          },
-          content: [
-            {
-              type: 'text',
-              text: `Error running: ${formatErrorCauses(e)}`,
-            },
-          ],
-        };
-      }
-    }
+      const logger = mcpLogger(server.server);
+      return publishAdapter(cwd, args, logger);
+    })
   );
 }
