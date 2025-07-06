@@ -7,11 +7,9 @@ import path from 'node:path';
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
-import {Logger, zodToFlags, mcpLogger, commandLogger, zodToArgs} from '../adapters/utils';
+import {Logger, zodToFlags, mcpLogger, commandLogger, getMCPWorkingDirectory} from '../adapters/utils';
 import {getBuildEntries, runBundle} from '../controller/build-controller';
 import {resolveToAbsolutePath, buildTsManifest} from '../utils';
-
-// TODO look into zod registries to get shorthand form of flags
 
 export const buildInputs = z.object({
   location: z.string({description: 'The path to the project, this can be a directory or a project manifest file.'}),
@@ -21,10 +19,12 @@ type BuildInputs = z.infer<typeof buildInputs>;
 
 const buildOutputs = z.void();
 
-// type Adapter = <I, O>(args: I, logger: Logger, prompt: <T>(options?: T[]) => Promise<T>) => Promise<O>;
-
-export async function buildAdapter(args: BuildInputs, logger: Logger): Promise<z.infer<typeof buildOutputs>> {
-  const location = resolveToAbsolutePath(args.location);
+export async function buildAdapter(
+  workingDir: string,
+  args: BuildInputs,
+  logger: Logger
+): Promise<z.infer<typeof buildOutputs>> {
+  const location = resolveToAbsolutePath(path.resolve(workingDir, args.location));
   assert(existsSync(location), 'Argument `location` is not a valid directory or file');
   const directory = lstatSync(location).isDirectory() ? location : path.dirname(location);
 
@@ -38,37 +38,28 @@ export async function buildAdapter(args: BuildInputs, logger: Logger): Promise<z
 
 export default class Build extends Command {
   static description = 'Build this SubQuery project code into a bundle';
-  static flags = zodToFlags(buildInputs.omit({location: true}));
-  static args = zodToArgs(buildInputs.pick({location: true}));
+  static flags = zodToFlags(buildInputs);
 
   async run(): Promise<void> {
-    const {args, flags} = await this.parse(Build);
+    const {flags} = await this.parse(Build);
 
-    await buildAdapter({...flags, ...args}, commandLogger(this));
+    await buildAdapter(process.cwd(), flags, commandLogger(this));
     // TODO handle errors
   }
 }
-
-const mcpBuildInputs = buildInputs.merge(
-  z.object({
-    cwd: z.string({description: 'The current working directory.'}),
-  })
-);
 
 export function registerBuildMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
     Build.id,
     {
       description: Build.description,
-      inputSchema: mcpBuildInputs.shape,
+      inputSchema: buildInputs.shape,
       // outputSchema: buildOutputs.shape,
     },
     async (args, meta) => {
-      const {cwd, location, ...rest} = args;
-      const newLocation = path.resolve(cwd, location);
+      const cwd = await getMCPWorkingDirectory(server);
 
-      // TODO make the location absolute, with MCP cwd is irrelevant
-      await buildAdapter({...rest, location: newLocation}, mcpLogger(server.server));
+      await buildAdapter(cwd, args, mcpLogger(server.server));
 
       // TODO mock progress
 

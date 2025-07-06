@@ -339,12 +339,15 @@ export async function prepareGitIgnore(projectPath: string): Promise<void> {
   }
 }
 
-export function installDependencies(projectPath: string, useNpm?: boolean, silent = false): void {
-  let command = 'yarn install';
-
-  if (useNpm || !checkYarnExists()) {
-    command = 'npm install';
+export function installDependencies(
+  projectPath: string,
+  packageManager: 'npm' | 'yarn' | 'pnpm' = 'npm',
+  silent = false
+): void {
+  if (packageManager === 'yarn' && !checkYarnExists()) {
+    packageManager = 'npm';
   }
+  const command = `${packageManager} install`;
 
   childProcess.execSync(command, {cwd: projectPath, stdio: silent ? 'ignore' : undefined});
 }

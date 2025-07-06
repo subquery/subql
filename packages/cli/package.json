@@ -24,6 +24,7 @@
     "rimraf": "^5.0.10",
     "semver": "^7.6.3",
     "simple-git": "^3.25.0",
+    "strip-ansi": "^7.1.0",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.3",

@@ -1,13 +1,16 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Args, Command, Flags} from '@oclif/core';
-import {Flag, Arg, Logger as OClifLogger} from '@oclif/core/lib/interfaces';
+import path from 'node:path';
+import {confirm, input, search, checkbox} from '@inquirer/prompts';
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
-import {z, ZodTypeAny, ZodObject, ZodOptional, ZodDefault} from 'zod';
+import {RequestHandlerExtra} from '@modelcontextprotocol/sdk/shared/protocol';
+import {CallToolResult, ElicitRequest, ServerNotification, ServerRequest} from '@modelcontextprotocol/sdk/types';
+import {Args, Command, Flags} from '@oclif/core';
+import {Flag, Arg} from '@oclif/core/lib/interfaces';
 import fuzzy from 'fuzzy';
-import {ElicitRequest} from '@modelcontextprotocol/sdk/types';
-import {confirm, input, search} from '@inquirer/prompts';
+import stripAnsi from 'strip-ansi';
+import {z, ZodTypeAny, ZodObject, ZodOptional, ZodDefault} from 'zod';
 
 export type Logger = {
   info: (message: string) => void;
@@ -148,7 +151,7 @@ export function mcpLogger(server: McpServer['server']): Logger {
   const log = (level: 'error' | 'debug' | 'info' | 'notice') => (input: string) => {
     void server.sendLoggingMessage({
       level,
-      message: input,
+      message: stripAnsi(input),
     });
   };
   return {
@@ -170,10 +173,18 @@ export function commandLogger(command: Command): Logger {
 
 export function silentLogger(): Logger {
   return {
-    info: () => {},
-    warn: () => {},
-    error: () => {},
-    debug: () => {},
+    info: () => {
+      /* Do Nothing */
+    },
+    warn: () => {
+      /* Do Nothing */
+    },
+    error: () => {
+      /* Do Nothing */
+    },
+    debug: () => {
+      /* Do Nothing */
+    },
   };
 }
 
@@ -183,17 +194,19 @@ export type PromptTypes = {
   boolean: boolean;
 };
 
-export type Prompt = <T extends keyof PromptTypes>(opts: {
+export type Prompt = <T extends keyof PromptTypes, M extends boolean | undefined = undefined>(opts: {
   message: string;
   type: T;
   required?: boolean;
   options?: PromptTypes[T][];
   defaultValue?: PromptTypes[T];
-}) => Promise<PromptTypes[T]>;
+  multiple?: M;
+}) => Promise<M extends true ? PromptTypes[T][] : PromptTypes[T]>;
 
 export function makeInputSchema<T extends keyof PromptTypes>(
   type: T,
   required?: boolean,
+  mmultiple?: boolean,
   options?: PromptTypes[T][],
   defaultValue?: PromptTypes[T]
 ): ElicitRequest['params']['requestedSchema'] {
@@ -235,10 +248,10 @@ export function makeInputSchema<T extends keyof PromptTypes>(
 }
 
 export function makeMCPElicitPrmompt(server: McpServer): Prompt {
-  return async ({message, type, options, required, defaultValue}) => {
+  return async ({defaultValue, message, multiple, options, required, type}) => {
     const res = await server.server.elicitInput({
       message,
-      requestedSchema: makeInputSchema(type, required, options, defaultValue),
+      requestedSchema: makeInputSchema(type, required, multiple, options, defaultValue),
     });
 
     if (res.action === 'reject') {
@@ -249,7 +262,7 @@ export function makeMCPElicitPrmompt(server: McpServer): Prompt {
       throw new Error('User cancelled the input');
     }
 
-    if (res.action == 'accept') {
+    if (res.action === 'accept') {
       const input = res.content?.input;
       if (input === undefined) {
         throw new Error(`Input for ${message} is required`);
@@ -282,9 +295,18 @@ function filterInput<T>(arr: T[]) {
 }
 
 export function makeCLIPrompt(): Prompt {
-  return async ({message, type, required, options, defaultValue}) => {
+  return async ({defaultValue, message, multiple, options, required, type}) => {
+    if (options?.length && multiple) {
+      throw new Error('Multiple selection requires options to be provided');
+    }
     if (type === 'string') {
       if (options) {
+        if (multiple) {
+          return checkbox<string>({
+            message,
+            choices: (options as string[]).map((key) => ({value: key})),
+          });
+        }
         return search<string>({
           message,
           source: filterInput<string>(options as string[]),
@@ -324,6 +346,78 @@ export function makeCLIPrompt(): Prompt {
   };
 }
 
-export const mcpInputs = z.object({
-  cwd: z.string({description: 'The current working directory.'}),
-});
+export function formatErrorCauses(e: Error): string {
+  let message = e.message;
+  while (e.cause) {
+    e = e.cause as Error;
+    message += `:\n cause: ${e.message}`;
+  }
+  return message;
+}
+
+export function getMCPStructuredResponse<T extends z.ZodRawShape>(
+  result: z.ZodObject<T>
+): z.ZodObject<{result: z.ZodOptional<z.ZodObject<T>>; error: z.ZodOptional<z.ZodString>}> {
+  return z.object({
+    result: z.optional(result),
+    error: z.optional(z.string().describe('Error message if the command fails')),
+  });
+}
+
+/**
+ * Wraps a promise to provide a structured response for MCP tools including error handling.
+ * @param p A promise which should resolve with T as the same structure as the input to getMCPStructuredResponse
+ * @returns
+ */
+export function withStructuredResponse<I, O>(
+  p: (input: I, meta: RequestHandlerExtra<ServerRequest, ServerNotification>) => Promise<O>
+): (input: I, meta: RequestHandlerExtra<ServerRequest, ServerNotification>) => Promise<CallToolResult> {
+  return async (i, meta) => {
+    try {
+      const result = await p(i, meta);
+
+      return {
+        structuredContent: {
+          result,
+        },
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    } catch (e: any) {
+      return {
+        structuredContent: {
+          error: formatErrorCauses(e as Error),
+        },
+        content: [
+          {
+            type: 'text',
+            text: `Error running: ${formatErrorCauses(e)}`,
+          },
+        ],
+      };
+    }
+  };
+}
+
+export type MCPToolOptions = {
+  /**
+   * Whether or not the client supports elicitaion and the user can be prompted for more information
+   */
+  supportsElicitation?: boolean;
+};
+
+export async function getMCPWorkingDirectory(server: McpServer): Promise<string> {
+  const {roots} = await server.server.listRoots();
+
+  for (const root of roots) {
+    if (root.uri.startsWith('file://')) {
+      return path.resolve(root.uri.replace('file://', ''));
+    }
+  }
+
+  throw new Error('No valid working directory found in MCP roots.');
+}
