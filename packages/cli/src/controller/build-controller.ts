@@ -6,6 +6,99 @@ import path from 'node:path';
 import * as esbuild from 'esbuild';
 import {globSync} from 'glob';
 import * as yaml from 'js-yaml';
+import ts from 'typescript';
+
+// Run TypeScript type checking
+function runTypeCheck(projectDir: string): void {
+  const tsconfigPath = path.join(projectDir, 'tsconfig.json');
+  if (!fs.existsSync(tsconfigPath)) {
+    throw new Error(`TypeScript configuration file not found: ${tsconfigPath}`);
+  }
+
+  // Parse the tsconfig.json file
+  const configFile = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
+  if (configFile.error) {
+    throw new Error(
+      `Error reading tsconfig.json: ${ts.formatDiagnostic(configFile.error, {
+        getCanonicalFileName: (fileName) => fileName,
+        getNewLine: () => ts.sys.newLine,
+        getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
+      })}`
+    );
+  }
+
+  // Parse the config options and modify them
+  const config = {...configFile.config};
+  if (!config.compilerOptions) {
+    config.compilerOptions = {};
+  }
+
+  // Ensure skipLibCheck is true to avoid checking most declaration files in node_modules
+  config.compilerOptions.skipLibCheck = true;
+
+  // We don't want to exclude @subql types from node_modules
+  // So we don't modify the exclude property
+
+  const parsedConfig = ts.parseJsonConfigFileContent(config, ts.sys, path.dirname(tsconfigPath));
+
+  if (parsedConfig.errors.length > 0) {
+    const errorMessages = parsedConfig.errors
+      .map((error) =>
+        ts.formatDiagnostic(error, {
+          getCanonicalFileName: (fileName) => fileName,
+          getNewLine: () => ts.sys.newLine,
+          getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
+        })
+      )
+      .join('\n');
+
+    throw new Error(`Error parsing tsconfig.json:\n${errorMessages}`);
+  }
+
+  // Create a program with updated compiler options
+  const compilerOptions = {
+    ...parsedConfig.options,
+    noEmit: true, // We only want type checking, not emitting files
+    skipLibCheck: true, // Skip checking declaration files in node_modules
+  };
+
+  const program = ts.createProgram(parsedConfig.fileNames, compilerOptions);
+
+  // Get the diagnostics
+  const diagnostics = ts.getPreEmitDiagnostics(program);
+
+  // If there are any diagnostics, filter and throw if relevant
+  if (diagnostics.length > 0) {
+    // Filter out errors from node_modules except for @subql packages
+    const relevantErrors = diagnostics.filter((diagnostic) => {
+      if (!diagnostic.file) return true; // Keep general errors
+
+      // Include errors from project files and @subql packages
+      const fileName = diagnostic.file.fileName;
+      return !fileName.includes('node_modules') || fileName.includes('node_modules/@subql/');
+    });
+
+    // If all errors were from other dependencies, we can proceed
+    if (relevantErrors.length === 0) {
+      return; // No errors in project code or @subql packages
+    }
+
+    // Format errors from project code and @subql packages
+    const errorMessages = relevantErrors
+      .map((diagnostic) => {
+        if (diagnostic.file && diagnostic.start !== undefined) {
+          const {character, line} = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+          const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+          return `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`;
+        } else {
+          return ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+        }
+      })
+      .join('\n');
+
+    throw new Error(`TypeScript type checking failed:\n${errorMessages}`);
+  }
+}
 
 export async function runBundle(
   buildEntries: Record<string, string>,
@@ -14,6 +107,17 @@ export async function runBundle(
   isDev = false,
   clean = false
 ): Promise<void> {
+  // Run TypeScript type checking first
+  try {
+    runTypeCheck(projectDir);
+  } catch (error: unknown) {
+    // Re-throw with more context
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `TypeScript type checking failed. Fix the errors in your project code or @subql packages before building.\n${errorMessage}`
+    );
+  }
+
   // Create output directory if it doesn't exist
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, {recursive: true});

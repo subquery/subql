@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import Pino from 'pino';
+import type Pino from 'pino';
 import {Cache, DynamicDatasourceCreator} from './interfaces';
 import {Store} from './store';
 
