@@ -20,7 +20,7 @@ import {registerPromoteDeploymentMCPTool} from './onfinality/promote-deployment'
 import {registerPublishMCPTool} from './publish';
 
 export default class MCP extends Command {
-  static description = 'Runs an MCP (Model Context Protocol) over stdio';
+  static description = 'Runs an MCP (Model Context Protocol) server over stdio';
 
   async run(): Promise<void> {
     const server = new McpServer(
