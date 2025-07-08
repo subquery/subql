@@ -8,7 +8,6 @@ import {input} from '@inquirer/prompts';
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
-import chalk from 'chalk';
 import YAML from 'yaml';
 import {z} from 'zod';
 import {
@@ -22,13 +21,15 @@ import {
   MCPToolOptions,
   Prompt,
   withStructuredResponse,
+  zodToArgs,
   zodToFlags,
 } from '../../adapters/utils';
-import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../../constants';
+import {ROOT_API_URL_PROD} from '../../constants';
 import {
   executeProjectDeployment,
   generateDeploymentChain,
   ipfsCID_validate,
+  logDeployment,
   projectsInfo,
   promptImageVersion,
   splitMultichainDataFields,
@@ -164,35 +165,21 @@ async function createMultichainDeploymentAdapter(
 
 export default class CreateMultichainDeployment extends Command {
   static description = 'Create a multi-chain project deployment no the OnFinality managed services';
-  static flags = zodToFlags(createMultichainDeploymentInputs);
+  static flags = zodToFlags(createMultichainDeploymentInputs.omit({location: true}));
+  static args = zodToArgs(createMultichainDeploymentInputs.pick({location: true}));
 
   async run(): Promise<void> {
-    const {flags} = await this.parse(CreateMultichainDeployment);
+    const {args, flags} = await this.parse(CreateMultichainDeployment);
 
+    const logger = commandLogger(this);
     const deploymentOutput = await createMultichainDeploymentAdapter(
       process.cwd(),
-      flags,
-      commandLogger(this),
+      {...args, ...flags},
+      logger,
       makeCLIPrompt()
     );
 
-    if (deploymentOutput) {
-      this.log(`Project: ${deploymentOutput.projectKey}
-    Status: ${chalk.blue(deploymentOutput.status)}
-    DeploymentID: ${deploymentOutput.id}
-    Deployment Type: ${deploymentOutput.type}
-    Indexer version: ${deploymentOutput.indexerImage}
-    Query version: ${deploymentOutput.queryImage}
-    Endpoint: ${deploymentOutput.endpoint}
-    Dictionary Endpoint: ${deploymentOutput.dictEndpoint}
-    Query URL: ${deploymentOutput.queryUrl}
-    Project URL: ${BASE_PROJECT_URL}/org/${flags.org}/project/${flags.projectName}
-    Advanced Settings for Query: ${JSON.stringify(deploymentOutput.configuration.config.query)}
-    Advanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
-`);
-    } else {
-      this.log(`Project: ${flags.projectName} has been re-deployed`);
-    }
+    logDeployment(logger, flags.org, flags.projectName, deploymentOutput);
   }
 }
 

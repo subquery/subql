@@ -46,12 +46,12 @@ export async function buildManifestFromLocation(location: string, log: (...args:
   try {
     //we could have a multichain yaml with ts projects inside it
     const projectYamlPath = projectManifestEntry.endsWith('.ts')
-      ? await generateManifestFromTs(projectManifestEntry, log)
+      ? await generateManifestFromTs(projectManifestEntry)
       : projectManifestEntry;
 
     if (isMultichain(projectYamlPath)) {
       const tsManifests = getTsManifestsFromMultichain(projectYamlPath);
-      await Promise.all(tsManifests.map((manifest) => generateManifestFromTs(manifest, log)));
+      await Promise.all(tsManifests.map((manifest) => generateManifestFromTs(manifest)));
       replaceTsReferencesInMultichain(projectYamlPath);
     }
   } catch (e: any) {
@@ -71,10 +71,7 @@ export async function buildTsManifest(location: string, log: (...args: any[]) =>
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function generateManifestFromTs(
-  projectManifestEntry: string,
-  log: (...args: any[]) => void
-): Promise<string> {
+export async function generateManifestFromTs(projectManifestEntry: string): Promise<string> {
   assert(existsSync(projectManifestEntry), `${projectManifestEntry} does not exist`);
   const projectYamlPath = tsProjectYamlPath(projectManifestEntry);
   try {
@@ -90,7 +87,7 @@ export async function generateManifestFromTs(
     // Run compiled code
     eval(script);
 
-    log(`Project manifest generated to ${projectYamlPath}`);
+    // log(`Project manifest generated to ${projectYamlPath}`);
 
     return projectYamlPath;
   } catch (error) {

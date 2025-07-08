@@ -24,7 +24,9 @@ import {getOptionalToken, resolveToAbsolutePath} from '../utils';
 import {buildAdapter, buildInputs} from './build';
 
 const publishInputs = z.object({
-  location: z.string({description: 'The path to the project, this can be a directory or a project manifest file.'}),
+  location: z
+    .string({description: 'The path to the project, this can be a directory or a project manifest file.'})
+    .optional(),
   ipfs: z.string({description: 'An additional IPFS endpoint to upload to'}).optional(),
 });
 type PublishInputs = z.infer<typeof publishInputs>;
@@ -38,7 +40,7 @@ const publishOutputs = z.object({
 type PublishOutputs = z.infer<typeof publishOutputs>;
 
 export async function publishAdapter(workingDir: string, args: PublishInputs, logger: Logger): Promise<PublishOutputs> {
-  const location = resolveToAbsolutePath(path.resolve(workingDir, args.location));
+  const location = resolveToAbsolutePath(path.resolve(workingDir, args.location ?? ''));
   assert(existsSync(location), 'Argument `location` is not a valid directory or file');
 
   // Ensure the project is built

@@ -8,7 +8,7 @@ import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
 import {z} from 'zod';
-import {commandLogger, getMCPWorkingDirectory, Logger, mcpLogger, zodToArgs, zodToFlags} from '../../adapters/utils';
+import {commandLogger, getMCPWorkingDirectory, Logger, mcpLogger, zodToArgs} from '../../adapters/utils';
 import {codegen} from '../../controller/codegen-controller';
 import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils';
 
@@ -57,13 +57,13 @@ export async function codegenAdapter(
 
 export default class Codegen extends Command {
   static description = 'Generate entity types from the GraphQL schema and contract interfaces';
-  static flags = zodToFlags(codegenInputs);
+  static args = zodToArgs(codegenInputs);
 
   async run(): Promise<void> {
-    const {flags} = await this.parse(Codegen);
+    const {args} = await this.parse(Codegen);
 
     try {
-      await codegenAdapter(process.cwd(), flags, commandLogger(this));
+      await codegenAdapter(process.cwd(), args, commandLogger(this));
     } catch (err: any) {
       this.error(`${err.message}, ${err.cause}`);
     }

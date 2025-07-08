@@ -3,7 +3,6 @@
 
 import assert from 'assert';
 import path from 'path';
-import {Flags} from '@oclif/core';
 import {DeploymentType} from './types';
 
 //DEPLOYMENT

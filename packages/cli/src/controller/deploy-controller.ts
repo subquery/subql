@@ -4,8 +4,9 @@
 import assert from 'assert';
 import axios, {Axios} from 'axios';
 
-import {Prompt} from '../adapters/utils';
-import {ROOT_API_URL_PROD} from '../constants';
+import chalk from 'chalk';
+import {Logger, Prompt} from '../adapters/utils';
+import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../constants';
 import {
   DeploymentDataType,
   ProjectDataType,
@@ -310,4 +311,24 @@ export async function promptImageVersion(
     options: versions,
     defaultValue: versions[0],
   });
+}
+
+export function logDeployment(logger: Logger, org: string, projectName: string, deploymentOutput?: DeploymentDataType) {
+  if (deploymentOutput) {
+    logger.info(`Project: ${deploymentOutput.projectKey}
+  Status: ${chalk.blue(deploymentOutput.status)}
+  DeploymentID: ${deploymentOutput.id}
+  Deployment Type: ${deploymentOutput.type}
+  Indexer version: ${deploymentOutput.indexerImage}
+  Query version: ${deploymentOutput.queryImage}
+  Endpoint: ${deploymentOutput.endpoint}
+  Dictionary Endpoint: ${deploymentOutput.dictEndpoint}
+  Query URL: ${deploymentOutput.queryUrl}
+  Project URL: ${BASE_PROJECT_URL}/org/${org}/project/${projectName}
+  Advanced Settings for Query: ${JSON.stringify(deploymentOutput.configuration.config.query)}
+  Advanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
+`);
+  } else {
+    logger.info(`Project: ${projectName} has been re-deployed`);
+  }
 }
