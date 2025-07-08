@@ -13,6 +13,7 @@ import {
   mcpLogger,
   MCPToolOptions,
   Prompt,
+  withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
 import {ROOT_API_URL_PROD} from '../../constants';
@@ -20,11 +21,12 @@ import {
   executeProjectDeployment,
   generateDeploymentChain,
   ipfsCID_validate,
+  logDeployment,
   projectsInfo,
   promptImageVersion,
   splitEndpoints,
 } from '../../controller/deploy-controller';
-import {DeploymentOptions, V3DeploymentIndexerType} from '../../types';
+import {DeploymentDataTypeSchema, DeploymentOptions, V3DeploymentIndexerType} from '../../types';
 import {addV, checkToken} from '../../utils';
 
 const createDeploymentInputs = DeploymentOptions.extend({
@@ -32,13 +34,13 @@ const createDeploymentInputs = DeploymentOptions.extend({
 });
 type CreateDeploymentInputs = z.infer<typeof createDeploymentInputs>;
 
-const createDeploymentOutputs = z.void();
+const createDeploymentOutputs = DeploymentDataTypeSchema;
 
 async function createDeploymentAdapter(
   args: CreateDeploymentInputs,
   logger: Logger,
   prompt?: Prompt
-): Promise<z.infer<typeof createDeploymentOutputs>> {
+): Promise<z.infer<typeof createDeploymentOutputs> | undefined> {
   const authToken = await checkToken();
 
   const validator = await ipfsCID_validate(args.ipfsCID, authToken, ROOT_API_URL_PROD);
@@ -101,8 +103,7 @@ async function createDeploymentAdapter(
 
   logger.info('Deploying SubQuery project to OnFinality managed services');
 
-  await executeProjectDeployment({
-    // log: logger.info.bind(logger),
+  return executeProjectDeployment({
     authToken,
     chains,
     flags: args,
@@ -117,13 +118,15 @@ export default class CreateDeployment extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(CreateDeployment);
+    const logger = commandLogger(this);
+    const deploymentOutput = await createDeploymentAdapter(flags, logger, makeCLIPrompt());
 
-    await createDeploymentAdapter(flags, commandLogger(this), makeCLIPrompt());
+    logDeployment(logger, flags.org, flags.projectName, deploymentOutput);
   }
 }
 
-const nonInteractiveCreateDeploymentInputs = createDeploymentInputs.required({
-  // TODO
+const nonInteractiveCreateDeploymentInputs = createDeploymentInputs.extend({
+  useDefaults: z.literal(true).default(true),
 });
 
 export function registerCreateDeploymentMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
@@ -132,22 +135,13 @@ export function registerCreateDeploymentMCPTool(server: McpServer, opts: MCPTool
     {
       description: CreateDeployment.description,
       inputSchema: (opts.supportsElicitation ? createDeploymentInputs : nonInteractiveCreateDeploymentInputs).shape,
-      // outputSchema: createDeploymentOutputs.shape,
+      outputSchema: createDeploymentOutputs.shape,
     },
-    async (args, meta) => {
+    withStructuredResponse(async (args) => {
       const logger = mcpLogger(server.server);
       const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : undefined;
 
-      await createDeploymentAdapter(args, logger, prompt);
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: 'Deployment created',
-          },
-        ],
-      };
-    }
+      return createDeploymentAdapter(args, logger, prompt);
+    })
   );
 }

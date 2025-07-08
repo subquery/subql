@@ -4,7 +4,7 @@
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
-import {getMCPStructuredResponse, mcpLogger, withStructuredResponse, zodToFlags} from '../../adapters/utils';
+import {getMCPStructuredResponse, withStructuredResponse, zodToFlags} from '../../adapters/utils';
 import {ROOT_API_URL_PROD} from '../../constants';
 import {deleteDeployment} from '../../controller/deploy-controller';
 import {checkToken} from '../../utils';
@@ -48,7 +48,6 @@ export function deleteDeploymentMCPAdapter(server: McpServer): RegisteredTool {
       outputSchema: getMCPStructuredResponse(deleteDeploymentOutputs).shape,
     },
     withStructuredResponse(async (args) => {
-      // const logger = mcpLogger(server.server);
       return deleteDeploymentAdapter(args);
     })
   );

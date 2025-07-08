@@ -4,7 +4,7 @@
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 import {Command} from '@oclif/core';
-import {getMCPWorkingDirectory, MCPToolOptions} from '../adapters/utils';
+import {MCPToolOptions} from '../adapters/utils';
 import {fetchNetworks} from '../controller/init-controller';
 import {registerBuildMCPTool} from './build';
 import {registerCodegenMCPTool} from './codegen';
@@ -60,25 +60,15 @@ export default class MCP extends Command {
       }
     );
 
-    // There needs to be a tool registered before a client can connect otherwise tools arent discovered
-    server.registerTool('Echo Roots', {description: 'Echos user roots'}, async () => {
-      // const {roots} = await server.server.listRoots();
-
-      const root = await getMCPWorkingDirectory(server);
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: root,
-          },
-        ],
-      };
-    });
-
+    // There needs to be at least one tool registered before a client connects otherwise tools arent discovered
+    registerCodegenMCPTool(server);
+    registerMultichainAddMCPTool(server);
     registerCreateProjectMCPTool(server);
     registerDeleteProjectMCPTool(server);
     registerPromoteDeploymentMCPTool(server);
+    registerBuildMCPTool(server);
+    registerPublishMCPTool(server);
+    registerMigrateSubgraphMCPTool(server);
 
     const transport = new StdioServerTransport();
     await server.connect(transport);
@@ -94,18 +84,10 @@ export default class MCP extends Command {
         supportsElicitation: capabilities?.elicitation !== undefined,
       };
 
-      registerCodegenMCPTool(server);
       registerImportAbiMCPTool(server, opts);
-
-      registerMultichainAddMCPTool(server);
-
       registerCreateDeploymentMCPTool(server, opts);
       registerCreateMultichainDeploymentMCPTool(server, opts);
-
-      registerBuildMCPTool(server);
       registerInitMCPTool(server, opts);
-      registerPublishMCPTool(server);
-      registerMigrateSubgraphMCPTool(server);
     };
   }
 }

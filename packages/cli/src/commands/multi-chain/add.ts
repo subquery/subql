@@ -5,7 +5,7 @@ import path from 'node:path';
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
-import {getMCPWorkingDirectory, zodToFlags} from '../../adapters/utils';
+import {getMCPWorkingDirectory, zodToArgs, zodToFlags} from '../../adapters/utils';
 import {addChain} from '../../controller/add-chain-controller';
 
 const multichainAddInputs = z.object({
@@ -31,12 +31,13 @@ async function multichainAddAdapter(
 
 export default class MultiChainAdd extends Command {
   static description = 'Add new chain manifest to multi-chain project';
-  static flags = zodToFlags(multichainAddInputs);
+  static flags = zodToFlags(multichainAddInputs.omit({location: true}));
+  static args = zodToArgs(multichainAddInputs.pick({location: true}));
 
   async run(): Promise<void> {
-    const {flags} = await this.parse(MultiChainAdd);
+    const {args, flags} = await this.parse(MultiChainAdd);
 
-    return multichainAddAdapter(process.cwd(), flags);
+    return multichainAddAdapter(process.cwd(), {...args, ...flags});
   }
 }
 
