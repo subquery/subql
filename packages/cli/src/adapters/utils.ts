@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'node:path';
+import {stripVTControlCharacters} from 'node:util';
 import {confirm, input, search, checkbox} from '@inquirer/prompts';
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {RequestHandlerExtra} from '@modelcontextprotocol/sdk/shared/protocol';
@@ -9,7 +10,6 @@ import {CallToolResult, ElicitRequest, ServerNotification, ServerRequest} from '
 import {Args, Command, Flags} from '@oclif/core';
 import {Flag, Arg} from '@oclif/core/lib/interfaces';
 import fuzzy from 'fuzzy';
-import stripAnsi from 'strip-ansi';
 import {z, ZodTypeAny, ZodObject, ZodOptional, ZodDefault} from 'zod';
 
 export type Logger = {
@@ -151,7 +151,7 @@ export function mcpLogger(server: McpServer['server']): Logger {
   const log = (level: 'error' | 'debug' | 'info' | 'notice') => (input: string) => {
     void server.sendLoggingMessage({
       level,
-      message: stripAnsi(input),
+      message: stripVTControlCharacters(input),
     });
   };
   return {

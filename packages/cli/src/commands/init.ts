@@ -1,15 +1,15 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {stripVTControlCharacters} from 'node:util';
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {ProjectNetworkConfig} from '@subql/types-core';
 import chalk from 'chalk';
-import stripAnsi from 'strip-ansi';
 import {z} from 'zod';
 import {
   commandLogger,
@@ -125,7 +125,7 @@ export async function initAdapter(
       options: networkStrArr,
     });
 
-    const [rawNetwork, rawFamily] = stripAnsi(networkPrompt).split(' (');
+    const [rawNetwork, rawFamily] = stripVTControlCharacters(networkPrompt).split(' (');
     network = rawNetwork.trim();
     family ??= rawFamily ? rawFamily.replace(')', '').trim() : undefined;
   }
@@ -152,7 +152,7 @@ export async function initAdapter(
       })
     : candidateOptions[0];
 
-  const templateName = stripAnsi(template).split(joiner)[0];
+  const templateName = stripVTControlCharacters(template).split(joiner)[0];
   let selectedProject: ExampleProjectInterface | undefined;
   if (templateName === 'Other' && prompt) {
     const url = await prompt({
