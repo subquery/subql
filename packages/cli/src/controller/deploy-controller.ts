@@ -295,7 +295,7 @@ export async function promptImageVersion(
   useDefaults: boolean | undefined,
   authToken: string,
   type: 'indexer' | 'query',
-  prompt?: Prompt
+  prompt: Prompt | null
 ): Promise<string> {
   const versions = await imageVersions(runner, version, authToken, ROOT_API_URL_PROD);
   if (useDefaults) {

@@ -52,7 +52,7 @@ async function createMultichainDeploymentAdapter(
   workingDir: string,
   args: CreateMultichainDeploymentInputs,
   logger: Logger,
-  prompt?: Prompt
+  prompt: Prompt | null
 ): Promise<z.infer<typeof createMultichainDeploymentOutputs> | undefined> {
   const authToken = await checkToken();
 
@@ -205,7 +205,7 @@ export function registerCreateMultichainDeploymentMCPTool(server: McpServer, opt
     withStructuredResponse(async (args) => {
       const cwd = await getMCPWorkingDirectory(server);
       const logger = mcpLogger(server.server);
-      const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : undefined;
+      const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : null;
 
       return createMultichainDeploymentAdapter(cwd, args, logger, prompt);
     })

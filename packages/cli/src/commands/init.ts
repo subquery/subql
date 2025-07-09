@@ -97,7 +97,7 @@ export async function initAdapter(
   workingDir: string,
   args: InitInputs,
   logger: Logger,
-  prompt?: Prompt
+  prompt: Prompt | null
 ): Promise<InitOutputs> {
   const location = resolveToAbsolutePath(path.resolve(workingDir, args.location ?? ''));
 
@@ -244,7 +244,7 @@ export function registerInitMCPTool(server: McpServer, opts: MCPToolOptions): Re
       const cwd = await getMCPWorkingDirectory(server);
       const logger = mcpLogger(server.server);
 
-      const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : undefined;
+      const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : null;
       const result = await initAdapter(cwd, args, logger, prompt);
 
       return {

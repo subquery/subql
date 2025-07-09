@@ -84,7 +84,7 @@ async function generateAdapter(
   workingDir: string,
   args: GenerateInputs,
   logger: Logger,
-  prompt?: Prompt
+  prompt: Prompt | null
 ): Promise<z.infer<typeof generateOutputs>> {
   const location = path.resolve(workingDir, args.location);
   let isTs = false;
@@ -270,7 +270,7 @@ export function registerImportAbiMCPTool(server: McpServer, opts: MCPToolOptions
     withStructuredResponse(async (args) => {
       const logger = mcpLogger(server.server);
       const cwd = await getMCPWorkingDirectory(server);
-      const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : undefined;
+      const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : null;
       return generateAdapter(cwd, args, logger, prompt);
     })
   );
