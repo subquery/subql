@@ -91,7 +91,7 @@ export default class Publish extends Command {
 
     if (flags.silent) {
       this.log(result.directory);
-      Object.entries(result.files).map(([file, cid]) => {
+      Object.entries(result.files).forEach(([file, cid]) => {
         this.log(cid);
       });
     } else {
