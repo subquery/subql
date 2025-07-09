@@ -58,7 +58,7 @@ async function migrateSubgraphAdapter(
 
   const parsedSubqlPath = path.parse(path.resolve(workingDir, args.output));
   // We don't need to check output directory is existing or not
-  const subqlDir = parsedSubqlPath.ext === '' ? args.input : parsedSubqlPath.dir;
+  const subqlDir = parsedSubqlPath.ext === '' ? args.output : parsedSubqlPath.dir;
   let subgraphDir: string;
   let tempSubgraphDir: string | undefined;
   if (gitMatch) {

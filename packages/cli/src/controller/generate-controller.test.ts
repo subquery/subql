@@ -424,7 +424,6 @@ describe('CLI codegen:generate, Can write to file', () => {
     await fs.promises.writeFile(path.join(PROJECT_PATH, 'src/index.ts'), 'export * from "./mappings/mappingHandlers"');
 
     await ImportAbi.run([
-      '-f',
       path.join(PROJECT_PATH, './generate-project-2.yaml'),
       '--events',
       'approval, transfer',
@@ -449,7 +448,6 @@ describe('CLI codegen:generate, Can write to file', () => {
 
     await expect(
       ImportAbi.run([
-        '-f',
         path.join(PROJECT_PATH, './generate-project-2.yaml'),
         '--events',
         'approval, transfer',

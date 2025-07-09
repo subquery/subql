@@ -28,13 +28,13 @@ describe('Integration test - Publish', () => {
     const initCID = 'QmWLxg7xV7ZWUyc7ZxZ8XuQQ7NmH8WQGXzg7VZ3QQNqF-testing';
     const cidFilePath = path.resolve(projectDir, '.project-cid');
     await fs.promises.writeFile(cidFilePath, initCID);
-    await Publish.run(['-f', projectDir, '-o']);
+    await Publish.run([projectDir]);
     const cidValue = await fs.promises.readFile(cidFilePath, 'utf8');
     expect(initCID).not.toEqual(cidValue);
   });
 
   it('create ipfsCID file stored in local with dictiory path', async () => {
-    await Publish.run(['-f', projectDir]);
+    await Publish.run([projectDir]);
     const cidFile = path.resolve(projectDir, '.project-cid');
     const fileExists = fs.existsSync(cidFile);
     const IPFScontent = await fs.promises.readFile(cidFile, 'utf8');
@@ -47,7 +47,7 @@ describe('Integration test - Publish', () => {
     const manifestPath = path.resolve(projectDir, 'project.yaml');
     const testManifestPath = path.resolve(projectDir, 'test.yaml');
     fs.renameSync(manifestPath, testManifestPath);
-    await Publish.run(['-f', testManifestPath]);
+    await Publish.run([testManifestPath]);
 
     const cidFile = path.resolve(projectDir, '.test-cid');
     const fileExists = await fs.promises.stat(cidFile);
