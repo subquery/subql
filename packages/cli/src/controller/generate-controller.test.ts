@@ -9,6 +9,7 @@ import {getAbiInterface} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import {rimraf} from 'rimraf';
 import {Document, stringify} from 'yaml';
+import {makeCLIPrompt} from '../adapters/utils';
 import ImportAbi from '../commands/codegen/import-abi';
 import {loadDependency} from '../modulars';
 import {
@@ -370,12 +371,19 @@ describe('CLI codegen:generate, Can write to file', () => {
     const rawEventFragments = abiInterface.events;
     const rawFunctionFragments = filterObjectsByStateMutability(abiInterface.functions);
 
-    const selectedEvents = await prepareInputFragments('event', 'approval, transfer', rawEventFragments, abiName);
+    const selectedEvents = await prepareInputFragments(
+      'event',
+      'approval, transfer',
+      rawEventFragments,
+      abiName,
+      makeCLIPrompt()
+    );
     const selectedFunctions = await prepareInputFragments(
       'function',
       'approve, transferFrom',
       rawFunctionFragments,
-      abiName
+      abiName,
+      makeCLIPrompt()
     );
 
     const [eventFrags, functionFrags] = filterExistingMethods(

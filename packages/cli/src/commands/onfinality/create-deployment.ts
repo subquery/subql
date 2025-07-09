@@ -39,7 +39,7 @@ const createDeploymentOutputs = DeploymentDataTypeSchema;
 async function createDeploymentAdapter(
   args: CreateDeploymentInputs,
   logger: Logger,
-  prompt?: Prompt
+  prompt: Prompt | null
 ): Promise<z.infer<typeof createDeploymentOutputs> | undefined> {
   const authToken = await checkToken();
 
@@ -139,7 +139,7 @@ export function registerCreateDeploymentMCPTool(server: McpServer, opts: MCPTool
     },
     withStructuredResponse(async (args) => {
       const logger = mcpLogger(server.server);
-      const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : undefined;
+      const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : null;
 
       return createDeploymentAdapter(args, logger, prompt);
     })

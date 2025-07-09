@@ -241,7 +241,7 @@ export async function prepareInputFragments<T extends ConstructorFragment | Frag
   rawInput: string | undefined,
   availableFragments: Record<string, T>,
   abiName: string,
-  prompt?: Prompt
+  prompt: Prompt | null
 ): Promise<Record<string, T>> {
   if (!rawInput) {
     if (!prompt) {
