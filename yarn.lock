@@ -7527,7 +7527,7 @@ __metadata:
     "@types/update-notifier": ^6
     axios: ^1.9.0
     class-transformer: ^0.5.1
-    class-validator: ^0.14.1
+    class-validator: 0.14.1
     form-data: ^4.0.1
     js-yaml: ^4.1.0
     reflect-metadata: ^0.2.2
@@ -11020,7 +11020,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"class-validator@npm:^0.14.0, class-validator@npm:^0.14.1":
+"class-validator@npm:0.14.1, class-validator@npm:^0.14.0, class-validator@npm:^0.14.1":
   version: 0.14.1
   resolution: "class-validator@npm:0.14.1"
   dependencies:
