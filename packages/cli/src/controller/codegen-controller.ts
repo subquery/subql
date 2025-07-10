@@ -238,7 +238,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   const cosmosManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.cosmos);
   if (cosmosManifests.length > 0) {
-    const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos);
+    const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos, projectPath);
     await cosmosModule.projectCodegen(
       plainManifests,
       projectPath,
@@ -257,13 +257,13 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   // as we determine it is eth network, ds type should SubqlDatasource
   if (ethManifests.length > 0 || (!starknetManifests && !!datasources.find((d) => (d as SubqlDatasource)?.assets))) {
-    const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+    const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
 
     await ethModule.generateAbis(datasources as EthereumDs[], projectPath, prepareDirPath, upperFirst, renderTemplate);
   }
 
   if (solanaManifests.length) {
-    const solModule = loadDependency(NETWORK_FAMILY.solana);
+    const solModule = loadDependency(NETWORK_FAMILY.solana, projectPath);
     await solModule.generateIDLInterfaces(datasources as SolanaDs[], projectPath, renderTemplate);
   }
 

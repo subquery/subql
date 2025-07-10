@@ -9,7 +9,8 @@ import {getAbiInterface} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import {rimraf} from 'rimraf';
 import {Document, stringify} from 'yaml';
-import Generate, {SelectedMethod, UserInput} from '../commands/codegen/generate';
+import {makeCLIPrompt} from '../adapters/utils';
+import ImportAbi from '../commands/codegen/import-abi';
 import {loadDependency} from '../modulars';
 import {
   constructMethod,
@@ -23,6 +24,8 @@ import {
   prepareAbiDirectory,
   prepareInputFragments,
   yamlExtractor,
+  SelectedMethod,
+  UserInput,
 } from './generate-controller';
 
 const ROOT_MAPPING_DIR = 'src/mappings';
@@ -159,7 +162,7 @@ const originalManifestData2 = {
   ],
 };
 
-const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+const ethModule = loadDependency(NETWORK_FAMILY.ethereum, process.cwd());
 const abiName = ethModule.parseContractPath('./erc721.json').name;
 
 const mockUserInput: UserInput = {
@@ -368,12 +371,19 @@ describe('CLI codegen:generate, Can write to file', () => {
     const rawEventFragments = abiInterface.events;
     const rawFunctionFragments = filterObjectsByStateMutability(abiInterface.functions);
 
-    const selectedEvents = await prepareInputFragments('event', 'approval, transfer', rawEventFragments, abiName);
+    const selectedEvents = await prepareInputFragments(
+      'event',
+      'approval, transfer',
+      rawEventFragments,
+      abiName,
+      makeCLIPrompt()
+    );
     const selectedFunctions = await prepareInputFragments(
       'function',
       'approve, transferFrom',
       rawFunctionFragments,
-      abiName
+      abiName,
+      makeCLIPrompt()
     );
 
     const [eventFrags, functionFrags] = filterExistingMethods(
@@ -421,8 +431,7 @@ describe('CLI codegen:generate, Can write to file', () => {
     await fs.promises.mkdir(path.join(PROJECT_PATH, ROOT_MAPPING_DIR));
     await fs.promises.writeFile(path.join(PROJECT_PATH, 'src/index.ts'), 'export * from "./mappings/mappingHandlers"');
 
-    await Generate.run([
-      '-f',
+    await ImportAbi.run([
       path.join(PROJECT_PATH, './generate-project-2.yaml'),
       '--events',
       'approval, transfer',
@@ -446,8 +455,7 @@ describe('CLI codegen:generate, Can write to file', () => {
     await fs.promises.writeFile(path.join(PROJECT_PATH, 'src/mappings/Erc721Handlers.ts'), 'zzzzzz');
 
     await expect(
-      Generate.run([
-        '-f',
+      ImportAbi.run([
         path.join(PROJECT_PATH, './generate-project-2.yaml'),
         '--events',
         'approval, transfer',

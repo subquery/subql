@@ -288,7 +288,7 @@ const mode = process.env.NODE_ENV || 'production';
 
 // Load the appropriate .env file
 const dotenvPath = path.resolve(__dirname, \`.env\${mode !== 'production' ? \`.$\{mode}\` : ''}\`);
-dotenv.config({ path: dotenvPath });
+dotenv.config({ path: dotenvPath, quiet: true });
 `;
 
   // Inserting the env configuration code in project.ts
@@ -339,14 +339,17 @@ export async function prepareGitIgnore(projectPath: string): Promise<void> {
   }
 }
 
-export function installDependencies(projectPath: string, useNpm?: boolean): void {
-  let command = 'yarn install';
-
-  if (useNpm || !checkYarnExists()) {
-    command = 'npm install';
+export function installDependencies(
+  projectPath: string,
+  packageManager: 'npm' | 'yarn' | 'pnpm' = 'npm',
+  silent = false
+): void {
+  if (packageManager === 'yarn' && !checkYarnExists()) {
+    packageManager = 'npm';
   }
+  const command = `${packageManager} install`;
 
-  childProcess.execSync(command, {cwd: projectPath});
+  childProcess.execSync(command, {cwd: projectPath, stdio: silent ? 'ignore' : undefined});
 }
 
 function checkYarnExists(): boolean {
@@ -404,7 +407,7 @@ export async function validateEthereumProjectManifest(projectPath: string): Prom
   try {
     return isTs
       ? validateEthereumTsManifest(manifest)
-      : !!loadDependency(NETWORK_FAMILY.ethereum).parseProjectManifest(manifest);
+      : !!loadDependency(NETWORK_FAMILY.ethereum, projectPath).parseProjectManifest(manifest);
   } catch (e) {
     return false;
   }

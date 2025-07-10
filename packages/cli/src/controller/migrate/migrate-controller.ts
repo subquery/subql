@@ -18,6 +18,11 @@ const bitbucketLinkRegex =
   /^https:\/\/(?:[^/]+@)?bitbucket\.org\/(?<domain>[^/]+)\/(?<repository>[^/]+)(?:\/src\/(?<branch>[^/]+))?/;
 const sshRegex = /^git@(?:bitbucket\.org|github\.com):[^/]+\/(?<repository>[^/]+)\.git$/;
 
+/**
+ * Determines if an input string is a valid git repository http or ssh url.
+ * @param input a path or git url
+ * @returns The link and branch if the input is a valid git repository url, otherwise undefined.
+ */
 export function extractGitInfo(input: string): {link: string; branch?: string} | undefined {
   const gitLinkMatch = input.match(githubLinkRegex);
   const bitBucketLinkMatch = input.match(bitbucketLinkRegex);

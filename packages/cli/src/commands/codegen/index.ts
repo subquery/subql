@@ -1,63 +1,95 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Command, Flags} from '@oclif/core';
+import assert from 'node:assert';
+import {existsSync} from 'node:fs';
+import path from 'node:path';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {Command} from '@oclif/core';
 import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
+import {z} from 'zod';
+import {commandLogger, getMCPWorkingDirectory, Logger, mcpLogger, zodToArgs} from '../../adapters/utils';
 import {codegen} from '../../controller/codegen-controller';
 import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils';
 
-export default class Codegen extends Command {
-  static description = 'Generate entity types from the GraphQL schema';
+const codegenInputs = z.object({
+  location: z.string({description: 'The project directory or path to project manifest.'}).optional(),
+});
+type CodegenInputs = z.infer<typeof codegenInputs>;
 
-  static flags = {
-    location: Flags.string({
-      char: 'l',
-      description: 'local folder to run codegen in. please use file flag instead',
-      deprecated: true,
-    }),
-    file: Flags.string({char: 'f', description: 'specify manifest file path (will overwrite -l if both used)'}),
-  };
+const codegenOutputs = z.void();
 
-  async run(): Promise<void> {
-    const {flags} = await this.parse(Codegen);
-    this.log('===============================');
-    this.log('---------Subql Codegen---------');
-    this.log('===============================');
+export async function codegenAdapter(
+  workingDir: string,
+  args: CodegenInputs,
+  logger: Logger
+): Promise<z.infer<typeof codegenOutputs>> {
+  const location = resolveToAbsolutePath(path.resolve(workingDir, args.location ?? ''));
+  assert(existsSync(location), 'Argument `location` is not a valid directory or file');
 
-    const {file, location} = flags;
+  /*
+    ts manifest can be either single chain ts manifest
+    or multichain ts manifest
+    or multichain yaml manifest containing single chain ts project paths
+  */
+  const tsManifest = getTsManifest(location);
 
-    const projectPath = resolveToAbsolutePath(file ?? location ?? process.cwd());
+  if (tsManifest) {
+    await buildManifestFromLocation(tsManifest, logger.info.bind(logger));
+  }
 
-    /*
-      ts manifest can be either single chain ts manifest
-      or multichain ts manifest
-      or multichain yaml manifest containing single chain ts project paths
-    */
-    const tsManifest = getTsManifest(projectPath);
+  const {manifests, root} = getProjectRootAndManifest(location);
 
-    if (tsManifest) {
-      await buildManifestFromLocation(tsManifest, this.log.bind(this));
-    }
+  let firstSchemaPath: string | null = null;
 
-    const {manifests, root} = getProjectRootAndManifest(projectPath);
+  for (const manifest of manifests) {
+    const schemaPath = getSchemaPath(root, manifest);
 
-    let firstSchemaPath: string | null = null;
-
-    for (const manifest of manifests) {
-      const schemaPath = getSchemaPath(root, manifest);
-
-      if (firstSchemaPath === null) {
-        firstSchemaPath = schemaPath;
-      } else if (schemaPath !== firstSchemaPath) {
-        throw new Error('All schema paths are not the same');
-      }
-    }
-
-    try {
-      await codegen(root, manifests);
-    } catch (err: any) {
-      console.error(err.message, err.cause);
-      process.exit(1);
+    if (firstSchemaPath === null) {
+      firstSchemaPath = schemaPath;
+    } else if (schemaPath !== firstSchemaPath) {
+      throw new Error('All schema paths are not the same');
     }
   }
+
+  await codegen(root, manifests);
+}
+
+export default class Codegen extends Command {
+  static description = 'Generate entity types from the GraphQL schema and contract interfaces';
+  static args = zodToArgs(codegenInputs);
+
+  async run(): Promise<void> {
+    const {args} = await this.parse(Codegen);
+
+    try {
+      await codegenAdapter(process.cwd(), args, commandLogger(this));
+    } catch (err: any) {
+      this.error(`${err.message}, ${err.cause}`);
+    }
+  }
+}
+
+export function registerCodegenMCPTool(server: McpServer): RegisteredTool {
+  return server.registerTool(
+    Codegen.id,
+    {
+      description: Codegen.description,
+      inputSchema: codegenInputs.shape,
+    },
+    async (args, meta) => {
+      const cwd = await getMCPWorkingDirectory(server);
+
+      await codegenAdapter(cwd, args, mcpLogger(server.server));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `${Codegen.id} completed successfully.`,
+          },
+        ],
+      };
+    }
+  );
 }
