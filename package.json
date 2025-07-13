@@ -30,8 +30,8 @@
     "typescript": "^5.7.3"
   },
   "resolutions": {
-    "@polkadot/api": "^15.9.2",
-    "@polkadot/util": "^13.4.4"
+    "@polkadot/api": "^16.4.1",
+    "@polkadot/util": "^13.5.3"
   },
   "scripts": {
     "build": "yarn workspaces foreach -tA run build",
