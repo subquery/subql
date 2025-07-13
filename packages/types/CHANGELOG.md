@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.14.0] - 2025-07-14
 ### Changed
 - Update to `@polkadot/api@^16` (#2845)
 
@@ -300,7 +302,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - support block handler
 
-[Unreleased]: https://github.com/subquery/subql/compare/types/3.13.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types/3.14.0...HEAD
+[3.14.0]: https://github.com/subquery/subql/compare/types/3.13.0...types/3.14.0
 [3.13.0]: https://github.com/subquery/subql/compare/types/3.12.2...types/3.13.0
 [3.12.2]: https://github.com/subquery/subql/compare/types/3.12.1...types/3.12.2
 [3.12.1]: https://github.com/subquery/subql/compare/types/3.12.0...types/3.12.1
