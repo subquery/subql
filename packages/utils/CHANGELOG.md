@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.21.0] - 2025-07-14
 ### Changed
 - Update polkadot deps to align with `@polkadot/api@16` (#2845)
 
@@ -217,7 +219,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.20.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.21.0...HEAD
+[2.21.0]: https://github.com/subquery/subql/compare/utils/2.20.1...utils/2.21.0
 [2.20.1]: https://github.com/subquery/subql/compare/utils/2.20.0...utils/2.20.1
 [2.20.0]: https://github.com/subquery/subql/compare/utils/2.19.0...utils/2.20.0
 [2.19.0]: https://github.com/subquery/subql/compare/utils/2.18.1...utils/2.19.0
