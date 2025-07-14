@@ -45,6 +45,29 @@ If you prefer a managed hosting option for your indexer deployment, contact our 
 You're going to need to a Postgres database, a node to extract chain data, and a moderately powerful computer to run the indexer in the background.
 You'll also use our custom-built GraphQL query service [`@subql/query`](https://www.npmjs.com/package/@subql/query) to interact with your SubQuery project.
 
+## MCP (Beta)
+
+You can also create, build and deploy SubQuery projects using [MCP (Model Context Protocol)](https://modelcontextprotocol.io/introduction). Our MCP integration provideds all the same functionality as the CLI but works well with LLMs and AI IDEs such as Cursor.
+
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=subquery&config=JTdCJTIyY29tbWFuZCUyMiUzQSUyMm5weCUyMC15JTIwJTQwc3VicWwlMkZjbGklMjBtY3AlMjIlN0Q%3D)
+
+### Manual configuration
+
+For adding SubQuery MCP into other tools, the following command needs be run by the client.
+
+```bash
+npx @subql/cli mcp
+```
+
+An example manual configuration:
+
+```json
+"subquery": {
+  "command": "npx",
+  "args": ["-y", "@subql/cli", "mcp"]
+}
+```
+
 ## Components
 
 This repository contains all the core components of the SubQuery SDK as well as the Substrate implementation. It includes the following packages:
