@@ -296,7 +296,7 @@ function filterInput<T>(arr: T[]) {
 
 export function makeCLIPrompt(): Prompt {
   return async ({defaultValue, message, multiple, options, required, type}) => {
-    if (options?.length && multiple) {
+    if (!options?.length && multiple) {
       throw new Error('Multiple selection requires options to be provided');
     }
     if (type === 'string') {

@@ -248,6 +248,8 @@ export async function prepareInputFragments<T extends ConstructorFragment | Frag
       throw new Error(`${type} options must be provided`);
     }
 
+    console.log('AVAILABLE FRAGMENTS', availableFragments);
+
     const selected = await prompt({
       message: `Select ${type}`,
       type: 'string',
