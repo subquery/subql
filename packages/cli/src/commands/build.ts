@@ -6,6 +6,7 @@ import {existsSync, lstatSync} from 'node:fs';
 import path from 'node:path';
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
+import {glob} from 'glob';
 import {z} from 'zod';
 import {Logger, zodToFlags, mcpLogger, commandLogger, getMCPWorkingDirectory, zodToArgs} from '../adapters/utils';
 import {getBuildEntries, runBundle} from '../controller/build-controller';
@@ -31,6 +32,15 @@ export async function buildAdapter(
   const directory = lstatSync(location).isDirectory() ? location : path.dirname(location);
 
   await buildTsManifest(location, logger.info.bind(logger));
+
+  // Check that this is a SubQuery project
+  const projectSearch = path.resolve(directory, './project*.{yaml,yml}');
+  const manifests = await glob(projectSearch);
+  if (!manifests.length) {
+    throw new Error(
+      'This is not a SubQuery project, please make sure you run this in the root of your project directory.'
+    );
+  }
 
   const buildEntries = getBuildEntries(directory);
   const outputDir = path.resolve(directory, args.output);
