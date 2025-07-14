@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `mcp` subcommand to provide an MCP server for using subquery projects (#2844)
+
+### Changed
+- BEAKING: update all subcommands for consistency (#2844)
+  - Consistent location arguments instead of various flag names when specifying a project or project manifest
+  - Renamed commands relating to OnFinality to their own topic
+
+### Fixed
+- Issues not finding the chain specific common package when using global cli (#2844)
 
 ## [5.14.1] - 2025-07-14
 ### Fixed
