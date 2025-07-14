@@ -89,5 +89,9 @@ export default class MCP extends Command {
       registerCreateMultichainDeploymentMCPTool(server, opts);
       registerInitMCPTool(server, opts);
     };
+
+    return new Promise(() => {
+      // Keep the server running indefinitely
+    });
   }
 }
