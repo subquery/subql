@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [5.7.1] - 2025-07-14
 ### Fixed
 - Lock down class-validator dependency that had a breaking change in a patch release (#2844)
 
@@ -464,7 +466,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/5.7.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/5.7.1...HEAD
+[5.7.1]: https://github.com/subquery/subql/compare/common/5.7.0...common/5.7.1
 [5.7.0]: https://github.com/subquery/subql/compare/common/5.6.1...common/5.7.0
 [5.6.1]: https://github.com/subquery/subql/compare/common/5.6.0...common/5.6.1
 [5.6.0]: https://github.com/subquery/subql/compare/common/5.5.0...common/5.6.0
