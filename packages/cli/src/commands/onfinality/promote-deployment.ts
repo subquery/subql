@@ -52,7 +52,7 @@ export default class PromoteDeployment extends Command {
 
 export function registerPromoteDeploymentMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    PromoteDeployment.id,
+    PromoteDeployment.name,
     {
       description: PromoteDeployment.description,
       inputSchema: promoteInputs.shape,

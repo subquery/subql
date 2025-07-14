@@ -72,7 +72,7 @@ export default class Codegen extends Command {
 
 export function registerCodegenMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    Codegen.id,
+    Codegen.name,
     {
       description: Codegen.description,
       inputSchema: codegenInputs.shape,
@@ -86,7 +86,7 @@ export function registerCodegenMCPTool(server: McpServer): RegisteredTool {
         content: [
           {
             type: 'text',
-            text: `${Codegen.id} completed successfully.`,
+            text: `${Codegen.name} completed successfully.`,
           },
         ],
       };

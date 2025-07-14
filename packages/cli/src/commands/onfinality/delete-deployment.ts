@@ -41,7 +41,7 @@ export default class DeleteDeployment extends Command {
 
 export function deleteDeploymentMCPAdapter(server: McpServer): RegisteredTool {
   return server.registerTool(
-    DeleteDeployment.id,
+    DeleteDeployment.name,
     {
       description: DeleteDeployment.description,
       inputSchema: deleteDeploymentInputs.shape,

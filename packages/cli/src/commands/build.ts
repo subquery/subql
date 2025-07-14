@@ -63,7 +63,7 @@ export default class Build extends Command {
 
 export function registerBuildMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    Build.id,
+    Build.name,
     {
       description: Build.description,
       inputSchema: buildInputs.shape,
@@ -77,7 +77,7 @@ export function registerBuildMCPTool(server: McpServer): RegisteredTool {
         content: [
           {
             type: 'text',
-            text: `${Build.id} completed successfully.`,
+            text: `${Build.name} completed successfully.`,
           },
         ],
       };

@@ -131,7 +131,7 @@ const nonInteractiveCreateDeploymentInputs = createDeploymentInputs.extend({
 
 export function registerCreateDeploymentMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    CreateDeployment.id,
+    CreateDeployment.name,
     {
       description: CreateDeployment.description,
       inputSchema: (opts.supportsElicitation ? createDeploymentInputs : nonInteractiveCreateDeploymentInputs).shape,

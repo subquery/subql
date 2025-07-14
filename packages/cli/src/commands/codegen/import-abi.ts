@@ -261,7 +261,7 @@ const nonInteractiveGenerateInputs = generateInputs;
 
 export function registerImportAbiMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    ImportAbi.id,
+    ImportAbi.name,
     {
       description: ImportAbi.description,
       inputSchema: (opts.supportsElicitation ? generateInputs : nonInteractiveGenerateInputs).shape,

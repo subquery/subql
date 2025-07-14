@@ -146,7 +146,7 @@ export default class MigrateSubgraph extends Command {
 
 export function registerMigrateSubgraphMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    MigrateSubgraph.id,
+    MigrateSubgraph.name,
     {
       description: MigrateSubgraph.description,
       inputSchema: migrateSubgraphInputs.shape,
