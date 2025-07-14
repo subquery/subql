@@ -51,6 +51,8 @@ You can also create, build and deploy SubQuery projects using [MCP (Model Contex
 
 [![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=subquery&config=ewogICJzdWJxdWVyeSI6IHsKICAgICJjb21tYW5kIjogIm5weCIsCiAgICAiYXJncyI6IFsKICAgICAgIi15IiwKICAgICAgIkBzdWJxbC9jbGkiLAogICAgICAibWNwIgogICAgXQogIH0KfQ==)
 
+[![VSCode Install MCP Server](https://img.shields.io/badge/VS_Code-NPM-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=SubQuery&inputs=%7B%22id%22%3A%22workingDirectory%22%2C%22type%22%3A%22promptString%22%2C%22description%22%3A%22Working%20Directory%22%7D&config=%7B%22type%22%3A%22stdio%22%2C%22command%22%3A%22npx%22%2C%22cwd%22%3A%22%24%7Binput%3AworkingDirectory%7D%22%2C%22args%22%3A%5B%22-y%22%2C%22%40subql%2Fcli%22%2C%22mcp%22%5D%7D)
+
 ### Manual configuration
 
 For adding SubQuery MCP into other tools, the following command needs be run by the client.
