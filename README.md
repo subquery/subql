@@ -47,7 +47,7 @@ You'll also use our custom-built GraphQL query service [`@subql/query`](https://
 
 ## MCP (Beta)
 
-You can also create, build and deploy SubQuery projects using [MCP (Model Context Protocol)](https://modelcontextprotocol.io/introduction). Our MCP integration provideds all the same functionality as the CLI but works well with LLMs and AI IDEs such as Cursor.
+You can also create, build and deploy SubQuery projects using [MCP (Model Context Protocol)](https://modelcontextprotocol.io/introduction). Our MCP integration provides all the same functionality as the CLI but works well with LLMs and AI IDEs such as Cursor.
 
 [![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=subquery&config=ewogICJzdWJxdWVyeSI6IHsKICAgICJjb21tYW5kIjogIm5weCIsCiAgICAiYXJncyI6IFsKICAgICAgIi15IiwKICAgICAgIkBzdWJxbC9jbGkiLAogICAgICAibWNwIgogICAgXQogIH0KfQ==)
 
@@ -58,7 +58,7 @@ You can also create, build and deploy SubQuery projects using [MCP (Model Contex
 For adding SubQuery MCP into other tools, the following command needs be run by the client.
 
 ```bash
-npx @subql/cli mcp
+npx -y @subql/cli mcp
 ```
 
 An example manual configuration:
