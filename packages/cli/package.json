@@ -9,6 +9,7 @@
   "bugs": "https://github.com/subquery/subql/issues",
   "dependencies": {
     "@inquirer/prompts": "^5.3.6",
+    "@modelcontextprotocol/sdk": "^1.13.0",
     "@oclif/core": "^4.3.3",
     "@subql/common": "workspace:*",
     "@subql/utils": "workspace:*",
@@ -19,6 +20,7 @@
     "glob": "^10.4",
     "json5": "^2.2.3",
     "ora": "^5.4.1",
+    "resolve-from": "^5.0.0",
     "rimraf": "^5.0.10",
     "semver": "^7.6.3",
     "simple-git": "^3.25.0",
@@ -28,13 +30,14 @@
     "typescript": "^5.7.3",
     "update-notifier": "^5.1.0",
     "websocket": "^1.0.35",
-    "yaml": "^2.5.0"
+    "yaml": "^2.5.0",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@subql/common-algorand": "^4.3.1",
     "@subql/common-concordium": "^4.0.1",
     "@subql/common-cosmos": "^5.2.0",
-    "@subql/common-ethereum": "^4.6.1",
+    "@subql/common-ethereum": "^4.9.0",
     "@subql/common-near": "^4.2.1",
     "@subql/common-solana": "^0.0.0-2",
     "@subql/common-stellar": "^4.2.2",

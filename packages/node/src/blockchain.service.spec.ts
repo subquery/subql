@@ -38,7 +38,7 @@ describe('BlockchainService', () => {
   }, 10000);
 
   afterAll(async () => {
-    await apiService.onApplicationShutdown();
+    await apiService?.onApplicationShutdown();
   });
 
   it('can get the finalized height', async () => {

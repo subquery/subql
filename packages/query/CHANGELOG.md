@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.22.1] - 2025-05-21
 ### Changed
-- Hide \_global table from being queried (#2799)
+- Hide \`_global\` table from being queried (#2799)
 
 ## [2.22.0] - 2025-04-30
 ### Removed

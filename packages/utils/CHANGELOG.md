@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.19.0] - 2025-05-21
 ### Added
-- Regex for \_global table (#2799)
+- Regex for \`_global\` table (#2799)
 
 ## [2.18.1] - 2025-04-24
 ### Changed

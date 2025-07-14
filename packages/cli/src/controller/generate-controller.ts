@@ -4,7 +4,6 @@
 import fs from 'fs';
 import path from 'path';
 import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi';
-import {checkbox} from '@inquirer/prompts';
 import {NETWORK_FAMILY} from '@subql/common';
 import type {
   EthereumDatasourceKind,
@@ -14,10 +13,9 @@ import type {
   SubqlRuntimeDatasource as EthereumDs,
   SubqlRuntimeHandler,
 } from '@subql/types-ethereum';
-import chalk from 'chalk';
 import {difference, pickBy, upperFirst} from 'lodash';
 import {Document, parseDocument, YAMLSeq} from 'yaml';
-import {SelectedMethod, UserInput} from '../commands/codegen/generate';
+import {Prompt} from '../adapters/utils';
 import {ADDRESS_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
 import {loadDependency} from '../modulars';
 import {
@@ -27,6 +25,18 @@ import {
   resolveToAbsolutePath,
   splitArrayString,
 } from '../utils';
+
+export interface SelectedMethod {
+  name: string;
+  method: string;
+}
+export interface UserInput {
+  startBlock: number;
+  functions: SelectedMethod[];
+  events: SelectedMethod[];
+  abiPath: string;
+  address?: string;
+}
 
 interface HandlerPropType {
   name: string;
@@ -91,6 +101,35 @@ export async function saveAbiToFile(abi: unknown, addressOrName: string, rootPat
   return filePath;
 }
 
+export function prepareUserInput<T>(
+  selectedEvents: Record<string, EventFragment>,
+  selectedFunctions: Record<string, FunctionFragment>,
+  existingDs: T,
+  address: string | undefined,
+  startBlock: number,
+  abiFileName: string,
+  extractor: ManifestExtractor<T>
+): UserInput {
+  const [cleanEvents, cleanFunctions] = filterExistingMethods(
+    selectedEvents,
+    selectedFunctions,
+    existingDs,
+    address,
+    extractor
+  );
+
+  const constructedEvents = constructMethod<EventFragment>(cleanEvents);
+  const constructedFunctions = constructMethod<FunctionFragment>(cleanFunctions);
+
+  return {
+    startBlock: startBlock,
+    functions: constructedFunctions,
+    events: constructedEvents,
+    abiPath: `./abis/${abiFileName}`,
+    address: address,
+  };
+}
+
 export function constructMethod<T extends ConstructorFragment | Fragment>(
   cleanedFragment: Record<string, T>
 ): SelectedMethod[] {
@@ -100,22 +139,6 @@ export function constructMethod<T extends ConstructorFragment | Fragment>(
       method: f,
     };
   });
-}
-
-export async function promptSelectables<T extends ConstructorFragment | Fragment>(
-  method: 'event' | 'function',
-  availableMethods: Record<string, T>
-): Promise<Record<string, T>> {
-  const selectedMethods: Record<string, T> = {};
-  const choseArray = await checkbox<string>({
-    message: `Select ${method}`,
-    choices: Object.keys(availableMethods).map((key) => ({value: key})),
-  });
-  choseArray.forEach((choice: string) => {
-    selectedMethods[choice] = availableMethods[choice];
-  });
-
-  return selectedMethods;
 }
 
 export function filterObjectsByStateMutability(
@@ -167,8 +190,8 @@ function generateFormattedHandlers(
   return formattedHandlers;
 }
 
-export function constructDatasourcesTs(userInput: UserInput): string {
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+export function constructDatasourcesTs(userInput: UserInput, projectPath: string): string {
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => kind);
   const handlersString = tsStringify(formattedHandlers);
@@ -188,8 +211,8 @@ export function constructDatasourcesTs(userInput: UserInput): string {
   }`;
 }
 
-export function constructDatasourcesYaml(userInput: UserInput): EthereumDs {
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+export function constructDatasourcesYaml(userInput: UserInput, projectPath: string): EthereumDs {
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => {
     if (kind === 'EthereumHandlerKind.Call') return 'ethereum/TransactionHandler' as EthereumHandlerKind.Call;
@@ -217,10 +240,32 @@ export async function prepareInputFragments<T extends ConstructorFragment | Frag
   type: 'event' | 'function',
   rawInput: string | undefined,
   availableFragments: Record<string, T>,
-  abiName: string
+  abiName: string,
+  prompt: Prompt | null
 ): Promise<Record<string, T>> {
   if (!rawInput) {
-    return promptSelectables<T>(type, availableFragments);
+    if (!prompt) {
+      throw new Error(`${type} options must be provided`);
+    }
+
+    console.log('AVAILABLE FRAGMENTS', availableFragments);
+
+    const selected = await prompt({
+      message: `Select ${type}`,
+      type: 'string',
+      options: Object.keys(availableFragments),
+      multiple: true,
+    });
+
+    return Object.entries(availableFragments)
+      .filter(([key]) => selected.includes(key))
+      .reduce(
+        (acc, [key, value]) => {
+          acc[key as string] = value;
+          return acc;
+        },
+        {} as Record<string, T>
+      );
   }
 
   if (rawInput === '*') {
@@ -239,7 +284,7 @@ export async function prepareInputFragments<T extends ConstructorFragment | Frag
     });
 
     if (!matchFragment) {
-      throw new Error(chalk.red(`'${input}' is not a valid ${type} on ${abiName}`));
+      throw new Error(`'${input}' is not a valid ${type} on ${abiName}`);
     }
   });
 
@@ -361,7 +406,7 @@ export async function generateManifestTs(
   userInput: UserInput,
   existingManifestData: string
 ): Promise<void> {
-  const inputDs = constructDatasourcesTs(userInput);
+  const inputDs = constructDatasourcesTs(userInput, manifestPath);
 
   const extractedDs = extractFromTs(existingManifestData, {dataSources: undefined}) as {dataSources: string};
   const v = prependDatasources(extractedDs.dataSources, inputDs);
@@ -374,7 +419,7 @@ export async function generateManifestYaml(
   userInput: UserInput,
   existingManifestData: Document
 ): Promise<void> {
-  const inputDs = constructDatasourcesYaml(userInput);
+  const inputDs = constructDatasourcesYaml(userInput, manifestPath);
   const dsNode = existingManifestData.get('dataSources') as YAMLSeq;
   if (!dsNode || !dsNode.items.length) {
     // To ensure output is in yaml format

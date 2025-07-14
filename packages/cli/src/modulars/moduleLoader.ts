@@ -4,19 +4,22 @@
 import {existsSync} from 'fs';
 import path from 'path';
 import {NETWORK_FAMILY} from '@subql/common';
+import resolveFrom from 'resolve-from';
 import {networkPackages} from './config';
 import {ModuleCache} from './types';
 
 const moduleCache: Partial<ModuleCache> = {};
 
-export function loadDependency<N extends NETWORK_FAMILY>(network: N): ModuleCache[N] {
+export function loadDependency<N extends NETWORK_FAMILY>(network: N, projectDir: string): ModuleCache[N] {
   const packageName = networkPackages[network];
   if (!packageName) {
     throw new Error(`Unknown network: ${network}`);
   }
   if (!moduleCache[network]) {
     try {
-      moduleCache[network] = require(packageName) as ModuleCache[N];
+      // Resolve the package from the project directory, otherwise look relative to the current package
+      const projectDep = resolveFrom.silent(projectDir ?? process.cwd(), packageName);
+      moduleCache[network] = require(projectDep ?? packageName) as ModuleCache[N];
     } catch (error) {
       console.warn(`! Failed to load ${packageName} locally: ${error}. \n ! Attempting to load globally`);
       try {

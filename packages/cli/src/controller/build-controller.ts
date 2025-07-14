@@ -114,7 +114,7 @@ export async function runBundle(
     // Re-throw with more context
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(
-      `TypeScript type checking failed. Fix the errors in your project code or @subql packages before building.\n${errorMessage}`
+      `TypeScript type checking failed. Fix the errors in your project before building.\n${errorMessage}`
     );
   }
 

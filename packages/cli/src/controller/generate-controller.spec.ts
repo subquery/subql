@@ -14,7 +14,7 @@ import {
   EthereumTransactionFilter,
   SubqlRuntimeDatasource as EthereumDs,
 } from '@subql/types-ethereum';
-import {SelectedMethod, UserInput} from '../commands/codegen/generate';
+import {makeCLIPrompt} from '../adapters/utils';
 import {ENDPOINT_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
 import {loadDependency} from '../modulars';
 import {
@@ -38,6 +38,8 @@ import {
   tsExtractor,
   tsStringify,
   yamlExtractor,
+  SelectedMethod,
+  UserInput,
 } from './generate-controller';
 
 const mockConstructedFunctions: SelectedMethod[] = [
@@ -126,7 +128,7 @@ const mockDsStr =
 describe('CLI codegen:generate', () => {
   const projectPath = path.join(__dirname, '../../test/schemaTest');
   const abiInterface = getAbiInterface(projectPath, './erc721.json');
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum);
+  const ethModule = loadDependency(NETWORK_FAMILY.ethereum, process.cwd());
   const abiName = ethModule.parseContractPath('./erc721.json').name;
   const eventFragments = abiInterface.events;
   const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
@@ -139,7 +141,7 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    const constructedDs = constructDatasourcesYaml(mockUserInput);
+    const constructedDs = constructDatasourcesYaml(mockUserInput, process.cwd());
     const expectedAsset = new Map();
     expectedAsset.set('Erc721', {file: './abis/erc721.json'});
     expect(constructedDs).toStrictEqual({
@@ -173,7 +175,7 @@ describe('CLI codegen:generate', () => {
   });
 
   it('prepareInputFragments, should return all fragments, if user passes --events="*"', async () => {
-    const result = await prepareInputFragments('event', '*', eventFragments, abiName);
+    const result = await prepareInputFragments('event', '*', eventFragments, abiName, makeCLIPrompt());
     expect(result).toStrictEqual(abiInterface.events);
   });
 
@@ -183,9 +185,9 @@ describe('CLI codegen:generate', () => {
 
     const promptSpy = jest.spyOn(inquirer, 'checkbox').mockResolvedValue(['Approval(address,address,uint256)']);
 
-    const emptyStringPassed = await prepareInputFragments('event', '', eventFragments, abiName);
+    const emptyStringPassed = await prepareInputFragments('event', '', eventFragments, abiName, makeCLIPrompt());
     expect(promptSpy).toHaveBeenCalledTimes(1);
-    const undefinedPassed = await prepareInputFragments('event', undefined, eventFragments, abiName);
+    const undefinedPassed = await prepareInputFragments('event', undefined, eventFragments, abiName, makeCLIPrompt());
 
     expect(emptyStringPassed).toStrictEqual(undefinedPassed);
   });
@@ -195,13 +197,15 @@ describe('CLI codegen:generate', () => {
       'function',
       'transferFrom',
       functionFragments,
-      abiName
+      abiName,
+      makeCLIPrompt()
     );
     const insensitiveInputResult = await prepareInputFragments<FunctionFragment>(
       'function',
       'transFerfrom',
       functionFragments,
-      abiName
+      abiName,
+      makeCLIPrompt()
     );
 
     expect(result).toStrictEqual(insensitiveInputResult);
@@ -215,7 +219,8 @@ describe('CLI codegen:generate', () => {
         'function',
         'transferFrom(address,address,uint256)',
         functionFragments,
-        abiName
+        abiName,
+        makeCLIPrompt()
       )
     ).rejects.toThrow("'transferFrom(address' is not a valid function on Erc721");
     await expect(
@@ -223,13 +228,14 @@ describe('CLI codegen:generate', () => {
         'function',
         'transferFrom(address from, address to, uint256 tokenid)',
         functionFragments,
-        abiName
+        abiName,
+        makeCLIPrompt()
       )
     ).rejects.toThrow("'transferFrom(address from' is not a valid function on Erc721");
 
-    await expect(prepareInputFragments('function', 'asdfghj', functionFragments, abiName)).rejects.toThrow(
-      "'asdfghj' is not a valid function on Erc721"
-    );
+    await expect(
+      prepareInputFragments('function', 'asdfghj', functionFragments, abiName, makeCLIPrompt())
+    ).rejects.toThrow("'asdfghj' is not a valid function on Erc721");
   });
   it('Ensure generateHandlerName', () => {
     expect(generateHandlerName('transfer', 'erc721', 'log')).toBe('handleTransferErc721Log');
@@ -311,6 +317,7 @@ describe('CLI codegen:generate', () => {
     expect(cleanEvents['Transfer(address,address,uint256)']).toBeFalsy();
     expect(cleanFunctions['approve(address,uint256)']).toBeFalsy();
   });
+
   it('filter out existing methods, only on matching address', () => {
     const ds = mockDsFn();
     ds[0].options!.address = '0x892476D79090Fa77C6B9b79F68d21f62b46bEDd2';
@@ -329,6 +336,7 @@ describe('CLI codegen:generate', () => {
     // expect(constructedEvents.length).toBe(Object.keys(eventFragments).length);
     // expect(constructedFunctions.length).toBe(Object.keys(functionFragments).length);
   });
+
   it('filter out existing methods, inputAddress === undefined || "" should filter all ds that contains no address', () => {
     const ds = mockDsFn();
     if (ds[0].options?.address) ds[0].options.address = undefined;
@@ -517,7 +525,7 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    expect(constructDatasourcesTs(mockUserInput)).toStrictEqual(
+    expect(constructDatasourcesTs(mockUserInput, process.cwd())).toStrictEqual(
       `{
     kind: EthereumDatasourceKind.Runtime,
     startBlock: 1,
@@ -558,7 +566,7 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    expect(constructDatasourcesYaml(mockUserInput)).toStrictEqual({
+    expect(constructDatasourcesYaml(mockUserInput, process.cwd())).toStrictEqual({
       kind: EthereumDatasourceKind.Runtime,
       startBlock: 1,
       options: {
