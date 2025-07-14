@@ -107,7 +107,7 @@ export default class Publish extends Command {
 
 export function registerPublishMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    Publish.id,
+    Publish.name,
     {
       description: Publish.description,
       inputSchema: publishInputs.shape,

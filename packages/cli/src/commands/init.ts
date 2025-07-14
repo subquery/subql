@@ -234,7 +234,7 @@ const nonInteractiveInitInputs = initInputs.required({name: true});
 
 export function registerInitMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    Init.id,
+    Init.name,
     {
       description: Init.description,
       inputSchema: (opts.supportsElicitation ? initInputs : nonInteractiveInitInputs).shape,
