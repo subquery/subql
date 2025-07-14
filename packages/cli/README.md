@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (--version)
-@subql/cli/5.14.1-0 linux-x64 node-v22.16.0
+@subql/cli/5.14.2-0 linux-x64 node-v22.17.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -36,274 +36,160 @@ USAGE
 
 <!-- commands -->
 
-- [`subql build`](#subql-build)
-- [`subql codegen`](#subql-codegen)
-- [`subql codegen:generate`](#subql-codegengenerate)
-- [`subql deployment`](#subql-deployment)
-- [`subql deployment:delete`](#subql-deploymentdelete)
-- [`subql deployment:deploy`](#subql-deploymentdeploy)
-- [`subql deployment:promote`](#subql-deploymentpromote)
-- [`subql import-abi`](#subql-import-abi)
-- [`subql init [PROJECTNAME]`](#subql-init-projectname)
+- [`subql build [LOCATION]`](#subql-build-location)
+- [`subql codegen [LOCATION]`](#subql-codegen-location)
+- [`subql codegen:import-abi LOCATION`](#subql-codegenimport-abi-location)
+- [`subql import-abi LOCATION`](#subql-import-abi-location)
+- [`subql init NAME`](#subql-init-name)
+- [`subql mcp`](#subql-mcp)
 - [`subql migrate`](#subql-migrate)
-- [`subql multi-chain:add`](#subql-multi-chainadd)
-- [`subql multi-chain:deploy`](#subql-multi-chaindeploy)
-- [`subql project`](#subql-project)
-- [`subql project:create-project`](#subql-projectcreate-project)
-- [`subql project:delete-project`](#subql-projectdelete-project)
-- [`subql publish`](#subql-publish)
+- [`subql multi-chain:add [LOCATION]`](#subql-multi-chainadd-location)
+- [`subql onfinality:create-deployment`](#subql-onfinalitycreate-deployment)
+- [`subql onfinality:create-multichain-deployment [LOCATION]`](#subql-onfinalitycreate-multichain-deployment-location)
+- [`subql onfinality:create-project`](#subql-onfinalitycreate-project)
+- [`subql onfinality:delete-deployment`](#subql-onfinalitydelete-deployment)
+- [`subql onfinality:delete-project`](#subql-onfinalitydelete-project)
+- [`subql onfinality:promote-deployment`](#subql-onfinalitypromote-deployment)
+- [`subql publish [LOCATION]`](#subql-publish-location)
 
-## `subql build`
+## `subql build [LOCATION]`
 
-Build this SubQuery project code
+Build this SubQuery project code into a bundle
 
 ```
 USAGE
-  $ subql build [-f <value>] [-o <value>] [--mode production|prod|development|dev] [-s]
+  $ subql build [LOCATION] [--output <value>]
+
+ARGUMENTS
+  LOCATION  The path to the project, this can be a directory or a project manifest file.
 
 FLAGS
-  -f, --location=<value>  local folder or manifest file to run build
-  -o, --output=<value>    output folder of build e.g. dist
-  -s, --silent            silent mode
-  --mode=<option>         [default: production]
-                          <options: production|prod|development|dev>
+  --output=<value>  [default: dist] The output location relative to the location
 
 DESCRIPTION
-  Build this SubQuery project code
+  Build this SubQuery project code into a bundle
 ```
 
-_See code: [lib/commands/build/index.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/build/index.ts)_
+_See code: [lib/commands/build.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/build.ts)_
 
-## `subql codegen`
+## `subql codegen [LOCATION]`
 
-Generate entity types from the GraphQL schema
+Generate entity types from the GraphQL schema and contract interfaces
 
 ```
 USAGE
-  $ subql codegen [-l <value>] [-f <value>]
+  $ subql codegen [LOCATION]
 
-FLAGS
-  -f, --file=<value>      specify manifest file path (will overwrite -l if both used)
-  -l, --location=<value>  local folder to run codegen in. please use file flag instead
+ARGUMENTS
+  LOCATION  The project directory or path to project manifest.
 
 DESCRIPTION
-  Generate entity types from the GraphQL schema
+  Generate entity types from the GraphQL schema and contract interfaces
 ```
 
-_See code: [lib/commands/codegen/index.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/codegen/index.ts)_
+_See code: [lib/commands/codegen/index.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/codegen/index.ts)_
 
-## `subql codegen:generate`
+## `subql codegen:import-abi LOCATION`
 
-Generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to fetch the ABI and start block from the Etherscan.
+Import and ABI to generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to fetch the ABI and start block from the Etherscan.
 
 ```
 USAGE
-  $ subql codegen:generate [-f <value>] [--address <value>] [--startBlock <value>] [--abiPath <value>] [--events
-    <value>] [--functions <value>]
+  $ subql codegen:import-abi LOCATION [--address <value>] [--abiName <value>] [--startBlock <value>] [--abiPath <value>]
+    [--events <value>] [--functions <value>]
+
+ARGUMENTS
+  LOCATION  The path to the project, this can be a directory or a project manifest file.
 
 FLAGS
-  -f, --file=<value>    Project folder or manifest file
+  --abiName=<value>     The contracts name, if not provided, the contract address will be used if the ABI is fetched
+                        from Etherscan
   --abiPath=<value>     The path to the ABI file
   --address=<value>     The contracts address
-  --events=<value>      ABI events to generate handlers for, --events="approval, transfer"
-  --functions=<value>   ABI functions to generate handlers for,  --functions="approval, transfer"
+  --events=<value>      ABI events to generate handlers for. Use '*' for all. e.g. --events="approval, transfer"
+  --functions=<value>   ABI functions to generate handlers for. Use '*' for all. e.g. --functions="approval, transfer"
   --startBlock=<value>  The start block of the handler, generally the block the contract is deployed.
 
 DESCRIPTION
-  Generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to
-  fetch the ABI and start block from the Etherscan.
+  Import and ABI to generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it
+  will attempt to fetch the ABI and start block from the Etherscan.
 
 ALIASES
   $ subql import-abi
 ```
 
-_See code: [lib/commands/codegen/generate.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/codegen/generate.ts)_
+_See code: [lib/commands/codegen/import-abi.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/codegen/import-abi.ts)_
 
-## `subql deployment`
+## `subql import-abi LOCATION`
 
-Deploy to OnFinality managed services
-
-```
-USAGE
-  $ subql deployment --endpoint <value> [--options deploy|promote|delete] [--org <value>] [--projectName
-    <value>] [--type stage|primary] [--indexerVersion <value>] [--queryVersion <value>] [--dict <value>]
-    [--indexerUnsafe] [--indexerBatchSize <value>] [--indexerSubscription] [--disableHistorical] [--indexerUnfinalized]
-    [--indexerStoreCacheThreshold <value>] [--disableIndexerStoreCacheAsync] [--indexerWorkers <value>] [--queryUnsafe]
-    [--querySubscription] [--queryTimeout <value>] [--queryMaxConnection <value>] [--queryAggregate] [--queryLimit
-    <value>] [-d] [--ipfsCID <value>] [--project_name <value>] [--deploymentID <value>]
-
-FLAGS
-  -d, --useDefaults                     Use default values for indexerVersion, queryVersion, dictionary, endpoint
-  --deploymentID=<value>                Enter deployment ID
-  --dict=<value>                        Enter dictionary
-  --disableHistorical                   Disable Historical Data
-  --disableIndexerStoreCacheAsync       If enabled the store cache will flush data asynchronously relative to indexing
-                                        data.
-  --endpoint=<value>                    (required) Enter endpoint
-  --indexerBatchSize=<value>            Enter batchSize from 1 to 30
-  --indexerStoreCacheThreshold=<value>  The number of items kept in the cache before flushing
-  --indexerSubscription                 Enable Indexer subscription
-  --indexerUnfinalized                  Index unfinalized blocks (requires Historical to be enabled)
-  --indexerUnsafe                       Enable indexer unsafe
-  --indexerVersion=<value>              Enter indexer-version
-  --indexerWorkers=<value>              Enter worker threads from 1 to 5
-  --ipfsCID=<value>                     Enter IPFS CID
-  --options=<option>                    <options: deploy|promote|delete>
-  --org=<value>                         Enter organization name
-  --projectName=<value>                 Enter project name
-  --project_name=<value>                Enter project name
-  --queryAggregate                      Enable Aggregate
-  --queryLimit=<value>                  Set the max number of results the query service returns
-  --queryMaxConnection=<value>          Enter MaxConnection from 1 to 10
-  --querySubscription                   Enable Query subscription
-  --queryTimeout=<value>                Enter timeout from 1000ms to 60000ms
-  --queryUnsafe                         Enable indexer unsafe
-  --queryVersion=<value>                Enter query-version
-  --type=<option>                       [default: primary]
-                                        <options: stage|primary>
-
-DESCRIPTION
-  Deploy to OnFinality managed services
-```
-
-_See code: [lib/commands/deployment/index.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/deployment/index.ts)_
-
-## `subql deployment:delete`
-
-Delete a deployment from the OnFinality managed services
+Import and ABI to generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to fetch the ABI and start block from the Etherscan.
 
 ```
 USAGE
-  $ subql deployment:delete [--org <value>] [--project_name <value>] [--deploymentID <value>]
+  $ subql import-abi LOCATION [--address <value>] [--abiName <value>] [--startBlock <value>] [--abiPath <value>]
+    [--events <value>] [--functions <value>]
+
+ARGUMENTS
+  LOCATION  The path to the project, this can be a directory or a project manifest file.
 
 FLAGS
-  --deploymentID=<value>  Enter deployment ID
-  --org=<value>           Enter organization name
-  --project_name=<value>  Enter project name
-
-DESCRIPTION
-  Delete a deployment from the OnFinality managed services
-```
-
-_See code: [lib/commands/deployment/delete.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/deployment/delete.ts)_
-
-## `subql deployment:deploy`
-
-Deploy a project to the OnFinality managed services
-
-```
-USAGE
-  $ subql deployment:deploy --endpoint <value> [--org <value>] [--projectName <value>] [--type stage|primary]
-    [--indexerVersion <value>] [--queryVersion <value>] [--dict <value>] [--indexerUnsafe] [--indexerBatchSize <value>]
-    [--indexerSubscription] [--disableHistorical] [--indexerUnfinalized] [--indexerStoreCacheThreshold <value>]
-    [--disableIndexerStoreCacheAsync] [--indexerWorkers <value>] [--queryUnsafe] [--querySubscription] [--queryTimeout
-    <value>] [--queryMaxConnection <value>] [--queryAggregate] [--queryLimit <value>] [-d] [--ipfsCID <value>]
-
-FLAGS
-  -d, --useDefaults                     Use default values for indexerVersion, queryVersion, dictionary, endpoint
-  --dict=<value>                        Enter dictionary
-  --disableHistorical                   Disable Historical Data
-  --disableIndexerStoreCacheAsync       If enabled the store cache will flush data asynchronously relative to indexing
-                                        data.
-  --endpoint=<value>                    (required) Enter endpoint
-  --indexerBatchSize=<value>            Enter batchSize from 1 to 30
-  --indexerStoreCacheThreshold=<value>  The number of items kept in the cache before flushing
-  --indexerSubscription                 Enable Indexer subscription
-  --indexerUnfinalized                  Index unfinalized blocks (requires Historical to be enabled)
-  --indexerUnsafe                       Enable indexer unsafe
-  --indexerVersion=<value>              Enter indexer-version
-  --indexerWorkers=<value>              Enter worker threads from 1 to 5
-  --ipfsCID=<value>                     Enter IPFS CID
-  --org=<value>                         Enter organization name
-  --projectName=<value>                 Enter project name
-  --queryAggregate                      Enable Aggregate
-  --queryLimit=<value>                  Set the max number of results the query service returns
-  --queryMaxConnection=<value>          Enter MaxConnection from 1 to 10
-  --querySubscription                   Enable Query subscription
-  --queryTimeout=<value>                Enter timeout from 1000ms to 60000ms
-  --queryUnsafe                         Enable indexer unsafe
-  --queryVersion=<value>                Enter query-version
-  --type=<option>                       [default: primary]
-                                        <options: stage|primary>
-
-DESCRIPTION
-  Deploy a project to the OnFinality managed services
-```
-
-_See code: [lib/commands/deployment/deploy.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/deployment/deploy.ts)_
-
-## `subql deployment:promote`
-
-Promote a deployment on the OnFinality managed services from a Stage environment to Production
-
-```
-USAGE
-  $ subql deployment:promote [--org <value>] [--project_name <value>] [--deploymentID <value>]
-
-FLAGS
-  --deploymentID=<value>  Enter deployment ID
-  --org=<value>           Enter organization name
-  --project_name=<value>  Enter project name
-
-DESCRIPTION
-  Promote a deployment on the OnFinality managed services from a Stage environment to Production
-```
-
-_See code: [lib/commands/deployment/promote.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/deployment/promote.ts)_
-
-## `subql import-abi`
-
-Generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to fetch the ABI and start block from the Etherscan.
-
-```
-USAGE
-  $ subql import-abi [-f <value>] [--address <value>] [--startBlock <value>] [--abiPath <value>] [--events
-    <value>] [--functions <value>]
-
-FLAGS
-  -f, --file=<value>    Project folder or manifest file
+  --abiName=<value>     The contracts name, if not provided, the contract address will be used if the ABI is fetched
+                        from Etherscan
   --abiPath=<value>     The path to the ABI file
   --address=<value>     The contracts address
-  --events=<value>      ABI events to generate handlers for, --events="approval, transfer"
-  --functions=<value>   ABI functions to generate handlers for,  --functions="approval, transfer"
+  --events=<value>      ABI events to generate handlers for. Use '*' for all. e.g. --events="approval, transfer"
+  --functions=<value>   ABI functions to generate handlers for. Use '*' for all. e.g. --functions="approval, transfer"
   --startBlock=<value>  The start block of the handler, generally the block the contract is deployed.
 
 DESCRIPTION
-  Generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it will attempt to
-  fetch the ABI and start block from the Etherscan.
+  Import and ABI to generate project handlers and mapping functions based on an Ethereum ABI. If address is provided, it
+  will attempt to fetch the ABI and start block from the Etherscan.
 
 ALIASES
   $ subql import-abi
 ```
 
-## `subql init [PROJECTNAME]`
+## `subql init NAME`
 
 Initialize a SubQuery project from a template
 
 ```
 USAGE
-  $ subql init [PROJECTNAME] [-f] [-l <value>] [--install-dependencies] [--npm] [--abiPath <value>]
-    [--network <value>] [--description <value>] [--author <value>] [--endpoint <value>]
+  $ subql init NAME [--location <value>] [--network <value>] [--networkFamily <value>] [--endpoint
+    <value>] [--installDependencies] [--packageManager npm|yarn|pnpm] [--author <value>]
 
 ARGUMENTS
-  PROJECTNAME  Give the starter project name
+  NAME  The name of the project to create
 
 FLAGS
-  -f, --force             Force using all the default options, except the name and network
-  -l, --location=<value>  local folder to create the project in
-  --abiPath=<value>       A path to an ABI file that will be used to scaffold the project
-  --author=<value>        The author of the project, defaults to your computer username
-  --description=<value>   The description for your project
-  --endpoint=<value>      The RPC endpoint for your project
-  --install-dependencies  Install dependencies as well
-  --network=<value>       The name of the network to initialise a project with
-  --npm                   Force using NPM instead of yarn, only works with `install-dependencies` flag
+  --author=<value>           The project author that will be set in package.json. Defaults to the current system user
+  --endpoint=<value>         The RPC endpoint that the project will use
+  --installDependencies      Install the dependencies of the project
+  --location=<value>         The path to the project, this can be a directory or a project manifest file.
+  --network=<value>          The name of the network the project will index data for
+  --networkFamily=<value>    The network family the project will index data for, e.g. EVM, Substrate
+  --packageManager=<option>  [default: npm]
+                             <options: npm|yarn|pnpm>
 
 DESCRIPTION
   Initialize a SubQuery project from a template
 ```
 
-_See code: [lib/commands/init.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/init.ts)_
+_See code: [lib/commands/init.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/init.ts)_
+
+## `subql mcp`
+
+Runs an MCP (Model Context Protocol) server over stdio
+
+```
+USAGE
+  $ subql mcp
+
+DESCRIPTION
+  Runs an MCP (Model Context Protocol) server over stdio
+```
+
+_See code: [lib/commands/mcp.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/mcp.ts)_
 
 ## `subql migrate`
 
@@ -311,168 +197,231 @@ Migrate a Subgraph project to a SubQuery project, including the manifest and sch
 
 ```
 USAGE
-  $ subql migrate [-d <value>] [-f <value>] [-o <value>]
+  $ subql migrate --input <value> --output <value> [--gitSubDirectory <value>]
 
 FLAGS
-  -d, --gitSubDirectory=<value>  Specify git subdirectory path
-  -f, --file=<value>             Specify subgraph git/directory path
-  -o, --output=<value>           Output subquery project path
+  --gitSubDirectory=<value>  A subdirectory in the git repo if the input is a git repo
+  --input=<value>            (required) A directory or git repo to a subgraph project
+  --output=<value>           (required) The location of the SubQuery project
 
 DESCRIPTION
   Migrate a Subgraph project to a SubQuery project, including the manifest and schema.
 ```
 
-_See code: [lib/commands/migrate.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/migrate.ts)_
+_See code: [lib/commands/migrate.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/migrate.ts)_
 
-## `subql multi-chain:add`
+## `subql multi-chain:add [LOCATION]`
 
-Add new chain manifest to multi-chain configuration
+Add new chain manifest to multi-chain project
 
 ```
 USAGE
-  $ subql multi-chain:add [-f <value>] [-c <value>]
+  $ subql multi-chain:add [LOCATION] --chainManifestFile <value>
+
+ARGUMENTS
+  LOCATION  The path to the multichain project, this can be a directory or a multichain manifest file.
 
 FLAGS
-  -c, --chainManifestPath=<value>  path to the new chain manifest
-  -f, --multichain=<value>         [default: /home/runner/work/subql/subql/packages/cli] specify multichain manifest
-                                   file path
+  --chainManifestFile=<value>  (required) The path to the new chain manifest
 
 DESCRIPTION
-  Add new chain manifest to multi-chain configuration
+  Add new chain manifest to multi-chain project
 ```
 
-_See code: [lib/commands/multi-chain/add.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/multi-chain/add.ts)_
+_See code: [lib/commands/multi-chain/add.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/multi-chain/add.ts)_
 
-## `subql multi-chain:deploy`
+## `subql onfinality:create-deployment`
 
-Multi-chain deployment to hosted service
+Create a project deployment on the OnFinality managed services
 
 ```
 USAGE
-  $ subql multi-chain:deploy -f <value> [--org <value>] [--projectName <value>] [--type stage|primary] [--indexerVersion
+  $ subql onfinality:create-deployment --org <value> --projectName <value> --ipfsCID <value> [--type primary|stage]
+    [--indexerVersion <value>] [--queryVersion <value>] [--dict <value>] [--endpoint <value>] [--indexerUnsafe]
+    [--indexerBatchSize <value>] [--indexerSubscription] [--disableHistorical] [--indexerUnfinalized]
+    [--indexerStoreCacheThreshold <value>] [--disableIndexerStoreCacheAsync] [--indexerWorkers <value>] [--queryUnsafe]
+    [--querySubscription] [--queryTimeout <value>] [--queryMaxConnection <value>] [--queryAggregate] [--queryLimit
+    <value>] [--useDefaults]
+
+FLAGS
+  --dict=<value>                        A dictionary endpoint for this projects network
+  --disableHistorical                   Disable historical data indexing
+  --disableIndexerStoreCacheAsync       Disable async store cache
+  --endpoint=<value>                    The RPC endpoint to be used by the project
+  --indexerBatchSize=<value>            [default: 30] The batch size for the indexer
+  --indexerStoreCacheThreshold=<value>  The number of items kept in the cache before flushing
+  --indexerSubscription                 Enable subscription for the indexer
+  --indexerUnfinalized                  Enable unfinalized blocks indexing
+  --indexerUnsafe                       Run the indexer in unsafe mode, this will disable some checks
+  --indexerVersion=<value>              Indexer image version
+  --indexerWorkers=<value>              The number of workers for the indexer
+  --ipfsCID=<value>                     (required) The IPFC CID of the published project
+  --org=<value>                         (required) The Github organization name
+  --projectName=<value>                 (required) Project name
+  --queryAggregate                      Enable aggregate queries
+  --queryLimit=<value>                  The maximum number of results for the query
+  --queryMaxConnection=<value>          The maximum number of connections for the query
+  --querySubscription                   Enable subscription queries
+  --queryTimeout=<value>                The timeout for the query
+  --queryUnsafe                         Run the query in unsafe mode, this will disable some checks
+  --queryVersion=<value>                Query image version
+  --type=<option>                       [default: primary]
+                                        <options: primary|stage>
+  --useDefaults                         Use default values for indexerVersion, queryVersion, dictionary, endpoint
+
+DESCRIPTION
+  Create a project deployment on the OnFinality managed services
+```
+
+_See code: [lib/commands/onfinality/create-deployment.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/onfinality/create-deployment.ts)_
+
+## `subql onfinality:create-multichain-deployment [LOCATION]`
+
+Create a multi-chain project deployment no the OnFinality managed services
+
+```
+USAGE
+  $ subql onfinality:create-multichain-deployment [LOCATION] --org <value> --projectName <value> [--type primary|stage] [--indexerVersion
     <value>] [--queryVersion <value>] [--dict <value>] [--endpoint <value>] [--indexerUnsafe] [--indexerBatchSize
     <value>] [--indexerSubscription] [--disableHistorical] [--indexerUnfinalized] [--indexerStoreCacheThreshold <value>]
     [--disableIndexerStoreCacheAsync] [--indexerWorkers <value>] [--queryUnsafe] [--querySubscription] [--queryTimeout
-    <value>] [--queryMaxConnection <value>] [--queryAggregate] [--queryLimit <value>] [-d] [--ipfs <value>]
+    <value>] [--queryMaxConnection <value>] [--queryAggregate] [--queryLimit <value>] [--useDefaults] [--ipfs <value>]
+
+ARGUMENTS
+  LOCATION  The path to the project, this can be a directory or a project manifest file.
 
 FLAGS
-  -d, --useDefaults                     Use default values for indexerVersion, queryVersion, dictionary, endpoint
-  -f, --location=<value>                (required) from project folder or specify manifest file
-  --dict=<value>                        Enter dictionary
-  --disableHistorical                   Disable Historical Data
-  --disableIndexerStoreCacheAsync       If enabled the store cache will flush data asynchronously relative to indexing
-                                        data.
-  --endpoint=<value>                    Enter endpoint
-  --indexerBatchSize=<value>            Enter batchSize from 1 to 30
+  --dict=<value>                        A dictionary endpoint for this projects network
+  --disableHistorical                   Disable historical data indexing
+  --disableIndexerStoreCacheAsync       Disable async store cache
+  --endpoint=<value>                    The RPC endpoint to be used by the project
+  --indexerBatchSize=<value>            [default: 30] The batch size for the indexer
   --indexerStoreCacheThreshold=<value>  The number of items kept in the cache before flushing
-  --indexerSubscription                 Enable Indexer subscription
-  --indexerUnfinalized                  Index unfinalized blocks (requires Historical to be enabled)
-  --indexerUnsafe                       Enable indexer unsafe
-  --indexerVersion=<value>              Enter indexer-version
-  --indexerWorkers=<value>              Enter worker threads from 1 to 5
-  --ipfs=<value>                        IPFS gateway endpoint
-  --org=<value>                         Enter organization name
-  --projectName=<value>                 Enter project name
-  --queryAggregate                      Enable Aggregate
-  --queryLimit=<value>                  Set the max number of results the query service returns
-  --queryMaxConnection=<value>          Enter MaxConnection from 1 to 10
-  --querySubscription                   Enable Query subscription
-  --queryTimeout=<value>                Enter timeout from 1000ms to 60000ms
-  --queryUnsafe                         Enable indexer unsafe
-  --queryVersion=<value>                Enter query-version
+  --indexerSubscription                 Enable subscription for the indexer
+  --indexerUnfinalized                  Enable unfinalized blocks indexing
+  --indexerUnsafe                       Run the indexer in unsafe mode, this will disable some checks
+  --indexerVersion=<value>              Indexer image version
+  --indexerWorkers=<value>              The number of workers for the indexer
+  --ipfs=<value>                        An additional IPFS endpoint to upload to
+  --org=<value>                         (required) The Github organization name
+  --projectName=<value>                 (required) Project name
+  --queryAggregate                      Enable aggregate queries
+  --queryLimit=<value>                  The maximum number of results for the query
+  --queryMaxConnection=<value>          The maximum number of connections for the query
+  --querySubscription                   Enable subscription queries
+  --queryTimeout=<value>                The timeout for the query
+  --queryUnsafe                         Run the query in unsafe mode, this will disable some checks
+  --queryVersion=<value>                Query image version
   --type=<option>                       [default: primary]
-                                        <options: stage|primary>
+                                        <options: primary|stage>
+  --useDefaults                         Use default values for indexerVersion, queryVersion, dictionary, endpoint
 
 DESCRIPTION
-  Multi-chain deployment to hosted service
+  Create a multi-chain project deployment no the OnFinality managed services
 ```
 
-_See code: [lib/commands/multi-chain/deploy.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/multi-chain/deploy.ts)_
+_See code: [lib/commands/onfinality/create-multichain-deployment.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/onfinality/create-multichain-deployment.ts)_
 
-## `subql project`
+## `subql onfinality:create-project`
 
-Create/Delete projects on the OnFinality managed services
+Create a project on the OnFinality managed services
 
 ```
 USAGE
-  $ subql project [--options create|delete] [--org <value>] [--projectName <value>] [--logoURL <value>]
-    [--subtitle <value>] [--description <value>] [--dedicatedDB <value>] [--projectType <value>]
+  $ subql onfinality:create-project --org <value> --projectName <value> [--logoURL <value>] [--subtitle <value>] [--description
+    <value>] [--dedicatedDB <value>] [--projectType subquery|subgraph]
 
 FLAGS
-  --dedicatedDB=<value>  Enter dedicated DataBase
-  --description=<value>  Enter description
-  --logoURL=<value>      Enter logo URL
-  --options=<option>     <options: create|delete>
-  --org=<value>          Enter organization name
-  --projectName=<value>  Enter project name
-  --projectType=<value>  [default: subquery] Enter project type [subquery|subgraph]
-  --subtitle=<value>     Enter subtitle
+  --dedicatedDB=<value>   Dedicated DataBase
+  --description=<value>   Description
+  --logoURL=<value>       Logo URL
+  --org=<value>           (required) Github organization name
+  --projectName=<value>   (required) Project name
+  --projectType=<option>  [default: subquery] Project type [subquery|subgraph]
+                          <options: subquery|subgraph>
+  --subtitle=<value>      Subtitle
 
 DESCRIPTION
-  Create/Delete projects on the OnFinality managed services
+  Create a project on the OnFinality managed services
 ```
 
-_See code: [lib/commands/project/index.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/project/index.ts)_
+_See code: [lib/commands/onfinality/create-project.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/onfinality/create-project.ts)_
 
-## `subql project:create-project`
+## `subql onfinality:delete-deployment`
 
-Create a project on OnFinality managed services
+Delete a deployment from the OnFinality managed services
 
 ```
 USAGE
-  $ subql project:create-project [--org <value>] [--projectName <value>] [--logoURL <value>] [--subtitle <value>]
-    [--description <value>] [--dedicatedDB <value>] [--projectType <value>]
+  $ subql onfinality:delete-deployment --org <value> --projectName <value> --deploymentID <value>
 
 FLAGS
-  --dedicatedDB=<value>  Enter dedicated DataBase
-  --description=<value>  Enter description
-  --logoURL=<value>      Enter logo URL
-  --org=<value>          Enter organization name
-  --projectName=<value>  Enter project name
-  --projectType=<value>  [default: subquery] Enter project type [subquery|subgraph]
-  --subtitle=<value>     Enter subtitle
+  --deploymentID=<value>  (required) Deployment ID
+  --org=<value>           (required) Github organization name
+  --projectName=<value>   (required) Project name
 
 DESCRIPTION
-  Create a project on OnFinality managed services
+  Delete a deployment from the OnFinality managed services
 ```
 
-_See code: [lib/commands/project/create-project.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/project/create-project.ts)_
+_See code: [lib/commands/onfinality/delete-deployment.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/onfinality/delete-deployment.ts)_
 
-## `subql project:delete-project`
+## `subql onfinality:delete-project`
 
-Delete a project on OnFinality managed services
+Delete a project on the OnFinality managed services
 
 ```
 USAGE
-  $ subql project:delete-project [--org <value>] [--projectName <value>]
+  $ subql onfinality:delete-project --org <value> --projectName <value>
 
 FLAGS
-  --org=<value>          Enter organization name
-  --projectName=<value>  Enter project name
+  --org=<value>          (required) The Github organization name
+  --projectName=<value>  (required) The project name
 
 DESCRIPTION
-  Delete a project on OnFinality managed services
+  Delete a project on the OnFinality managed services
 ```
 
-_See code: [lib/commands/project/delete-project.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/project/delete-project.ts)_
+_See code: [lib/commands/onfinality/delete-project.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/onfinality/delete-project.ts)_
 
-## `subql publish`
+## `subql onfinality:promote-deployment`
+
+Promote a deployment on the OnFinality managed services from a Stage environment to Production
+
+```
+USAGE
+  $ subql onfinality:promote-deployment --org <value> --projectName <value> --deploymentID <value>
+
+FLAGS
+  --deploymentID=<value>  (required) Deployment ID
+  --org=<value>           (required) Github organization name
+  --projectName=<value>   (required) Project name
+
+DESCRIPTION
+  Promote a deployment on the OnFinality managed services from a Stage environment to Production
+```
+
+_See code: [lib/commands/onfinality/promote-deployment.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/onfinality/promote-deployment.ts)_
+
+## `subql publish [LOCATION]`
 
 Upload this SubQuery project to IPFS for distribution
 
 ```
 USAGE
-  $ subql publish [-f <value>] [--ipfs <value>] [-o]
+  $ subql publish [LOCATION] [--ipfs <value>] [--silent]
+
+ARGUMENTS
+  LOCATION  The path to the project, this can be a directory or a project manifest file.
 
 FLAGS
-  -f, --location=<value>  from project folder or specify manifest file
-  -o, --output            Output IPFS CID
-  --ipfs=<value>          IPFS gateway endpoint
+  --ipfs=<value>  An additional IPFS endpoint to upload to
+  --silent        Run the command without logging, only outputs the CIDs
 
 DESCRIPTION
   Upload this SubQuery project to IPFS for distribution
 ```
 
-_See code: [lib/commands/publish.js](https://github.com/subquery/subql/blob/cli/5.14.1-0/packages/cli/src/commands/publish.ts)_
+_See code: [lib/commands/publish.js](https://github.com/subquery/subql/blob/cli/5.14.2-0/packages/cli/src/commands/publish.ts)_
 
 <!-- commandsstop -->

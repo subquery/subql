@@ -7517,25 +7517,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@^5.3.0, @subql/common@^5.3.1, @subql/common@^5.6.0, @subql/common@workspace:*, @subql/common@workspace:packages/common":
-  version: 0.0.0-use.local
-  resolution: "@subql/common@workspace:packages/common"
-  dependencies:
-    "@subql/types-core": "workspace:*"
-    "@types/js-yaml": ^4.0.9
-    "@types/semver": ^7.5.8
-    "@types/update-notifier": ^6
-    axios: ^1.9.0
-    class-transformer: ^0.5.1
-    class-validator: 0.14.1
-    form-data: ^4.0.1
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.2.2
-    semver: ^7.6.3
-    update-notifier: ^5.1.0
-  languageName: unknown
-  linkType: soft
-
 "@subql/common@npm:5.4.1-1":
   version: 5.4.1-1
   resolution: "@subql/common@npm:5.4.1-1"
@@ -7569,6 +7550,42 @@ __metadata:
   checksum: 2f578678b5af8190639ada7e2f22401b3ca7b7c7cab1bfdeb5860365c14e6c6a8724b02c95f1f8fedfcc01205d02d3de45cd486e2c3ee10ff5f898f973d6e0dc
   languageName: node
   linkType: hard
+
+"@subql/common@npm:^5.3.0, @subql/common@npm:^5.3.1, @subql/common@npm:^5.6.0":
+  version: 5.7.0
+  resolution: "@subql/common@npm:5.7.0"
+  dependencies:
+    "@subql/types-core": 2.1.0
+    axios: ^1.9.0
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.1
+    form-data: ^4.0.1
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.2.2
+    semver: ^7.6.3
+    update-notifier: ^5.1.0
+  checksum: 9508d710bc0ec1a94e296383afc8db0ce7a0ae4bc39e85d1e7ac7b87eaa254e399794bfa4c90f643cd1804152ed1c193b572ae7698c3c20171a96679e11c1379
+  languageName: node
+  linkType: hard
+
+"@subql/common@workspace:*, @subql/common@workspace:packages/common":
+  version: 0.0.0-use.local
+  resolution: "@subql/common@workspace:packages/common"
+  dependencies:
+    "@subql/types-core": "workspace:*"
+    "@types/js-yaml": ^4.0.9
+    "@types/semver": ^7.5.8
+    "@types/update-notifier": ^6
+    axios: ^1.9.0
+    class-transformer: ^0.5.1
+    class-validator: 0.14.1
+    form-data: ^4.0.1
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.2.2
+    semver: ^7.6.3
+    update-notifier: ^5.1.0
+  languageName: unknown
+  linkType: soft
 
 "@subql/node-core@workspace:*, @subql/node-core@workspace:packages/node-core":
   version: 0.0.0-use.local
@@ -7733,6 +7750,13 @@ __metadata:
   version: 2.0.2
   resolution: "@subql/types-core@npm:2.0.2"
   checksum: 731318708dd2ed1f8e182e8cc27250c1117ef84ac3f2e65113645ec6a44279ab20e19f09c28797627daeaf8137106b13e9c49f0da1e72a149e79d3c87f54a56b
+  languageName: node
+  linkType: hard
+
+"@subql/types-core@npm:2.1.0":
+  version: 2.1.0
+  resolution: "@subql/types-core@npm:2.1.0"
+  checksum: dc9f3b74c0a4cf0ceb323473eba4a70d5fc3c5000d34a5c59e00b7432358cfd4eb819338db2adee1ac56433cb76548c1ef91d8d1a3e0919e092112a5d7663b7d
   languageName: node
   linkType: hard
 
