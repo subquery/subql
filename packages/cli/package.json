@@ -51,7 +51,7 @@
     "eslint-config-oclif": "^4.0.0",
     "eslint-config-oclif-typescript": "^1.0.3",
     "ethers": "^5.7.2",
-    "oclif": "^3.15.0"
+    "oclif": "^4.20.8"
   },
   "engines": {
     "node": ">=8.0.0"

@@ -19,6 +19,8 @@ import {registerDeleteProjectMCPTool} from './onfinality/delete-project';
 import {registerPromoteDeploymentMCPTool} from './onfinality/promote-deployment';
 import {registerPublishMCPTool} from './publish';
 
+const pjson = require('../../package.json');
+
 export default class MCP extends Command {
   static description = 'Runs an MCP (Model Context Protocol) server over stdio';
 
@@ -26,7 +28,7 @@ export default class MCP extends Command {
     const server = new McpServer(
       {
         name: 'SubQuery CLI',
-        version: 'packageVersion',
+        version: pjson.version,
         description:
           'Interact with SubQuery CLI commands using Model Context Protocol. This allows you to initialize, build and deploy your SubQuery projects.',
       },
