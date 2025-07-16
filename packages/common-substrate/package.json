@@ -14,8 +14,8 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "@subql/common": "workspace:*",
-    "@subql/types": "workspace:*"
+    "@subql/common": "workspace:~",
+    "@subql/types": "workspace:~"
   },
   "peerDependencies": {
     "class-transformer": "*",

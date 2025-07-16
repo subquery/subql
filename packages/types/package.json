@@ -27,7 +27,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@subql/types-core": "workspace:*"
+    "@subql/types-core": "workspace:~"
   },
   "peerDependencies": {
     "@polkadot/api": "^16"
