@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (--version)
-@subql/cli/6.0.2-1 linux-x64 node-v22.17.0
+@subql/cli/6.0.2-2 linux-x64 node-v22.17.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -70,7 +70,7 @@ DESCRIPTION
   Build this SubQuery project code into a bundle
 ```
 
-_See code: [src/commands/build.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/build.ts)_
+_See code: [src/commands/build.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/build.ts)_
 
 ## `subql codegen [LOCATION]`
 
@@ -87,7 +87,7 @@ DESCRIPTION
   Generate entity types from the GraphQL schema and contract interfaces
 ```
 
-_See code: [src/commands/codegen/index.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/codegen/index.ts)_
+_See code: [src/commands/codegen/index.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/codegen/index.ts)_
 
 ## `subql codegen:import-abi LOCATION`
 
@@ -118,7 +118,7 @@ ALIASES
   $ subql import-abi
 ```
 
-_See code: [src/commands/codegen/import-abi.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/codegen/import-abi.ts)_
+_See code: [src/commands/codegen/import-abi.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/codegen/import-abi.ts)_
 
 ## `subql import-abi LOCATION`
 
@@ -175,7 +175,7 @@ DESCRIPTION
   Initialize a SubQuery project from a template
 ```
 
-_See code: [src/commands/init.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/init.ts)_
 
 ## `subql mcp`
 
@@ -189,7 +189,7 @@ DESCRIPTION
   Runs an MCP (Model Context Protocol) server over stdio
 ```
 
-_See code: [src/commands/mcp.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/mcp.ts)_
+_See code: [src/commands/mcp.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/mcp.ts)_
 
 ## `subql migrate`
 
@@ -208,7 +208,7 @@ DESCRIPTION
   Migrate a Subgraph project to a SubQuery project, including the manifest and schema.
 ```
 
-_See code: [src/commands/migrate.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/migrate.ts)_
+_See code: [src/commands/migrate.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/migrate.ts)_
 
 ## `subql multi-chain:add [LOCATION]`
 
@@ -228,7 +228,7 @@ DESCRIPTION
   Add new chain manifest to multi-chain project
 ```
 
-_See code: [src/commands/multi-chain/add.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/multi-chain/add.ts)_
+_See code: [src/commands/multi-chain/add.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/multi-chain/add.ts)_
 
 ## `subql onfinality:create-deployment`
 
@@ -273,7 +273,7 @@ DESCRIPTION
   Create a project deployment on the OnFinality managed services
 ```
 
-_See code: [src/commands/onfinality/create-deployment.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/onfinality/create-deployment.ts)_
+_See code: [src/commands/onfinality/create-deployment.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/onfinality/create-deployment.ts)_
 
 ## `subql onfinality:create-multichain-deployment [LOCATION]`
 
@@ -320,7 +320,7 @@ DESCRIPTION
   Create a multi-chain project deployment no the OnFinality managed services
 ```
 
-_See code: [src/commands/onfinality/create-multichain-deployment.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/onfinality/create-multichain-deployment.ts)_
+_See code: [src/commands/onfinality/create-multichain-deployment.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/onfinality/create-multichain-deployment.ts)_
 
 ## `subql onfinality:create-project`
 
@@ -345,7 +345,7 @@ DESCRIPTION
   Create a project on the OnFinality managed services
 ```
 
-_See code: [src/commands/onfinality/create-project.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/onfinality/create-project.ts)_
+_See code: [src/commands/onfinality/create-project.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/onfinality/create-project.ts)_
 
 ## `subql onfinality:delete-deployment`
 
@@ -364,7 +364,7 @@ DESCRIPTION
   Delete a deployment from the OnFinality managed services
 ```
 
-_See code: [src/commands/onfinality/delete-deployment.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/onfinality/delete-deployment.ts)_
+_See code: [src/commands/onfinality/delete-deployment.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/onfinality/delete-deployment.ts)_
 
 ## `subql onfinality:delete-project`
 
@@ -382,7 +382,7 @@ DESCRIPTION
   Delete a project on the OnFinality managed services
 ```
 
-_See code: [src/commands/onfinality/delete-project.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/onfinality/delete-project.ts)_
+_See code: [src/commands/onfinality/delete-project.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/onfinality/delete-project.ts)_
 
 ## `subql onfinality:promote-deployment`
 
@@ -401,7 +401,7 @@ DESCRIPTION
   Promote a deployment on the OnFinality managed services from a Stage environment to Production
 ```
 
-_See code: [src/commands/onfinality/promote-deployment.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/onfinality/promote-deployment.ts)_
+_See code: [src/commands/onfinality/promote-deployment.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/onfinality/promote-deployment.ts)_
 
 ## `subql publish [LOCATION]`
 
@@ -422,6 +422,6 @@ DESCRIPTION
   Upload this SubQuery project to IPFS for distribution
 ```
 
-_See code: [src/commands/publish.ts](https://github.com/subquery/subql/blob/cli/6.0.2-1/packages/cli/src/commands/publish.ts)_
+_See code: [src/commands/publish.ts](https://github.com/subquery/subql/blob/cli/6.0.2-2/packages/cli/src/commands/publish.ts)_
 
 <!-- commandsstop -->
