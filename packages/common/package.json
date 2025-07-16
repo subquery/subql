@@ -14,7 +14,7 @@
   "main": "dist/index.js",
   "license": "GPL-3.0",
   "dependencies": {
-    "@subql/types-core": "workspace:*",
+    "@subql/types-core": "workspace:~",
     "axios": "^1.9.0",
     "class-transformer": "^0.5.1",
     "class-validator": "0.14.1",

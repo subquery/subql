@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - MCP server version #2853
 
+### Changed
+- Workspace dependencies now match to patch versions rather than exact (#2855)
+
 ## [6.0.1] - 2025-07-14
 ### Fixed
 - MCP command not running (#2848)
