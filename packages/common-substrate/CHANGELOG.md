@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.5.1] - 2025-07-17
 ### Changed
 - Workspace dependencies now match to patch versions rather than exact (#2855)
 
@@ -223,7 +225,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/4.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/4.5.1...HEAD
+[4.5.1]: https://github.com/subquery/subql/compare/common-substrate/4.5.0...common-substrate/4.5.1
 [4.5.0]: https://github.com/subquery/subql/compare/common-substrate/4.4.0...common-substrate/4.5.0
 [4.4.0]: https://github.com/subquery/subql/compare/common-substrate/4.3.7...common-substrate/4.4.0
 [4.3.7]: https://github.com/subquery/subql/compare/common-substrate/4.3.6...common-substrate/4.3.7
