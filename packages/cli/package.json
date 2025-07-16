@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "CLI for SubQuery",
-  "version": "6.0.2-0",
+  "version": "6.0.2-1",
   "author": "SubQuery Pte Ltd.",
   "bin": {
     "subql": "./bin/run"
@@ -95,5 +95,5 @@
     "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql\" --release-prefix=\"cli/\""
   },
   "types": "lib/index.d.ts",
-  "stableVersion": "6.0.1"
+  "stableVersion": "6.0.2-0"
 }
