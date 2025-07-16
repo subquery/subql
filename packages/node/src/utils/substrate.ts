@@ -439,7 +439,7 @@ export async function fetchBlocksBatches(
   });
 }
 
-// TODO why is fetchBlocksBatches a breadth first funciton rather than depth?
+// TODO why is fetchBlocksBatches a breadth first function rather than depth?
 export async function fetchLightBlock(
   api: ApiPromise,
   height: number,
