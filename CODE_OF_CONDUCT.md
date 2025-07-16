@@ -43,7 +43,7 @@ or harmful.
 Project maintainers have the right and responsibility to remove, edit, or reject
 comments, commits, code, wiki edits, issues, and other contributions that are
 not aligned to this Code of Conduct, or to ban temporarily or permanently any 
-contributor for other behaviors that is deemed inappropriate, threatening, offensive, or harmful.
+contributor for other behaviors that are deemed inappropriate, threatening, offensive, or harmful.
 
 ## Scope
 
@@ -56,7 +56,7 @@ representative at an online or offline event.
 
 ## Reporting Code of Conduct Issues
 
-SubQuery encourage all communities to resolve issues on their own whenever possible. 
+SubQuery encourages all communities to resolve issues on their own whenever possible. 
 This builds a broader and deeper understanding and ultimately a healthier interaction. 
 In the event that an issue cannot be resolved locally, please feel free to report your concerns by 
 contacting support@subquery.network. 
