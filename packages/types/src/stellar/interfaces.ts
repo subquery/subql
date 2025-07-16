@@ -1,8 +1,37 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {Horizon, rpc} from '@stellar/stellar-sdk';
+import {Horizon, rpc, xdr} from '@stellar/stellar-sdk';
 import {BlockWrapper} from '../interfaces';
+
+export type StellarBlockNew = {
+  transactions: StellarTransactionNew[];
+  operations: StellarOperationNew[];
+  effects: StellarEffectNew[];
+  events: StellarEventNew[];
+};
+
+export type StellarTransactionNew = {
+  tx: rpc.Api.TransactionInfo;
+  operations: StellarOperationNew[];
+  events: StellarEventNew[];
+};
+
+export type StellarOperationNew = {
+  operation: xdr.Operation;
+  transaction: StellarTransactionNew;
+};
+export type StellarEffectNew = {
+  effect: unknown;
+  transaction: StellarTransactionNew;
+};
+export type StellarEventNew = {
+  event: rpc.Api.EventResponse;
+  block: StellarBlockNew;
+  tx: StellarTransactionNew;
+};
+
+/// OLD STUFFF
 
 export type StellarBlock = Omit<Horizon.ServerApi.LedgerRecord, 'effects' | 'operations' | 'self' | 'transactions'> & {
   effects: StellarEffect[];

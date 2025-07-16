@@ -24,7 +24,7 @@
     "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/platform-express": "^11.0.11",
     "@nestjs/schedule": "^5.0.1",
-    "@stellar/stellar-sdk": "^13.1.0",
+    "@stellar/stellar-sdk": "^13.3.0",
     "@subql/common": "^5.7.0",
     "@subql/common-stellar": "workspace:*",
     "@subql/node-core": "^18.2.0",

@@ -2683,6 +2683,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stellar/stellar-base@npm:^13.1.0":
+  version: 13.1.0
+  resolution: "@stellar/stellar-base@npm:13.1.0"
+  dependencies:
+    "@stellar/js-xdr": ^3.1.2
+    base32.js: ^0.1.0
+    bignumber.js: ^9.1.2
+    buffer: ^6.0.3
+    sha.js: ^2.3.6
+    sodium-native: ^4.3.3
+    tweetnacl: ^1.0.3
+  dependenciesMeta:
+    sodium-native:
+      optional: true
+  checksum: b918e8a57368ad13fd1b0381123be8f75d4c3516bb2a7ec7423f80b446ca81af0a850e90aa23edc4836c479c406ba82ddac5bc4c97a06e797161e6e6055430bf
+  languageName: node
+  linkType: hard
+
 "@stellar/stellar-sdk@npm:^12.2.0":
   version: 12.2.0
   resolution: "@stellar/stellar-sdk@npm:12.2.0"
@@ -2711,6 +2729,22 @@ __metadata:
     toml: ^3.0.0
     urijs: ^1.19.1
   checksum: c189623ff4f0cef1d1cb0473e926c40bcc19ce50228c067b3d4ee4f46d1cc2f1a0b2553bdbb7c1407f15c214846bdda23932fc68a0ab6942c06526c8e5f95f72
+  languageName: node
+  linkType: hard
+
+"@stellar/stellar-sdk@npm:^13.3.0":
+  version: 13.3.0
+  resolution: "@stellar/stellar-sdk@npm:13.3.0"
+  dependencies:
+    "@stellar/stellar-base": ^13.1.0
+    axios: ^1.8.4
+    bignumber.js: ^9.3.0
+    eventsource: ^2.0.2
+    feaxios: ^0.0.23
+    randombytes: ^2.1.0
+    toml: ^3.0.0
+    urijs: ^1.19.1
+  checksum: 4fe224a3c65b9ed7eb3d748604594b87ac3d05aebb2aa18d759c9dce5346ea86a6dbe1f3e29edc753cf0fb01e435583fba7adde81bede4efa09b7e9d0dabf359
   languageName: node
   linkType: hard
 
@@ -2792,7 +2826,7 @@ __metadata:
     "@nestjs/schedule": ^5.0.1
     "@nestjs/schematics": ^11.0.2
     "@nestjs/testing": ^11.0.11
-    "@stellar/stellar-sdk": ^13.1.0
+    "@stellar/stellar-sdk": ^13.3.0
     "@subql/common": ^5.7.0
     "@subql/common-stellar": "workspace:*"
     "@subql/node-core": ^18.2.0
@@ -3987,6 +4021,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"axios@npm:^1.8.4":
+  version: 1.10.0
+  resolution: "axios@npm:1.10.0"
+  dependencies:
+    follow-redirects: ^1.15.6
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: b5fd840d499469bf968e44b8ac96f4b363c6aa4c791a50834c086a7cffbc2d77fe24f27af1aba46c3e1f4840aaf991461fc27537990596b93dea0f4df3245a86
+  languageName: node
+  linkType: hard
+
 "babel-jest@npm:^27.4.6":
   version: 27.5.1
   resolution: "babel-jest@npm:27.5.1"
@@ -4155,6 +4200,67 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bare-addon-resolve@npm:^1.3.0":
+  version: 1.9.4
+  resolution: "bare-addon-resolve@npm:1.9.4"
+  dependencies:
+    bare-module-resolve: ^1.10.0
+    bare-semver: ^1.0.0
+  peerDependencies:
+    bare-url: "*"
+  peerDependenciesMeta:
+    bare-url:
+      optional: true
+  checksum: cfaa914b789f0a515c232340c80470ffd92caa88e16df83b79888ae14efc4fe4f18a52038c5cf2c9e1f3cae0a81ac3fb7f499d6cde305e07b3d68a53c2690a34
+  languageName: node
+  linkType: hard
+
+"bare-module-resolve@npm:^1.10.0":
+  version: 1.11.1
+  resolution: "bare-module-resolve@npm:1.11.1"
+  dependencies:
+    bare-semver: ^1.0.0
+  peerDependencies:
+    bare-url: "*"
+  peerDependenciesMeta:
+    bare-url:
+      optional: true
+  checksum: 9244d60868ccd732725ae8b4d825108266c15904a8151294eb1bab8b7591a8735a01536aa934183ff3a8cf4fc0c5d31663de728efed0f2f0e16cf31073d022af
+  languageName: node
+  linkType: hard
+
+"bare-os@npm:^3.0.1":
+  version: 3.6.1
+  resolution: "bare-os@npm:3.6.1"
+  checksum: 2fcdbaa631e02e2b7a4a38ded4586ae8bef2d329c6933b9dca8c543b4af0ac3c257fdf0ff3339b83259e179e07873f300e61c75c0a1e6b796c0214b1fbae8696
+  languageName: node
+  linkType: hard
+
+"bare-path@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "bare-path@npm:3.0.0"
+  dependencies:
+    bare-os: ^3.0.1
+  checksum: 51d559515f332f62cf9c37c38f2640c1b84b5e8c9de454b70baf029f806058cf94c51d6a0dfec0025cc7760f2069dc3e16c82f0d24f4a9ddb18c829bf9c0206d
+  languageName: node
+  linkType: hard
+
+"bare-semver@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "bare-semver@npm:1.0.1"
+  checksum: 3e7c073b2d3decdd73346b18228519f11ff2523de316eac28ca41a9b258a3c2ce826c83ac139fff2b93e10adb508ed80d89ea598b4d2fa1a038555c5a215e62b
+  languageName: node
+  linkType: hard
+
+"bare-url@npm:^2.1.0":
+  version: 2.1.6
+  resolution: "bare-url@npm:2.1.6"
+  dependencies:
+    bare-path: ^3.0.0
+  checksum: 274306037b0f34e782bce3997ee2076b033dac77d4c332ed6e81d3658555bd9587e8c8000535e0bf67cfdbffc3005dedfc06de72b20c75d717c6d3cd425359e6
+  languageName: node
+  linkType: hard
+
 "base32.js@npm:^0.1.0":
   version: 0.1.0
   resolution: "base32.js@npm:0.1.0"
@@ -4180,6 +4286,13 @@ __metadata:
   version: 9.1.2
   resolution: "bignumber.js@npm:9.1.2"
   checksum: 582c03af77ec9cb0ebd682a373ee6c66475db94a4325f92299621d544aa4bd45cb45fd60001610e94aef8ae98a0905fa538241d9638d4422d57abbeeac6fadaf
+  languageName: node
+  linkType: hard
+
+"bignumber.js@npm:^9.3.0":
+  version: 9.3.1
+  resolution: "bignumber.js@npm:9.3.1"
+  checksum: 6ab100271a23a75bb8b99a4b1a34a1a94967ac0b9a52a198147607bd91064e72c6f356380d7a09cd687bf50d81ad2ed1a0a8edfaa90369c9003ed8bb2440d7f0
   languageName: node
   linkType: hard
 
@@ -10133,6 +10246,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"require-addon@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "require-addon@npm:1.1.0"
+  dependencies:
+    bare-addon-resolve: ^1.3.0
+    bare-url: ^2.1.0
+  checksum: db5a65258c79c3e7218bff83082870754e2bdc3921daa8fa6a19a8310d2441581778fb1b74def81f03356ab0116d98ec3b53cb87bdc78328bf6af4564f699455
+  languageName: node
+  linkType: hard
+
 "require-directory@npm:^2.1.1":
   version: 2.1.1
   resolution: "require-directory@npm:2.1.1"
@@ -10679,6 +10802,15 @@ __metadata:
   dependencies:
     node-gyp-build: ^4.8.0
   checksum: b0d64155d06e0a6bb3c63768eb1371314b260611086cc2200dc56c82a7c8f1fd45b6ff557359a530577f3bce27f109f909443f0038e609a40fa50b67c0ca3935
+  languageName: node
+  linkType: hard
+
+"sodium-native@npm:^4.3.3":
+  version: 4.3.3
+  resolution: "sodium-native@npm:4.3.3"
+  dependencies:
+    require-addon: ^1.1.0
+  checksum: 3759114f821691f4f5f8295dc98e97fe98c7ee35f5da709299837790e01b3b2875af384811dcc6dae55898891cca670de216c5534fed6c64186bae659e9fec05
   languageName: node
   linkType: hard
 

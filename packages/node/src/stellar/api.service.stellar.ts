@@ -1,31 +1,17 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { StellarProjectNetworkConfig } from '@subql/common-stellar';
-import {
-  ApiService,
-  ConnectionPoolService,
-  getLogger,
-  IBlock,
-  exitWithError,
-  NodeConfig,
-} from '@subql/node-core';
-import { IEndpointConfig } from '@subql/types-core';
-import {
-  StellarBlockWrapper,
-  SubqlDatasource,
-  IStellarEndpointConfig,
-} from '@subql/types-stellar';
-import {
-  SubqueryProject,
-  dsHasSorobanEventHandler,
-} from '../configure/SubqueryProject';
-import { StellarApiConnection } from './api.connection';
-import { StellarApi } from './api.stellar';
+import {Inject, Injectable} from '@nestjs/common';
+import {EventEmitter2} from '@nestjs/event-emitter';
+import {StellarProjectNetworkConfig} from '@subql/common-stellar';
+import {ApiService, ConnectionPoolService, getLogger, IBlock, exitWithError, NodeConfig} from '@subql/node-core';
+import {IEndpointConfig} from '@subql/types-core';
+import {StellarBlockWrapper, SubqlDatasource, IStellarEndpointConfig} from '@subql/types-stellar';
+import {SubqueryProject, dsHasSorobanEventHandler} from '../configure/SubqueryProject';
+import {StellarApiConnection} from './api.connection';
+import {StellarApi} from './api.stellar';
 import SafeStellarProvider from './safe-api';
-import { SorobanServer } from './soroban.server';
+import {SorobanServer} from './soroban.server';
 
 const logger = getLogger('api');
 
@@ -37,10 +23,7 @@ export class StellarApiService extends ApiService<
   StellarApiConnection,
   IStellarEndpointConfig
 > {
-  private constructor(
-    connectionPoolService: ConnectionPoolService<StellarApiConnection>,
-    eventEmitter: EventEmitter2,
-  ) {
+  private constructor(connectionPoolService: ConnectionPoolService<StellarApiConnection>, eventEmitter: EventEmitter2) {
     super(connectionPoolService, eventEmitter);
   }
 
@@ -52,15 +35,12 @@ export class StellarApiService extends ApiService<
   ): Promise<StellarApiService> {
     let network: StellarProjectNetworkConfig;
 
-    const apiService = new StellarApiService(
-      connectionPoolService,
-      eventEmitter,
-    );
+    const apiService = new StellarApiService(connectionPoolService, eventEmitter);
 
     try {
       network = project.network;
     } catch (e) {
-      exitWithError(new Error(`Failed to init api`, { cause: e }), logger);
+      exitWithError(new Error(`Failed to init api`, {cause: e}), logger);
     }
 
     if (nodeConfig.primaryNetworkEndpoint) {
@@ -77,18 +57,13 @@ export class StellarApiService extends ApiService<
 
     // TOOD if project upgrades introduces new datasoruces this wont work
     if (
-      dsHasSorobanEventHandler([
-        ...project.dataSources,
-        ...(project.templates as SubqlDatasource[]),
-      ]) &&
+      dsHasSorobanEventHandler([...project.dataSources, ...(project.templates as SubqlDatasource[])]) &&
       !sorobanEndpoint
     ) {
-      throw new Error(
-        `Soroban network endpoint must be provided for network. chainId="${project.network.chainId}"`,
-      );
+      throw new Error(`Soroban network endpoint must be provided for network. chainId="${project.network.chainId}"`);
     }
 
-    const { protocol } = new URL(sorobanEndpoint);
+    const {protocol} = new URL(sorobanEndpoint);
     const protocolStr = protocol.replace(':', '');
 
     const sorobanClient = sorobanEndpoint
@@ -98,12 +73,7 @@ export class StellarApiService extends ApiService<
       : undefined;
 
     await apiService.createConnections(network, (endpoint, config) =>
-      StellarApiConnection.create(
-        endpoint,
-        apiService.fetchBlockBatches.bind(apiService),
-        sorobanClient,
-        config,
-      ),
+      StellarApiConnection.create(endpoint, apiService.fetchBlockBatches.bind(apiService), sorobanClient, config),
     );
 
     return apiService;
@@ -120,9 +90,7 @@ export class StellarApiService extends ApiService<
       get: (target, prop, receiver) => {
         const originalMethod = target[prop as keyof SafeStellarProvider];
         if (typeof originalMethod === 'function') {
-          return async (
-            ...args: any[]
-          ): Promise<ReturnType<typeof originalMethod>> => {
+          return async (...args: any[]): Promise<ReturnType<typeof originalMethod>> => {
             let retries = 0;
             let currentApi = target;
             let throwingError: Error | undefined;
@@ -131,18 +99,14 @@ export class StellarApiService extends ApiService<
               try {
                 return await originalMethod.apply(currentApi, args);
               } catch (error: any) {
-                logger.warn(
-                  `Request failed with api at height ${height} (retry ${retries}): ${error.message}`,
-                );
+                logger.warn(`Request failed with api at height ${height} (retry ${retries}): ${error.message}`);
                 throwingError = error;
                 currentApi = this.unsafeApi.getSafeApi(height);
                 retries++;
               }
             }
 
-            logger.error(
-              `Maximum retries (${maxRetries}) exceeded for api at height ${height}`,
-            );
+            logger.error(`Maximum retries (${maxRetries}) exceeded for api at height ${height}`);
             if (!throwingError) {
               throw new Error('Failed to make request, maximum retries failed');
             }
@@ -156,10 +120,7 @@ export class StellarApiService extends ApiService<
     return new Proxy(this.unsafeApi.getSafeApi(height), handler);
   }
 
-  private async fetchBlockBatches(
-    api: StellarApi,
-    batch: number[],
-  ): Promise<IBlock<StellarBlockWrapper>[]> {
+  private async fetchBlockBatches(api: StellarApi, batch: number[]): Promise<IBlock<StellarBlockWrapper>[]> {
     return api.fetchBlocks(batch);
   }
 }
