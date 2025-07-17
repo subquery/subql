@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.0.2] - 2025-07-17
 ### Fixed
 - MCP server version #2853
 
@@ -814,7 +816,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/6.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/6.0.2...HEAD
+[6.0.2]: https://github.com/subquery/subql/compare/cli/6.0.1...cli/6.0.2
 [6.0.1]: https://github.com/subquery/subql/compare/cli/6.0.0...cli/6.0.1
 [6.0.0]: https://github.com/subquery/subql/compare/cli/5.14.1...cli/6.0.0
 [5.14.1]: https://github.com/subquery/subql/compare/cli/5.14.0...cli/5.14.1
