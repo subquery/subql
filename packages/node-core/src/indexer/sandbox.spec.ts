@@ -107,4 +107,53 @@ describe('sandbox for subql-node', () => {
     expect(sandboxFuncionEndAt).toBeDefined();
     expect(secureExecEndAt.getTime()).toBeGreaterThanOrEqual(sandboxFuncionEndAt?.getTime() ?? 0);
   });
+
+  it.each([
+    [
+      './sourcemap-test-esbuild.js',
+      'Object.m (/Users/scotttwiname/Projects/subql-main/packages/node-core/test/src/mappings/mappingHandlers.ts:6:19)',
+    ],
+    [
+      './sourcemap-test-webpack.js',
+      'Object.t.throwError (/Users/scotttwiname/Projects/subql-main/packages/node-core/test/sandbox/webpack:/dymension/src/mappings/mappingHandlers.ts:8:11)',
+    ],
+  ])('can decode sourcemap %s', async (entry, mapped) => {
+    const root = path.resolve(__dirname, '../../test/sandbox');
+    vm = new IndexerSandbox(
+      {
+        store: undefined,
+        root,
+        entry,
+        chainId: '1',
+      },
+      new NodeConfig({subquery: ' ', subqueryName: ' '})
+    );
+
+    const error = await vm.securedExec('throwError', []).then(
+      () => new Error('Expected error to be thrown'),
+      (e) => e
+    );
+
+    expect(error.message).toBe('this is a test error');
+    expect(error.stack).toContain(mapped);
+  });
+  // it('can decode sourcemaps', async () => {
+  //   const root = path.resolve(__dirname, '../../test/sandbox');
+  //   const entry = './sourcemap-test-esbuild.js';
+  //   vm = new IndexerSandbox(
+  //     {
+  //       store: undefined,
+  //       root,
+  //       entry,
+  //       chainId: '1',
+  //     },
+  //     new NodeConfig({subquery: ' ', subqueryName: ' '})
+  //   );
+
+  //   const decodeSpy = jest.spyOn(vm, 'decodeSourceMap');
+
+  //   await expect(vm.securedExec('throwError', [])).rejects.toThrow('this is a test error');
+
+  //   expect(decodeSpy).toHaveBeenCalledTimes(1);
+  // });
 });
