@@ -137,23 +137,4 @@ describe('sandbox for subql-node', () => {
     expect(error.message).toBe('this is a test error');
     expect(error.stack).toContain(mapped);
   });
-  // it('can decode sourcemaps', async () => {
-  //   const root = path.resolve(__dirname, '../../test/sandbox');
-  //   const entry = './sourcemap-test-esbuild.js';
-  //   vm = new IndexerSandbox(
-  //     {
-  //       store: undefined,
-  //       root,
-  //       entry,
-  //       chainId: '1',
-  //     },
-  //     new NodeConfig({subquery: ' ', subqueryName: ' '})
-  //   );
-
-  //   const decodeSpy = jest.spyOn(vm, 'decodeSourceMap');
-
-  //   await expect(vm.securedExec('throwError', [])).rejects.toThrow('this is a test error');
-
-  //   expect(decodeSpy).toHaveBeenCalledTimes(1);
-  // });
 });
