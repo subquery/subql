@@ -121,7 +121,12 @@ export class Sandbox extends NodeVM {
 
   decodeSourceMap(sourceMapPath: string): any {
     const source = readFileSync(sourceMapPath).toString();
-    const sourceMapBase64 = source.split(`//# sourceMappingURL=data:application/json;charset=utf-8;base64,`)[1];
+    // Projects built with old @subql/cli with webpack
+    let sourceMapBase64 = source.split(`//# sourceMappingURL=data:application/json;charset=utf-8;base64,`)[1];
+    if (!sourceMapBase64) {
+      // Projects built with @subql/cli with esbuild
+      sourceMapBase64 = source.split('//# sourceMappingURL=data:application/json;base64,')[1];
+    }
     if (!sourceMapBase64) {
       logger.warn('Unable to find a source map for project');
       logger.warn('Build your project with latest @subql/cli to generate a source map');

@@ -107,4 +107,28 @@ describe('sandbox for subql-node', () => {
     expect(sandboxFuncionEndAt).toBeDefined();
     expect(secureExecEndAt.getTime()).toBeGreaterThanOrEqual(sandboxFuncionEndAt?.getTime() ?? 0);
   });
+
+  it.each([
+    ['./sourcemap-test-esbuild.js', 'packages/node-core/test/src/mappings/mappingHandlers.ts:6:19'],
+    ['./sourcemap-test-webpack.js', '/dymension/src/mappings/mappingHandlers.ts:8:11'],
+  ])('can decode sourcemap %s', async (entry, mapped) => {
+    const root = path.resolve(__dirname, '../../test/sandbox');
+    vm = new IndexerSandbox(
+      {
+        store: undefined,
+        root,
+        entry,
+        chainId: '1',
+      },
+      new NodeConfig({subquery: ' ', subqueryName: ' '})
+    );
+
+    const error = await vm.securedExec('throwError', []).then(
+      () => new Error('Expected error to be thrown'),
+      (e) => e
+    );
+
+    expect(error.message).toBe('this is a test error');
+    expect(error.stack).toContain(mapped);
+  });
 });

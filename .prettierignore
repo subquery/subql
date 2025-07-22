@@ -12,3 +12,4 @@
 generate-project*.yaml
 *.proto
 *.ts.snap
+sourcemap-test-*.js
