@@ -109,14 +109,8 @@ describe('sandbox for subql-node', () => {
   });
 
   it.each([
-    [
-      './sourcemap-test-esbuild.js',
-      'Object.m (/Users/scotttwiname/Projects/subql-main/packages/node-core/test/src/mappings/mappingHandlers.ts:6:19)',
-    ],
-    [
-      './sourcemap-test-webpack.js',
-      'Object.t.throwError (/Users/scotttwiname/Projects/subql-main/packages/node-core/test/sandbox/webpack:/dymension/src/mappings/mappingHandlers.ts:8:11)',
-    ],
+    ['./sourcemap-test-esbuild.js', 'packages/node-core/test/src/mappings/mappingHandlers.ts:6:19'],
+    ['./sourcemap-test-webpack.js', '/dymension/src/mappings/mappingHandlers.ts:8:11'],
   ])('can decode sourcemap %s', async (entry, mapped) => {
     const root = path.resolve(__dirname, '../../test/sandbox');
     vm = new IndexerSandbox(
