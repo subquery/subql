@@ -57,7 +57,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
 
   protected isShutdown = false;
 
-  /* The height at which a block fetch failure first ocurrs, ensuring that we don't process any blocks after this */
+  /* The height at which a block fetch failure first occurs, ensuring that we don't process any blocks after this */
   protected fetchFailureHeight?: number;
 
   constructor(
@@ -307,7 +307,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue, DS, B> implements IB
      * */
     processQueue: AutoQueue<void>;
     /**
-     * A function to abort fetching any other blokcs. This is called when there is an error with the fetch task */
+     * A function to abort fetching any other blocks. This is called when there is an error with the fetch task */
     abortFetching: () => Promise<void> | void;
     getHeader: (input: T) => Header;
     height: number;

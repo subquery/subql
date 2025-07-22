@@ -41,7 +41,7 @@ abstract class BaseBenchmarkService {
       intervalName,
       setInterval(
         () => void this.benchMarking(),
-        SAMPLING_TIME_VARIANCE * 1000 // Convert to miliseconds
+        SAMPLING_TIME_VARIANCE * 1000 // Convert to milliseconds
       )
     );
   }
