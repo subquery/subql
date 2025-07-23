@@ -44,7 +44,7 @@ export interface IBlockchainService<
 
   // Fetch service
   /**
-   * The finalized header. If the chain doesn't have concrete finalization this could be a probablilistic finalization
+   * The finalized header. If the chain doesn't have concrete finalization this could be a probabilistic finalization
    * */
   getFinalizedHeader(): Promise<Header>;
   /**
