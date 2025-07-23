@@ -16,6 +16,7 @@
     "!/dist/**/*.test.js",
     "!/dist/**/*.test.d.ts",
     "!/dist/**/*.test.js.map",
+    "/templates",
     "package.json",
     "README.md",
     "CHANGELOG.md",
