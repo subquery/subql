@@ -86,10 +86,16 @@ export class Sandbox extends NodeVM {
     } catch (e) {
       const msgPart = 'Cannot find module ';
       if (e instanceof VMError && e.message.includes(msgPart)) {
-        throw new Error(
-          `Unable to resolve module ${e.message.replace(msgPart, '')}. To resolve this you can either:\n\tNarrow your import. e.g Instead of "import { BigNumber } from 'ethers'" you can use "import {BigNumber} from '@ethersproject/bignumber';"\n\tEnable the --unsafe flag.`,
+        const err = new Error(
+          `Unable to resolve module ${e.message.replace(
+            msgPart,
+            ''
+          )}. To resolve this you can either:\n\tNarrow your import. e.g Instead of "import { BigNumber } from 'ethers'" you can use "import {BigNumber} from '@ethersproject/bignumber';"\n\tEnable the --unsafe flag.`,
           {cause: e}
         );
+        // Copy the stack so that the logged error is more useful
+        err.stack = e.stack;
+        throw err;
       }
       throw e;
     }
