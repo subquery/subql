@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.2.0] - 2025-07-23
 ### Changed
 - Optimise docker image size (#388)
 
@@ -645,7 +647,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.1.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.2.0...HEAD
+[6.2.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.1.1...node-ethereum/6.2.0
 [6.1.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.1.0...node-ethereum/6.1.1
 [6.1.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.0.5...node-ethereum/6.1.0
 [6.0.5]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.0.4...node-ethereum/6.0.5
