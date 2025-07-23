@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fix decoding sourcemaps with stack traces
 
+### Changed
+- Improve error stack with sandbox require limitations (#2864)
+
 ## [18.2.1] - 2025-07-17
 ### Changed
 - Workspace dependencies now match to patch versions rather than exact (#2855)
