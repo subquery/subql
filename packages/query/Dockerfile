@@ -4,8 +4,13 @@ FROM node:lts-alpine as builder
 # Set working directory
 WORKDIR /app
 
+# Copy all packages
 COPY ./packages ./packages
+
+# Copy tsconfig.json
 COPY ./tsconfig.json ./tsconfig.json
+
+# Copy build script
 COPY ./scripts/build.sh ./scripts/build.sh
 
 # Install dependencies and build
