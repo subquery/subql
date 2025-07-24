@@ -7,7 +7,7 @@ npm install -g --force yarn@latest
 cd "$1"
 
 # Replace "workspace:*" versions with actual versions
-jq -r '.dependencies | to_entries[] | select(.value == "workspace:*") | .key' package.json | while read -r dep; do
+jq -r '.dependencies | to_entries[] | select(.value == "workspace:~") | .key' package.json | while read -r dep; do
   directory=$(jq --arg dep "$dep" -r '.compilerOptions.paths[$dep][0]' ../../tsconfig.json | cut -d'/' -f 2)
   version=$(jq --arg directory "$directory" -r '.version' ../"$directory"/package.json)
   if [ "$version" != null ]; then
