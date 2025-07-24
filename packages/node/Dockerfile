@@ -1,35 +1,43 @@
-# ---- Build Stage ----
-FROM node:lts-alpine AS builder
-
+# Build stage
+FROM node:lts-alpine as builder
+# Set working directory
 WORKDIR /app
-RUN apk add --no-cache python3 make g++ jq bash
 
+# Copy all packages
 COPY ./packages ./packages
+
+# Copy tsconfig.json
 COPY ./tsconfig.json ./tsconfig.json
+
+# Copy build script
 COPY ./scripts/build.sh ./scripts/build.sh
 
+# Install dependencies and build
 RUN ./scripts/build.sh packages/node
 
-# ---- Production Stage ----
+# Production stage
 FROM node:lts-alpine
 
-ENV NODE_ENV=production
-RUN apk add --no-cache tini python3 make g++
+# Copy .tgz file from builder
+COPY --from=builder /app/packages/node/app.tgz /app.tgz
 
-COPY --from=builder /app/packages/node/app.tgz ./app.tgz
+# Install production dependencies
+RUN apk add --no-cache tini curl git && \
+  tar -xzvf /app.tgz --strip 1 && \
+  rm /app.tgz && \
+  yarn install --production && \
+  yarn cache clean && \
+  rm -rf /root/.npm /root/.cache
 
-RUN npm install -g ./app.tgz \
-  && rm ./app.tgz \
-  && npm cache clean --force \
-  && rm -rf /root/.npm /root/.cache
+# Create ./.monitor directory and set permissions
+RUN mkdir -p .monitor && \
+  chown 1000:1000 .monitor
 
-# Remove packages required for building native node modules
-RUN apk del python3 make g++
-
-RUN mkdir -p .monitor && chown 1000:1000 .monitor
-
+# Make the user not ROOT
 USER 1000
+# Fix timezone to UTC
 ENV TZ=utc
 
-ENTRYPOINT ["/sbin/tini", "--", "/usr/local/lib/node_modules/@subql/node/bin/run"]
-CMD ["-f", "/app"]
+# Set Entry point and command
+ENTRYPOINT ["/sbin/tini", "--", "/bin/run"]
+CMD ["-f","/app"]
