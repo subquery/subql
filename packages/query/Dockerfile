@@ -4,13 +4,8 @@ FROM node:lts-alpine as builder
 # Set working directory
 WORKDIR /app
 
-# Copy all packages
 COPY ./packages ./packages
-
-# Copy tsconfig.json
 COPY ./tsconfig.json ./tsconfig.json
-
-# Copy build script
 COPY ./scripts/build.sh ./scripts/build.sh
 
 # Install dependencies and build
@@ -24,11 +19,11 @@ COPY --from=builder /app/packages/query/app.tgz /app.tgz
 
 # Install production dependencies
 RUN apk add --no-cache tini curl git && \
-    tar -xzvf /app.tgz --strip 1 && \
-    rm /app.tgz && \
-    yarn install --production && \
-    yarn cache clean && \
-    rm -rf /root/.npm /root/.cache
+  tar -xzvf /app.tgz --strip 1 && \
+  rm /app.tgz && \
+  yarn install --production && \
+  yarn cache clean && \
+  rm -rf /root/.npm /root/.cache
 
 # Make the user not ROOT
 USER 1000
