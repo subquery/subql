@@ -18,7 +18,12 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
-import {checkTransactionSuccess, getContractSDK, networkNameSchema} from '../../controller/network/constants';
+import {
+  checkTransactionSuccess,
+  getContractSDK,
+  networkNameSchema,
+  resolveAddress,
+} from '../../controller/network/constants';
 
 const addDeploymentBoostInputs = z.object({
   network: networkNameSchema,
@@ -44,8 +49,8 @@ async function addDeploymentBoostAdapter(
     throw new Error('Amount must be greater than 0');
   }
 
-  // TODO check allowance and increase if needed
-  const allowance = await sdk.sqToken.allowance('TODO', sdk.rewardsBooster.address);
+  const userAddress = resolveAddress();
+  const allowance = await sdk.sqToken.allowance(userAddress, sdk.rewardsBooster.address);
   if (allowance.lte(amount)) {
     if (prompt) {
       const confirm = await prompt({

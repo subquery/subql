@@ -39,6 +39,11 @@ export function gqlProjectTypeToProjectType(projectType: ProjectTypeGql): Projec
   }
 }
 
+function getWalletFromPrivateKey(provider?: JsonRpcProvider): Wallet | null {
+  const privateKey = process.env.SUBQL_PRIVATE_KEY;
+  return privateKey ? new Wallet(privateKey, provider) : null;
+}
+
 export function getContractSDK(network: SQNetworks, rpcUrl?: string): ContractSDK {
   const config = NETWORK_CONFIGS[network];
   const endpoint = rpcUrl ?? config.defaultEndpoint;
@@ -48,11 +53,23 @@ export function getContractSDK(network: SQNetworks, rpcUrl?: string): ContractSD
   }
 
   const provider = new JsonRpcProvider(endpoint);
-
-  const privateKey = process.env.SUBQL_PRIVATE_KEY;
-  const signerOrProvider = privateKey ? new Wallet(privateKey, provider) : provider;
+  const wallet = getWalletFromPrivateKey(provider);
+  const signerOrProvider = wallet || provider;
 
   return new ContractSDK(signerOrProvider, {network});
+}
+
+export function resolveAddress(inputAddress?: string): string {
+  if (inputAddress) {
+    return inputAddress;
+  }
+
+  const wallet = getWalletFromPrivateKey();
+  if (wallet) {
+    return wallet.address;
+  }
+
+  throw new Error('No address provided and no private key found in SUBQL_PRIVATE_KEY environment variable');
 }
 
 export const projectMetadataSchema = z.object({
