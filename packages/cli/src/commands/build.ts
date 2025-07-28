@@ -34,7 +34,7 @@ export async function buildAdapter(
   await buildTsManifest(location, logger.info.bind(logger));
 
   // Check that this is a SubQuery project
-  const projectSearch = path.resolve(directory, './project*.{yaml,yml}');
+  const projectSearch = path.resolve(directory, './{project*.{yaml,yml},subquery-multichain.yaml}');
   const manifests = await glob(projectSearch);
   if (!manifests.length) {
     throw new Error(
