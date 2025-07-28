@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {JsonRpcProvider} from '@ethersproject/providers';
+import {Wallet} from '@ethersproject/wallet';
 import {ProjectType, ContractSDK, networks} from '@subql/contract-sdk';
 import {GraphqlQueryClient} from '@subql/network-clients/dist/clients/queryClient';
 import {NETWORK_CONFIGS, SQNetworks} from '@subql/network-config';
@@ -46,9 +47,12 @@ export function getContractSDK(network: SQNetworks, rpcUrl?: string): ContractSD
     throw new Error(`No predefined RPC URL for network ${network}. Please provide a custom RPC URL.`);
   }
 
-  const provider = new JsonRpcProvider();
+  const provider = new JsonRpcProvider(endpoint);
 
-  return new ContractSDK(provider, {network});
+  const privateKey = process.env.SUBQL_PRIVATE_KEY;
+  const signerOrProvider = privateKey ? new Wallet(privateKey, provider) : provider;
+
+  return new ContractSDK(signerOrProvider, {network});
 }
 
 export const projectMetadataSchema = z.object({

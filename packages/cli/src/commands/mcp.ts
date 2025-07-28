@@ -12,16 +12,19 @@ import {registerImportAbiMCPTool} from './codegen/import-abi';
 import {registerInitMCPTool} from './init';
 import {registerMigrateSubgraphMCPTool} from './migrate';
 import {registerMultichainAddMCPTool} from './multi-chain/add';
+import {registerAddDeploymentBoostMCPTool} from './network/add-deployment-boost';
 import {registerCreateNetworkDeploymentMCPTool} from './network/create-deployment';
 import {registerCreateNetworkProjectMCPTool} from './network/create-project';
+import {registerListBoostsMCPTool} from './network/list-boosts';
+import {registerListNetworkDeploymentsMCPTool} from './network/list-deployments';
 import {registerListNetworkProjectsMCPTool} from './network/list-projects';
+import {registerRemoveDeploymentBoostMCPTool} from './network/remove-deployment-boost';
 import {registerCreateDeploymentMCPTool} from './onfinality/create-deployment';
 import {registerCreateMultichainDeploymentMCPTool} from './onfinality/create-multichain-deployment';
 import {registerCreateProjectMCPTool} from './onfinality/create-project';
 import {registerDeleteProjectMCPTool} from './onfinality/delete-project';
 import {registerPromoteDeploymentMCPTool} from './onfinality/promote-deployment';
 import {registerPublishMCPTool} from './publish';
-import {registerListNetworkDeploymentsMCPTool} from './network/list-deployments';
 
 const pjson = require('../../package.json');
 
@@ -78,6 +81,7 @@ export default class MCP extends Command {
 
     registerListNetworkProjectsMCPTool(server);
     registerListNetworkDeploymentsMCPTool(server);
+    registerListBoostsMCPTool(server);
 
     const transport = new StdioServerTransport();
     await server.connect(transport);
@@ -99,6 +103,8 @@ export default class MCP extends Command {
       registerInitMCPTool(server, opts);
       registerCreateNetworkProjectMCPTool(server, opts);
       registerCreateNetworkDeploymentMCPTool(server, opts);
+      registerAddDeploymentBoostMCPTool(server, opts);
+      registerRemoveDeploymentBoostMCPTool(server, opts);
     };
 
     return new Promise(() => {

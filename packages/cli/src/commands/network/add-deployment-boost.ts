@@ -20,23 +20,23 @@ import {
 } from '../../adapters/utils';
 import {checkTransactionSuccess, getContractSDK, networkNameSchema} from '../../controller/network/constants';
 
-const boostDeploymentInputs = z.object({
+const addDeploymentBoostInputs = z.object({
   network: networkNameSchema,
   deploymentId: z.string({description: 'The deployment id for the project'}),
-  amount: z.string({description: 'The amount to boost the project with, in SQT'}),
+  amount: z.string({description: 'The amount to boost the deployment with, in SQT'}),
 });
-type BoostProjectInputs = z.infer<typeof boostDeploymentInputs>;
+type BoostProjectInputs = z.infer<typeof addDeploymentBoostInputs>;
 
-const boostDeploymentOutputs = z.object({
+const addDeploymentBoostOutputs = z.object({
   transactionHash: z.string({description: 'The hash of the transaction that boosted the project'}),
   amount: z.bigint({description: 'Then new amount in SQT boosted by the account'}),
 });
 
-async function boostDeploymentAdapter(
+async function addDeploymentBoostAdapter(
   args: BoostProjectInputs,
   logger: Logger,
   prompt?: Prompt
-): Promise<z.infer<typeof boostDeploymentOutputs>> {
+): Promise<z.infer<typeof addDeploymentBoostOutputs>> {
   const sdk = getContractSDK(args.network);
 
   const amount = parseEther(args.amount);
@@ -89,31 +89,31 @@ async function boostDeploymentAdapter(
   };
 }
 
-export default class BoostDeployment extends Command {
+export default class AddDeploymentBoost extends Command {
   description = 'Increase the boost for a deployment';
-  static flags = zodToFlags(boostDeploymentInputs);
+  static flags = zodToFlags(addDeploymentBoostInputs);
 
   async run(): Promise<void> {
-    const {flags} = await this.parse(BoostDeployment);
+    const {flags} = await this.parse(AddDeploymentBoost);
 
-    const result = await boostDeploymentAdapter(flags, commandLogger(this), makeCLIPrompt());
+    const result = await addDeploymentBoostAdapter(flags, commandLogger(this), makeCLIPrompt());
 
     this.log('Boosted deployment:', JSON.stringify(result, null, 2));
   }
 }
 
-export function registerBoostDeploymentMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
+export function registerAddDeploymentBoostMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    BoostDeployment.name,
+    AddDeploymentBoost.name,
     {
-      description: BoostDeployment.description,
-      inputSchema: boostDeploymentInputs.shape,
-      outputSchema: getMCPStructuredResponse(boostDeploymentOutputs).shape,
+      description: AddDeploymentBoost.description,
+      inputSchema: addDeploymentBoostInputs.shape,
+      outputSchema: getMCPStructuredResponse(addDeploymentBoostOutputs).shape,
     },
     withStructuredResponse(async (args) => {
       const logger = mcpLogger(server.server);
       const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : undefined;
-      return boostDeploymentAdapter(args, logger, prompt);
+      return addDeploymentBoostAdapter(args, logger, prompt);
     })
   );
 }
