@@ -15,8 +15,8 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
+import {networkNameSchema, resolveAddress} from '../../controller/network/constants';
 import {listBoosts, responseSchema as listBoostsResponseSchema} from '../../controller/network/list-boosts';
-import {networkNameSchema} from '../../controller/network/constants';
 
 export const listBoostsInputs = z.object({
   network: networkNameSchema,

@@ -18,7 +18,12 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
-import {checkTransactionSuccess, getContractSDK, networkNameSchema} from '../../controller/network/constants';
+import {
+  checkTransactionSuccess,
+  getContractSDK,
+  networkNameSchema,
+  resolveAddress,
+} from '../../controller/network/constants';
 
 const removeDeploymentBoostInputs = z.object({
   network: networkNameSchema,

@@ -12,11 +12,11 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
-import {networkNameSchema} from '../../controller/network/constants';
+import {networkNameSchema, resolveAddress} from '../../controller/network/constants';
 import {listProjects, projectSchema} from '../../controller/network/list-projects';
 
 const listProjectsInputs = z.object({
-  address: z.string({description: 'The address of the account that owns the projects'}),
+  address: z.string({description: 'The address of the account that owns the projects'}).optional(),
   network: networkNameSchema,
   networkRpc: z.string({description: 'Override the network rpc url'}).optional(),
 });
@@ -30,9 +30,10 @@ async function listProjectsAdapter(
   args: ListProjectsInputs,
   logger: Logger
 ): Promise<z.infer<typeof listProjectOutputs>> {
-  logger.info(`Listing projects for address: ${args.address}`);
+  const address = resolveAddress(args.address);
+  logger.info(`Listing projects for address: ${address}`);
 
-  const projects = await listProjects(args.network, args.address);
+  const projects = await listProjects(args.network, address);
 
   return {
     projects,
@@ -48,7 +49,8 @@ export default class ListProjects extends Command {
 
     const res = await listProjectsAdapter(flags, commandLogger(this));
 
-    this.log(`Projects for account ${flags.address}:`, res);
+    const address = resolveAddress(flags.address);
+    this.log(`Projects for account ${address}:`, res);
   }
 }
 
