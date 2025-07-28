@@ -141,6 +141,11 @@ export async function runBundle(
     },
   };
 
+  // Injecting polyfills if they exist, this allows setting global variables like TextDecoder/TextEncoder
+  const inject = [path.resolve(projectDir, './src/polyfill.ts'), path.resolve(projectDir, './src/polyfills.ts')].filter(
+    (file) => fs.existsSync(file)
+  );
+
   // Build each entry point separately
   const buildPromises = Object.entries(buildEntries).map(async ([name, entry]) => {
     try {
@@ -156,6 +161,7 @@ export async function runBundle(
         plugins: [yamlPlugin],
         tsconfig: path.join(projectDir, 'tsconfig.json'),
         target: 'node22',
+        inject: inject,
       });
     } catch (error) {
       throw new Error(`Error building ${name}: ${error}`);

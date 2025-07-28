@@ -12,12 +12,16 @@ import {registerImportAbiMCPTool} from './codegen/import-abi';
 import {registerInitMCPTool} from './init';
 import {registerMigrateSubgraphMCPTool} from './migrate';
 import {registerMultichainAddMCPTool} from './multi-chain/add';
+import {registerCreateNetworkDeploymentMCPTool} from './network/create-deployment';
+import {registerCreateNetworkProjectMCPTool} from './network/create-project';
+import {registerListNetworkProjectsMCPTool} from './network/list-projects';
 import {registerCreateDeploymentMCPTool} from './onfinality/create-deployment';
 import {registerCreateMultichainDeploymentMCPTool} from './onfinality/create-multichain-deployment';
 import {registerCreateProjectMCPTool} from './onfinality/create-project';
 import {registerDeleteProjectMCPTool} from './onfinality/delete-project';
 import {registerPromoteDeploymentMCPTool} from './onfinality/promote-deployment';
 import {registerPublishMCPTool} from './publish';
+import {registerListNetworkDeploymentsMCPTool} from './network/list-deployments';
 
 const pjson = require('../../package.json');
 
@@ -72,6 +76,9 @@ export default class MCP extends Command {
     registerPublishMCPTool(server);
     registerMigrateSubgraphMCPTool(server);
 
+    registerListNetworkProjectsMCPTool(server);
+    registerListNetworkDeploymentsMCPTool(server);
+
     const transport = new StdioServerTransport();
     await server.connect(transport);
 
@@ -90,6 +97,8 @@ export default class MCP extends Command {
       registerCreateDeploymentMCPTool(server, opts);
       registerCreateMultichainDeploymentMCPTool(server, opts);
       registerInitMCPTool(server, opts);
+      registerCreateNetworkProjectMCPTool(server, opts);
+      registerCreateNetworkDeploymentMCPTool(server, opts);
     };
 
     return new Promise(() => {

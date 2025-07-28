@@ -1,0 +1,13 @@
+query GetProjects($address: String!) {
+  projects(filter: {owner: {equalTo: $address}}) {
+    nodes {
+      id
+      owner
+      metadata
+      totalAllocation
+      totalBoost
+      totalReward
+      type
+    }
+  }
+}
