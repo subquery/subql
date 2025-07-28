@@ -4,7 +4,6 @@
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
-import {networkNameSchema} from '../../controller/network/constants';
 import {
   commandLogger,
   getMCPStructuredResponse,
@@ -13,6 +12,7 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
+import {networkNameSchema} from '../../controller/network/constants';
 import {deploymentSchema, listDeployments} from '../../controller/network/list-deployments';
 
 const listDeploymentsInputs = z.object({
