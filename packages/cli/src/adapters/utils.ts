@@ -10,7 +10,7 @@ import {CallToolResult, ElicitRequest, ServerNotification, ServerRequest} from '
 import {Args, Command, Flags} from '@oclif/core';
 import {Flag, Arg} from '@oclif/core/lib/interfaces';
 import fuzzy from 'fuzzy';
-import {z, ZodTypeAny, ZodObject, ZodOptional, ZodDefault} from 'zod';
+import {z, ZodTypeAny, ZodObject, ZodOptional, ZodDefault, ZodArray} from 'zod';
 
 export type Logger = {
   info: (message: string) => void;
@@ -32,17 +32,21 @@ type ZodToPrimitive<T extends ZodTypeAny> = T extends z.ZodString
       ? boolean
       : never;
 
+type ZodToPrimitiveArray<T extends ZodTypeAny> =
+  T extends z.ZodArray<infer U> ? ZodToPrimitive<U>[] : ZodToPrimitive<T>;
+
 // Check if optional
 type HasDefault<T extends ZodTypeAny> = T extends ZodDefault<any> ? true : false;
 type IsOptional<T extends ZodTypeAny> = T extends ZodOptional<any> ? true : false;
+type IsArray<T extends ZodTypeAny> = T extends ZodArray<any> ? true : false;
 
 // Combine to determine final flag type
 type FlagFromZod<T extends ZodTypeAny> =
   HasDefault<T> extends true
-    ? Flag<ZodToPrimitive<UnwrapZod<T>>>
+    ? Flag<ZodToPrimitiveArray<UnwrapZod<T>>>
     : IsOptional<T> extends true
-      ? Flag<ZodToPrimitive<UnwrapZod<T>> | undefined>
-      : Flag<ZodToPrimitive<T>>;
+      ? Flag<ZodToPrimitiveArray<UnwrapZod<T>> | undefined>
+      : Flag<ZodToPrimitiveArray<T>>;
 
 // Map over the schema
 type FlagsFromSchema<Shape extends Record<string, ZodTypeAny>> = {
@@ -60,10 +64,35 @@ type ArgsFromSchema<Shape extends Record<string, ZodTypeAny>> = {
   [K in keyof Shape]: ArgFromZod<Shape[K]>;
 };
 
-function unwrap(zod: ZodTypeAny): ZodTypeAny {
-  if (zod instanceof z.ZodDefault) return unwrap(zod._def.innerType);
-  if (zod instanceof z.ZodOptional) return unwrap(zod._def.innerType);
-  return zod;
+type UnwrapInfo = {type: ZodTypeAny; default: any; array: boolean; optional: boolean};
+
+// Unrwap recursive type information to get the primitive and other information
+function unwrap(
+  def: ZodTypeAny,
+  unwrapInfo: UnwrapInfo = {type: def, default: undefined, array: false, optional: false}
+): UnwrapInfo {
+  if (def instanceof z.ZodDefault) {
+    return unwrap(def._def.innerType, {
+      ...unwrapInfo,
+      type: def._def.innerType,
+      default: def._def.defaultValue(),
+    });
+  }
+  if (def instanceof z.ZodOptional) {
+    return unwrap(def._def.innerType, {
+      ...unwrapInfo,
+      type: def._def.innerType,
+      optional: true,
+    });
+  }
+  if (def instanceof z.ZodArray) {
+    return unwrap(def._def.type, {
+      ...unwrapInfo,
+      type: def._def.type,
+      array: true,
+    });
+  }
+  return unwrapInfo;
 }
 
 // Runtime impl
@@ -73,31 +102,34 @@ export function zodToFlags<Shape extends Record<string, ZodTypeAny>>(schema: Zod
   for (const [key, def] of Object.entries(schema.shape)) {
     const description = def.description ?? '';
 
-    const base = unwrap(def);
+    const {type, default: defaultValue, array, optional} = unwrap(def);
 
-    if (base instanceof z.ZodString) {
+    if (type instanceof z.ZodString) {
       flags[key] = Flags.string({
         description,
-        required: !(def instanceof z.ZodOptional || def instanceof z.ZodDefault),
-        default: def instanceof z.ZodDefault ? def._def.defaultValue() : undefined,
+        required: !optional,
+        default: defaultValue,
+        multiple: array as any, // Gets around a type issue
       });
-    } else if (base instanceof z.ZodNumber) {
+    } else if (type instanceof z.ZodNumber) {
       flags[key] = Flags.integer({
         description,
-        required: !(def instanceof z.ZodOptional || def instanceof z.ZodDefault),
-        default: def instanceof z.ZodDefault ? def._def.defaultValue() : undefined,
+        required: !optional,
+        default: defaultValue,
+        multiple: array as any, // Gets around a type issue
       });
-    } else if (base instanceof z.ZodBoolean) {
+    } else if (type instanceof z.ZodBoolean) {
       flags[key] = Flags.boolean({
         description,
-        default: def instanceof z.ZodDefault ? def._def.defaultValue() : undefined,
+        default: defaultValue,
       });
-    } else if (base instanceof z.ZodEnum) {
+    } else if (type instanceof z.ZodEnum) {
       flags[key] = Flags.string({
         description,
-        required: !(def instanceof z.ZodOptional || def instanceof z.ZodDefault),
-        default: def instanceof z.ZodDefault ? def._def.defaultValue() : undefined,
-        options: base.options,
+        required: !optional,
+        default: defaultValue,
+        options: type.options,
+        multiple: array as any, // Gets around a type issue
       });
     } else {
       throw new Error(`Unsupported Zod type for flag: ${key}`);
@@ -113,31 +145,34 @@ export function zodToArgs<Shape extends Record<string, ZodTypeAny>>(schema: ZodO
   for (const [key, def] of Object.entries(schema.shape)) {
     const description = def.description ?? '';
 
-    const base = unwrap(def);
+    const {type, default: defaultValue, array, optional} = unwrap(def);
 
-    if (base instanceof z.ZodString) {
+    if (type instanceof z.ZodString) {
       args[key] = Args.string({
         description,
-        required: !(def instanceof z.ZodOptional || def instanceof z.ZodDefault),
-        default: def instanceof z.ZodDefault ? def._def.defaultValue() : undefined,
+        required: !optional,
+        default: defaultValue,
+        multiple: array,
       });
-    } else if (base instanceof z.ZodNumber) {
+    } else if (type instanceof z.ZodNumber) {
       args[key] = Args.integer({
         description,
-        required: !(def instanceof z.ZodOptional || def instanceof z.ZodDefault),
-        default: def instanceof z.ZodDefault ? def._def.defaultValue() : undefined,
+        required: !optional,
+        default: defaultValue,
       });
-    } else if (base instanceof z.ZodBoolean) {
+    } else if (type instanceof z.ZodBoolean) {
       args[key] = Args.boolean({
         description,
-        default: def instanceof z.ZodDefault ? def._def.defaultValue() : undefined,
+        default: defaultValue,
+        multiple: array,
       });
-    } else if (base instanceof z.ZodEnum) {
+    } else if (type instanceof z.ZodEnum) {
       args[key] = Args.string({
         description,
-        required: !(def instanceof z.ZodOptional || def instanceof z.ZodDefault),
-        default: def instanceof z.ZodDefault ? def._def.defaultValue() : undefined,
-        options: base.options,
+        required: !optional,
+        default: defaultValue,
+        multiple: array,
+        options: type.options,
       });
     } else {
       throw new Error(`Unsupported Zod type for arg: ${key}`);

@@ -1,0 +1,13 @@
+query GetProjectDeployments($projectId: String!) {
+  project(id: $projectId) {
+    deployments(orderBy: CREATED_TIMESTAMP_ASC) {
+      nodes {
+        id
+        projectId
+        metadata
+        createdTimestamp
+        createdBlock
+      }
+    }
+  }
+}

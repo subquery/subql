@@ -1,0 +1,13 @@
+query GetDeploymentBoost($deploymentId: String!) {
+  deploymentBoosterSummaries(filter: {and: {deploymentId: {equalTo: $deploymentId}, totalAmount: {greaterThan: "0"}}}) {
+    aggregates {
+      sum {
+        totalAmount
+      }
+    }
+    nodes {
+      consumer
+      totalAmount
+    }
+  }
+}
