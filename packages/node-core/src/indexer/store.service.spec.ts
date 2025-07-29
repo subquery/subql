@@ -51,21 +51,40 @@ describe('Store Service', () => {
   });
 
   it('isIndexed support snake case', () => {
-    storeService = new StoreService(null as any, null as any, null as any, null as any);
-    (storeService as any)._modelIndexedFields = [
+    storeService = new StoreService(
+      null as any,
+      null as any,
       {
-        entityName: 'Transfer',
-        fieldName: 'account_from_id',
-        isUnique: false,
-        type: 'btree',
-      },
-      {
-        entityName: 'Transfer',
-        fieldName: 'account_to_id',
-        isUnique: false,
-        type: 'btree',
-      },
-    ];
+        getModel: (entityName: string) => {
+          if (entityName !== 'Transfer') {
+            return {
+              model: {
+                options: {},
+              },
+            };
+          }
+          return {
+            model: {
+              options: {
+                indexes: [
+                  {
+                    fields: ['account_from_id'],
+                    unique: false,
+                    type: 'btree',
+                  },
+                  {
+                    fields: ['account_to_id'],
+                    unique: false,
+                    type: 'btree',
+                  },
+                ],
+              },
+            },
+          };
+        },
+      } as any,
+      null as any
+    );
 
     expect(storeService.isIndexed('Transfer', 'account_fromId')).toEqual(true);
     expect(storeService.isIndexed('Transfer', 'accountToId')).toEqual(true);
@@ -79,28 +98,46 @@ describe('Store Service', () => {
   });
 
   it('isIndexedHistorical support snake case', () => {
-    storeService = new StoreService(null as any, null as any, null as any, null as any);
+    storeService = new StoreService(
+      null as any,
+      null as any,
+      {
+        getModel: (entityName: string) => {
+          if (entityName !== 'Transfer') {
+            return {
+              model: {
+                options: {},
+              },
+            };
+          }
+          return {
+            model: {
+              options: {
+                indexes: [
+                  {
+                    fields: ['account_from_id'],
+                    unique: true,
+                    type: 'btree',
+                  },
+                  {
+                    fields: ['account_to_id'],
+                    unique: true,
+                    type: 'btree',
+                  },
+                  {
+                    fields: ['not_index_id'],
+                    unique: false,
+                    type: 'btree',
+                  },
+                ],
+              },
+            },
+          };
+        },
+      } as any,
+      null as any
+    );
     (storeService as any)._historical = false;
-    (storeService as any)._modelIndexedFields = [
-      {
-        entityName: 'Transfer',
-        fieldName: 'account_from_id',
-        isUnique: true,
-        type: 'btree',
-      },
-      {
-        entityName: 'Transfer',
-        fieldName: 'account_to_id',
-        isUnique: true,
-        type: 'btree',
-      },
-      {
-        entityName: 'Transfer',
-        fieldName: 'not_index_id',
-        isUnique: false,
-        type: 'btree',
-      },
-    ];
 
     expect(storeService.isIndexedHistorical('Transfer', 'account_fromId')).toEqual(true);
     expect(storeService.isIndexedHistorical('Transfer', 'accountToId')).toEqual(true);

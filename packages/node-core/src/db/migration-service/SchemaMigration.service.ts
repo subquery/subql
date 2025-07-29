@@ -172,14 +172,6 @@ export class SchemaMigrationService {
 
       const modelChanges = await migrationAction.run(transaction);
 
-      // Update any relevant application state so the right models are used
-      // NOTES for working on this in the future:
-      // - ModleProvider has the sequelize models, but they seem to get created again from name alone
-      // - Store service, needs the graphqlSchema to define store operations fro POI
-      // Possible suggested solution:
-      // - Update the model provider to take the same sequelize model instances rather than creating new ones
-      // - Update store operations to build from the sequelize models rather than the graphqlSchema
-      // - Use the model provider as a source of truth for models
       this.storeService.updateModels(modelChanges, getAllEntitiesRelations(nextSchema));
 
       await cacheProviderFlushData(this.storeService.modelProvider, true);
