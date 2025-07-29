@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [18.3.1] - 2025-07-30
+### Fixed
+- Indexes not being checked correctly on first startup and migrations (#2871)
+
 ## [18.3.0] - 2025-07-24
 ### Fixed
 - Fix decoding sourcemaps with stack traces
@@ -1017,7 +1021,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.3.1...HEAD
+[18.3.1]: https://github.com/subquery/subql/compare/node-core/18.3.0...node-core/18.3.1
 [18.3.0]: https://github.com/subquery/subql/compare/node-core/18.2.1...node-core/18.3.0
 [18.2.1]: https://github.com/subquery/subql/compare/node-core/18.2.0...node-core/18.2.1
 [18.2.0]: https://github.com/subquery/subql/compare/node-core/18.1.2...node-core/18.2.0
