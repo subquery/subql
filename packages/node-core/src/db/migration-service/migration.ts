@@ -26,6 +26,7 @@ import {getLogger} from '../../logger';
 import {EnumType, getColumnOption, modelsTypeToModelAttributes, enumNameToHash} from '../../utils';
 import {formatAttributes, formatColumnName, modelToTableName} from '../sequelizeUtil';
 import * as syncHelper from '../sync-helper';
+import {ModifiedDbModels} from './migration-helpers';
 
 const logger = getLogger('db-manager');
 
@@ -86,7 +87,7 @@ export class Migration {
     return new Migration(sequelize, storeService, schemaName, config, existingForeignKeys, enumTypeMap, indexesResult);
   }
 
-  async run(transaction: Transaction): Promise<{modifiedModels: ModelStatic<any>[]; removedModels: string[]}> {
+  async run(transaction: Transaction): Promise<ModifiedDbModels> {
     if (this.historical) {
       // Comments should be added after
       this.addRelationComments();

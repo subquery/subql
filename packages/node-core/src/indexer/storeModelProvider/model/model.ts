@@ -11,6 +11,7 @@ import {getFullOptions, operatorsMap} from './utils';
 export type BaseEntity = {id: string; __block_range?: (number | null)[] | Fn};
 
 export interface IModel<T extends BaseEntity> {
+  model: Readonly<ModelStatic<Model<T, T>>>;
   get(id: string, tx?: Transaction): Promise<T | undefined>;
 
   getByFields(filters: FieldsExpression<T>[], options: GetOptions<T>, tx?: Transaction): Promise<T[]>;
