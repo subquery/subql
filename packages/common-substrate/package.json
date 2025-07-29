@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-substrate",
-  "version": "4.5.1",
+  "version": "4.5.2-0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -33,5 +33,6 @@
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
-  ]
+  ],
+  "stableVersion": "4.5.1"
 }
