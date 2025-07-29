@@ -172,9 +172,7 @@ export class SchemaMigrationService {
 
       const modelChanges = await migrationAction.run(transaction);
 
-      // Update any relevant application state so the right models are used
-      this.storeService.modelProvider.updateModels(modelChanges);
-      await this.storeService.updateModels(this.dbSchema, getAllEntitiesRelations(nextSchema));
+      this.storeService.updateModels(modelChanges, getAllEntitiesRelations(nextSchema));
 
       await cacheProviderFlushData(this.storeService.modelProvider, true);
     } catch (e: any) {

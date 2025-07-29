@@ -3,3 +3,4 @@
 
 export * from './migration';
 export * from './SchemaMigration.service';
+export {ModifiedDbModels} from './migration-helpers';

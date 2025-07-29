@@ -3,6 +3,7 @@
 
 import {ModelStatic, Transaction} from '@subql/x-sequelize';
 import {LRUCache} from 'lru-cache';
+import {ModifiedDbModels} from '../../db/migration-service';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {HistoricalMode} from '../types';
 import {IMetadata} from './metadata';
@@ -22,7 +23,7 @@ export interface IStoreModelProvider {
 
   applyPendingChanges(height: number, dataSourcesCompleted: boolean, tx?: Transaction): Promise<void>;
 
-  updateModels({modifiedModels, removedModels}: {modifiedModels: ModelStatic<any>[]; removedModels: string[]}): void;
+  updateModels(changes: ModifiedDbModels): void;
 }
 
 export interface ICachedModelControl {

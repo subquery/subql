@@ -30,12 +30,13 @@ import {
   createSchemaTriggerFunction,
   getDbSizeAndUpdateMetadata,
   getTriggers,
+  ModifiedDbModels,
   SchemaMigrationService,
   tableExistsQuery,
 } from '../db';
 import {getLogger} from '../logger';
 import {exitWithError} from '../process';
-import {camelCaseObjectKey, customCamelCaseGraphqlKey, getHistoricalUnit} from '../utils';
+import {customCamelCaseGraphqlKey, getHistoricalUnit} from '../utils';
 import {
   GlobalDataFactory,
   GlobalDataRepo,
@@ -54,13 +55,6 @@ const logger = getLogger('StoreService');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 const DB_SIZE_CACHE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
-interface IndexField {
-  entityName: string;
-  fieldName: string;
-  isUnique: boolean;
-  type: string;
-}
-
 class NoInitError extends Error {
   constructor() {
     super('StoreService has not been initialized');
@@ -70,7 +64,6 @@ class NoInitError extends Error {
 @Injectable()
 export class StoreService {
   poiRepo?: PoiRepo;
-  private _modelIndexedFields?: IndexField[];
   private _modelsRelations?: GraphQLModelsRelationsEnums;
   private _globalDataRepo?: GlobalDataRepo;
   private _metaDataRepo?: MetadataRepo;
@@ -91,11 +84,6 @@ export class StoreService {
     @Inject('IStoreModelProvider') readonly modelProvider: IStoreModelProvider,
     @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>
   ) {}
-
-  private get modelIndexedFields(): IndexField[] {
-    assert(this._modelIndexedFields, new NoInitError());
-    return this._modelIndexedFields;
-  }
 
   private get modelsRelations(): GraphQLModelsRelationsEnums {
     assert(this._modelsRelations, new NoInitError());
@@ -253,13 +241,10 @@ export class StoreService {
     }
   }
 
-  async updateModels(schema: string, modelsRelations: GraphQLModelsRelationsEnums): Promise<void> {
+  // Updates the state of the store and model provider after migrations occurr
+  updateModels(modelChanges: ModifiedDbModels, modelsRelations: GraphQLModelsRelationsEnums): undefined {
+    this.modelProvider.updateModels(modelChanges);
     this._modelsRelations = modelsRelations;
-    try {
-      this._modelIndexedFields = await this.getAllIndexFields(schema);
-    } catch (e: any) {
-      exitWithError(new Error(`Having a problem when getting indexed fields`, {cause: e}), logger);
-    }
   }
 
   defineModel(
@@ -394,49 +379,6 @@ export class StoreService {
     return NULL_MERKEL_ROOT;
   }
 
-  private async getAllIndexFields(schema: string) {
-    const fields: IndexField[][] = [];
-    for (const entity of this.modelsRelations.models) {
-      const model = this.sequelize.model(entity.name);
-      const tableFields = await this.packEntityFields(schema, entity.name, model.tableName);
-      fields.push(tableFields);
-    }
-    return flatten(fields);
-  }
-
-  private async packEntityFields(schema: string, entity: string, table: string): Promise<IndexField[]> {
-    const rows = await this.sequelize.query(
-      `select
-    '${entity}' as entity_name,
-    a.attname as field_name,
-    idx.indisunique as is_unique,
-    am.amname as type
-from
-    pg_index idx
-    JOIN pg_class cls ON cls.oid=idx.indexrelid
-    JOIN pg_class tab ON tab.oid=idx.indrelid
-    JOIN pg_am am ON am.oid=cls.relam,
-    pg_namespace n,
-    pg_attribute a
-where
-  n.nspname = '${schema}'
-  and tab.relname = '${table}'
-  and a.attrelid = tab.oid
-  and a.attnum = ANY(idx.indkey)
-  and not idx.indisprimary
-group by
-    n.nspname,
-    a.attname,
-    tab.relname,
-    idx.indisunique,
-    am.amname`,
-      {
-        type: QueryTypes.SELECT,
-      }
-    );
-    return rows.map((result) => camelCaseObjectKey(result)) as IndexField[];
-  }
-
   /**
    * rollback db that is newer than ${targetBlockHeight} (exclusive)
    * set metadata
@@ -472,26 +414,31 @@ group by
   }
 
   isIndexed(entity: string, field: string): boolean {
+    const indexes = this.modelProvider.getModel(entity).model.options.indexes ?? [];
+
     return (
-      this.modelIndexedFields.findIndex(
-        (indexField) =>
-          (upperFirst(camelCase(indexField.entityName)) === entity || indexField.entityName === entity) &&
-          // We add this because in some case upperFirst and camelCase will not match with entity name,
-          // see test entity name like `MinerIP`
-          camelCase(indexField.fieldName) === customCamelCaseGraphqlKey(field)
-      ) > -1
+      indexes.findIndex((idx) => {
+        const matchingField = idx.fields?.find((f) => {
+          const fieldName = (f as any).name ?? f;
+          return camelCase(fieldName) === customCamelCaseGraphqlKey(field);
+        });
+        return !!matchingField;
+      }) > -1
     );
   }
 
   isIndexedHistorical(entity: string, field: string): boolean {
+    const indexes = this.modelProvider.getModel(entity).model.options.indexes ?? [];
+
     return (
-      this.modelIndexedFields.findIndex(
-        (indexField) =>
-          upperFirst(camelCase(indexField.entityName)) === entity &&
-          camelCase(indexField.fieldName) === customCamelCaseGraphqlKey(field) &&
-          // With historical indexes are not unique
-          (this.historical || indexField.isUnique)
-      ) > -1
+      indexes.findIndex((idx) => {
+        const matchingField = idx.fields?.find((f) => {
+          const fieldName = (f as any).name ?? f;
+          return camelCase(fieldName) === customCamelCaseGraphqlKey(field);
+        });
+        // With historical indexes are not unique
+        return !!matchingField && (this.historical || idx.unique);
+      }) > -1
     );
   }
 

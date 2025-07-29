@@ -9,7 +9,13 @@ import {
   GraphQLModelsType,
   GraphQLRelationsType,
 } from '@subql/utils';
+import {ModelStatic} from '@subql/x-sequelize';
 import {isEqual} from 'lodash';
+
+export type ModifiedDbModels = {
+  modifiedModels: ModelStatic<any>[];
+  removedModels: string[];
+};
 
 export type ModifiedModels = Record<
   string,
