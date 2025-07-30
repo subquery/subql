@@ -35,7 +35,7 @@ export async function buildAdapter(
 
   // Check that this is a SubQuery project
   const projectSearch = path.resolve(directory, './{project*.{yaml,yml},subquery-multichain.yaml}');
-  const manifests = await glob(projectSearch);
+  const manifests = await glob(projectSearch, {windowsPathsNoEscape: true});
   if (!manifests.length) {
     throw new Error(
       'This is not a SubQuery project, please make sure you run this in the root of your project directory.'
