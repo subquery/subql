@@ -14,6 +14,7 @@ import {
 } from '../../adapters/utils';
 import {networkNameSchema} from '../../controller/network/constants';
 import {deploymentSchema, listDeployments} from '../../controller/network/list-deployments';
+import {jsonToTable} from '../../utils';
 
 const listDeploymentsInputs = z.object({
   network: networkNameSchema,
@@ -43,7 +44,18 @@ export default class ListNetworkDeployments extends Command {
 
     const result = await listDeploymentsAdapter(flags, commandLogger(this));
 
-    this.log('Deployments:', JSON.stringify(result.deployments, null, 2));
+    this.log(
+      jsonToTable(
+        result.deployments.map(({deploymentId, meta, metadata, ...rest}) => {
+          const subMeta = meta ? {version: meta.version, description: meta.description.split('\n')[0]} : {metadata};
+          return {
+            deploymentId,
+            ...subMeta,
+            ...rest,
+          };
+        })
+      )
+    );
   }
 }
 

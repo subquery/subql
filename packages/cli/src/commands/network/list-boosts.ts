@@ -1,7 +1,6 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {formatEther} from '@ethersproject/units';
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
@@ -15,8 +14,9 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
-import {networkNameSchema, resolveAddress} from '../../controller/network/constants';
+import {formatSQT, networkNameSchema} from '../../controller/network/constants';
 import {listBoosts, responseSchema as listBoostsResponseSchema} from '../../controller/network/list-boosts';
+import {jsonToTable} from '../../utils';
 
 export const listBoostsInputs = z.object({
   network: networkNameSchema,
@@ -48,8 +48,17 @@ export default class ListBoosts extends Command {
 
     const res = await listBoostsAdapter(flags, logger, makeCLIPrompt());
 
-    this.log(`Total boost: ${formatEther(res.totalBoost)} SQT`);
-    for (const boost of res.boosts) [this.log(`\t- ${boost.consumer}: ${formatEther(boost.totalAmount)} SQT`)];
+    this.log(`Total boost: ${formatSQT(res.totalBoost)}`);
+    this.log(
+      jsonToTable(
+        res.boosts.map((b) => {
+          return {
+            ...b,
+            totalAmount: formatSQT(b.totalAmount),
+          };
+        })
+      )
+    );
   }
 }
 

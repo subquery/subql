@@ -80,6 +80,7 @@ export class SchemaMigrationService {
 
   async run(currentSchema: GraphQLSchema | null, nextSchema: GraphQLSchema, transaction: Transaction): Promise<void> {
     logger.info('Running schema migration');
+    console.log('WTF');
     const schemaDifference = SchemaMigrationService.schemaComparator(currentSchema, nextSchema);
     const {
       addedEnums,
@@ -171,6 +172,8 @@ export class SchemaMigrationService {
       }
 
       const modelChanges = await migrationAction.run(transaction);
+
+      console.log('DOWN HERE');
 
       // Update any relevant application state so the right models are used
       this.storeService.modelProvider.updateModels(modelChanges);

@@ -20,6 +20,6 @@ export async function* streamCat(baseUrl: string, ipfsCID: string): AsyncIterabl
       yield chunk;
     }
   } catch (error) {
-    throw new Error(`Failed to fetch data from IPFS for CID ${ipfsCID}`);
+    throw new Error(`Failed to fetch data from IPFS for CID ${ipfsCID}`, {cause: error});
   }
 }

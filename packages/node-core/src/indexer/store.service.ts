@@ -255,6 +255,7 @@ export class StoreService {
 
   async updateModels(schema: string, modelsRelations: GraphQLModelsRelationsEnums): Promise<void> {
     this._modelsRelations = modelsRelations;
+    console.log('UPDATE MODELS');
     try {
       this._modelIndexedFields = await this.getAllIndexFields(schema);
     } catch (e: any) {
