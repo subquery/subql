@@ -76,7 +76,7 @@ export async function generateManifestFromTs(projectManifestEntry: string): Prom
   const projectYamlPath = tsProjectYamlPath(projectManifestEntry);
   try {
     // Allows requiring TS, this allows requirng the projectManifestEntry ts file
-    const tsNodeService = tsNode.register({transpileOnly: true});
+    const tsNodeService = tsNode.register({transpileOnly: true, cwd: path.dirname(projectManifestEntry)});
 
     // Compile the above script
     const script = tsNodeService.compile(
