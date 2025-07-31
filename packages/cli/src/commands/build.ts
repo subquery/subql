@@ -29,12 +29,16 @@ export async function buildAdapter(
 ): Promise<z.infer<typeof buildOutputs>> {
   const location = resolveToAbsolutePath(path.resolve(workingDir, args.location ?? ''));
   assert(existsSync(location), 'Argument `location` is not a valid directory or file');
+
   const directory = lstatSync(location).isDirectory() ? location : path.dirname(location);
 
   await buildTsManifest(location, logger.info.bind(logger));
 
   // Check that this is a SubQuery project
-  const projectSearch = path.resolve(directory, './{project*.{yaml,yml},subquery-multichain.yaml}');
+  const projectSearch = path.resolve(
+    directory,
+    `./{project*.{yaml,yml},subquery-multichain.yaml${directory !== location ? `,${path.basename(location)}` : ''}}`
+  );
   const manifests = await glob(projectSearch, {windowsPathsNoEscape: true});
   if (!manifests.length) {
     throw new Error(
