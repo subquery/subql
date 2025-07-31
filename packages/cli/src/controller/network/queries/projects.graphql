@@ -1,5 +1,5 @@
 query GetProjects($address: String!) {
-  projects(filter: {owner: {equalTo: $address}}) {
+  projects(filter: {owner: {equalTo: $address}}, orderBy: ID_ASC) {
     nodes {
       id
       owner
@@ -8,6 +8,7 @@ query GetProjects($address: String!) {
       totalBoost
       totalReward
       type
+      deploymentId
     }
   }
 }

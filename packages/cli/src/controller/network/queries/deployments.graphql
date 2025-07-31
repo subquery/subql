@@ -1,12 +1,27 @@
 query GetProjectDeployments($projectId: String!) {
   project(id: $projectId) {
-    deployments(orderBy: CREATED_TIMESTAMP_ASC) {
+    deploymentId
+    deployments(orderBy: CREATED_TIMESTAMP_DESC) {
       nodes {
         id
-        projectId
         metadata
         createdTimestamp
         createdBlock
+      }
+    }
+  }
+}
+
+query GetDeploymentIndexers($deploymentId: String!) {
+  deployment(id: $deploymentId) {
+    id
+    indexers(orderBy: ID_ASC, filter: {status: {notEqualTo: TERMINATED}}) {
+      nodes {
+        indexerId
+        status
+        indexer {
+          metadata
+        }
       }
     }
   }

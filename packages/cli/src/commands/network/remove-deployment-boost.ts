@@ -21,8 +21,10 @@ import {
 import {
   checkTransactionSuccess,
   getContractSDK,
+  getSignerOrProvider,
+  ipfsHashToBytes32,
   networkNameSchema,
-  resolveAddress,
+  requireSigner,
 } from '../../controller/network/constants';
 
 const removeDeploymentBoostInputs = z.object({
@@ -42,14 +44,19 @@ async function removeDeploymentBoostAdapter(
   logger: Logger,
   prompt?: Prompt
 ): Promise<z.infer<typeof removeDeploymentBoostOutputs>> {
-  const sdk = getContractSDK(args.network);
-
   const amount = parseEther(args.amount);
   if (amount.lte(0n)) {
     throw new Error('Amount must be greater than 0');
   }
+  const signerOrProvider = await getSignerOrProvider(args.network, logger);
+  const sdk = getContractSDK(signerOrProvider, args.network);
+  requireSigner(signerOrProvider);
 
-  const tx = await sdk.rewardsBooster.removeBoosterDeployment(args.deploymentId, amount);
+  const userAddress = await signerOrProvider.getAddress();
+  logger.info(`Using address: ${userAddress}`);
+
+  const deploymentIdBytes32 = ipfsHashToBytes32(args.deploymentId);
+  const tx = await sdk.rewardsBooster.removeBoosterDeployment(deploymentIdBytes32, amount);
 
   const receipt = await checkTransactionSuccess(tx);
 
@@ -82,6 +89,9 @@ export default class RemoveDeploymentBoost extends Command {
     const result = await removeDeploymentBoostAdapter(flags, commandLogger(this), makeCLIPrompt());
 
     this.log('Boosted deployment:', JSON.stringify(result, null, 2));
+
+    // Exit with success, walletconnect will keep things running
+    this.exit(0);
   }
 }
 

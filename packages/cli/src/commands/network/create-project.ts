@@ -23,9 +23,11 @@ import {
   checkTransactionSuccess,
   deploymentMetadataSchema,
   getContractSDK,
+  getSignerOrProvider,
   networkNameSchema,
   projectMetadataSchema,
   projectTypeSchema,
+  requireSigner,
 } from '../../controller/network/constants';
 
 const createProjectInputs = z.object({
@@ -60,7 +62,9 @@ async function createProjectAdapter(
   logger: Logger,
   prompt?: Prompt
 ): Promise<z.infer<typeof createProjectOutputs>> {
-  const sdk = getContractSDK(args.network);
+  const signerOrProvider = await getSignerOrProvider(args.network, logger, undefined, true);
+  const sdk = getContractSDK(signerOrProvider, args.network);
+  requireSigner(signerOrProvider);
 
   const projectType = ProjectType[args.projectType];
 
@@ -180,6 +184,9 @@ export default class CreateNetworkProject extends Command {
 
     await createProjectAdapter(flags, commandLogger(this), makeCLIPrompt());
     this.log('Project created successfully!');
+
+    // Exit with success, walletconnect will keep things running
+    this.exit(0);
   }
 }
 

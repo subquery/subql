@@ -1,14 +1,19 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {JsonRpcProvider} from '@ethersproject/providers';
+import {keccak256} from '@ethersproject/keccak256';
+import {JsonRpcProvider, Provider} from '@ethersproject/providers';
+import {toUtf8Bytes} from '@ethersproject/strings';
 import {Wallet} from '@ethersproject/wallet';
 import {ProjectType, ContractSDK, networks} from '@subql/contract-sdk';
 import {GraphqlQueryClient} from '@subql/network-clients/dist/clients/queryClient';
 import {NETWORK_CONFIGS, SQNetworks} from '@subql/network-config';
-import {ContractReceipt, ContractTransaction} from 'ethers';
+import {ContractReceipt, ContractTransaction, Signer} from 'ethers';
+import {formatEther} from 'ethers/lib/utils';
 import {z} from 'zod';
+import {Logger} from '../../adapters/utils';
 import {ProjectType as ProjectTypeGql} from './__graphql__/base-types';
+import {NO_EXISTING_CONN_ERROR, walletConnectSigner} from './walletconnect-signer';
 
 export function getQueryClient(network: SQNetworks) {
   return new GraphqlQueryClient(NETWORK_CONFIGS[network]).networkClient;
@@ -39,37 +44,81 @@ export function gqlProjectTypeToProjectType(projectType: ProjectTypeGql): Projec
   }
 }
 
-function getWalletFromPrivateKey(provider?: JsonRpcProvider): Wallet | null {
-  const privateKey = process.env.SUBQL_PRIVATE_KEY;
-  return privateKey ? new Wallet(privateKey, provider) : null;
-}
-
-export function getContractSDK(network: SQNetworks, rpcUrl?: string): ContractSDK {
+async function getRpcProvider(network: SQNetworks, rpcUrl?: string): Promise<JsonRpcProvider> {
   const config = NETWORK_CONFIGS[network];
   const endpoint = rpcUrl ?? config.defaultEndpoint;
 
   if (!endpoint) {
     throw new Error(`No predefined RPC URL for network ${network}. Please provide a custom RPC URL.`);
   }
-
   const provider = new JsonRpcProvider(endpoint);
-  const wallet = getWalletFromPrivateKey(provider);
-  const signerOrProvider = wallet || provider;
 
+  await provider.ready;
+
+  return provider;
+}
+
+export async function getSignerOrProvider(
+  network: SQNetworks,
+  logger: Logger,
+  rpcUrl?: string,
+  allowNewWalletConnect = false
+): Promise<Signer | Provider> {
+  const provider = await getRpcProvider(network, rpcUrl);
+  const privateKey = process.env.SUBQL_PRIVATE_KEY;
+  if (privateKey) {
+    return new Wallet(privateKey, provider);
+  }
+
+  const signer = walletConnectSigner.getInstance(provider, logger, allowNewWalletConnect);
+
+  // Will return wallet connect if there is an existing connection, otherwise the provider
+  try {
+    await signer.getAddress();
+    return signer;
+  } catch (e: any) {
+    if (e === NO_EXISTING_CONN_ERROR) {
+      return provider;
+    }
+    throw e;
+  }
+}
+
+export function isSigner(signerOrProvider: Signer | Provider): signerOrProvider is Signer {
+  return typeof (signerOrProvider as Signer).getAddress === 'function';
+}
+
+export function getContractSDK(signerOrProvider: Signer | Provider, network: SQNetworks): ContractSDK {
   return new ContractSDK(signerOrProvider, {network});
 }
 
-export function resolveAddress(inputAddress?: string): string {
-  if (inputAddress) {
-    return inputAddress;
+export function requireSigner(signerOrProvider: Signer | Provider): asserts signerOrProvider is Signer {
+  if (!isSigner(signerOrProvider)) {
+    throw new Error(
+      'A wallet is required for this. Please provide a private key via environment variables or enable Wallet Connect.'
+    );
   }
+}
 
-  const wallet = getWalletFromPrivateKey();
-  if (wallet) {
-    return wallet.address;
-  }
+export async function resolveAddress(
+  network: SQNetworks,
+  logger: Logger,
+  rpcUrl?: string,
+  address?: string,
+  allowNewWalletConnect = false
+): Promise<string> {
+  if (address) return address;
 
-  throw new Error('No address provided and no private key found in SUBQL_PRIVATE_KEY environment variable');
+  const signerOrProvider = await getSignerOrProvider(network, logger, rpcUrl, allowNewWalletConnect);
+  requireSigner(signerOrProvider);
+
+  return signerOrProvider.getAddress();
+}
+
+export function ipfsHashToBytes32(ipfsHash: string): string {
+  // Convert IPFS hash to bytes32 by taking keccak256 hash
+  // This is a common pattern for storing IPFS hashes in smart contracts
+  return keccak256(toUtf8Bytes(ipfsHash));
 }
 
 export const projectMetadataSchema = z.object({
@@ -98,4 +147,8 @@ export async function checkTransactionSuccess(transaction: ContractTransaction):
     return receipt;
   }
   throw new Error(`Transaction failed. Hash="${transaction.hash}"`);
+}
+
+export function formatSQT(amount: bigint): string {
+  return `${formatEther(amount).slice(0, 10)} SQT`;
 }

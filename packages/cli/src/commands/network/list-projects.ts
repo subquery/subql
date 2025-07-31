@@ -3,6 +3,7 @@
 
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
+import {ProjectType} from '@subql/contract-sdk';
 import {z} from 'zod';
 import {
   commandLogger,
@@ -12,8 +13,9 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
-import {networkNameSchema, resolveAddress} from '../../controller/network/constants';
+import {formatSQT, networkNameSchema, resolveAddress} from '../../controller/network/constants';
 import {listProjects, projectSchema} from '../../controller/network/list-projects';
+import {jsonToTable} from '../../utils';
 
 const listProjectsInputs = z.object({
   address: z.string({description: 'The address of the account that owns the projects'}).optional(),
@@ -23,6 +25,7 @@ const listProjectsInputs = z.object({
 type ListProjectsInputs = z.infer<typeof listProjectsInputs>;
 
 const listProjectOutputs = z.object({
+  address: z.string({description: 'The account the projects belong to'}),
   projects: z.array(projectSchema),
 });
 
@@ -30,12 +33,13 @@ async function listProjectsAdapter(
   args: ListProjectsInputs,
   logger: Logger
 ): Promise<z.infer<typeof listProjectOutputs>> {
-  const address = resolveAddress(args.address);
+  const address = await resolveAddress(args.network, logger, args.networkRpc, args.address);
   logger.info(`Listing projects for address: ${address}`);
 
   const projects = await listProjects(args.network, address);
 
   return {
+    address,
     projects,
   };
 }
@@ -49,8 +53,26 @@ export default class ListProjects extends Command {
 
     const res = await listProjectsAdapter(flags, commandLogger(this));
 
-    const address = resolveAddress(flags.address);
-    this.log(`Projects for account ${address}:`, res);
+    this.log(`Projects for account ${res.address}:`);
+    this.log(
+      jsonToTable(
+        res.projects.map(({id, meta, metadata, owner, ...p}) => {
+          const subMeta = meta ? {name: meta.name} : {metadata};
+          return {
+            id,
+            ...subMeta,
+            ...p,
+            totalAllocation: formatSQT(p.totalAllocation),
+            totalBoost: formatSQT(p.totalBoost),
+            totalReward: formatSQT(p.totalReward),
+            type: ProjectType[p.type],
+          };
+        })
+      )
+    );
+
+    // Exit with success, walletconnect will keep things running
+    this.exit(0);
   }
 }
 

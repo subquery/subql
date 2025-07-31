@@ -17,7 +17,13 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
-import {networkNameSchema, getContractSDK, deploymentMetadataSchema} from '../../controller/network/constants';
+import {
+  networkNameSchema,
+  getContractSDK,
+  deploymentMetadataSchema,
+  getSignerOrProvider,
+  requireSigner,
+} from '../../controller/network/constants';
 
 const createDeploymentInputs = z.object({
   network: networkNameSchema,
@@ -40,7 +46,9 @@ export async function createDeploymentAdapter(
   logger: Logger,
   prompt?: Prompt
 ): Promise<z.infer<typeof createDeploymentOutputs>> {
-  const sdk = getContractSDK(args.network);
+  const signerOrProvider = await getSignerOrProvider(args.network, logger, undefined, false);
+  const sdk = getContractSDK(signerOrProvider, args.network);
+  requireSigner(signerOrProvider);
 
   if (!args.deploymentDescription) {
     if (prompt) {
@@ -90,6 +98,9 @@ export default class CreateNetworkDeployment extends Command {
     const result = await createDeploymentAdapter({...args, ...flags}, logger, makeCLIPrompt());
     logger.info(`Deployment created successfully! Transaction hash: ${result.transactionHash}`);
     logger.info(`Deployment URL: ${result.deploymentUrl}`);
+
+    // Exit with success, walletconnect will keep things running
+    this.exit(0);
   }
 }
 
