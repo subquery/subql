@@ -297,3 +297,11 @@ export function isMultichain(location: string): boolean {
   const multichainContent = yaml.load(readFileSync(location, 'utf8')) as MultichainProjectManifest;
   return !!multichainContent && !!multichainContent.projects;
 }
+
+export async function resultToBuffer(req: AsyncIterable<Uint8Array>): Promise<string> {
+  const scriptBufferArray: Uint8Array[] = [];
+  for await (const res of req) {
+    scriptBufferArray.push(res);
+  }
+  return Buffer.concat(scriptBufferArray.map((u8a) => Buffer.from(u8a))).toString('utf8');
+}
