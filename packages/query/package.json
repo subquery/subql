@@ -44,7 +44,7 @@
     "@graphile-contrib/pg-simplify-inflector": "^6.1.0",
     "@graphile/pg-aggregates": "^0.1.1",
     "@graphile/pg-pubsub": "^4.13.0",
-    "@nestjs/common": "^9.4.0",
+    "@nestjs/common": "^11.1.6",
     "@nestjs/core": "^9.4.0",
     "@nestjs/platform-express": "^9.4.0",
     "@subql/common": "workspace:~",
