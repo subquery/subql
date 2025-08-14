@@ -9,7 +9,7 @@
   "bugs": "https://github.com/subquery/subql/issues",
   "dependencies": {
     "@inquirer/prompts": "^5.3.6",
-    "@modelcontextprotocol/sdk": "^1.13.0",
+    "@modelcontextprotocol/sdk": "^1.17.2",
     "@oclif/core": "^4.3.3",
     "@subql/common": "workspace:~",
     "@subql/contract-sdk": "^1.9.0",
@@ -74,7 +74,7 @@
     "oclif": "^4.20.8"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "/bin",

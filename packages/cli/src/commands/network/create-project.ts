@@ -34,8 +34,6 @@ const createProjectInputs = z.object({
   network: networkNameSchema,
   deploymentId: z.string({description: 'The IPFS CID of the published project'}),
   projectType: projectTypeSchema,
-  // projectMetadata: projectMetadataSchema,
-  // deploymentMetadata: deploymentMetadataSchema,
 
   // Project meta
   name: z.string({description: 'The name of the project'}),

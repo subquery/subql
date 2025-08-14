@@ -6799,22 +6799,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:^1.13.0":
-  version: 1.13.0
-  resolution: "@modelcontextprotocol/sdk@npm:1.13.0"
+"@modelcontextprotocol/sdk@npm:^1.17.2":
+  version: 1.17.2
+  resolution: "@modelcontextprotocol/sdk@npm:1.17.2"
   dependencies:
     ajv: ^6.12.6
     content-type: ^1.0.5
     cors: ^2.8.5
     cross-spawn: ^7.0.5
     eventsource: ^3.0.2
+    eventsource-parser: ^3.0.0
     express: ^5.0.1
     express-rate-limit: ^7.5.0
     pkce-challenge: ^5.0.0
     raw-body: ^3.0.0
     zod: ^3.23.8
     zod-to-json-schema: ^3.24.1
-  checksum: d09b450916d4d3f4b575835abca58d41cfd004c7004d7affec2d70800a095c88b9a1a1f54831d21bd5a577e792bb70436ec3c15765a152fe6d564914ac90c323
+  checksum: c7aa8ea233226814cabb3c5cb3a311d3ec75a80fe32f31f7f280c9160d41ada68aa98605aa5c1a913bf267f989f6d5559df17776d23609f605ef8a10559a165a
   languageName: node
   linkType: hard
 
@@ -9701,7 +9702,7 @@ __metadata:
     "@graphql-codegen/typescript-document-nodes": ^4.0.16
     "@graphql-codegen/typescript-operations": ^4.6.1
     "@inquirer/prompts": ^5.3.6
-    "@modelcontextprotocol/sdk": ^1.13.0
+    "@modelcontextprotocol/sdk": ^1.17.2
     "@oclif/core": ^4.3.3
     "@subql/common": "workspace:~"
     "@subql/common-algorand": ^4.3.1
@@ -16150,6 +16151,13 @@ __metadata:
   version: 3.3.0
   resolution: "events@npm:3.3.0"
   checksum: f6f487ad2198aa41d878fa31452f1a3c00958f46e9019286ff4787c84aac329332ab45c9cdc8c445928fc6d7ded294b9e005a7fce9426488518017831b272780
+  languageName: node
+  linkType: hard
+
+"eventsource-parser@npm:^3.0.0":
+  version: 3.0.3
+  resolution: "eventsource-parser@npm:3.0.3"
+  checksum: a052aaedb89da8744219aea539343dabc54c6e032acc47f182a90fbbb083583208fbe0f786d7bc1182da098c88a391b7881b59a3fc921a73b718f25d1ee37425
   languageName: node
   linkType: hard
 

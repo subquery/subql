@@ -13,10 +13,14 @@ import {registerInitMCPTool} from './init';
 import {registerMigrateSubgraphMCPTool} from './migrate';
 import {registerMultichainAddMCPTool} from './multi-chain/add';
 import {registerAddDeploymentBoostMCPTool} from './network/add-deployment-boost';
+import {registerConnectWalletMCPTool} from './network/connect-wallet';
 import {registerCreateNetworkDeploymentMCPTool} from './network/create-deployment';
 import {registerCreateNetworkProjectMCPTool} from './network/create-project';
-import {registerListBoostsMCPTool} from './network/list-boosts';
+import {registerDisconnectWalletMCPTool} from './network/disconnect-wallet';
+import {registerListAccountBoostsMCPTool} from './network/list-account-boosts';
+import {registerListDeploymentBoostsMCPTool} from './network/list-deployment-boosts';
 import {registerListNetworkDeploymentsMCPTool} from './network/list-deployments';
+import {registerListFlexPlansMCPTool} from './network/list-flex-plans';
 import {registerListNetworkProjectsMCPTool} from './network/list-projects';
 import {registerRemoveDeploymentBoostMCPTool} from './network/remove-deployment-boost';
 import {registerCreateDeploymentMCPTool} from './onfinality/create-deployment';
@@ -81,7 +85,9 @@ export default class MCP extends Command {
 
     registerListNetworkProjectsMCPTool(server);
     registerListNetworkDeploymentsMCPTool(server);
-    registerListBoostsMCPTool(server);
+    registerListDeploymentBoostsMCPTool(server);
+    registerListAccountBoostsMCPTool(server);
+    registerListFlexPlansMCPTool(server);
 
     const transport = new StdioServerTransport();
     await server.connect(transport);
@@ -105,6 +111,9 @@ export default class MCP extends Command {
       registerCreateNetworkDeploymentMCPTool(server, opts);
       registerAddDeploymentBoostMCPTool(server, opts);
       registerRemoveDeploymentBoostMCPTool(server, opts);
+
+      registerConnectWalletMCPTool(server, opts);
+      registerDisconnectWalletMCPTool(server, opts);
     };
 
     return new Promise(() => {

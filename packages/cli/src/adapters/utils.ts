@@ -102,7 +102,7 @@ export function zodToFlags<Shape extends Record<string, ZodTypeAny>>(schema: Zod
   for (const [key, def] of Object.entries(schema.shape)) {
     const description = def.description ?? '';
 
-    const {type, default: defaultValue, array, optional} = unwrap(def);
+    const {array, default: defaultValue, optional, type} = unwrap(def);
 
     if (type instanceof z.ZodString) {
       flags[key] = Flags.string({
@@ -145,7 +145,7 @@ export function zodToArgs<Shape extends Record<string, ZodTypeAny>>(schema: ZodO
   for (const [key, def] of Object.entries(schema.shape)) {
     const description = def.description ?? '';
 
-    const {type, default: defaultValue, array, optional} = unwrap(def);
+    const {array, default: defaultValue, optional, type} = unwrap(def);
 
     if (type instanceof z.ZodString) {
       args[key] = Args.string({
@@ -289,8 +289,8 @@ export function makeMCPElicitPrmompt(server: McpServer): Prompt {
       requestedSchema: makeInputSchema(type, required, multiple, options, defaultValue),
     });
 
-    if (res.action === 'reject') {
-      throw new Error('User rejected the input');
+    if (res.action === 'decline') {
+      throw new Error('User declined the input');
     }
 
     if (res.action === 'cancel') {
@@ -424,6 +424,7 @@ export function withStructuredResponse<I, O>(
       };
     } catch (e: any) {
       return {
+        isError: true,
         structuredContent: {
           error: formatErrorCauses(e as Error),
         },

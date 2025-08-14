@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {IPFS_NODE_ENDPOINT, IPFSHTTPClientLite} from '@subql/common';
+import {ProjectType} from '@subql/contract-sdk';
 import {SQNetworks} from '@subql/network-config';
 import {z} from 'zod';
-import {resultToBuffer} from '../../utils';
+import {resultToJson} from '../../utils';
 import {GetProjectsQuery, GetProjectsQueryVariables} from './__graphql__/base-types';
 import {GetProjects} from './__graphql__/network/projects.generated';
 import {getQueryClient, projectTypeSchema, gqlProjectTypeToProjectType, projectMetadataSchema} from './constants';
@@ -13,12 +14,13 @@ export const projectSchema = z.object({
   id: z.string(),
   owner: z.string(),
   metadata: z.string(),
-  totalAllocation: z.bigint(),
-  totalBoost: z.bigint(),
-  totalReward: z.bigint(),
+  totalAllocation: z.string(), //bigint
+  totalBoost: z.string(), //bigint
+  totalReward: z.string(), //bigint
   type: projectTypeSchema,
   deploymentId: z.string(),
   meta: projectMetadataSchema.optional(),
+  x: z.union([projectMetadataSchema, z.any()]).optional(),
 });
 export type Project = z.infer<typeof projectSchema>;
 
@@ -44,12 +46,11 @@ export async function listProjects(
     raw.map(async (p) => {
       if (!p) return null;
       const {__typename, type, ...rest} = p;
+
       return <Project>{
         ...rest,
-        type: gqlProjectTypeToProjectType(type) as any,
-        meta: await resultToBuffer(ipfs.cat(p.metadata))
-          .then((data) => JSON.parse(data))
-          .catch((e) => undefined), // Swallow the error
+        type: ProjectType[gqlProjectTypeToProjectType(type)],
+        meta: await resultToJson(ipfs.cat(p.metadata), true),
       };
     })
   );

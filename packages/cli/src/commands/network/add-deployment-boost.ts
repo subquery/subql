@@ -116,7 +116,7 @@ async function addDeploymentBoostAdapter(
 }
 
 export default class AddDeploymentBoost extends Command {
-  description = 'Increase the boost for a deployment';
+  static description = 'Increase the boost for a deployment';
   static flags = zodToFlags(addDeploymentBoostInputs);
 
   async run(): Promise<void> {

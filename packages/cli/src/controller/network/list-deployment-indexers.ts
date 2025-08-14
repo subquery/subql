@@ -4,7 +4,7 @@
 import {IPFS_NODE_ENDPOINT, IPFSHTTPClientLite} from '@subql/common';
 import {SQNetworks} from '@subql/network-config';
 import {z} from 'zod';
-import {resultToBuffer} from '../../utils';
+import {resultToJson} from '../../utils';
 import {GetDeploymentIndexersQuery, GetDeploymentIndexersQueryVariables} from './__graphql__/base-types';
 import {GetDeploymentIndexers} from './__graphql__/network/deployments.generated';
 import {getQueryClient} from './constants';
@@ -84,9 +84,7 @@ export async function listDeploymentIndexers(
         return null;
       }
 
-      const indexerMeta: DeploymentIndexer['indexerMeta'] = await resultToBuffer(ipfs.cat(indexer.metadata))
-        .then((data) => JSON.parse(data))
-        .catch((e) => undefined); // Swallow the error;
+      const indexerMeta = await resultToJson<DeploymentIndexer['indexerMeta'], true>(ipfs.cat(indexer.metadata), true);
 
       const indexerDeploymentMeta = indexerMeta
         ? await getIndexerDeploymentMetadata(indexerMeta.url, deploymentId).catch((e) => undefined)

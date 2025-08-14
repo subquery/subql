@@ -14,14 +14,16 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
-import {formatSQT, networkNameSchema} from '../../controller/network/constants';
-import {listBoosts, responseSchema as listBoostsResponseSchema} from '../../controller/network/list-boosts';
+import {formatSQT, networkNameSchema, resolveAddress} from '../../controller/network/constants';
+import {
+  listAccountBoosts,
+  responseSchema as listBoostsResponseSchema,
+} from '../../controller/network/list-account-boosts';
 import {jsonToTable} from '../../utils';
 
 export const listBoostsInputs = z.object({
   network: networkNameSchema,
-  deploymentId: z.string({description: 'The deployment id for the project'}),
-  account: z.string({description: 'The account to list boosts for'}).optional(),
+  address: z.string({description: 'The account address to list boosts for'}).optional(),
 });
 export type ListBoostsInputs = z.infer<typeof listBoostsInputs>;
 
@@ -32,17 +34,19 @@ async function listBoostsAdapter(
   logger: Logger,
   prompt?: Prompt
 ): Promise<z.infer<typeof listBoostsOutputs>> {
-  const boosts = await listBoosts(args.network, args.deploymentId);
+  const address = await resolveAddress(args.network, logger, undefined, args.address);
+  logger.info(`Listing boosts for address: ${address}`);
+  const boosts = await listAccountBoosts(args.network, address);
 
   return boosts;
 }
 
-export default class ListBoosts extends Command {
-  static description = 'Get a list of the boosts for a deployment';
+export default class ListAccountBoosts extends Command {
+  static description = 'Get a list of the deployments an account boosts';
   static flags = zodToFlags(listBoostsInputs);
 
   async run(): Promise<void> {
-    const {flags} = await this.parse(ListBoosts);
+    const {flags} = await this.parse(ListAccountBoosts);
 
     const logger = commandLogger(this);
 
@@ -51,10 +55,15 @@ export default class ListBoosts extends Command {
     this.log(`Total boost: ${formatSQT(res.totalBoost)}`);
     this.log(
       jsonToTable(
-        res.boosts.map((b) => {
+        res.boosts.map(({deploymentId, deploymentMeta, projectId, projectMeta, totalAmount}) => {
+          const subProjectMeta = projectMeta ? {name: projectMeta.name} : {};
+          const subDeploymentMeta = deploymentMeta ? {deploymentVersion: deploymentMeta.version} : {};
           return {
-            ...b,
-            totalAmount: formatSQT(b.totalAmount),
+            projectId,
+            ...subProjectMeta,
+            deploymentId,
+            ...subDeploymentMeta,
+            amount: formatSQT(totalAmount),
           };
         })
       )
@@ -62,11 +71,11 @@ export default class ListBoosts extends Command {
   }
 }
 
-export function registerListBoostsMCPTool(server: McpServer): RegisteredTool {
+export function registerListAccountBoostsMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    ListBoosts.name,
+    ListAccountBoosts.name,
     {
-      description: ListBoosts.description,
+      description: ListAccountBoosts.description,
       inputSchema: listBoostsInputs.shape,
       outputSchema: getMCPStructuredResponse(listBoostsOutputs).shape,
     },

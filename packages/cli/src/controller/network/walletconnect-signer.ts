@@ -28,44 +28,57 @@ const chainIds = Object.values(NETWORKS_CONFIG_INFO).reduce((acc, config) => {
 }, [] as Array<`eip155:${string}`>);
 
 class Storage implements IKeyValueStorage {
+  private writeQueue = Promise.resolve();
+
   constructor(private readonly sessionPath: string = WALLET_CONNECT_STORE_PATH) {}
 
   async #readData(): Promise<Record<string, any> | null> {
     if (!fs.existsSync(this.sessionPath)) return null;
-    return JSON.parse(await fs.promises.readFile(this.sessionPath, 'utf-8'));
+    const raw = await fs.promises.readFile(this.sessionPath, 'utf-8');
+    try {
+      return JSON.parse(raw);
+    } catch (e) {
+      console.log('FAILED TO READ DATA', e, raw);
+      return null;
+    }
   }
 
   async #writeData(data: Record<string, any>): Promise<void> {
-    return fs.promises.writeFile(this.sessionPath, JSON.stringify(data, null, 2));
+    await fs.promises.writeFile(this.sessionPath, JSON.stringify(data, null, 2));
   }
 
   async getKeys(): Promise<string[]> {
     const data = await this.#readData();
-    if (!data) return [];
-    return Object.keys(data);
+    return data ? Object.keys(data) : [];
   }
 
   async getEntries<T = any>(): Promise<[string, T][]> {
     const data = await this.#readData();
-    if (!data) return [];
-    return Object.entries(data) as [string, T][];
+    return data ? (Object.entries(data) as [string, T][]) : [];
   }
 
   async getItem<T = any>(key: string): Promise<T | undefined> {
     const data = await this.#readData();
-    return data?.[key] ?? undefined;
+    return data?.[key];
   }
 
   async setItem<T = any>(key: string, value: T): Promise<void> {
-    const data = (await this.#readData()) ?? {};
-    data[key] = value;
-    await this.#writeData(data);
+    this.writeQueue = this.writeQueue.then(async () => {
+      const data = (await this.#readData()) ?? {};
+      data[key] = value;
+      await this.#writeData(data);
+    });
+    return this.writeQueue;
   }
+
   async removeItem(key: string): Promise<void> {
-    const data = await this.#readData();
-    if (!data) return;
-    delete data[key];
-    await this.#writeData(data);
+    this.writeQueue = this.writeQueue.then(async () => {
+      const data = await this.#readData();
+      if (!data) return;
+      delete data[key];
+      await this.#writeData(data);
+    });
+    return this.writeQueue;
   }
 }
 
@@ -118,10 +131,16 @@ export class WalletConnectSigner extends Signer {
 
     try {
       // Check for existing sessions
-
       const existingSessions = this.signClient.session.getAll();
       const compatibleSession = existingSessions.find((session) =>
         session.namespaces.eip155?.chains?.includes(chainId)
+      );
+
+      console.log(
+        'XXXX compatibe',
+        existingSessions.map((s) => s.namespaces.epi155),
+        compatibleSession?.namespaces.eip155,
+        chainId
       );
 
       if (compatibleSession) {
@@ -132,12 +151,13 @@ export class WalletConnectSigner extends Signer {
       }
 
       if (!this.allowNewConnect) {
-        this.signClient.core.relayer.transportClose();
+        await this.signClient.core.relayer.transportClose();
         throw NO_EXISTING_CONN_ERROR;
       }
 
       // Create new session
       this.logger.debug('Creating new WalletConnect session...');
+      console.log('CHAIN IDS', chainIds);
       const {approval, uri} = await this.signClient.connect({
         optionalNamespaces: {
           eip155: {

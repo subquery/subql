@@ -11,3 +11,27 @@ query GetDeploymentBoost($deploymentId: String!) {
     }
   }
 }
+
+query GetAccountBoost($address: String!) {
+  deploymentBoosterSummaries(
+    filter: {and: {consumer: {equalTo: $address}, totalAmount: {greaterThan: "0"}}}
+    orderBy: PROJECT_ID_ASC
+  ) {
+    aggregates {
+      sum {
+        totalAmount
+      }
+    }
+    nodes {
+      totalAmount
+      deploymentId
+      deployment {
+        metadata
+      }
+      project {
+        id
+        metadata
+      }
+    }
+  }
+}

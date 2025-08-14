@@ -19,8 +19,8 @@ const config: CodegenConfig = {
     scalars: {
       Date: 'Date',
       Datetime: 'Date',
-      BigFloat: 'bigint' || 'string',
-      BigInt: 'bigint',
+      BigFloat: 'string',
+      BigInt: 'string',
       Cursor: 'string',
     },
   },
