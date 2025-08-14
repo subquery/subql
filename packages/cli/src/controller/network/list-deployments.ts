@@ -4,16 +4,16 @@
 import {IPFS_NODE_ENDPOINT, IPFSHTTPClientLite} from '@subql/common';
 import {SQNetworks} from '@subql/network-config';
 import {z} from 'zod';
-import {resultToBuffer} from '../../utils';
+import {resultToJson} from '../../utils';
 import {GetProjectDeploymentsQuery, GetProjectDeploymentsQueryVariables} from './__graphql__/base-types';
 import {GetProjectDeployments} from './__graphql__/network/deployments.generated';
-import {deploymentMetadataSchema, getQueryClient} from './constants';
+import {DeploymentMetadata, deploymentMetadataSchema, getQueryClient} from './constants';
 
 export const deploymentSchema = z.object({
   deploymentId: z.string(),
   metadata: z.string(),
   meta: deploymentMetadataSchema.optional(),
-  createdTimestamp: z.date(),
+  createdTimestamp: z.string().datetime(),
   createdBlock: z.union([z.number(), z.null()]), // TODO not sure why this is optional
   current: z.boolean(),
 });
@@ -46,14 +46,13 @@ export async function listDeployments(
       if (!d) return null;
       const {__typename, id, ...rest} = d;
 
-      return <Deployment>{
+      return (<Deployment>{
         deploymentId: id,
         ...rest,
+        createdTimestamp: new Date(d.createdTimestamp).toISOString(),
         current: res.data?.project?.deploymentId === id,
-        meta: await resultToBuffer(ipfs.cat(d.metadata))
-          .then((data) => JSON.parse(data))
-          .catch((e) => undefined), // Swallow the error
-      };
+        meta: await resultToJson<DeploymentMetadata, true>(ipfs.cat(d.metadata), true),
+      }) satisfies Deployment;
     })
   );
 

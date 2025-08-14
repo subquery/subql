@@ -80,7 +80,7 @@ async function removeDeploymentBoostAdapter(
 }
 
 export default class RemoveDeploymentBoost extends Command {
-  description = 'Decrease the boost for a deployment';
+  static description = 'Decrease the boost for a deployment';
   static flags = zodToFlags(removeDeploymentBoostInputs);
 
   async run(): Promise<void> {

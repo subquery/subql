@@ -8,18 +8,18 @@ import {GetDeploymentBoost} from './__graphql__/network/deploymentsBooster.gener
 import {getQueryClient} from './constants';
 
 export const boostsSchema = z.object({
-  totalAmount: z.bigint({description: 'The amount of SQT boosted'}),
+  totalAmount: z.string({description: 'The amount of SQT boosted'}), // bigint
   consumer: z.string({description: 'The account that made the boost'}),
 });
 export type Boosts = z.infer<typeof boostsSchema>;
 
 export const responseSchema = z.object({
   boosts: z.array(boostsSchema),
-  totalBoost: z.bigint(),
+  totalBoost: z.string(), //bigint
 });
 export type Response = z.infer<typeof responseSchema>;
 
-export async function listBoosts(network: SQNetworks, deploymentId: string): Promise<Response> {
+export async function listDeploymentBoosts(network: SQNetworks, deploymentId: string): Promise<Response> {
   const res = await getQueryClient(network).query<GetDeploymentBoostQuery, GetDeploymentBoostQueryVariables>({
     query: GetDeploymentBoost,
     variables: {deploymentId},
@@ -40,7 +40,7 @@ export async function listBoosts(network: SQNetworks, deploymentId: string): Pro
     return rest;
   });
 
-  const totalBoost = res.data.deploymentBoosterSummaries.aggregates?.sum?.totalAmount ?? 0n;
+  const totalBoost = res.data.deploymentBoosterSummaries.aggregates?.sum?.totalAmount ?? '0';
 
   return {
     boosts: boosts.filter((b) => b !== null),

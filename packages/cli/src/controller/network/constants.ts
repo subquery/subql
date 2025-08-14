@@ -7,9 +7,9 @@ import {toUtf8Bytes} from '@ethersproject/strings';
 import {Wallet} from '@ethersproject/wallet';
 import {ProjectType, ContractSDK, networks} from '@subql/contract-sdk';
 import {GraphqlQueryClient} from '@subql/network-clients/dist/clients/queryClient';
-import {NETWORK_CONFIGS, SQNetworks} from '@subql/network-config';
+import {NETWORK_CONFIGS, SQNetworks, SQT_DECIMAL} from '@subql/network-config';
 import {ContractReceipt, ContractTransaction, Signer} from 'ethers';
-import {formatEther} from 'ethers/lib/utils';
+import {formatEther, formatUnits} from 'ethers/lib/utils';
 import {z} from 'zod';
 import {Logger} from '../../adapters/utils';
 import {ProjectType as ProjectTypeGql} from './__graphql__/base-types';
@@ -77,6 +77,7 @@ export async function getSignerOrProvider(
     await signer.getAddress();
     return signer;
   } catch (e: any) {
+    console.log('HERE', e);
     if (e === NO_EXISTING_CONN_ERROR) {
       return provider;
     }
@@ -121,24 +122,29 @@ export function ipfsHashToBytes32(ipfsHash: string): string {
   return keccak256(toUtf8Bytes(ipfsHash));
 }
 
-export const projectMetadataSchema = z.object({
-  name: z.string(),
-  image: z.string().optional(),
-  description: z.string().default('').optional(),
-  websiteUrl: z.string().optional(), // URL
-  codeUrl: z.string().optional(), // URL
-  versionDescription: z.string().default('').optional(),
-  categories: z.array(z.string()).max(2),
-});
+export const projectMetadataSchema = z
+  .object({
+    name: z.string(),
+    image: z.string().optional(),
+    description: z.string().default('').optional(),
+    websiteUrl: z.string().optional(), // URL
+    codeUrl: z.string().optional(), // URL
+    versionDescription: z.string().default('').optional(),
+    version: z.string().optional(),
+    categories: z.array(z.string()).max(2),
+  })
+  .catchall(z.string());
 export type ProjectMetadata = z.infer<typeof projectMetadataSchema>;
 
-export const deploymentMetadataSchema = z.object({
-  version: z.string(), // TODO lock to semver
-  description: z.string({description: 'Description of this deployment.'}),
-  // These fields never seem to be set: https://github.com/subquery/network-app/blob/main/src/hooks/useCreateProject.tsx#L28-L31
-  // websiteUrl: z.string({description: 'Url to the project website'}),
-  // codeUrl: z.string({description: 'Url to where the source code for this deployment is'}),
-});
+export const deploymentMetadataSchema = z
+  .object({
+    version: z.string(), // TODO lock to semver
+    description: z.string({description: 'Description of this deployment.'}),
+    // These fields never seem to be set: https://github.com/subquery/network-app/blob/main/src/hooks/useCreateProject.tsx#L28-L31
+    // websiteUrl: z.string({description: 'Url to the project website'}),
+    // codeUrl: z.string({description: 'Url to where the source code for this deployment is'}),
+  })
+  .catchall(z.string());
 export type DeploymentMetadata = z.infer<typeof deploymentMetadataSchema>;
 
 export async function checkTransactionSuccess(transaction: ContractTransaction): Promise<ContractReceipt> {
@@ -149,6 +155,6 @@ export async function checkTransactionSuccess(transaction: ContractTransaction):
   throw new Error(`Transaction failed. Hash="${transaction.hash}"`);
 }
 
-export function formatSQT(amount: bigint): string {
-  return `${formatEther(amount).slice(0, 10)} SQT`;
+export function formatSQT(amount: bigint | string, places = SQT_DECIMAL, symbol = 'SQT'): string {
+  return `${formatUnits(amount, places).slice(0, 10)} ${symbol}`;
 }

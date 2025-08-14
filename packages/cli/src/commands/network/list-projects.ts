@@ -65,7 +65,7 @@ export default class ListProjects extends Command {
             totalAllocation: formatSQT(p.totalAllocation),
             totalBoost: formatSQT(p.totalBoost),
             totalReward: formatSQT(p.totalReward),
-            type: ProjectType[p.type],
+            type: p.type,
           };
         })
       )
