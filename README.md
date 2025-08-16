@@ -104,6 +104,7 @@ We have a vibrant community of developers and users who are always ready to help
 - [Discord](https://discord.com/invite/subquery) - The best place to get help and discuss with the community
 - [X](https://twitter.com/subquerynetwork)
 - [Telegram](https://t.me/subquerynetwork)
+- [YouTube](https://www.youtube.com/c/SubQueryNetwork)
 
 ## Contribute
 
