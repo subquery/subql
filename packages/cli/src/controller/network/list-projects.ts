@@ -20,7 +20,6 @@ export const projectSchema = z.object({
   type: projectTypeSchema,
   deploymentId: z.string(),
   meta: projectMetadataSchema.optional(),
-  x: z.union([projectMetadataSchema, z.any()]).optional(),
 });
 export type Project = z.infer<typeof projectSchema>;
 

@@ -32,6 +32,7 @@
     "rimraf": "^5.0.10",
     "semver": "^7.6.3",
     "simple-git": "^3.25.0",
+    "siwe": "^3.0.0",
     "terser-webpack-plugin": "^5.3.14",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
@@ -71,7 +72,8 @@
     "eslint": "^8.8.0",
     "eslint-config-oclif": "^4.0.0",
     "eslint-config-oclif-typescript": "^1.0.3",
-    "oclif": "^4.20.8"
+    "oclif": "^4.20.8",
+    "swagger-typescript-api": "^13.2.8"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -113,7 +115,9 @@
     "version": "oclif readme && git add README.md",
     "format": "prettier --write \"src/**/*.ts\"",
     "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql\" --release-prefix=\"cli/\"",
-    "codegen": "graphql-codegen --config graphql-codegen.ts"
+    "codegen:graphql": "graphql-codegen --config graphql-codegen.ts",
+    "codegen:chs": "swagger-typescript-api generate -p chs-swagger.yml -o src/controller/network/consumer-host --api-class-name NetworkConsumerHostServiceApi -n consumer-host-service-api.ts",
+    "codegen": "yarn codegen:graphql && yarn codegen:chs"
   },
   "types": "lib/index.d.ts"
 }

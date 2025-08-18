@@ -38,7 +38,6 @@ class Storage implements IKeyValueStorage {
     try {
       return JSON.parse(raw);
     } catch (e) {
-      console.log('FAILED TO READ DATA', e, raw);
       return null;
     }
   }
@@ -136,13 +135,6 @@ export class WalletConnectSigner extends Signer {
         session.namespaces.eip155?.chains?.includes(chainId)
       );
 
-      console.log(
-        'XXXX compatibe',
-        existingSessions.map((s) => s.namespaces.epi155),
-        compatibleSession?.namespaces.eip155,
-        chainId
-      );
-
       if (compatibleSession) {
         this.logger.debug('Using existing WalletConnect session');
         this.session = compatibleSession;
@@ -207,9 +199,7 @@ ${uri}
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async signMessage(message: string): Promise<string> {
-    throw new Error('signMessage is not allowed through the CLI');
-
-    // return this.runRequest<string>('personal_sign', [hexlify(Buffer.from(message, 'utf8')), this.account]);
+    return this.runRequest<string>('personal_sign', [hexlify(Buffer.from(message, 'utf8')), this.account]);
   }
 
   async signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string> {

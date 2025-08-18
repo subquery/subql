@@ -28,6 +28,7 @@ assert(
 );
 export const ACCESS_TOKEN_PATH = path.resolve(rootPath, '.subql/SUBQL_ACCESS_TOKEN');
 export const WALLET_CONNECT_STORE_PATH = path.resolve(rootPath, '.subql/wallet-connect.json');
+export const CONSUMER_HOST_STORE_PATH = path.resolve(rootPath, '.subql/chs.json');
 
 export const DEFAULT_SUBGRAPH_MANIFEST = 'subgraph.yaml';
 export const DEFAULT_SUBGRAPH_SCHEMA = 'schema.graphql';

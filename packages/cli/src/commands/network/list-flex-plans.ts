@@ -15,9 +15,9 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
-import {formatSQT, networkNameSchema, resolveAddress} from '../../controller/network/constants';
-import {listFlexPlans, responseSchema as listFlexPlansResponseSchema} from '../../controller/network/list-flex-plans';
+import {formatSQT, getSignerOrProvider, networkNameSchema, requireSigner} from '../../controller/network/constants';
 import {jsonToTable} from '../../utils';
+import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
 
 export const listFlexPlansInputs = z.object({
   network: networkNameSchema,
@@ -32,11 +32,23 @@ async function listFlexPlansAdapter(
   logger: Logger,
   prompt?: Prompt
 ): Promise<z.infer<typeof listFlexPlansOutputs>> {
-  const address = await resolveAddress(args.network, logger, undefined, args.address);
-  logger.info(`Listing flex plans for address: ${address}`);
-  const flexPlans = await listFlexPlans(args.network, address);
+  const signerOrProvider = await getSignerOrProvider(args.network, logger, undefined, true);
+  requireSigner(signerOrProvider);
+  // logger.info(`Listing flex plans for address: ${address}`);
 
-  return flexPlans;
+  const chsApi = await ConsumerHostClient.create(args.network, signerOrProvider, logger);
+
+  const plans = await chsApi.listPlans();
+
+  console.log('PLANS', plans);
+
+  throw new Error('Not implemented yet');
+
+  // const x = await chsApi.users.channelControllerIndex({});
+
+  // const flexPlans = await listFlexPlans(args.network, address);
+
+  // return flexPlans;
 }
 
 export default class ListFlexPlans extends Command {
@@ -55,41 +67,41 @@ export default class ListFlexPlans extends Command {
       return;
     }
 
-    this.log(
-      jsonToTable(
-        res.plans.map(
-          ({
-            deploymentId,
-            deploymentMeta,
-            id,
-            planTemplateMetadata,
-            price,
-            priceToken,
-            projectId,
-            projectMeta,
-            ...rest
-          }) => {
-            const subProjectMeta = projectMeta ? {projectName: projectMeta.name} : {};
-            const subDeploymentMeta = deploymentMeta ? {deploymentVersion: deploymentMeta.version} : {};
-            const {description, ...templateMeta} = planTemplateMetadata ?? {};
+    // this.log(
+    //   jsonToTable(
+    //     res.plans.map(
+    //       ({
+    //         deploymentId,
+    //         deploymentMeta,
+    //         id,
+    //         planTemplateMetadata,
+    //         price,
+    //         priceToken,
+    //         projectId,
+    //         projectMeta,
+    //         ...rest
+    //       }) => {
+    //         const subProjectMeta = projectMeta ? {projectName: projectMeta.name} : {};
+    //         const subDeploymentMeta = deploymentMeta ? {deploymentVersion: deploymentMeta.version} : {};
+    //         const {description, ...templateMeta} = planTemplateMetadata ?? {};
 
-            const symbol =
-              STABLE_COIN_ADDRESSES[flags.network] === priceToken ? STABLE_COIN_SYMBOLS[flags.network] : 'SQT';
-            const decimals = STABLE_COIN_ADDRESSES[flags.network] === priceToken ? STABLE_COIN_DECIMAL : undefined;
+    //         const symbol =
+    //           STABLE_COIN_ADDRESSES[flags.network] === priceToken ? STABLE_COIN_SYMBOLS[flags.network] : 'SQT';
+    //         const decimals = STABLE_COIN_ADDRESSES[flags.network] === priceToken ? STABLE_COIN_DECIMAL : undefined;
 
-            return {
-              planId: id,
-              ...rest,
-              ...templateMeta,
-              ...subProjectMeta,
-              deploymentId,
-              ...subDeploymentMeta,
-              price: formatSQT(price, decimals, symbol),
-            };
-          }
-        )
-      )
-    );
+    //         return {
+    //           planId: id,
+    //           ...rest,
+    //           ...templateMeta,
+    //           ...subProjectMeta,
+    //           deploymentId,
+    //           ...subDeploymentMeta,
+    //           price: formatSQT(price, decimals, symbol),
+    //         };
+    //       }
+    //     )
+    //   )
+    // );
   }
 }
 

@@ -391,8 +391,11 @@ export function formatErrorCauses(e: Error): string {
 }
 
 export function getMCPStructuredResponse<T extends z.ZodRawShape>(
-  result: z.ZodObject<T>
-): z.ZodObject<{result: z.ZodOptional<z.ZodObject<T>>; error: z.ZodOptional<z.ZodString>}> {
+  result: z.ZodObject<T> | z.ZodArray<z.ZodObject<T>>
+): z.ZodObject<{
+  result: z.ZodOptional<z.ZodObject<T> | z.ZodArray<z.ZodObject<T>>>;
+  error: z.ZodOptional<z.ZodString>;
+}> {
   return z.object({
     result: z.optional(result),
     error: z.optional(z.string().describe('Error message if the command fails')),
