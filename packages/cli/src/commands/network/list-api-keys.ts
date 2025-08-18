@@ -1,0 +1,81 @@
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
+
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {Command} from '@oclif/core';
+import {z} from 'zod';
+import {
+  commandLogger,
+  getMCPStructuredResponse,
+  Logger,
+  makeCLIPrompt,
+  makeMCPElicitPrmompt,
+  mcpLogger,
+  MCPToolOptions,
+  Prompt,
+  withStructuredResponse,
+  zodToArgs,
+  zodToFlags,
+} from '../../adapters/utils';
+import {networkNameSchema, getSignerOrProvider, requireSigner} from '../../controller/network/constants';
+import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
+import {jsonToTable} from '../../utils';
+import {apiKeySchema} from '../../controller/network/consumer-host/schemas';
+
+const listApiKeysInputs = z.object({
+  network: networkNameSchema,
+});
+type CreateApiKeyInputs = z.infer<typeof listApiKeysInputs>;
+
+const listApiKeysOutputs = z.array(apiKeySchema);
+
+export async function listApiKeysAdapter(
+  args: CreateApiKeyInputs,
+  logger: Logger,
+  prompt?: Prompt
+): Promise<z.infer<typeof listApiKeysOutputs>> {
+  const signerOrProvider = await getSignerOrProvider(args.network, logger, undefined, false);
+  // const sdk = getContractSDK(signerOrProvider, args.network);
+  requireSigner(signerOrProvider);
+
+  const chs = await ConsumerHostClient.create(args.network, signerOrProvider, logger);
+
+  return await chs.getAPIKeys();
+}
+
+export default class ListNetworkApiKeys extends Command {
+  static description = 'List API keys for making queries via the SubQuery Network';
+  static flags = zodToFlags(listApiKeysInputs);
+
+  async run(): Promise<void> {
+    const {flags} = await this.parse(ListNetworkApiKeys);
+    const logger = commandLogger(this);
+
+    const result = await listApiKeysAdapter({...flags}, logger, makeCLIPrompt());
+
+    if (result.length === 0) {
+      this.log('No API keys found for this network.');
+    } else {
+      this.log(jsonToTable(result));
+    }
+
+    // Exit with success, walletconnect will keep things running
+    this.exit(0);
+  }
+}
+
+export function registerListNetworkApiKeysMCPTool(server: McpServer): RegisteredTool {
+  return server.registerTool(
+    ListNetworkApiKeys.name,
+    {
+      description: ListNetworkApiKeys.description,
+      inputSchema: listApiKeysInputs.shape,
+      outputSchema: getMCPStructuredResponse(listApiKeysOutputs).shape,
+    },
+    withStructuredResponse(async (args) => {
+      const logger = mcpLogger(server.server);
+      const prompt = /*opts.supportsElicitation ? makeMCPElicitPrmompt(server) : */ undefined;
+      return listApiKeysAdapter(args, logger, prompt);
+    })
+  );
+}
