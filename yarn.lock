@@ -8510,6 +8510,7 @@ __metadata:
     fuzzy: ^0.1.3
     glob: ^10.4
     json5: ^2.2.3
+    jsonc-parser: ^3.3.1
     oclif: ^4.20.8
     ora: ^5.4.1
     resolve-from: ^5.0.0
@@ -17574,7 +17575,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonc-parser@npm:3.3.1":
+"jsonc-parser@npm:3.3.1, jsonc-parser@npm:^3.3.1":
   version: 3.3.1
   resolution: "jsonc-parser@npm:3.3.1"
   checksum: 81ef19d98d9c6bd6e4a37a95e2753c51c21705cbeffd895e177f4b542cca9cda5fda12fb942a71a2e824a9132cf119dc2e642e9286386055e1365b5478f49a47

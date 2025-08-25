@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.2.1] - 2025-08-26
+### Fixed
+- Missing jsonc-parser dependency
+
 ## [6.2.0] - 2025-08-25
 ### Changed
 - Revert building using esbuild and switch back to webpack (#2891)
@@ -836,7 +840,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/6.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/6.2.1...HEAD
+[6.2.1]: https://github.com/subquery/subql/compare/cli/6.2.0...cli/6.2.1
 [6.2.0]: https://github.com/subquery/subql/compare/cli/6.1.3...cli/6.2.0
 [6.1.3]: https://github.com/subquery/subql/compare/cli/6.1.2...cli/6.1.3
 [6.1.2]: https://github.com/subquery/subql/compare/cli/6.1.1...cli/6.1.2
