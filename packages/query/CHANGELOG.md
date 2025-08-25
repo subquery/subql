@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.23.4] - 2025-08-25
+### Fixed
+- Subscription error with undefined block height (#2889)
+
 ## [2.23.3] - 2025-07-24
 ### Changed
 - Improved docker image size (#2866)
@@ -439,7 +443,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.23.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.23.4...HEAD
+[2.23.4]: https://github.com/subquery/subql/compare/query/2.23.3...query/2.23.4
 [2.23.3]: https://github.com/subquery/subql/compare/query/2.23.2...query/2.23.3
 [2.23.2]: https://github.com/subquery/subql/compare/query/2.23.1...query/2.23.2
 [2.23.1]: https://github.com/subquery/subql/compare/query/2.23.0...query/2.23.1

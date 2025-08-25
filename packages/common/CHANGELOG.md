@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.7.4] - 2025-08-25
+### Changed
+- Bump axios to 1.11.0 (#2881)
+
 ## [5.7.3] - 2025-07-24
 ### Changed
 - Bump form-data dependency (#2858)
@@ -474,7 +478,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/5.7.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/5.7.4...HEAD
+[5.7.4]: https://github.com/subquery/subql/compare/common/5.7.3...common/5.7.4
 [5.7.3]: https://github.com/subquery/subql/compare/common/5.7.2...common/5.7.3
 [5.7.2]: https://github.com/subquery/subql/compare/common/5.7.1...common/5.7.2
 [5.7.1]: https://github.com/subquery/subql/compare/common/5.7.0...common/5.7.1
