@@ -65,7 +65,6 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
           )
         }`
     );
-
     resolvers[payloadName] = {
       _entity: {
         resolve: async ({_block_height, _entity}, args, context, resolveInfo) => {
@@ -73,8 +72,10 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
             sql.identifier(table.namespace.name, table.name),
             (tableAlias, queryBuilder) => {
               queryBuilder.context.args ??= {};
-              queryBuilder.context.args.blockHeight = sql.fragment`${sql.value(_block_height.toString())}::bigint`;
-              queryBuilder.where(sql.fragment`${tableAlias}._id = ${sql.value(_entity._id)}`);
+              if (_block_height) {
+                queryBuilder.context.args.blockHeight = sql.fragment`${sql.value(_block_height.toString())}::bigint`;
+              }
+              queryBuilder.where(sql.fragment`${tableAlias}.id = ${sql.value(_entity.id)}`);
               queryBuilder.limit(1);
             }
           );
