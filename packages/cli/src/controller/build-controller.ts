@@ -10,6 +10,7 @@ import TerserPlugin from 'terser-webpack-plugin';
 import {TsconfigPathsPlugin} from 'tsconfig-paths-webpack-plugin';
 import webpack, {Configuration} from 'webpack';
 import {merge} from 'webpack-merge';
+import {Logger} from '../adapters/utils';
 
 /**
  * Webpack has been chosen as the bundler for a few reasons.
@@ -90,8 +91,20 @@ export async function runBundle(
   projectDir: string,
   outputDir: string,
   isDev = false,
-  clean = false
+  clean = false,
+  logger?: Logger
 ): Promise<void> {
+  // Injecting polyfills if they exist, this allows setting global variables like TextDecoder/TextEncoder
+  const inject = [path.resolve(projectDir, './src/polyfill.ts'), path.resolve(projectDir, './src/polyfills.ts')].filter(
+    (file) => existsSync(file)
+  );
+
+  if (inject.length) {
+    logger?.warn(
+      'Support for pollyfill files has been removed. Please move the code to the top of your entry index.ts file'
+    );
+  }
+
   const config = merge(
     getBaseConfig(buildEntries, projectDir, outputDir, isDev),
     {output: {clean}}
@@ -129,7 +142,7 @@ export async function runBundle(
   });
 }
 
-export function getBuildEntries(directory: string): Record<string, string> {
+export function getBuildEntries(directory: string, logger?: Logger): Record<string, string> {
   // FIXME: this is an assumption that the default entry is src/index.ts, in reality it should read from the project manifest
   const defaultEntry = path.join(directory, 'src/index.ts');
   let buildEntries: Record<string, string> = {
@@ -160,7 +173,7 @@ export function getBuildEntries(directory: string): Record<string, string> {
 
   for (const i in buildEntries) {
     if (typeof buildEntries[i] !== 'string') {
-      console.warn(`Ignoring entry ${i} from build.`);
+      logger?.warn(`Ignoring entry ${i} from build.`);
       delete buildEntries[i];
     }
   }

@@ -46,10 +46,10 @@ export async function buildAdapter(
     );
   }
 
-  const buildEntries = getBuildEntries(directory);
+  const buildEntries = getBuildEntries(directory, logger);
   const outputDir = path.resolve(directory, args.output);
 
-  await runBundle(buildEntries, directory, outputDir, false, true);
+  await runBundle(buildEntries, directory, outputDir, false, true, logger);
 }
 
 export default class Build extends Command {
