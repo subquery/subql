@@ -46,10 +46,10 @@ export async function buildAdapter(
     );
   }
 
-  const buildEntries = getBuildEntries(directory);
+  const buildEntries = getBuildEntries(directory, logger);
   const outputDir = path.resolve(directory, args.output);
 
-  await runBundle(buildEntries, directory, outputDir, false, true);
+  await runBundle(buildEntries, directory, outputDir, false, true, logger);
 }
 
 export default class Build extends Command {
@@ -59,9 +59,12 @@ export default class Build extends Command {
 
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Build);
-
-    await buildAdapter(process.cwd(), {...args, ...flags}, commandLogger(this));
-    this.log('Project built successfully!');
+    try {
+      await buildAdapter(process.cwd(), {...args, ...flags}, commandLogger(this));
+      this.log('Project built successfully!');
+    } catch (e: any) {
+      this.error(e);
+    }
   }
 }
 

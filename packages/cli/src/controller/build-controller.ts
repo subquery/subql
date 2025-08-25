@@ -1,102 +1,88 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'node:fs';
-import path from 'node:path';
-import * as esbuild from 'esbuild';
+import assert from 'assert';
+import {readFileSync, existsSync} from 'fs';
+import path from 'path';
 import {globSync} from 'glob';
-import * as yaml from 'js-yaml';
-import ts from 'typescript';
+import {parse} from 'jsonc-parser';
+import TerserPlugin from 'terser-webpack-plugin';
+import {TsconfigPathsPlugin} from 'tsconfig-paths-webpack-plugin';
+import webpack, {Configuration} from 'webpack';
+import {merge} from 'webpack-merge';
+import {Logger} from '../adapters/utils';
 
-// Run TypeScript type checking
-function runTypeCheck(projectDir: string): void {
+/**
+ * Webpack has been chosen as the bundler for a few reasons.
+ * There was a change to esbuild that lead to more problems than it solved.
+ * These are the reasons for using webpack:
+ * * Good tree shaking including of dependencies. e.g imports to 'ethers' will result in tree shaking of unused code like Providers, this is to avoid importing 'unsafe' node imports like 'http'.
+ * * Correctly hoists polyfills. So if something like `global.TextDecoder = SomeOtherTextDecoder` will be set before any other code is run. esbuild does not do this.
+ * * There is some issues with pnpm resolving the @subql/types-* and @subql/types-core global entities correctly. This was the reason for swithcing to esbuild
+ */
+
+const getBaseConfig = (
+  buildEntries: Configuration['entry'],
+  projectDir: string,
+  outputDir: string,
+  development?: boolean
+): webpack.Configuration => ({
+  target: 'node',
+  mode: development ? 'development' : 'production',
+  context: projectDir,
+  entry: buildEntries,
+  devtool: 'inline-source-map',
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          sourceMap: true,
+          format: {
+            beautify: true,
+          },
+        },
+      }),
+    ],
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        loader: require.resolve('ts-loader'),
+        options: {
+          compilerOptions: {
+            declaration: false,
+          },
+        },
+      },
+      {
+        test: /\.ya?ml$/,
+        use: 'yaml-loader',
+      },
+    ],
+  },
+
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', '.json'],
+    plugins: [],
+  },
+
+  output: {
+    path: outputDir,
+    filename: '[name].js',
+    libraryTarget: 'commonjs',
+  },
+});
+
+export function loadTsConfig(projectDir: string): any | undefined {
   const tsconfigPath = path.join(projectDir, 'tsconfig.json');
-  if (!fs.existsSync(tsconfigPath)) {
-    throw new Error(`TypeScript configuration file not found: ${tsconfigPath}`);
-  }
+  if (existsSync(tsconfigPath)) {
+    const tsconfig = readFileSync(tsconfigPath, 'utf-8');
+    const tsconfigJson = parse(tsconfig);
 
-  // Parse the tsconfig.json file
-  const configFile = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
-  if (configFile.error) {
-    throw new Error(
-      `Error reading tsconfig.json: ${ts.formatDiagnostic(configFile.error, {
-        getCanonicalFileName: (fileName) => fileName,
-        getNewLine: () => ts.sys.newLine,
-        getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
-      })}`
-    );
-  }
-
-  // Parse the config options and modify them
-  const config = {...configFile.config};
-  if (!config.compilerOptions) {
-    config.compilerOptions = {};
-  }
-
-  // Ensure skipLibCheck is true to avoid checking most declaration files in node_modules
-  config.compilerOptions.skipLibCheck = true;
-
-  // We don't want to exclude @subql types from node_modules
-  // So we don't modify the exclude property
-
-  const parsedConfig = ts.parseJsonConfigFileContent(config, ts.sys, path.dirname(tsconfigPath));
-
-  if (parsedConfig.errors.length > 0) {
-    const errorMessages = parsedConfig.errors
-      .map((error) =>
-        ts.formatDiagnostic(error, {
-          getCanonicalFileName: (fileName) => fileName,
-          getNewLine: () => ts.sys.newLine,
-          getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
-        })
-      )
-      .join('\n');
-
-    throw new Error(`Error parsing tsconfig.json:\n${errorMessages}`);
-  }
-
-  // Create a program with updated compiler options
-  const compilerOptions = {
-    ...parsedConfig.options,
-    noEmit: true, // We only want type checking, not emitting files
-    skipLibCheck: true, // Skip checking declaration files in node_modules
-  };
-
-  const program = ts.createProgram(parsedConfig.fileNames, compilerOptions);
-
-  // Get the diagnostics
-  const diagnostics = ts.getPreEmitDiagnostics(program);
-
-  // If there are any diagnostics, filter and throw if relevant
-  if (diagnostics.length > 0) {
-    // Filter out errors from node_modules except for @subql packages
-    const relevantErrors = diagnostics.filter((diagnostic) => {
-      if (!diagnostic.file) return true; // Keep general errors
-
-      // Include errors from project files and @subql packages
-      const fileName = diagnostic.file.fileName;
-      return !fileName.includes('node_modules') || fileName.includes('node_modules/@subql/');
-    });
-
-    // If all errors were from other dependencies, we can proceed
-    if (relevantErrors.length === 0) {
-      return; // No errors in project code or @subql packages
-    }
-
-    // Format errors from project code and @subql packages
-    const errorMessages = relevantErrors
-      .map((diagnostic) => {
-        if (diagnostic.file && diagnostic.start !== undefined) {
-          const {character, line} = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-          const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-          return `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`;
-        } else {
-          return ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-        }
-      })
-      .join('\n');
-
-    throw new Error(`TypeScript type checking failed:\n${errorMessages}`);
+    return tsconfigJson;
   }
 }
 
@@ -105,73 +91,58 @@ export async function runBundle(
   projectDir: string,
   outputDir: string,
   isDev = false,
-  clean = false
+  clean = false,
+  logger?: Logger
 ): Promise<void> {
-  // Run TypeScript type checking first
-  try {
-    runTypeCheck(projectDir);
-  } catch (error: unknown) {
-    // Re-throw with more context
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `TypeScript type checking failed. Fix the errors in your project before building.\n${errorMessage}`
+  // Injecting polyfills if they exist, this allows setting global variables like TextDecoder/TextEncoder
+  const inject = [path.resolve(projectDir, './src/polyfill.ts'), path.resolve(projectDir, './src/polyfills.ts')].filter(
+    (file) => existsSync(file)
+  );
+
+  if (inject.length) {
+    logger?.warn(
+      'Support for pollyfill files has been removed. Please move the code to the top of your entry index.ts file'
     );
   }
 
-  // Create output directory if it doesn't exist
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, {recursive: true});
-  } else if (clean) {
-    // Simple clean implementation - could be enhanced for more selective cleaning
-    const files = fs.readdirSync(outputDir);
-    files.forEach((file) => {
-      fs.rmSync(path.join(outputDir, file), {force: true, recursive: true});
-    });
-  }
-
-  // Setup plugins for yaml support
-  const yamlPlugin = {
-    name: 'yaml',
-    setup(build: esbuild.PluginBuild) {
-      build.onLoad({filter: /\.ya?ml$/}, (args) => {
-        const source = fs.readFileSync(args.path, 'utf8');
-        const contents = `export default ${JSON.stringify(yaml.load(source))}`;
-        return {contents, loader: 'js'};
-      });
-    },
-  };
-
-  // Injecting polyfills if they exist, this allows setting global variables like TextDecoder/TextEncoder
-  const inject = [path.resolve(projectDir, './src/polyfill.ts'), path.resolve(projectDir, './src/polyfills.ts')].filter(
-    (file) => fs.existsSync(file)
+  const config = merge(
+    getBaseConfig(buildEntries, projectDir, outputDir, isDev),
+    {output: {clean}}
+    // Can allow projects to override webpack config here
   );
 
-  // Build each entry point separately
-  const buildPromises = Object.entries(buildEntries).map(async ([name, entry]) => {
-    try {
-      await esbuild.build({
-        entryPoints: [entry],
-        bundle: true,
-        platform: 'node',
-        outfile: path.join(outputDir, `${name}.js`),
-        sourcemap: 'inline',
-        minify: !isDev,
-        treeShaking: true,
-        format: 'cjs',
-        plugins: [yamlPlugin],
-        tsconfig: path.join(projectDir, 'tsconfig.json'),
-        target: 'node22',
-        inject: inject,
-      });
-    } catch (error) {
-      throw new Error(`Error building ${name}: ${error}`);
-    }
-  });
+  const tsConfig = loadTsConfig(projectDir);
+  if (tsConfig?.compilerOptions?.paths && config.resolve && config.resolve.plugins) {
+    config.resolve.plugins.push(new TsconfigPathsPlugin());
+  }
 
-  await Promise.all(buildPromises);
+  await new Promise((resolve, reject) => {
+    const wp = webpack(config);
+
+    if (!wp) {
+      throw new Error('Webpack failed to initialize');
+    }
+
+    wp.run((error, stats) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      assert(stats, 'Webpack stats is undefined');
+
+      if (stats.hasErrors()) {
+        const info = stats.toJson();
+
+        reject(info.errors?.map((e) => e.message).join('\n') ?? 'Unknown error');
+        return;
+      }
+
+      resolve(true);
+    });
+  });
 }
 
-export function getBuildEntries(directory: string): Record<string, string> {
+export function getBuildEntries(directory: string, logger?: Logger): Record<string, string> {
   // FIXME: this is an assumption that the default entry is src/index.ts, in reality it should read from the project manifest
   const defaultEntry = path.join(directory, 'src/index.ts');
   let buildEntries: Record<string, string> = {
@@ -189,7 +160,7 @@ export function getBuildEntries(directory: string): Record<string, string> {
   });
 
   // Get the output location from the project package.json main field
-  const pjson = JSON.parse(fs.readFileSync(path.join(directory, 'package.json')).toString());
+  const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
   if (pjson.exports && typeof pjson.exports !== 'string') {
     buildEntries = Object.entries(pjson.exports as Record<string, string>).reduce(
       (acc, [key, value]) => {
@@ -202,7 +173,7 @@ export function getBuildEntries(directory: string): Record<string, string> {
 
   for (const i in buildEntries) {
     if (typeof buildEntries[i] !== 'string') {
-      console.warn(`Ignoring entry ${i} from build.`);
+      logger?.warn(`Ignoring entry ${i} from build.`);
       delete buildEntries[i];
     }
   }
