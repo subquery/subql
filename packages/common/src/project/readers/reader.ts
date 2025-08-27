@@ -28,7 +28,7 @@ export class ReaderFactory {
     if (fs.existsSync(location)) {
       const project = getProjectRootAndManifest(location);
       if (project.manifests.length > 1) {
-        throw new Error(`Mulitple manifests found, expected only one`);
+        throw new Error(`Multiple manifests found, expected only one`);
       }
       return new LocalReader(project.root, path.join(project.root, project.manifests[0]));
     }
