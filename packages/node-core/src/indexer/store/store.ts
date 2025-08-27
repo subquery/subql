@@ -22,7 +22,7 @@ type Context = {
 };
 
 export class Store implements IStore {
-  /* These need to explicily be private using JS style private properties in order to not leak these in the sandbox */
+  /* These need to explicitly be private using JS style private properties in order to not leak these in the sandbox */
   #config: NodeConfig;
   #modelProvider: IStoreModelProvider;
   #context: Context;
