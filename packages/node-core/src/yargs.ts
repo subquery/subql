@@ -280,7 +280,7 @@ export function yargsBuilder<
             })
             .hide('root'), // root is hidden because its for internal use
         handler: () => {
-          // boostrap trigger in main.ts
+          // bootstrap trigger in main.ts
         },
       })
       // Default options, shared with all command
