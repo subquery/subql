@@ -18,7 +18,7 @@ import {Logger} from '../adapters/utils';
  * These are the reasons for using webpack:
  * * Good tree shaking including of dependencies. e.g imports to 'ethers' will result in tree shaking of unused code like Providers, this is to avoid importing 'unsafe' node imports like 'http'.
  * * Correctly hoists polyfills. So if something like `global.TextDecoder = SomeOtherTextDecoder` will be set before any other code is run. esbuild does not do this.
- * * There is some issues with pnpm resolving the @subql/types-* and @subql/types-core global entities correctly. This was the reason for swithcing to esbuild
+ * * There is some issues with pnpm resolving the @subql/types-* and @subql/types-core global entities correctly. This was the reason for switching to esbuild
  */
 
 const getBaseConfig = (

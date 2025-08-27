@@ -39,7 +39,7 @@ export const hostStoreKeys: (keyof HostStore)[] = [
 ];
 
 // Entities have to be converted to plain objects so they can be serialized.
-// We don't need the funcitons to be included
+// We don't need the functions to be included
 export const hostStoreToStore = (host: HostStore): Store => {
   return {
     get: unwrapProxyArgs(host.storeGet),

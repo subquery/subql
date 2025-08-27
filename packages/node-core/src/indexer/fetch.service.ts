@@ -288,7 +288,7 @@ export class FetchService<DS extends BaseDataSource, B extends IBlockDispatcher<
   }
 
   private useModuloHandlersOnly(relevantDS: DS[]): boolean {
-    // If there are modulos hanlders only, then number of moduloNumbers should be match number of with handlers
+    // If there are modulos handlers only, then number of moduloNumbers should be match number of with handlers
     const moduloNumbers = this.getModulos(relevantDS);
     const handlers = [...relevantDS.map((ds) => ds.mapping.handlers)].flat();
     return !!handlers.length && moduloNumbers.length === handlers.length;

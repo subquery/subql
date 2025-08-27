@@ -17,7 +17,7 @@ export function exitWithError(error: Error | string, logger?: Pino.Logger, code 
   process.exit(code);
 }
 
-// Function argument is to allow for lazy evauluation only if monitor service is enabled
+// Function argument is to allow for lazy evaluation only if monitor service is enabled
 export function monitorWrite(blockData: string | (() => string)): void {
   monitorService?.write(blockData);
 }

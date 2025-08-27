@@ -107,7 +107,7 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
 
       await Promise.all(this.exporters.map((exporter) => exporter.export(exportData)));
 
-      // Without a transaciton, commit that data instantly
+      // Without a transaction, commit that data instantly
       if (!tx) {
         await Promise.all(this.exporters.map((exporter) => exporter.commit()));
       }

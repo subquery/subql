@@ -157,7 +157,7 @@ export class ProjectService<
       // Flush any pending operations to set up DB
       await cacheProviderFlushData(this.storeService.modelProvider, true);
     } else {
-      assert(startHeight, 'ProjectService must be initalized with a start height in workers');
+      assert(startHeight, 'ProjectService must be initialized with a start height in workers');
       this.projectUpgradeService.initWorker(startHeight, this.handleProjectChange.bind(this));
 
       // Called to allow handling the first project
