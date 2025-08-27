@@ -137,7 +137,7 @@ export async function registerApp<P extends ISubqueryProject>(
   ) => Promise<P>,
   showHelp: () => void,
   pjson: any,
-  nameMapping?: Record<string, string> // Curently only used by cosmos
+  nameMapping?: Record<string, string> // Currently only used by cosmos
 ): Promise<{nodeConfig: NodeConfig; project: P & IProjectUpgradeService<P>}> {
   let config: NodeConfig;
   let rawManifest: unknown;
