@@ -404,7 +404,7 @@ export const sqlIterator = (tableName: string, sql: string, batch: number = DEFA
   `;
 };
 
-// Only used with historical to add indexes to ID fields for gettign entitities by ID
+// Only used with historical to add indexes to ID fields for getting entities by ID
 export function addHistoricalIdIndex(model: GraphQLModelsType, indexes: IndexesOptions[]): void {
   const idFieldName = model.fields.find((field) => field.type === 'ID')?.name;
   if (idFieldName && !indexes.find((idx) => idx.fields?.includes(idFieldName))) {
