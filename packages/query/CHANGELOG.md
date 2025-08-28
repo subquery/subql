@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.23.5] - 2025-08-29
+### Fixed
+- Subscriptions with historical enabled (#2897)
+
 ## [2.23.4] - 2025-08-25
 ### Fixed
 - Subscription error with undefined block height (#2889)
@@ -443,7 +447,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.23.4...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.23.5...HEAD
+[2.23.5]: https://github.com/subquery/subql/compare/query/2.23.4...query/2.23.5
 [2.23.4]: https://github.com/subquery/subql/compare/query/2.23.3...query/2.23.4
 [2.23.3]: https://github.com/subquery/subql/compare/query/2.23.2...query/2.23.3
 [2.23.2]: https://github.com/subquery/subql/compare/query/2.23.1...query/2.23.2
