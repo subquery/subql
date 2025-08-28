@@ -1,15 +1,14 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {keccak256} from '@ethersproject/keccak256';
 import {JsonRpcProvider, Provider} from '@ethersproject/providers';
-import {toUtf8Bytes} from '@ethersproject/strings';
 import {Wallet} from '@ethersproject/wallet';
 import {ProjectType, ContractSDK, networks} from '@subql/contract-sdk';
 import {GraphqlQueryClient} from '@subql/network-clients/dist/clients/queryClient';
 import {NETWORK_CONFIGS, SQNetworks, SQT_DECIMAL} from '@subql/network-config';
-import {ContractReceipt, ContractTransaction, Signer} from 'ethers';
-import {formatEther, formatUnits} from 'ethers/lib/utils';
+import {base58Decode} from '@subql/utils';
+import {BigNumberish, ContractReceipt, ContractTransaction, Signer} from 'ethers';
+import {formatUnits} from 'ethers/lib/utils';
 import {z} from 'zod';
 import {Logger} from '../../adapters/utils';
 import {ProjectType as ProjectTypeGql} from './__graphql__/base-types';
@@ -44,7 +43,7 @@ export function gqlProjectTypeToProjectType(projectType: ProjectTypeGql): Projec
   }
 }
 
-async function getRpcProvider(network: SQNetworks, rpcUrl?: string): Promise<JsonRpcProvider> {
+export async function getRpcProvider(network: SQNetworks, rpcUrl?: string): Promise<JsonRpcProvider> {
   const config = NETWORK_CONFIGS[network];
   const endpoint = rpcUrl ?? config.defaultEndpoint;
 
@@ -116,10 +115,8 @@ export async function resolveAddress(
   return signerOrProvider.getAddress();
 }
 
-export function ipfsHashToBytes32(ipfsHash: string): string {
-  // Convert IPFS hash to bytes32 by taking keccak256 hash
-  // This is a common pattern for storing IPFS hashes in smart contracts
-  return keccak256(toUtf8Bytes(ipfsHash));
+export function cidToBytes32(cid: string): string {
+  return `0x${Buffer.from(base58Decode(cid)).slice(2).toString('hex')}`;
 }
 
 export const projectMetadataSchema = z
@@ -155,6 +152,6 @@ export async function checkTransactionSuccess(transaction: ContractTransaction):
   throw new Error(`Transaction failed. Hash="${transaction.hash}"`);
 }
 
-export function formatSQT(amount: bigint | string, places = SQT_DECIMAL, symbol = 'SQT'): string {
+export function formatSQT(amount: BigNumberish, places = SQT_DECIMAL, symbol = 'SQT'): string {
   return `${formatUnits(amount, places).slice(0, 10)} ${symbol}`;
 }

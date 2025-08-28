@@ -123,148 +123,148 @@ paths:
           description: 'successful operation'
           schema:
             $ref: '#/definitions/ProjectDetail'
-  /users/projects:
-    post:
-      tags:
-        - 'user'
-      summary: 'Consumer select a project to open a state channel'
-      operationId: 'project_controller::create'
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: 'body'
-          name: 'body'
-          description: 'OpenChannel object used to open a state channel'
-          required: true
-          schema:
-            $ref: '#/definitions/OpenChannel'
-      responses:
-        200:
-          description: 'successful operation'
-          schema:
-            $ref: '#/definitions/StateChannel'
-  /users/channels:
-    get:
-      tags:
-        - 'user'
-      summary: 'Get all channels of a consumer'
-      operationId: 'channel_controller::index'
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: 'successful operation'
-          schema:
-            type: 'array'
-            items:
-              $ref: '#/definitions/StateChannel'
-  /users/channels/{channel}:
-    get:
-      tags:
-        - 'user'
-      summary: 'Get a channel with channel id'
-      operationId: 'channel_controller::show'
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: 'channel'
-          in: 'path'
-          description: 'Channel ID'
-          required: true
-          type: 'string'
-      responses:
-        200:
-          description: 'successful operation'
-          schema:
-            $ref: '#/definitions/StateChannel'
-  /users/channels/{channel}/fund:
-    get:
-      tags:
-        - 'user'
-      summary: 'Fund more amount to the state channel'
-      operationId: 'channel_controller::fund'
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: 'channel'
-          in: 'path'
-          description: 'Channel ID'
-          required: true
-          type: 'string'
-        - in: 'body'
-          name: 'body'
-          description: 'Fund object used to fund more amount to the state channel'
-          required: true
-          schema:
-            $ref: '#/definitions/Fund'
-      responses:
-        200:
-          description: 'successful operation'
-          schema:
-            $ref: '#/definitions/TX'
-        400:
-          description: 'invalid fund amount / invalid callback signature'
-  /users/channels/{channel}/finalize:
-    get:
-      tags:
-        - 'user'
-      summary: 'Finalize early the state channel and claim'
-      operationId: 'channel_controller::finalize'
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: 'channel'
-          in: 'path'
-          description: 'Channel ID'
-          required: true
-          type: 'string'
-      responses:
-        200:
-          description: 'successful operation'
-          schema:
-            $ref: '#/definitions/TX'
-  /users/channels/{channel}/claim:
-    get:
-      tags:
-        - 'user'
-      summary: 'Finalize early the state channel and claim'
-      operationId: 'channel_controller::claim'
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: 'channel'
-          in: 'path'
-          description: 'Channel ID'
-          required: true
-          type: 'string'
-      responses:
-        200:
-          description: 'successful operation'
-          schema:
-            $ref: '#/definitions/TX'
-        400:
-          description: 'channel not expired'
-        401:
-          description: 'user not approved'
-  /users/channels/{channel}/terminate:
-    get:
-      tags:
-        - 'user'
-      summary: 'Terminate the state channel'
-      operationId: 'channel_controller::terminate'
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: 'channel'
-          in: 'path'
-          description: 'Channel ID'
-          required: true
-          type: 'string'
-      responses:
-        200:
-          description: 'successful operation'
-          schema:
-            $ref: '#/definitions/TX'
+  # /users/projects:
+  #   post:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Consumer select a project to open a state channel'
+  #     operationId: 'project_controller::create'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - in: 'body'
+  #         name: 'body'
+  #         description: 'OpenChannel object used to open a state channel'
+  #         required: true
+  #         schema:
+  #           $ref: '#/definitions/OpenChannel'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/StateChannel'
+  # /users/channels:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Get all channels of a consumer'
+  #     operationId: 'channel_controller::index'
+  #     security:
+  #       - bearerAuth: []
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           type: 'array'
+  #           items:
+  #             $ref: '#/definitions/StateChannel'
+  # /users/channels/{channel}:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Get a channel with channel id'
+  #     operationId: 'channel_controller::show'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - name: 'channel'
+  #         in: 'path'
+  #         description: 'Channel ID'
+  #         required: true
+  #         type: 'string'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/StateChannel'
+  # /users/channels/{channel}/fund:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Fund more amount to the state channel'
+  #     operationId: 'channel_controller::fund'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - name: 'channel'
+  #         in: 'path'
+  #         description: 'Channel ID'
+  #         required: true
+  #         type: 'string'
+  #       - in: 'body'
+  #         name: 'body'
+  #         description: 'Fund object used to fund more amount to the state channel'
+  #         required: true
+  #         schema:
+  #           $ref: '#/definitions/Fund'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/TX'
+  #       400:
+  #         description: 'invalid fund amount / invalid callback signature'
+  # /users/channels/{channel}/finalize:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Finalize early the state channel and claim'
+  #     operationId: 'channel_controller::finalize'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - name: 'channel'
+  #         in: 'path'
+  #         description: 'Channel ID'
+  #         required: true
+  #         type: 'string'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/TX'
+  # /users/channels/{channel}/claim:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Finalize early the state channel and claim'
+  #     operationId: 'channel_controller::claim'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - name: 'channel'
+  #         in: 'path'
+  #         description: 'Channel ID'
+  #         required: true
+  #         type: 'string'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/TX'
+  #       400:
+  #         description: 'channel not expired'
+  #       401:
+  #         description: 'user not approved'
+  # /users/channels/{channel}/terminate:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Terminate the state channel'
+  #     operationId: 'channel_controller::terminate'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - name: 'channel'
+  #         in: 'path'
+  #         description: 'Channel ID'
+  #         required: true
+  #         type: 'string'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/TX'
   /users/apikeys:
     get:
       tags:
@@ -322,6 +322,61 @@ paths:
             $ref: '#/definitions/Apikey'
         400:
           description: 'invalid Apikey to delete'
+  /users/hosting-plans:
+    get:
+      tags:
+        - 'user'
+      summary: 'Get all hosting plans of a user'
+      operationId: 'hosting_plan_controller::index'
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/HostingPlan'
+    post:
+      tags:
+        - 'user'
+      summary: 'Create a new hosting plan for user'
+      operationId: 'hosting_plan_controller::create'
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Options object used to create a new hosting plan'
+          required: true
+          schema:
+            $ref: '#/definitions/CreateHostingPlan'
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            $ref: '#/definitions/HostingPlan'
+
+    /users/hosting-plans/{id}:
+      post:
+        tags:
+          - 'user'
+      summary: 'Update a hosting plan for user'
+      operationId: 'hosting_plan_controller::edit'
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: 'body'
+          name: body
+          description: 'Options object used to update a hosting plan'
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateHostingPlan'
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            $ref: '#/definitions/HostingPlan'
 
 definitions:
   Payload:
@@ -393,6 +448,16 @@ definitions:
       updated_at:
         type: 'string'
         description: 'update timestamp'
+      ptype:
+        type: 'integer'
+    required:
+      - id
+      - owner
+      - metadata
+      - is_actived
+      - created_at
+      - updated_at
+      - ptype
   Deployment:
     type: 'object'
     properties:
@@ -405,9 +470,14 @@ definitions:
       deployment:
         type: 'string'
         description: 'deployment hash'
-      version:
+      metadata:
         type: 'string'
+        description: 'metadata hash'
+      # version:
+      #   type: 'string'
       is_actived:
+        type: 'boolean'
+      is_latest:
         type: 'boolean'
       created_at:
         type: 'string'
@@ -415,6 +485,15 @@ definitions:
       updated_at:
         type: 'string'
         description: 'update timestamp'
+    required:
+      - id
+      - project_id
+      - deployment
+      - metadata
+      - is_actived
+      - is_latest
+      - created_at
+      - updated_at
   DeploymentIndexer:
     type: 'object'
     properties:
@@ -583,3 +662,78 @@ definitions:
       updated_at:
         type: 'string'
         description: 'update timestamp'
+  HostingPlan:
+    type: 'object'
+    required:
+      - id
+      - user_id
+      - deployment_id
+      - channels
+      - closed
+      - maximum
+      - price
+      - spent
+      - expired_at
+      - is_actived
+      - created_at
+      - updated_at
+      - deployment
+      - project
+    properties:
+      id:
+        type: 'integer'
+        format: 'i32'
+      user_id:
+        type: 'integer'
+        format: 'i32'
+      deployment_id:
+        type: 'integer'
+        format: 'i32'
+      channels:
+        type: 'string'
+      closed:
+        type: 'string'
+      maximum:
+        type: 'integer'
+        format: 'i32'
+      price:
+        type: 'string'
+      spent:
+        type: 'string'
+      expired_at:
+        type: 'string'
+      is_actived:
+        type: 'boolean'
+      created_at:
+        type: 'string'
+      updated_at:
+        type: 'string'
+      deployment:
+        type: 'object'
+        $ref: '#/definitions/Deployment'
+      project:
+        type: 'object'
+        $ref: '#/definitions/Project'
+  CreateHostingPlan:
+    type: 'object'
+    required:
+      - price
+    properties:
+      deployment:
+        type: 'integer'
+        format: 'i32'
+      deploymentId:
+        type: 'string'
+      price:
+        type: 'string'
+  UpdateHostingPlan:
+    type: 'object'
+    required:
+      - price
+      - expiration
+    properties:
+      price:
+        type: 'string' # u256 string
+      expiration:
+        type: 'integer'
+        format: 'i32' # seconds

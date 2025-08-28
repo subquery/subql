@@ -5,9 +5,10 @@ import {SQNetworks} from '@subql/network-config';
 import {Signer, utils} from 'ethers';
 import {SiweMessage, generateNonce} from 'siwe';
 import {Logger} from '../../../adapters/utils';
-import {Apikey, NetworkConsumerHostServiceApi, RequestParams, StateChannel} from './consumer-host-service-api';
+import {NetworkConsumerHostServiceApi, RequestParams} from './consumer-host-service-api';
+import {ApiKey, convertApiKey, convertHostingPlan, HostingPlan} from './schemas';
 import {FileTokenStore, TokenStore} from './tokenStore';
-import {ApiKey, convertApiKey} from './schemas';
+import {cidToBytes32} from '../constants';
 
 const endpoints = {
   [SQNetworks.MAINNET]: 'https://chs.subquery.network',
@@ -111,17 +112,33 @@ export class ConsumerHostClient {
     await this.#tokenStore.setToken(this.#network, token);
   }
 
-  async listPlans(): Promise<StateChannel[]> {
-    const res = await this.#api.users.channelControllerIndex(this.#getRequestParams());
+  async createPlan(deploymentId: string, price: bigint): Promise<HostingPlan> {
+    const res = await this.#api.users.hostingPlanControllerCreate(
+      {
+        // deployment: 330,
+        deploymentId: deploymentId,
+        price: price.toString(),
+        // expiration: 3600 * 24 * 14, // 14 days in seconds, this has been picked from a default value in the front end
+        // maximum: 2, // Unused according to the front end
+      } as any,
+      this.#getRequestParams()
+    );
 
     this.#isError(res.data);
 
-    return res.data;
+    return convertHostingPlan(res.data);
+  }
+
+  async listPlans(): Promise<HostingPlan[]> {
+    const res = await this.#api.users.hostingPlanControllerIndex(this.#getRequestParams());
+
+    this.#isError(res.data);
+
+    return res.data.map((p) => convertHostingPlan(p));
   }
 
   async getAPIKeys(): Promise<ApiKey[]> {
     const res = await this.#api.users.userControllerApikeyIndex(this.#getRequestParams());
-
     this.#isError(res.data);
 
     return res.data.map((key) => convertApiKey(key));

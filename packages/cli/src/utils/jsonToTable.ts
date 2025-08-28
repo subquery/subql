@@ -10,6 +10,9 @@ export function jsonToTable<T extends Record<string, any>>(input: T[]): string {
   const keys = Array.from(new Set(input.flatMap((item) => Object.keys(item))));
 
   const toString = (value: any): string => {
+    if (value instanceof Date) {
+      return value.toLocaleString();
+    }
     if (typeof value === 'object') {
       return JSON.stringify(value);
     }
