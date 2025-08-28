@@ -22,7 +22,7 @@ import {
   checkTransactionSuccess,
   getContractSDK,
   getSignerOrProvider,
-  ipfsHashToBytes32,
+  cidToBytes32,
   networkNameSchema,
   requireSigner,
 } from '../../controller/network/constants';
@@ -55,18 +55,22 @@ async function removeDeploymentBoostAdapter(
   const userAddress = await signerOrProvider.getAddress();
   logger.info(`Using address: ${userAddress}`);
 
-  const deploymentIdBytes32 = ipfsHashToBytes32(args.deploymentId);
+  const deploymentIdBytes32 = cidToBytes32(args.deploymentId);
   const tx = await sdk.rewardsBooster.removeBoosterDeployment(deploymentIdBytes32, amount);
 
   const receipt = await checkTransactionSuccess(tx);
 
   receipt.events?.forEach((event) => {
-    const parsedEvent = sdk.rewardsBooster.interface.parseLog(event);
+    try {
+      const parsedEvent = sdk.rewardsBooster.interface.parseLog(event);
 
-    const boostAddedEvent = sdk.rewardsBooster.interface.events['DeploymentBoosterAdded(bytes32,address,uint256)'];
-    if (parsedEvent.name === boostAddedEvent.name) {
-      // TODO check this is a new amount or total amount
-      const amount = (parsedEvent as unknown as DeploymentBoosterAddedEvent).args.amount;
+      const boostAddedEvent = sdk.rewardsBooster.interface.events['DeploymentBoosterAdded(bytes32,address,uint256)'];
+      if (parsedEvent.name === boostAddedEvent.name) {
+        // TODO check this is a new amount or total amount
+        const amount = (parsedEvent as unknown as DeploymentBoosterAddedEvent).args.amount;
+      }
+    } catch (e) {
+      // Do nothing, event might come from another contract or be unrelated
     }
   });
 

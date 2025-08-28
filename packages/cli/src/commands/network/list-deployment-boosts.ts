@@ -57,6 +57,7 @@ export default class ListDeploymentBoosts extends Command {
           return {
             ...b,
             totalAmount: formatSQT(b.totalAmount),
+            rewards: formatSQT(b.rewards),
           };
         })
       )

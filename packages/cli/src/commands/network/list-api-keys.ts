@@ -19,8 +19,8 @@ import {
 } from '../../adapters/utils';
 import {networkNameSchema, getSignerOrProvider, requireSigner} from '../../controller/network/constants';
 import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
-import {jsonToTable} from '../../utils';
 import {apiKeySchema} from '../../controller/network/consumer-host/schemas';
+import {jsonToTable} from '../../utils';
 
 const listApiKeysInputs = z.object({
   network: networkNameSchema,
@@ -40,7 +40,7 @@ export async function listApiKeysAdapter(
 
   const chs = await ConsumerHostClient.create(args.network, signerOrProvider, logger);
 
-  return await chs.getAPIKeys();
+  return chs.getAPIKeys();
 }
 
 export default class ListNetworkApiKeys extends Command {
@@ -54,9 +54,9 @@ export default class ListNetworkApiKeys extends Command {
     const result = await listApiKeysAdapter({...flags}, logger, makeCLIPrompt());
 
     if (result.length === 0) {
-      this.log('No API keys found for this network.');
+      this.log('No API keys found.');
     } else {
-      this.log(jsonToTable(result));
+      this.log(jsonToTable(result.map((r) => ({...r, createdAt: new Date(r.createdAt)}))));
     }
 
     // Exit with success, walletconnect will keep things running

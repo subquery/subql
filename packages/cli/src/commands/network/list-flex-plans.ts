@@ -3,7 +3,6 @@
 
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
-import {STABLE_COIN_ADDRESSES, STABLE_COIN_DECIMAL, STABLE_COIN_SYMBOLS} from '@subql/network-config';
 import {z} from 'zod';
 import {
   commandLogger,
@@ -15,9 +14,10 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
+import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
 import {formatSQT, getSignerOrProvider, networkNameSchema, requireSigner} from '../../controller/network/constants';
 import {jsonToTable} from '../../utils';
-import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
+import {listFlexPlans, metaHostingPlanSchema} from '../../controller/network/list-flex-plans';
 
 export const listFlexPlansInputs = z.object({
   network: networkNameSchema,
@@ -25,7 +25,7 @@ export const listFlexPlansInputs = z.object({
 });
 export type ListFlexPlansInputs = z.infer<typeof listFlexPlansInputs>;
 
-export const listFlexPlansOutputs = listFlexPlansResponseSchema;
+export const listFlexPlansOutputs = z.array(metaHostingPlanSchema);
 
 async function listFlexPlansAdapter(
   args: ListFlexPlansInputs,
@@ -38,21 +38,13 @@ async function listFlexPlansAdapter(
 
   const chsApi = await ConsumerHostClient.create(args.network, signerOrProvider, logger);
 
-  const plans = await chsApi.listPlans();
+  const plans = await listFlexPlans(chsApi);
 
-  console.log('PLANS', plans);
-
-  throw new Error('Not implemented yet');
-
-  // const x = await chsApi.users.channelControllerIndex({});
-
-  // const flexPlans = await listFlexPlans(args.network, address);
-
-  // return flexPlans;
+  return plans;
 }
 
 export default class ListFlexPlans extends Command {
-  static description = 'Get a list of the deployments an account boosts';
+  static description = 'Get a of your flex plans';
   static flags = zodToFlags(listFlexPlansInputs);
 
   async run(): Promise<void> {
@@ -62,46 +54,30 @@ export default class ListFlexPlans extends Command {
 
     const res = await listFlexPlansAdapter(flags, logger, makeCLIPrompt());
 
-    if (!res.plans.length) {
+    if (!res.length) {
       this.log('No flex plans');
-      return;
+    } else {
+      this.log(
+        jsonToTable(
+          res.map((plan) => {
+            return {
+              id: plan.id,
+              project: plan.projectMetadata?.name ?? plan.project.id,
+              deployment: plan.deployment.deployment,
+              price: formatSQT(plan.price),
+              maximum: plan.maximum,
+              spent: formatSQT(plan.spent),
+              isActivated: plan.isActivated,
+              createdAt: new Date(plan.createdAt).toLocaleString(),
+              updatedAt: new Date(plan.updatedAt).toLocaleString(),
+            };
+          })
+        )
+      );
     }
 
-    // this.log(
-    //   jsonToTable(
-    //     res.plans.map(
-    //       ({
-    //         deploymentId,
-    //         deploymentMeta,
-    //         id,
-    //         planTemplateMetadata,
-    //         price,
-    //         priceToken,
-    //         projectId,
-    //         projectMeta,
-    //         ...rest
-    //       }) => {
-    //         const subProjectMeta = projectMeta ? {projectName: projectMeta.name} : {};
-    //         const subDeploymentMeta = deploymentMeta ? {deploymentVersion: deploymentMeta.version} : {};
-    //         const {description, ...templateMeta} = planTemplateMetadata ?? {};
-
-    //         const symbol =
-    //           STABLE_COIN_ADDRESSES[flags.network] === priceToken ? STABLE_COIN_SYMBOLS[flags.network] : 'SQT';
-    //         const decimals = STABLE_COIN_ADDRESSES[flags.network] === priceToken ? STABLE_COIN_DECIMAL : undefined;
-
-    //         return {
-    //           planId: id,
-    //           ...rest,
-    //           ...templateMeta,
-    //           ...subProjectMeta,
-    //           deploymentId,
-    //           ...subDeploymentMeta,
-    //           price: formatSQT(price, decimals, symbol),
-    //         };
-    //       }
-    //     )
-    //   )
-    // );
+    // Exit with success, walletconnect will keep things running
+    this.exit(0);
   }
 }
 

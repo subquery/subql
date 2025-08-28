@@ -1,10 +1,9 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {parseEther, formatEther} from '@ethersproject/units';
+import {parseEther} from '@ethersproject/units';
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
-import {DeploymentBoosterAddedEvent} from '@subql/contract-sdk/typechain/contracts/RewardsBooster';
 import {z} from 'zod';
 import {
   commandLogger,
@@ -22,10 +21,12 @@ import {
   checkTransactionSuccess,
   getContractSDK,
   getSignerOrProvider,
-  ipfsHashToBytes32,
+  cidToBytes32,
   networkNameSchema,
   requireSigner,
+  formatSQT,
 } from '../../controller/network/constants';
+import {checkAndIncreaseAllowance} from '../../controller/network/utils';
 
 const addDeploymentBoostInputs = z.object({
   network: networkNameSchema,
@@ -56,62 +57,16 @@ async function addDeploymentBoostAdapter(
   const userAddress = await signer.getAddress();
   logger.info(`Using address: ${userAddress}`);
 
-  // Check current allowance
-  const allowance = await sdk.sqToken.allowance(userAddress, sdk.rewardsBooster.address);
-  logger.info(`Current allowance: ${formatEther(allowance)} SQT`);
-  logger.info(`Amount needed: ${formatEther(amount)} SQT`);
+  await checkAndIncreaseAllowance(signer, sdk, amount, sdk.rewardsBooster.address, logger, 'boost project', prompt);
 
-  if (allowance.lt(amount)) {
-    const needed = amount.sub(allowance);
-    logger.warn(`Insufficient allowance. Need to approve ${formatEther(needed)} SQT additional allowance.`);
-
-    if (prompt) {
-      const confirm = await prompt({
-        type: 'boolean',
-        message: `Approve additional ${formatEther(needed)} SQT allowance for rewards booster?`,
-      });
-      if (!confirm) {
-        throw new Error('Allowance approval was cancelled. Cannot proceed with boost.');
-      }
-    } else {
-      logger.info('Auto-approving allowance in non-interactive mode');
-    }
-
-    logger.info('Increasing allowance of SQT to boost project...');
-    try {
-      const allowanceTx = await sdk.sqToken.increaseAllowance(sdk.rewardsBooster.address, needed);
-      console.log('allowance tx', allowanceTx);
-      const allowanceReceipt = await checkTransactionSuccess(allowanceTx);
-    } catch (e) {
-      console.error('Error increasing allowance', e);
-      throw e;
-    }
-    logger.info('✅ Successfully increased allowance of SQT to boost project');
-  } else {
-    logger.info('✅ Sufficient allowance already exists');
-  }
-
-  const deploymentIdBytes32 = ipfsHashToBytes32(args.deploymentId);
+  const deploymentIdBytes32 = cidToBytes32(args.deploymentId);
   const tx = await sdk.rewardsBooster.boostDeployment(deploymentIdBytes32, amount);
 
-  const receipt = await checkTransactionSuccess(tx);
-
-  receipt.events?.forEach((event) => {
-    const parsedEvent = sdk.rewardsBooster.interface.parseLog(event);
-
-    const boostAddedEvent = sdk.rewardsBooster.interface.events['DeploymentBoosterAdded(bytes32,address,uint256)'];
-    if (parsedEvent.name === boostAddedEvent.name) {
-      // TODO check this is a new amount or total amount
-      const amount = (parsedEvent as unknown as DeploymentBoosterAddedEvent).args.amount;
-    }
-  });
-
-  // TODO get new total, from receipt events
-  const totalAmount = 0n;
+  await checkTransactionSuccess(tx);
 
   return {
     transactionHash: tx.hash,
-    amount: totalAmount,
+    amount: amount.toBigInt(),
   };
 }
 
@@ -124,7 +79,9 @@ export default class AddDeploymentBoost extends Command {
 
     const result = await addDeploymentBoostAdapter(flags, commandLogger(this), makeCLIPrompt());
 
-    this.log('Boosted deployment:', JSON.stringify(result, null, 2));
+    this.log(
+      `Boosted deployment: ${flags.deploymentId} by ${formatSQT(result.amount)}. TransactionHash: ${result.transactionHash}`
+    );
   }
 }
 
