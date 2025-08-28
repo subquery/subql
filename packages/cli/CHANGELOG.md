@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.2.2] - 2025-08-29
+### Changed
+- Fixed typos (#2895)
+
 ## [6.2.1] - 2025-08-26
 ### Fixed
 - Missing jsonc-parser dependency
@@ -840,7 +844,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/6.2.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/6.2.2...HEAD
+[6.2.2]: https://github.com/subquery/subql/compare/cli/6.2.1...cli/6.2.2
 [6.2.1]: https://github.com/subquery/subql/compare/cli/6.2.0...cli/6.2.1
 [6.2.0]: https://github.com/subquery/subql/compare/cli/6.1.3...cli/6.2.0
 [6.1.3]: https://github.com/subquery/subql/compare/cli/6.1.2...cli/6.1.3
