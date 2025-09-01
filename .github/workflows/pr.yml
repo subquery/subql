@@ -8,7 +8,7 @@ jobs:
     name: code-style
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
@@ -47,7 +47,7 @@ jobs:
       SUBQL_ORG_TEST: ${{ secrets.SUBQL_ORG_TEST }}
       ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Enable btree btree_gist
         run: psql "postgresql://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_DATABASE" -c "CREATE EXTENSION IF NOT EXISTS btree_gist;"
