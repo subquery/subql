@@ -6,9 +6,15 @@ import {Signer, utils} from 'ethers';
 import {SiweMessage, generateNonce} from 'siwe';
 import {Logger} from '../../../adapters/utils';
 import {NetworkConsumerHostServiceApi, RequestParams} from './consumer-host-service-api';
-import {ApiKey, convertApiKey, convertHostingPlan, HostingPlan} from './schemas';
+import {
+  ApiKey,
+  convertApiKey,
+  convertHostingPlan,
+  convertHostingPlanExtra,
+  HostingPlan,
+  HostingPlanExtra,
+} from './schemas';
 import {FileTokenStore, TokenStore} from './tokenStore';
-import {cidToBytes32} from '../constants';
 
 const endpoints = {
   [SQNetworks.MAINNET]: 'https://chs.subquery.network',
@@ -129,12 +135,20 @@ export class ConsumerHostClient {
     return convertHostingPlan(res.data);
   }
 
-  async listPlans(): Promise<HostingPlan[]> {
+  async updatePlan(planId: number, price: string, expiration: number): Promise<HostingPlan> {
+    const res = await this.#api.users.hostingPlanControllerEdit(planId, {price, expiration}, this.#getRequestParams());
+
+    this.#isError(res.data);
+
+    return convertHostingPlan(res.data);
+  }
+
+  async listPlans(): Promise<HostingPlanExtra[]> {
     const res = await this.#api.users.hostingPlanControllerIndex(this.#getRequestParams());
 
     this.#isError(res.data);
 
-    return res.data.map((p) => convertHostingPlan(p));
+    return res.data.map((p) => convertHostingPlanExtra(p));
   }
 
   async getAPIKeys(): Promise<ApiKey[]> {

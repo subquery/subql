@@ -14,10 +14,10 @@ import {
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
-import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
 import {formatSQT, getSignerOrProvider, networkNameSchema, requireSigner} from '../../controller/network/constants';
-import {jsonToTable} from '../../utils';
+import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
 import {listFlexPlans, metaHostingPlanSchema} from '../../controller/network/list-flex-plans';
+import {jsonToTable} from '../../utils';
 
 export const listFlexPlansInputs = z.object({
   network: networkNameSchema,
@@ -44,7 +44,7 @@ async function listFlexPlansAdapter(
 }
 
 export default class ListFlexPlans extends Command {
-  static description = 'Get a of your flex plans';
+  static description = 'List your Flex Plans for querying projects on the SubQuery Network';
   static flags = zodToFlags(listFlexPlansInputs);
 
   async run(): Promise<void> {

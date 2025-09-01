@@ -336,7 +336,7 @@ paths:
           schema:
             type: 'array'
             items:
-              $ref: '#/definitions/HostingPlan'
+              $ref: '#/definitions/HostingPlanList'
     post:
       tags:
         - 'user'
@@ -357,15 +357,21 @@ paths:
           schema:
             $ref: '#/definitions/HostingPlan'
 
-    /users/hosting-plans/{id}:
-      post:
-        tags:
-          - 'user'
+  /users/hosting-plans/{id}:
+    post:
+      tags:
+        - 'user'
       summary: 'Update a hosting plan for user'
       operationId: 'hosting_plan_controller::edit'
       security:
         - bearerAuth: []
       parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Hosting Plan ID'
+          required: true
+          type: 'integer'
+          format: 'int64'
         - in: 'body'
           name: body
           description: 'Options object used to update a hosting plan'
@@ -663,6 +669,52 @@ definitions:
         type: 'string'
         description: 'update timestamp'
   HostingPlan:
+    type: 'object'
+    required:
+      - id
+      - user_id
+      - deployment_id
+      - channels
+      - closed
+      - maximum
+      - price
+      - spent
+      - expired_at
+      - is_actived
+      - created_at
+      - updated_at
+      - deployment
+      - project
+    properties:
+      id:
+        type: 'integer'
+        format: 'i32'
+      user_id:
+        type: 'integer'
+        format: 'i32'
+      deployment_id:
+        type: 'integer'
+        format: 'i32'
+      channels:
+        type: 'string'
+      closed:
+        type: 'string'
+      maximum:
+        type: 'integer'
+        format: 'i32'
+      price:
+        type: 'string'
+      spent:
+        type: 'string'
+      expired_at:
+        type: 'string'
+      is_actived:
+        type: 'boolean'
+      created_at:
+        type: 'string'
+      updated_at:
+        type: 'string'
+  HostingPlanList:
     type: 'object'
     required:
       - id

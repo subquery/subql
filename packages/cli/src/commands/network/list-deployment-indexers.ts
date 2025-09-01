@@ -40,7 +40,7 @@ async function listIndexersAdapter(
 }
 
 export default class ListDeploymentIndexers extends Command {
-  static description = 'List deployments for a SubQuery project on a specific network';
+  static description = 'List the indexers for a deployment on the SubQuery Network';
   static flags = zodToFlags(listIndexersInputs);
 
   async run(): Promise<void> {

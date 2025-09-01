@@ -10,12 +10,9 @@ import {
   getMCPStructuredResponse,
   Logger,
   makeCLIPrompt,
-  makeMCPElicitPrmompt,
   mcpLogger,
-  MCPToolOptions,
   Prompt,
   withStructuredResponse,
-  zodToArgs,
   zodToFlags,
 } from '../../adapters/utils';
 import {
@@ -27,8 +24,8 @@ import {
   formatSQT,
 } from '../../controller/network/constants';
 import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
-import {checkAndIncreaseAllowance} from '../../controller/network/utils';
 import {listDeploymentBoosts} from '../../controller/network/list-deployment-boosts';
+import {checkAndIncreaseAllowance} from '../../controller/network/utils';
 
 const createFlexPlanInputs = z.object({
   network: networkNameSchema,
@@ -82,7 +79,7 @@ export async function createFlexPlanAdapter(
     }
   }
 
-  let apiKey: string | undefined = undefined;
+  let apiKey: string | undefined;
   const existingApiKeys = await chs.getAPIKeys();
   if (!existingApiKeys.length) {
     logger.info(`Creating an API key`);
@@ -92,15 +89,11 @@ export async function createFlexPlanAdapter(
 
   const plan = await chs.createPlan(args.deploymentId, amount.toBigInt());
 
-  console.log('PLAN CREATED', plan);
-
-  // Create or update flex plan?
-
   return {apiKey};
 }
 
 export default class CreateNetworkFlexPlan extends Command {
-  static description = 'Create an API key for making queries via the SubQuery Network';
+  static description = 'Create a new Flex Plan for querying a SubQuery deployment on the SubQuery Network';
   static flags = zodToFlags(createFlexPlanInputs);
 
   async run(): Promise<void> {

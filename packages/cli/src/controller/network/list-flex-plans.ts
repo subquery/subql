@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {IPFSHTTPClientLite, IPFS_NODE_ENDPOINT} from '@subql/common';
-import {DeploymentMetadata, deploymentMetadataSchema, ProjectMetadata, projectMetadataSchema} from './constants';
-import {hostingPlanSchema} from './consumer-host/schemas';
-
 import {z} from 'zod';
-import {ConsumerHostClient} from './consumer-host/client';
 import {resultToJson} from '../../utils';
+import {DeploymentMetadata, deploymentMetadataSchema, ProjectMetadata, projectMetadataSchema} from './constants';
+import {ConsumerHostClient} from './consumer-host/client';
+import {hostingPlanExtraSchema} from './consumer-host/schemas';
 
-export const metaHostingPlanSchema = hostingPlanSchema.extend({
+export const metaHostingPlanSchema = hostingPlanExtraSchema.extend({
   deploymentMeta: deploymentMetadataSchema.optional(),
   projectMetadata: projectMetadataSchema.optional(),
 });

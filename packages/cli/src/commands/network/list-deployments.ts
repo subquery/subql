@@ -36,7 +36,7 @@ async function listDeploymentsAdapter(
 }
 
 export default class ListNetworkDeployments extends Command {
-  static description = 'List deployments for a SubQuery project on a specific network';
+  static description = 'List deployments for a SubQuery project';
   static flags = zodToFlags(listDeploymentsInputs);
 
   async run(): Promise<void> {

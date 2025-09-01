@@ -14,15 +14,19 @@ import {registerMigrateSubgraphMCPTool} from './migrate';
 import {registerMultichainAddMCPTool} from './multi-chain/add';
 import {registerAddDeploymentBoostMCPTool} from './network/add-deployment-boost';
 import {registerConnectWalletMCPTool} from './network/connect-wallet';
+import {registerCreateNetworkApiKeyMCPTool} from './network/create-api-key';
 import {registerCreateNetworkDeploymentMCPTool} from './network/create-deployment';
+import {registerCreateNetworkFlexPlanMCPTool} from './network/create-flex-plan';
 import {registerCreateNetworkProjectMCPTool} from './network/create-project';
 import {registerDisconnectWalletMCPTool} from './network/disconnect-wallet';
 import {registerListAccountBoostsMCPTool} from './network/list-account-boosts';
 import {registerListDeploymentBoostsMCPTool} from './network/list-deployment-boosts';
+import {registerListDeploymentIndexersMCPTool} from './network/list-deployment-indexers';
 import {registerListNetworkDeploymentsMCPTool} from './network/list-deployments';
 import {registerListFlexPlansMCPTool} from './network/list-flex-plans';
 import {registerListNetworkProjectsMCPTool} from './network/list-projects';
 import {registerRemoveDeploymentBoostMCPTool} from './network/remove-deployment-boost';
+import {registerStopNetworkFlexPlanMCPTool} from './network/stop-flex-plan';
 import {registerCreateDeploymentMCPTool} from './onfinality/create-deployment';
 import {registerCreateMultichainDeploymentMCPTool} from './onfinality/create-multichain-deployment';
 import {registerCreateProjectMCPTool} from './onfinality/create-project';
@@ -85,9 +89,14 @@ export default class MCP extends Command {
 
     registerListNetworkProjectsMCPTool(server);
     registerListNetworkDeploymentsMCPTool(server);
+    registerListNetworkDeploymentsMCPTool(server);
     registerListDeploymentBoostsMCPTool(server);
+    registerListDeploymentIndexersMCPTool(server);
     registerListAccountBoostsMCPTool(server);
     registerListFlexPlansMCPTool(server);
+    registerCreateNetworkFlexPlanMCPTool(server);
+    registerStopNetworkFlexPlanMCPTool(server);
+    registerCreateNetworkApiKeyMCPTool(server);
 
     const transport = new StdioServerTransport();
     await server.connect(transport);

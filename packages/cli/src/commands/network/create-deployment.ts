@@ -88,7 +88,7 @@ export async function createDeploymentAdapter(
 }
 
 export default class CreateNetworkDeployment extends Command {
-  static description = 'Create a new deployment for a SubQuery project on the specified network';
+  static description = 'Create a new deployment for a SubQuery project';
   static flags = zodToFlags(createDeploymentInputs);
 
   async run(): Promise<void> {

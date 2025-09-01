@@ -52,7 +52,7 @@ export async function removeApiKeyAdapter(
 }
 
 export default class RemoveApiKey extends Command {
-  static description = 'Create an API key for making queries via the SubQuery Network';
+  static description = 'Remove an API key used for making queries via the SubQuery Network';
   static flags = zodToFlags(removeApiKeyInputs.omit({name: true}));
   static args = zodToArgs(removeApiKeyInputs.pick({name: true}));
 

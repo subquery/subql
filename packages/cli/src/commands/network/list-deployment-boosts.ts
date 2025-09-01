@@ -40,7 +40,7 @@ async function listBoostsAdapter(
 }
 
 export default class ListDeploymentBoosts extends Command {
-  static description = 'Get a list of the boosts for a deployment';
+  static description = 'Get a list of boosts made to a project deployment';
   static flags = zodToFlags(listBoostsInputs);
 
   async run(): Promise<void> {

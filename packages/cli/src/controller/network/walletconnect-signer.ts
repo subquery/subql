@@ -122,7 +122,7 @@ export class WalletConnectSigner extends Signer {
         url: 'https://subquery.network',
         icons: ['https://subquery.network/favicon.ico'],
       },
-      logger: 'silent',
+      logger: 'silent', // Disable all logging
       storage: new Storage(),
     });
 

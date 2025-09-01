@@ -5,6 +5,7 @@ import {z} from 'zod';
 import {
   Apikey,
   HostingPlan as ApiHostingPlan,
+  HostingPlanList as ApiHostingPlanList,
   Project as ApiProject,
   Deployment as ApiDeployment,
 } from './consumer-host-service-api';
@@ -86,11 +87,15 @@ export const hostingPlanSchema = z.object({
   expiredAt: z.string().datetime(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-  project: projectSchema,
-  deployment: deploymentSchema,
 });
 
 export type HostingPlan = z.infer<typeof hostingPlanSchema>;
+
+export const hostingPlanExtraSchema = hostingPlanSchema.extend({
+  project: projectSchema,
+  deployment: deploymentSchema,
+});
+export type HostingPlanExtra = z.infer<typeof hostingPlanExtraSchema>;
 
 export function convertHostingPlan(plan: ApiHostingPlan): HostingPlan {
   return hostingPlanSchema.parse({
@@ -105,6 +110,12 @@ export function convertHostingPlan(plan: ApiHostingPlan): HostingPlan {
     expiredAt: `${plan.expired_at}Z`,
     createdAt: `${plan.created_at}Z`,
     updatedAt: `${plan.updated_at}Z`,
+  });
+}
+
+export function convertHostingPlanExtra(plan: ApiHostingPlanList): HostingPlanExtra {
+  return hostingPlanExtraSchema.parse({
+    ...convertHostingPlan(plan),
     project: convertProject(plan.project),
     deployment: convertDeployment(plan.deployment),
   });

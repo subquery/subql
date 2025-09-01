@@ -9,12 +9,9 @@ import {
   getMCPStructuredResponse,
   Logger,
   makeCLIPrompt,
-  makeMCPElicitPrmompt,
   mcpLogger,
-  MCPToolOptions,
   Prompt,
   withStructuredResponse,
-  zodToArgs,
   zodToFlags,
 } from '../../adapters/utils';
 import {networkNameSchema, getSignerOrProvider, requireSigner} from '../../controller/network/constants';
