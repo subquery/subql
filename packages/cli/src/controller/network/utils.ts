@@ -1,8 +1,11 @@
-import {parseEther, formatEther} from '@ethersproject/units';
+// Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
+// SPDX-License-Identifier: GPL-3.0
+
+import {formatEther} from '@ethersproject/units';
+import {ContractSDK} from '@subql/contract-sdk';
 import {BigNumber, Signer} from 'ethers';
 import {Logger, Prompt} from '../../adapters/utils';
 import {checkTransactionSuccess} from './constants';
-import {ContractSDK} from '@subql/contract-sdk';
 
 export async function checkAndIncreaseAllowance(
   signer: Signer,
@@ -39,8 +42,8 @@ export async function checkAndIncreaseAllowance(
     logger.info(`Increasing allowance of SQT to ${operationName}...`);
     try {
       const allowanceTx = await sdk.sqToken.increaseAllowance(spender, needed);
-      console.log('allowance tx', allowanceTx);
-      const allowanceReceipt = await checkTransactionSuccess(allowanceTx);
+      logger.info(`Allowance tx hash: ${allowanceTx.hash}`);
+      await checkTransactionSuccess(allowanceTx);
     } catch (e) {
       console.error('Error increasing allowance', e);
       throw e;

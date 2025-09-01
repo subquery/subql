@@ -149,7 +149,6 @@ export class WalletConnectSigner extends Signer {
 
       // Create new session
       this.logger.debug('Creating new WalletConnect session...');
-      console.log('CHAIN IDS', chainIds);
       const {approval, uri} = await this.signClient.connect({
         optionalNamespaces: {
           eip155: {
@@ -164,9 +163,6 @@ export class WalletConnectSigner extends Signer {
       });
 
       if (uri) {
-        // console.log('\n=== WalletConnect URI ===');
-        // console.log('Scan this QR code with your wallet app:');
-
         // Display QR code in terminal
         qrcode.generate(uri, {small: true}, (qrString) => {
           this.logger.info(`Scan this QR code with your wallet app:

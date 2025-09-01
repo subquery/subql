@@ -136,6 +136,42 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@apollo/client@npm:^3":
+  version: 3.14.0
+  resolution: "@apollo/client@npm:3.14.0"
+  dependencies:
+    "@graphql-typed-document-node/core": ^3.1.1
+    "@wry/caches": ^1.0.0
+    "@wry/equality": ^0.5.6
+    "@wry/trie": ^0.5.0
+    graphql-tag: ^2.12.6
+    hoist-non-react-statics: ^3.3.2
+    optimism: ^0.18.0
+    prop-types: ^15.7.2
+    rehackt: ^0.1.0
+    symbol-observable: ^4.0.0
+    ts-invariant: ^0.10.3
+    tslib: ^2.3.0
+    zen-observable-ts: ^1.2.5
+  peerDependencies:
+    graphql: ^15.0.0 || ^16.0.0
+    graphql-ws: ^5.5.5 || ^6.0.3
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || >=19.0.0-rc
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || >=19.0.0-rc
+    subscriptions-transport-ws: ^0.9.0 || ^0.11.0
+  peerDependenciesMeta:
+    graphql-ws:
+      optional: true
+    react:
+      optional: true
+    react-dom:
+      optional: true
+    subscriptions-transport-ws:
+      optional: true
+  checksum: 682a8c8103c80940ee89e0f5d6a5dba3d47dd6915b7016f4d19bcebabbe8c6d0d52ca9ff9598d50d4bc0711f8ef66b4f9b8e832494244bcdf3b91377e489e293
+  languageName: node
+  linkType: hard
+
 "@apollo/client@npm:^3.11.2":
   version: 3.11.2
   resolution: "@apollo/client@npm:3.11.2"
@@ -9769,6 +9805,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/cli@workspace:packages/cli"
   dependencies:
+    "@apollo/client": ^3
     "@graphql-codegen/cli": 5.0.7
     "@graphql-codegen/client-preset": 4.8.3
     "@graphql-codegen/introspection": ^4.0.3
@@ -10096,6 +10133,7 @@ __metadata:
     cross-fetch: ^3.1.6
     csv-stringify: ^6.5.1
     dayjs: ^1.11.12
+    graphql: ^15.8.0
     lodash: ^4.17.21
     lru-cache: 10.1.0
     merkle-tools: ^1.4.1
@@ -10130,6 +10168,7 @@ __metadata:
     "@types/lodash": ^4.17.7
     dotenv: ^16.4.5
     fetch-h2: 3.0.2
+    graphql: ^15.8.0
     lodash: ^4.17.21
     nodemon: ^3.1.4
     reflect-metadata: ^0.2.2

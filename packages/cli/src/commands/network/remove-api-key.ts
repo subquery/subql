@@ -8,11 +8,7 @@ import {
   commandLogger,
   getMCPStructuredResponse,
   Logger,
-  makeCLIPrompt,
-  makeMCPElicitPrmompt,
   mcpLogger,
-  MCPToolOptions,
-  Prompt,
   withStructuredResponse,
   zodToArgs,
   zodToFlags,
@@ -30,8 +26,7 @@ const removeApiKeyOutputs = z.object({});
 
 export async function removeApiKeyAdapter(
   args: CreateApiKeyInputs,
-  logger: Logger,
-  prompt?: Prompt
+  logger: Logger
 ): Promise<z.infer<typeof removeApiKeyOutputs>> {
   const signerOrProvider = await getSignerOrProvider(args.network, logger, undefined, false);
   requireSigner(signerOrProvider);
@@ -46,7 +41,7 @@ export async function removeApiKeyAdapter(
     return {};
   }
 
-  const apiKey = await chs.deleteAPIKey(key.id);
+  await chs.deleteAPIKey(key.id);
 
   return {};
 }
@@ -60,7 +55,7 @@ export default class RemoveApiKey extends Command {
     const {args, flags} = await this.parse(RemoveApiKey);
     const logger = commandLogger(this);
 
-    const result = await removeApiKeyAdapter({...args, ...flags}, logger, makeCLIPrompt());
+    await removeApiKeyAdapter({...args, ...flags}, logger);
 
     // Exit with success, walletconnect will keep things running
     this.exit(0);
@@ -77,8 +72,7 @@ export function registerRemoveApiKeyMCPTool(server: McpServer): RegisteredTool {
     },
     withStructuredResponse(async (args) => {
       const logger = mcpLogger(server.server);
-      const prompt = /*opts.supportsElicitation ? makeMCPElicitPrmompt(server) : */ undefined;
-      return removeApiKeyAdapter(args, logger, prompt);
+      return removeApiKeyAdapter(args, logger);
     })
   );
 }

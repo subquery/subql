@@ -1,7 +1,6 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {parseEther} from '@ethersproject/units';
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
@@ -10,12 +9,9 @@ import {
   getMCPStructuredResponse,
   Logger,
   makeCLIPrompt,
-  makeMCPElicitPrmompt,
   mcpLogger,
-  MCPToolOptions,
   Prompt,
   withStructuredResponse,
-  zodToArgs,
   zodToFlags,
 } from '../../adapters/utils';
 import {networkNameSchema, getSignerOrProvider, requireSigner} from '../../controller/network/constants';

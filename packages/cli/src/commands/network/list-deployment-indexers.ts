@@ -4,14 +4,7 @@
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
-import {
-  commandLogger,
-  getMCPStructuredResponse,
-  Logger,
-  mcpLogger,
-  withStructuredResponse,
-  zodToFlags,
-} from '../../adapters/utils';
+import {getMCPStructuredResponse, withStructuredResponse, zodToFlags} from '../../adapters/utils';
 import {networkNameSchema} from '../../controller/network/constants';
 import {
   listDeploymentIndexers,
@@ -30,10 +23,7 @@ const listIndexersOutputs = z.object({
   indexers: z.array(deploymentIndexer),
 });
 
-async function listIndexersAdapter(
-  args: ListIndexersInputs,
-  logger: Logger
-): Promise<z.infer<typeof listIndexersOutputs>> {
+async function listIndexersAdapter(args: ListIndexersInputs): Promise<z.infer<typeof listIndexersOutputs>> {
   const indexers = await listDeploymentIndexers(args.network, args.deploymentId);
 
   return {indexers};
@@ -46,7 +36,7 @@ export default class ListDeploymentIndexers extends Command {
   async run(): Promise<void> {
     const {flags} = await this.parse(ListDeploymentIndexers);
 
-    const result = await listIndexersAdapter(flags, commandLogger(this));
+    const result = await listIndexersAdapter(flags);
 
     const getProgress = (indexerDeploymentMeta?: IndexerDeploymentMetadata): string => {
       if (!indexerDeploymentMeta) return 'Unknown';
@@ -55,6 +45,11 @@ export default class ListDeploymentIndexers extends Command {
 
       return `${progress}% (${blocksBehind > 0 ? `${blocksBehind} Block${blocksBehind > 1 ? 's' : ''} behind` : 'Fully synced'})`;
     };
+
+    if (!result.indexers.length) {
+      this.log('This deployment has no indexers');
+      return;
+    }
 
     this.log(
       jsonToTable(
@@ -82,9 +77,7 @@ export function registerListDeploymentIndexersMCPTool(server: McpServer): Regist
       outputSchema: getMCPStructuredResponse(listIndexersOutputs).shape,
     },
     withStructuredResponse(async (args) => {
-      const logger = mcpLogger(server.server);
-
-      return listIndexersAdapter(args, logger);
+      return listIndexersAdapter(args);
     })
   );
 }

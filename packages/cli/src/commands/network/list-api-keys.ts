@@ -8,9 +8,7 @@ import {
   commandLogger,
   getMCPStructuredResponse,
   Logger,
-  makeCLIPrompt,
   mcpLogger,
-  Prompt,
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
@@ -28,8 +26,7 @@ const listApiKeysOutputs = z.array(apiKeySchema);
 
 export async function listApiKeysAdapter(
   args: CreateApiKeyInputs,
-  logger: Logger,
-  prompt?: Prompt
+  logger: Logger
 ): Promise<z.infer<typeof listApiKeysOutputs>> {
   const signerOrProvider = await getSignerOrProvider(args.network, logger, undefined, false);
   // const sdk = getContractSDK(signerOrProvider, args.network);
@@ -48,7 +45,7 @@ export default class ListNetworkApiKeys extends Command {
     const {flags} = await this.parse(ListNetworkApiKeys);
     const logger = commandLogger(this);
 
-    const result = await listApiKeysAdapter({...flags}, logger, makeCLIPrompt());
+    const result = await listApiKeysAdapter({...flags}, logger);
 
     if (result.length === 0) {
       this.log('No API keys found.');
@@ -71,8 +68,7 @@ export function registerListNetworkApiKeysMCPTool(server: McpServer): Registered
     },
     withStructuredResponse(async (args) => {
       const logger = mcpLogger(server.server);
-      const prompt = /*opts.supportsElicitation ? makeMCPElicitPrmompt(server) : */ undefined;
-      return listApiKeysAdapter(args, logger, prompt);
+      return listApiKeysAdapter(args, logger);
     })
   );
 }

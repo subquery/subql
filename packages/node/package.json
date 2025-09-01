@@ -43,6 +43,7 @@
     "@types/jest": "^27.5.2",
     "@types/lodash": "^4.17.7",
     "dotenv": "^16.4.5",
+    "graphql": "^15.8.0",
     "nodemon": "^3.1.4",
     "rimraf": "^5.0.10"
   },

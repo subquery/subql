@@ -8,9 +8,7 @@ import {
   commandLogger,
   getMCPStructuredResponse,
   Logger,
-  makeCLIPrompt,
   mcpLogger,
-  Prompt,
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
@@ -29,8 +27,7 @@ export const listFlexPlansOutputs = z.array(metaHostingPlanSchema);
 
 async function listFlexPlansAdapter(
   args: ListFlexPlansInputs,
-  logger: Logger,
-  prompt?: Prompt
+  logger: Logger
 ): Promise<z.infer<typeof listFlexPlansOutputs>> {
   const signerOrProvider = await getSignerOrProvider(args.network, logger, undefined, true);
   requireSigner(signerOrProvider);
@@ -52,7 +49,7 @@ export default class ListFlexPlans extends Command {
 
     const logger = commandLogger(this);
 
-    const res = await listFlexPlansAdapter(flags, logger, makeCLIPrompt());
+    const res = await listFlexPlansAdapter(flags, logger);
 
     if (!res.length) {
       this.log('No flex plans');
@@ -91,7 +88,6 @@ export function registerListFlexPlansMCPTool(server: McpServer): RegisteredTool 
     },
     withStructuredResponse(async (args) => {
       const logger = mcpLogger(server.server);
-      // const prompt =
       return listFlexPlansAdapter(args, logger);
     })
   );

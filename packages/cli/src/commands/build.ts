@@ -76,7 +76,7 @@ export function registerBuildMCPTool(server: McpServer): RegisteredTool {
       inputSchema: buildInputs.shape,
       // outputSchema: buildOutputs.shape,
     },
-    async (args, meta) => {
+    async (args) => {
       const cwd = await getMCPWorkingDirectory(server);
       await buildAdapter(cwd, args, mcpLogger(server.server));
 

@@ -4,16 +4,7 @@
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
-import {
-  commandLogger,
-  getMCPStructuredResponse,
-  Logger,
-  makeCLIPrompt,
-  mcpLogger,
-  Prompt,
-  withStructuredResponse,
-  zodToFlags,
-} from '../../adapters/utils';
+import {getMCPStructuredResponse, withStructuredResponse, zodToFlags} from '../../adapters/utils';
 import {formatSQT, networkNameSchema} from '../../controller/network/constants';
 import {
   listDeploymentBoosts,
@@ -29,11 +20,7 @@ export type ListBoostsInputs = z.infer<typeof listBoostsInputs>;
 
 export const listBoostsOutputs = listBoostsResponseSchema;
 
-async function listBoostsAdapter(
-  args: ListBoostsInputs,
-  logger: Logger,
-  prompt?: Prompt
-): Promise<z.infer<typeof listBoostsOutputs>> {
+async function listBoostsAdapter(args: ListBoostsInputs): Promise<z.infer<typeof listBoostsOutputs>> {
   const boosts = await listDeploymentBoosts(args.network, args.deploymentId);
 
   return boosts;
@@ -46,9 +33,12 @@ export default class ListDeploymentBoosts extends Command {
   async run(): Promise<void> {
     const {flags} = await this.parse(ListDeploymentBoosts);
 
-    const logger = commandLogger(this);
+    const res = await listBoostsAdapter(flags);
 
-    const res = await listBoostsAdapter(flags, logger, makeCLIPrompt());
+    if (!res.boosts.length) {
+      this.log('This deployment has no boosts');
+      return;
+    }
 
     this.log(`Total boost: ${formatSQT(res.totalBoost)}`);
     this.log(
@@ -74,9 +64,7 @@ export function registerListDeploymentBoostsMCPTool(server: McpServer): Register
       outputSchema: getMCPStructuredResponse(listBoostsOutputs).shape,
     },
     withStructuredResponse(async (args) => {
-      const logger = mcpLogger(server.server);
-      // const prompt =
-      return listBoostsAdapter(args, logger);
+      return listBoostsAdapter(args);
     })
   );
 }

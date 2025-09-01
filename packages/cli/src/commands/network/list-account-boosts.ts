@@ -8,9 +8,7 @@ import {
   commandLogger,
   getMCPStructuredResponse,
   Logger,
-  makeCLIPrompt,
   mcpLogger,
-  Prompt,
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
@@ -29,11 +27,7 @@ export type ListBoostsInputs = z.infer<typeof listBoostsInputs>;
 
 export const listBoostsOutputs = listBoostsResponseSchema;
 
-async function listBoostsAdapter(
-  args: ListBoostsInputs,
-  logger: Logger,
-  prompt?: Prompt
-): Promise<z.infer<typeof listBoostsOutputs>> {
+async function listBoostsAdapter(args: ListBoostsInputs, logger: Logger): Promise<z.infer<typeof listBoostsOutputs>> {
   const address = await resolveAddress(args.network, logger, undefined, args.address);
   logger.info(`Listing boosts for address: ${address}`);
   const boosts = await listAccountBoosts(args.network, address);
@@ -50,7 +44,7 @@ export default class ListAccountBoosts extends Command {
 
     const logger = commandLogger(this);
 
-    const res = await listBoostsAdapter(flags, logger, makeCLIPrompt());
+    const res = await listBoostsAdapter(flags, logger);
 
     this.log(`Total boost: ${formatSQT(res.totalBoost)}`);
     this.log(
@@ -81,7 +75,6 @@ export function registerListAccountBoostsMCPTool(server: McpServer): RegisteredT
     },
     withStructuredResponse(async (args) => {
       const logger = mcpLogger(server.server);
-      // const prompt =
       return listBoostsAdapter(args, logger);
     })
   );

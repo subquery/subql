@@ -4,14 +4,7 @@
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
-import {
-  commandLogger,
-  getMCPStructuredResponse,
-  Logger,
-  mcpLogger,
-  withStructuredResponse,
-  zodToFlags,
-} from '../../adapters/utils';
+import {getMCPStructuredResponse, withStructuredResponse, zodToFlags} from '../../adapters/utils';
 import {networkNameSchema} from '../../controller/network/constants';
 import {deploymentSchema, listDeployments} from '../../controller/network/list-deployments';
 import {jsonToTable} from '../../utils';
@@ -26,10 +19,7 @@ const listDeploymentsOutputs = z.object({
   deployments: z.array(deploymentSchema),
 });
 
-async function listDeploymentsAdapter(
-  args: ListDeploymentsInputs,
-  logger: Logger
-): Promise<z.infer<typeof listDeploymentsOutputs>> {
+async function listDeploymentsAdapter(args: ListDeploymentsInputs): Promise<z.infer<typeof listDeploymentsOutputs>> {
   const deployments = await listDeployments(args.network, args.projectId);
 
   return {deployments};
@@ -42,7 +32,12 @@ export default class ListNetworkDeployments extends Command {
   async run(): Promise<void> {
     const {flags} = await this.parse(ListNetworkDeployments);
 
-    const result = await listDeploymentsAdapter(flags, commandLogger(this));
+    const result = await listDeploymentsAdapter(flags);
+
+    if (!result.deployments.length) {
+      this.log('This project has no deployments');
+      return;
+    }
 
     this.log(
       jsonToTable(
@@ -68,9 +63,7 @@ export function registerListNetworkDeploymentsMCPTool(server: McpServer): Regist
       outputSchema: getMCPStructuredResponse(listDeploymentsOutputs).shape,
     },
     withStructuredResponse(async (args) => {
-      const logger = mcpLogger(server.server);
-
-      return listDeploymentsAdapter(args, logger);
+      return listDeploymentsAdapter(args);
     })
   );
 }

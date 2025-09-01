@@ -76,7 +76,6 @@ export async function getSignerOrProvider(
     await signer.getAddress();
     return signer;
   } catch (e: any) {
-    console.log('HERE', e);
     if (e === NO_EXISTING_CONN_ERROR) {
       return provider;
     }
