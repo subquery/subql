@@ -245,6 +245,7 @@ export async function prepareInputFragments<T extends ConstructorFragment | Frag
 ): Promise<Record<string, T>> {
   if (!rawInput) {
     if (!prompt) {
+      // No items selected or
       return {};
     }
 

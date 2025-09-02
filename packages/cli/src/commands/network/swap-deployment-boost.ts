@@ -4,7 +4,6 @@
 import {parseEther} from '@ethersproject/units';
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
-import {ContractSDK} from '@subql/contract-sdk';
 import {z} from 'zod';
 import {
   commandLogger,
@@ -27,29 +26,34 @@ import {
   requireSigner,
   formatSQT,
 } from '../../controller/network/constants';
-import {mapContractError, parseContractError} from '../../controller/network/contract-errors';
+import {parseContractError} from '../../controller/network/contract-errors';
 import {checkAndIncreaseAllowance} from '../../controller/network/utils';
 
-const addDeploymentBoostInputs = z.object({
+const swapDeploymentBoostInputs = z.object({
   network: networkNameSchema,
-  deploymentId: z.string({description: 'The deployment id for the project'}),
+  fromDeploymentId: z.string({description: 'The deployment id for the project that is already boosted'}),
+  toDeploymentId: z.string({description: 'The deployment id for the project to move the boost to'}),
   amount: z.string({description: 'The amount to boost the deployment with, in SQT'}),
 });
-type BoostProjectInputs = z.infer<typeof addDeploymentBoostInputs>;
+type BoostProjectInputs = z.infer<typeof swapDeploymentBoostInputs>;
 
-const addDeploymentBoostOutputs = z.object({
+const swapDeploymentBoostOutputs = z.object({
   transactionHash: z.string({description: 'The hash of the transaction that boosted the project'}),
   amount: z.bigint({description: 'Then new amount in SQT boosted by the account'}),
 });
 
-async function addDeploymentBoostAdapter(
+async function swapDeploymentBoostAdapter(
   args: BoostProjectInputs,
   logger: Logger,
   prompt?: Prompt
-): Promise<z.infer<typeof addDeploymentBoostOutputs>> {
+): Promise<z.infer<typeof swapDeploymentBoostOutputs>> {
   const amount = parseEther(args.amount);
   if (amount.lte(0n)) {
     throw new Error('Amount must be greater than 0');
+  }
+
+  if (args.fromDeploymentId === args.toDeploymentId) {
+    throw new Error('Cannot swap boost to the same deployment');
   }
 
   const signer = await getSignerOrProvider(args.network, logger, undefined);
@@ -61,14 +65,11 @@ async function addDeploymentBoostAdapter(
 
   await checkAndIncreaseAllowance(signer, sdk, amount, sdk.rewardsBooster.address, logger, 'boost project', prompt);
 
-  const deploymentIdBytes32 = cidToBytes32(args.deploymentId);
-
-  const tx = await sdk.rewardsBooster.boostDeployment(deploymentIdBytes32, amount).catch(
-    parseContractError({
-      RB015: async () =>
-        `Deployment boost is too small. The total deployment boost needs to be at least ${formatSQT(await sdk.rewardsBooster.minimumDeploymentBooster())}`,
-    })
-  );
+  const deploymentFromBytes32 = cidToBytes32(args.fromDeploymentId);
+  const deploymentToBytes32 = cidToBytes32(args.toDeploymentId);
+  const tx = await sdk.rewardsBooster
+    .swapBoosterDeployment(userAddress, deploymentFromBytes32, deploymentToBytes32, amount)
+    .catch(parseContractError({}));
 
   await checkTransactionSuccess(tx);
 
@@ -78,36 +79,33 @@ async function addDeploymentBoostAdapter(
   };
 }
 
-export default class AddDeploymentBoost extends Command {
-  static description = 'Increase the boost for a deployment';
-  static flags = zodToFlags(addDeploymentBoostInputs);
+export default class SwapDeploymentBoost extends Command {
+  static description = 'Swap the boost from one deployment to another deployment on the SubQuery Network';
+  static flags = zodToFlags(swapDeploymentBoostInputs);
 
   async run(): Promise<void> {
-    const {flags} = await this.parse(AddDeploymentBoost);
+    const {flags} = await this.parse(SwapDeploymentBoost);
 
-    const result = await addDeploymentBoostAdapter(flags, commandLogger(this), makeCLIPrompt());
+    const result = await swapDeploymentBoostAdapter(flags, commandLogger(this), makeCLIPrompt());
 
     this.log(
-      `Boosted deployment: ${flags.deploymentId} by ${formatSQT(result.amount)}. TransactionHash: ${result.transactionHash}`
+      `Swaped boost (${formatSQT(result.amount)})from deployment: ${flags.fromDeploymentId} to deployment ${flags.toDeploymentId}. TransactionHash: ${result.transactionHash}`
     );
-
-    // Exit with success, walletconnect will keep things running
-    this.exit(0);
   }
 }
 
-export function registerAddDeploymentBoostMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
+export function registerSwapDeploymentBoostMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    `network:${AddDeploymentBoost.name}`,
+    `network:${SwapDeploymentBoost.name}`,
     {
-      description: AddDeploymentBoost.description,
-      inputSchema: addDeploymentBoostInputs.shape,
-      outputSchema: getMCPStructuredResponse(addDeploymentBoostOutputs).shape,
+      description: SwapDeploymentBoost.description,
+      inputSchema: swapDeploymentBoostInputs.shape,
+      outputSchema: getMCPStructuredResponse(swapDeploymentBoostOutputs).shape,
     },
     withStructuredResponse(async (args) => {
       const logger = mcpLogger(server.server);
       const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : undefined;
-      return addDeploymentBoostAdapter(args, logger, prompt);
+      return swapDeploymentBoostAdapter(args, logger, prompt);
     })
   );
 }

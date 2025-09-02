@@ -24,6 +24,7 @@ import {
   getSignerOrProvider,
   requireSigner,
 } from '../../controller/network/constants';
+import {parseContractError} from '../../controller/network/contract-errors';
 
 const createDeploymentInputs = z.object({
   network: networkNameSchema,
@@ -73,7 +74,9 @@ export async function createDeploymentAdapter(
 
   const {cid} = await ipfs.add(JSON.stringify(deploymentMetadata), {pin: true});
 
-  const tx = await sdk.projectRegistry.addOrUpdateDeployment(args.projectId, args.deploymentId, cid, true);
+  const tx = await sdk.projectRegistry
+    .addOrUpdateDeployment(args.projectId, args.deploymentId, cid, true)
+    .catch(parseContractError({}));
 
   // TODO handle tx failure
   await tx.wait();

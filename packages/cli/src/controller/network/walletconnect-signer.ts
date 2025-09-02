@@ -242,6 +242,9 @@ ${uri}
       Object.entries(populatedTransaction).filter(([_, value]) => value !== undefined)
     );
 
+    // Estimate the gas, this is used to check if the tx will fail before being sent to the wallet
+    await this.provider.estimateGas(txParams);
+
     const txHash = await this.runRequest<string>('eth_sendTransaction', [txParams]);
 
     // WARNING this is a workaround for WalletConnect and is not actually the full transaction.

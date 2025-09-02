@@ -27,6 +27,7 @@ import {registerListFlexPlansMCPTool} from './network/list-flex-plans';
 import {registerListNetworkProjectsMCPTool} from './network/list-projects';
 import {registerRemoveDeploymentBoostMCPTool} from './network/remove-deployment-boost';
 import {registerStopNetworkFlexPlanMCPTool} from './network/stop-flex-plan';
+import {registerSwapDeploymentBoostMCPTool} from './network/swap-deployment-boost';
 import {registerCreateDeploymentMCPTool} from './onfinality/create-deployment';
 import {registerCreateMultichainDeploymentMCPTool} from './onfinality/create-multichain-deployment';
 import {registerCreateProjectMCPTool} from './onfinality/create-project';
@@ -122,6 +123,7 @@ export default class MCP extends Command {
 
       registerConnectWalletMCPTool(server, opts);
       registerDisconnectWalletMCPTool(server, opts);
+      registerSwapDeploymentBoostMCPTool(server, opts);
     };
 
     return new Promise(() => {

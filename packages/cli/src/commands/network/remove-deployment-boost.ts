@@ -25,7 +25,9 @@ import {
   cidToBytes32,
   networkNameSchema,
   requireSigner,
+  formatSQT,
 } from '../../controller/network/constants';
+import {parseContractError} from '../../controller/network/contract-errors';
 
 const removeDeploymentBoostInputs = z.object({
   network: networkNameSchema,
@@ -56,7 +58,12 @@ async function removeDeploymentBoostAdapter(
   logger.info(`Using address: ${userAddress}`);
 
   const deploymentIdBytes32 = cidToBytes32(args.deploymentId);
-  const tx = await sdk.rewardsBooster.removeBoosterDeployment(deploymentIdBytes32, amount);
+  const tx = await sdk.rewardsBooster.removeBoosterDeployment(deploymentIdBytes32, amount).catch(
+    parseContractError({
+      RB016: async () =>
+        `Deployment boost will be too small. The total deployment boost needs to be at least ${formatSQT(await sdk.rewardsBooster.minimumDeploymentBooster())}. Either remove less boost, or remove all the boost.`,
+    })
+  );
 
   const receipt = await checkTransactionSuccess(tx);
 

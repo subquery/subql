@@ -45,7 +45,7 @@ export async function listDeploymentBoosts(network: SQNetworks, deploymentId: st
       return {
         ...rest,
         rewards: await contracts.rewardsBooster
-          .getAccQueryRewards(deploymentIdBytes32, rest.consumer) // TODO this always returns 0, need to check if this is correct
+          .getAccQueryRewardsByType(deploymentIdBytes32, rest.consumer)
           .then((r) => r.toString()),
       };
     })

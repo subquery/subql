@@ -29,6 +29,7 @@ import {
   projectTypeSchema,
   requireSigner,
 } from '../../controller/network/constants';
+import {parseContractError} from '../../controller/network/contract-errors';
 
 const createProjectInputs = z.object({
   network: networkNameSchema,
@@ -134,12 +135,9 @@ async function createProjectAdapter(
     ipfs.add(JSON.stringify(deploymentMetadata), {pin: true}),
   ]);
 
-  const tx = await sdk.projectRegistry.createProject(
-    projectMetadataCID,
-    deploymentMetadataCID,
-    args.deploymentId,
-    projectType
-  );
+  const tx = await sdk.projectRegistry
+    .createProject(projectMetadataCID, deploymentMetadataCID, args.deploymentId, projectType)
+    .catch(parseContractError({}));
 
   logger.info(`Create project transaction: ${tx.hash}`);
 
