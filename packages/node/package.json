@@ -19,6 +19,7 @@
     "subql-node": "./bin/run"
   },
   "dependencies": {
+    "@apollo/client": "^3.14.0",
     "@nestjs/common": "^11.0.16",
     "@nestjs/core": "^11.0.7",
     "@nestjs/event-emitter": "^3.0.0",
@@ -32,9 +33,6 @@
     "fetch-h2": "3.0.2",
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.2.2"
-  },
-  "peerDependencies": {
-    "@apollo/client": "^3.7.16"
   },
   "devDependencies": {
     "@nestjs/schematics": "^11.0.0",
