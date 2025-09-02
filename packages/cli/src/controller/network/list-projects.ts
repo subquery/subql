@@ -4,6 +4,7 @@
 import {IPFS_NODE_ENDPOINT, IPFSHTTPClientLite} from '@subql/common';
 import {ProjectType} from '@subql/contract-sdk';
 import {SQNetworks} from '@subql/network-config';
+import {utils} from 'ethers';
 import {z} from 'zod';
 import {resultToJson} from '../../utils';
 import {GetProjectsQuery, GetProjectsQueryVariables} from './__graphql__/base-types';
@@ -30,11 +31,10 @@ export async function listProjects(
 ): Promise<Project[]> {
   const res = await getQueryClient(network).query<GetProjectsQuery, GetProjectsQueryVariables>({
     query: GetProjects,
-    variables: {address},
+    variables: {address: utils.getAddress(address)},
   });
 
   if (res.errors) {
-    // logger.error(`Error fetching projects: ${res.errors.map((e) => e.message).join(', ')}`);
     throw new Error(`Failed to fetch projects for address ${address}`);
   }
 

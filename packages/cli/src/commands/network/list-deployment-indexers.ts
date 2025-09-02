@@ -70,7 +70,7 @@ export default class ListDeploymentIndexers extends Command {
 
 export function registerListDeploymentIndexersMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    ListDeploymentIndexers.name,
+    `network:${ListDeploymentIndexers.name}`,
     {
       description: ListDeploymentIndexers.description,
       inputSchema: listIndexersInputs.shape,

@@ -87,7 +87,7 @@ export default class AddDeploymentBoost extends Command {
 
 export function registerAddDeploymentBoostMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    AddDeploymentBoost.name,
+    `network:${AddDeploymentBoost.name}`,
     {
       description: AddDeploymentBoost.description,
       inputSchema: addDeploymentBoostInputs.shape,

@@ -72,7 +72,7 @@ export default class StopNetworkFlexPlan extends Command {
 
 export function registerStopNetworkFlexPlanMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    StopNetworkFlexPlan.name,
+    `network:${StopNetworkFlexPlan.name}`,
     {
       description: StopNetworkFlexPlan.description,
       inputSchema: stopFlexPlanInputs.shape,

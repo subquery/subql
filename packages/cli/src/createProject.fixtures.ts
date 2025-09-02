@@ -68,6 +68,20 @@ async function getExampleProject(networkFamily: string, network: string): Promis
   return template;
 }
 
+async function installAndBuild(projectDir: string): Promise<void> {
+  // Install dependencies
+  childProcess.execSync(`npm i`, {cwd: projectDir});
+
+  // NODE_ENV should be "test" we need to create an env file for it
+  const envFile = path.join(projectDir, '.env');
+  if (fs.existsSync(envFile)) {
+    await fs.promises.copyFile(envFile, path.join(projectDir, `.env.${process.env.NODE_ENV}`));
+  }
+
+  await Codegen.run([projectDir]);
+  await Build.run([projectDir]);
+}
+
 export async function createTestProject(): Promise<string> {
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
   const projectDir = path.join(tmpdir, projectSpecV1_0_0.name);
@@ -77,13 +91,7 @@ export async function createTestProject(): Promise<string> {
   const projectPath = await cloneProjectTemplate(tmpdir, projectSpecV1_0_0.name, exampleProject);
   await prepare(projectPath, projectSpecV1_0_0);
 
-  // Install dependencies
-  childProcess.execSync(`npm i`, {cwd: projectDir});
-  // Set test env to be develop mode, only limit to test
-  process.env.NODE_ENV = 'develop';
-
-  await Codegen.run([projectDir]);
-  await Build.run([projectDir]);
+  await installAndBuild(projectDir);
 
   return projectDir;
 }
@@ -96,13 +104,7 @@ export async function createMultiChainTestProject(): Promise<{multichainManifest
 
   await cloneProjectTemplate(tmpdir, multiProjectSpecV1_0_0.name, exampleProject);
 
-  // Install dependencies
-  childProcess.execSync(`npm i`, {cwd: projectDir});
-  // Set test env to be develop mode, only limit to test
-  process.env.NODE_ENV = 'develop';
-
-  await Codegen.run([projectDir]);
-  await Build.run([projectDir]);
+  await installAndBuild(projectDir);
 
   const project = getProjectRootAndManifest(projectDir);
   const fullPaths = project.manifests.map((manifest) => path.join(project.root, manifest));

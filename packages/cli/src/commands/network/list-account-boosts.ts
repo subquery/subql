@@ -46,28 +46,35 @@ export default class ListAccountBoosts extends Command {
 
     const res = await listBoostsAdapter(flags, logger);
 
-    this.log(`Total boost: ${formatSQT(res.totalBoost)}`);
-    this.log(
-      jsonToTable(
-        res.boosts.map(({deploymentId, deploymentMeta, projectId, projectMeta, totalAmount}) => {
-          const subProjectMeta = projectMeta ? {name: projectMeta.name} : {};
-          const subDeploymentMeta = deploymentMeta ? {deploymentVersion: deploymentMeta.version} : {};
-          return {
-            projectId,
-            ...subProjectMeta,
-            deploymentId,
-            ...subDeploymentMeta,
-            amount: formatSQT(totalAmount),
-          };
-        })
-      )
-    );
+    if (!res.boosts.length) {
+      this.log(`This account doesn't boost any projects`);
+    } else {
+      this.log(`Total boost: ${formatSQT(res.totalBoost)}`);
+      this.log(
+        jsonToTable(
+          res.boosts.map(({deploymentId, deploymentMeta, projectId, projectMeta, totalAmount}) => {
+            const subProjectMeta = projectMeta ? {name: projectMeta.name} : {};
+            const subDeploymentMeta = deploymentMeta ? {deploymentVersion: deploymentMeta.version} : {};
+            return {
+              projectId,
+              ...subProjectMeta,
+              deploymentId,
+              ...subDeploymentMeta,
+              amount: formatSQT(totalAmount),
+            };
+          })
+        )
+      );
+    }
+
+    // Exit with success, walletconnect will keep things running
+    this.exit(0);
   }
 }
 
 export function registerListAccountBoostsMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    ListAccountBoosts.name,
+    `network:${ListAccountBoosts.name}`,
     {
       description: ListAccountBoosts.description,
       inputSchema: listBoostsInputs.shape,

@@ -3,6 +3,7 @@
 
 import {IPFSHTTPClientLite, IPFS_NODE_ENDPOINT} from '@subql/common';
 import {SQNetworks} from '@subql/network-config';
+import {utils} from 'ethers';
 import {z} from 'zod';
 import {resultToJson} from '../../utils';
 import {GetAccountBoostQuery, GetAccountBoostQueryVariables} from './__graphql__/base-types';
@@ -31,7 +32,7 @@ export async function listAccountBoosts(
 ): Promise<Response> {
   const res = await getQueryClient(network).query<GetAccountBoostQuery, GetAccountBoostQueryVariables>({
     query: GetAccountBoost,
-    variables: {address},
+    variables: {address: utils.getAddress(address)},
   });
 
   if (res.errors) {

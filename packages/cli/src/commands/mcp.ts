@@ -89,7 +89,6 @@ export default class MCP extends Command {
 
     registerListNetworkProjectsMCPTool(server);
     registerListNetworkDeploymentsMCPTool(server);
-    registerListNetworkDeploymentsMCPTool(server);
     registerListDeploymentBoostsMCPTool(server);
     registerListDeploymentIndexersMCPTool(server);
     registerListAccountBoostsMCPTool(server);

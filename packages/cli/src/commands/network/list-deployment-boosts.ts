@@ -57,7 +57,7 @@ export default class ListDeploymentBoosts extends Command {
 
 export function registerListDeploymentBoostsMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    ListDeploymentBoosts.name,
+    `network:${ListDeploymentBoosts.name}`,
     {
       description: ListDeploymentBoosts.description,
       inputSchema: listBoostsInputs.shape,

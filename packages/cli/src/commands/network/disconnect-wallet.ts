@@ -73,7 +73,7 @@ export default class DisconnectWallet extends Command {
 
 export function registerDisconnectWalletMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    DisconnectWallet.name,
+    `network:${DisconnectWallet.name}`,
     {
       description: DisconnectWallet.description,
       inputSchema: disconnectWalletInputs.shape,

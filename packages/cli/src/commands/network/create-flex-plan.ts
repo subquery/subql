@@ -111,7 +111,7 @@ export default class CreateNetworkFlexPlan extends Command {
 
 export function registerCreateNetworkFlexPlanMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    CreateNetworkFlexPlan.name,
+    `network:${CreateNetworkFlexPlan.name}`,
     {
       description: CreateNetworkFlexPlan.description,
       inputSchema: createFlexPlanInputs.shape,

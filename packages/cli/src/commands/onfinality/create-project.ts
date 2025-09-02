@@ -74,7 +74,7 @@ export default class CreateProject extends Command {
 
 export function registerCreateProjectMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    CreateProject.name,
+    `onfinality:${CreateProject.name}`,
     {
       description: CreateProject.description,
       inputSchema: createProjectInputs.shape,
