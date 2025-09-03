@@ -195,7 +195,7 @@ async function generateAdapter(
       tsExtractor
     );
 
-    await generateManifestTs(manifest, userInput, existingManifest);
+    await generateManifestTs(manifest, userInput, existingManifest, abiInterface);
   } else {
     // yaml
     const existingManifest = await getManifestData(manifest);
@@ -211,10 +211,10 @@ async function generateAdapter(
       yamlExtractor
     );
 
-    await generateManifestYaml(manifest, userInput, existingManifest);
+    await generateManifestYaml(manifest, userInput, existingManifest, abiInterface);
   }
 
-  await generateHandlers([userInput.events, userInput.functions], root, abiName);
+  await generateHandlers([userInput.events, userInput.functions], root, abiName, abiInterface);
 
   return {
     address: args.address,
