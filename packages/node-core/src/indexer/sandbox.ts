@@ -11,6 +11,7 @@ import {SourceMapConsumer, NullableMappedPosition} from 'source-map';
 import {NodeVM, NodeVMOptions, VMError, VMScript} from 'vm2';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
+import {loadProjectEnvConfig, createSandboxProcessEnv} from '../utils/env';
 import {timeout} from '../utils/promise';
 
 export const SANDBOX_DEFAULT_BUILTINS = ['assert', 'buffer', 'crypto', 'util', 'path', 'url', 'stream'];
@@ -21,6 +22,7 @@ export interface SandboxOption {
   root: string;
   entry: string;
   chainId: string;
+  envConfig?: Record<string, string>;
 }
 
 const DEFAULT_OPTION = (unsafe = false): NodeVMOptions => {
@@ -68,6 +70,11 @@ export class Sandbox extends NodeVM {
     this.entry = option.entry;
 
     this.freeze(option.chainId, 'chainId');
+
+    // Inject environment variables if provided
+    if (option.envConfig) {
+      this.freeze({env: option.envConfig}, 'process');
+    }
 
     const sourceMapFile = path.join(this.root, this.entry);
 
@@ -218,9 +225,12 @@ export class TestSandbox extends Sandbox {
     this.injectGlobals(option);
   }
 
-  private injectGlobals({store}: SandboxOption) {
+  private injectGlobals({envConfig, store}: SandboxOption) {
     if (store) {
       this.freeze(store, 'store');
+    }
+    if (envConfig) {
+      this.freeze({env: envConfig}, 'process');
     }
     this.freeze(logger, 'logger');
   }

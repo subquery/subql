@@ -13,6 +13,7 @@ import {
 import {MultichainProjectManifest} from '@subql/types-core';
 import * as yaml from 'js-yaml';
 import * as tsNode from 'ts-node';
+import {loadEnvConfig} from './env';
 import {isMultichain} from './utils';
 
 const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
@@ -74,9 +75,19 @@ export async function buildTsManifest(location: string, log: (...args: any[]) =>
 export async function generateManifestFromTs(projectManifestEntry: string): Promise<string> {
   assert(existsSync(projectManifestEntry), `${projectManifestEntry} does not exist`);
   const projectYamlPath = tsProjectYamlPath(projectManifestEntry);
+  const projectDir = path.dirname(projectManifestEntry);
+
   try {
+    // Load environment variables and add them to process.env for TS compilation
+    const envConfig = loadEnvConfig(projectDir);
+    Object.keys(envConfig).forEach((key) => {
+      if (envConfig[key] !== undefined) {
+        process.env[key] = envConfig[key];
+      }
+    });
+
     // Allows requiring TS, this allows requirng the projectManifestEntry ts file
-    const tsNodeService = tsNode.register({transpileOnly: true, cwd: path.dirname(projectManifestEntry)});
+    const tsNodeService = tsNode.register({transpileOnly: true, cwd: projectDir});
 
     // Compile the above script
     const script = tsNodeService.compile(
