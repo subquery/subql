@@ -4,7 +4,6 @@
 import {parseEther} from '@ethersproject/units';
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
-import {ContractSDK} from '@subql/contract-sdk';
 import {z} from 'zod';
 import {
   commandLogger,
@@ -27,7 +26,7 @@ import {
   requireSigner,
   formatSQT,
 } from '../../controller/network/constants';
-import {mapContractError, parseContractError} from '../../controller/network/contract-errors';
+import {parseContractError} from '../../controller/network/contract-errors';
 import {checkAndIncreaseAllowance} from '../../controller/network/utils';
 
 const addDeploymentBoostInputs = z.object({
