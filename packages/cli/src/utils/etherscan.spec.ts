@@ -28,7 +28,7 @@ describe('etherscan api', () => {
 
     it('throws for a network that is not supported', async () => {
       await expect(
-        tryFetchAbiFromExplorer('0x53A270147832Fc4eb962584911F5D55e86b1BA3F', '1329' /* Moonbeam */)
+        tryFetchAbiFromExplorer('0x53A270147832Fc4eb962584911F5D55e86b1BA3F', '21000000' /* Moonbeam */)
       ).rejects.toThrow(
         'Etherscan API error: Missing or unsupported chainid parameter (required for v2 api), please see https://api.etherscan.io/v2/chainlist for the list of supported chainids'
       );
