@@ -7,11 +7,13 @@ import {DatasourceParams, IDynamicDsService} from '../dynamic-ds.service';
 
 export type HostDynamicDS<DS> = {
   dynamicDsCreateDynamicDatasource: (params: DatasourceParams) => Promise<DS>;
+  dynamicDsDestroyDynamicDatasource: (templateName: string, currentBlockHeight: number) => Promise<void>;
   dynamicDsGetDynamicDatasources: () => Promise<DS[]>;
 };
 
 export const hostDynamicDsKeys: (keyof HostDynamicDS<any>)[] = [
   'dynamicDsCreateDynamicDatasource',
+  'dynamicDsDestroyDynamicDatasource',
   'dynamicDsGetDynamicDatasources',
 ];
 
@@ -32,6 +34,10 @@ export class WorkerDynamicDsService<DS> implements IDynamicDsService<DS> {
     return this.host.dynamicDsCreateDynamicDatasource(JSON.parse(JSON.stringify(params)));
   }
 
+  async destroyDynamicDatasource(templateName: string, currentBlockHeight: number): Promise<void> {
+    return this.host.dynamicDsDestroyDynamicDatasource(templateName, currentBlockHeight);
+  }
+
   async getDynamicDatasources(): Promise<DS[]> {
     return this.host.dynamicDsGetDynamicDatasources();
   }
@@ -40,6 +46,7 @@ export class WorkerDynamicDsService<DS> implements IDynamicDsService<DS> {
 export function dynamicDsHostFunctions<DS>(dynamicDsService: IDynamicDsService<DS>): HostDynamicDS<DS> {
   return {
     dynamicDsCreateDynamicDatasource: dynamicDsService.createDynamicDatasource.bind(dynamicDsService),
+    dynamicDsDestroyDynamicDatasource: dynamicDsService.destroyDynamicDatasource.bind(dynamicDsService),
     dynamicDsGetDynamicDatasources: dynamicDsService.getDynamicDatasources.bind(dynamicDsService),
   };
 }
