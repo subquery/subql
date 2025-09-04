@@ -77,7 +77,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
       logger.info('Processing unfinalized blocks');
       // Validate any previously unfinalized blocks
 
-      const rewindHeight = await this.processUnfinalizedBlocks();
+      const rewindHeight = await this.processUnfinalizedBlockHeader();
       if (rewindHeight !== undefined) {
         logger.info(
           `Found un-finalized blocks from previous indexing but unverified, rolling back to last finalized block ${rewindHeight}`
@@ -96,6 +96,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
     return this.finalizedHeader.blockHeight;
   }
 
+  // If not for workers this could be private
   async processUnfinalizedBlockHeader(header?: Header): Promise<Header | undefined> {
     if (header) {
       await this.registerUnfinalizedBlock(header);
@@ -114,8 +115,8 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
     return;
   }
 
-  async processUnfinalizedBlocks(block?: IBlock<B>): Promise<Header | undefined> {
-    return this.processUnfinalizedBlockHeader(block ? this.blockToHeader(block) : undefined);
+  async processUnfinalizedBlocks(block: IBlock<B>): Promise<Header | undefined> {
+    return this.processUnfinalizedBlockHeader(this.blockToHeader(block));
   }
 
   registerFinalizedBlock(header: Header): void {

@@ -8,9 +8,16 @@
     "rootDir": "src",
     "tsBuildInfoFile": "lib/.tsbuildinfo",
     "outDir": "lib",
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "resolveJsonModule": true
   },
   "references": [{"path": "../common"}, {"path": "../common-substrate"}, {"path": "../utils"}],
   "include": ["src/**/*"],
-  "exclude": ["test/schemaTest/project.ts"]
+  "exclude": ["test/schemaTest/project.ts"],
+  "plugins": [
+    {
+      "name": "@0no-co/graphqlsp",
+      "schema": "./graphql.schema.json"
+    }
+  ]
 }

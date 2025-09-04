@@ -9,3 +9,4 @@ packages/**/lib/**
 *.proto
 *.ts.snap
 sourcemap-test-*.js
+packages/cli/src/controller/network/__graphql__/**
