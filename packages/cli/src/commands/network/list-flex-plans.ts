@@ -31,7 +31,6 @@ async function listFlexPlansAdapter(
 ): Promise<z.infer<typeof listFlexPlansOutputs>> {
   const signerOrProvider = await getSignerOrProvider(args.network, logger, undefined, true);
   requireSigner(signerOrProvider);
-  // logger.info(`Listing flex plans for address: ${address}`);
 
   const chsApi = await ConsumerHostClient.create(args.network, signerOrProvider, logger);
 
@@ -64,9 +63,10 @@ export default class ListFlexPlans extends Command {
               price: formatSQT(plan.price),
               maximum: plan.maximum,
               spent: formatSQT(plan.spent),
-              isActivated: plan.isActivated,
-              createdAt: new Date(plan.createdAt).toLocaleString(),
-              updatedAt: new Date(plan.updatedAt).toLocaleString(),
+              active: plan.isActivated,
+              expires: new Date(plan.expiredAt).toLocaleString(),
+              created: new Date(plan.createdAt).toLocaleString(),
+              updated: new Date(plan.updatedAt).toLocaleString(),
             };
           })
         )

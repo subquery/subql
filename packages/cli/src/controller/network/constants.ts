@@ -14,6 +14,8 @@ import {Logger} from '../../adapters/utils';
 import {ProjectType as ProjectTypeGql} from './__graphql__/base-types';
 import {NO_EXISTING_CONN_ERROR, walletConnectSigner} from './walletconnect-signer';
 
+export const WALLET_DOMAIN = 'app.subquery.network';
+
 export function getQueryClient(network: SQNetworks) {
   return new GraphqlQueryClient(NETWORK_CONFIGS[network]).networkClient;
 }

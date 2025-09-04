@@ -38,7 +38,6 @@ type ZodToPrimitiveArray<T extends ZodTypeAny> =
 // Check if optional
 type HasDefault<T extends ZodTypeAny> = T extends ZodDefault<any> ? true : false;
 type IsOptional<T extends ZodTypeAny> = T extends ZodOptional<any> ? true : false;
-type IsArray<T extends ZodTypeAny> = T extends ZodArray<any> ? true : false;
 
 // Combine to determine final flag type
 type FlagFromZod<T extends ZodTypeAny> =

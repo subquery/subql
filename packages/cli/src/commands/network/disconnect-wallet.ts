@@ -9,11 +9,7 @@ import {
   commandLogger,
   getMCPStructuredResponse,
   Logger,
-  makeCLIPrompt,
-  makeMCPElicitPrmompt,
   mcpLogger,
-  MCPToolOptions,
-  Prompt,
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
@@ -29,8 +25,7 @@ const disconnnectWalletOutputs = z.object({
 
 export async function disconnectWalletAdapter(
   args: ConnectWalletInputs,
-  logger: Logger,
-  prompt?: Prompt
+  logger: Logger
 ): Promise<z.infer<typeof disconnnectWalletOutputs>> {
   const signer = await getSignerOrProvider(SQNetworks.MAINNET, logger, undefined, false);
 
@@ -58,7 +53,7 @@ export default class DisconnectWallet extends Command {
   async run(): Promise<void> {
     const {flags} = await this.parse(DisconnectWallet);
 
-    const {address} = await disconnectWalletAdapter(flags, commandLogger(this), makeCLIPrompt());
+    const {address} = await disconnectWalletAdapter(flags, commandLogger(this));
 
     if (!address) {
       this.log('No account to disconect');
@@ -71,7 +66,7 @@ export default class DisconnectWallet extends Command {
   }
 }
 
-export function registerDisconnectWalletMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
+export function registerDisconnectWalletMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
     `network:${DisconnectWallet.name}`,
     {
@@ -81,9 +76,7 @@ export function registerDisconnectWalletMCPTool(server: McpServer, opts: MCPTool
     },
     withStructuredResponse(async (args) => {
       const logger = mcpLogger(server.server);
-      const prompt = opts.supportsElicitation ? makeMCPElicitPrmompt(server) : undefined;
-
-      return disconnectWalletAdapter(args, logger, prompt);
+      return disconnectWalletAdapter(args, logger);
     })
   );
 }

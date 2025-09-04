@@ -16,7 +16,7 @@ export type Boosts = z.infer<typeof boostsSchema>;
 
 export const responseSchema = z.object({
   boosts: z.array(boostsSchema),
-  totalBoost: z.string(), //bigint
+  totalBoost: z.string({description: 'The total SQT boosted on this deployment'}), //bigint
 });
 export type Response = z.infer<typeof responseSchema>;
 

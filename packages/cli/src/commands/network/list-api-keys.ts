@@ -29,7 +29,6 @@ export async function listApiKeysAdapter(
   logger: Logger
 ): Promise<z.infer<typeof listApiKeysOutputs>> {
   const signerOrProvider = await getSignerOrProvider(args.network, logger, undefined, false);
-  // const sdk = getContractSDK(signerOrProvider, args.network);
   requireSigner(signerOrProvider);
 
   const chs = await ConsumerHostClient.create(args.network, signerOrProvider, logger);

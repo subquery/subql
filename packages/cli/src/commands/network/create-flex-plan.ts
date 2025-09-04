@@ -24,6 +24,7 @@ import {
   formatSQT,
 } from '../../controller/network/constants';
 import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
+import {hostingPlanSchema} from '../../controller/network/consumer-host/schemas';
 import {listDeploymentBoosts} from '../../controller/network/list-deployment-boosts';
 import {checkAndIncreaseAllowance} from '../../controller/network/utils';
 
@@ -35,6 +36,7 @@ const createFlexPlanInputs = z.object({
 type CreateApiKeyInputs = z.infer<typeof createFlexPlanInputs>;
 
 const createFlexPlanOutputs = z.object({
+  plan: hostingPlanSchema,
   apiKey: z.string({description: 'An api key if one is created'}).optional(),
 });
 
@@ -89,7 +91,10 @@ export async function createFlexPlanAdapter(
 
   const plan = await chs.createPlan(args.deploymentId, amount.toBigInt());
 
-  return {apiKey};
+  return {
+    apiKey,
+    plan,
+  };
 }
 
 export default class CreateNetworkFlexPlan extends Command {
@@ -103,6 +108,7 @@ export default class CreateNetworkFlexPlan extends Command {
     const result = await createFlexPlanAdapter({...flags}, logger, makeCLIPrompt());
 
     this.log(`API Key: ${result.apiKey}`);
+    this.log(`Plan details: ${JSON.stringify(result.plan, null, 2)}`);
 
     // Exit with success, walletconnect will keep things running
     this.exit(0);

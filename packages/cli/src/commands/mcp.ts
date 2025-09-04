@@ -97,6 +97,7 @@ export default class MCP extends Command {
     registerCreateNetworkFlexPlanMCPTool(server);
     registerStopNetworkFlexPlanMCPTool(server);
     registerCreateNetworkApiKeyMCPTool(server);
+    registerDisconnectWalletMCPTool(server);
 
     const transport = new StdioServerTransport();
     await server.connect(transport);
@@ -122,7 +123,6 @@ export default class MCP extends Command {
       registerRemoveDeploymentBoostMCPTool(server, opts);
 
       registerConnectWalletMCPTool(server, opts);
-      registerDisconnectWalletMCPTool(server, opts);
       registerSwapDeploymentBoostMCPTool(server, opts);
     };
 

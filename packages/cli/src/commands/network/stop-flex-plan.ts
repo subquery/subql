@@ -8,14 +8,13 @@ import {
   commandLogger,
   getMCPStructuredResponse,
   Logger,
-  makeCLIPrompt,
   mcpLogger,
-  Prompt,
   withStructuredResponse,
   zodToFlags,
 } from '../../adapters/utils';
 import {networkNameSchema, getSignerOrProvider, requireSigner} from '../../controller/network/constants';
 import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
+import {hostingPlanSchema} from '../../controller/network/consumer-host/schemas';
 
 const stopFlexPlanInputs = z.object({
   network: networkNameSchema,
@@ -23,12 +22,13 @@ const stopFlexPlanInputs = z.object({
 });
 type CreateApiKeyInputs = z.infer<typeof stopFlexPlanInputs>;
 
-const stopFlexPlanOutputs = z.object({});
+const stopFlexPlanOutputs = z.object({
+  plan: hostingPlanSchema,
+});
 
 export async function stopFlexPlanAdapter(
   args: CreateApiKeyInputs,
-  logger: Logger,
-  prompt?: Prompt
+  logger: Logger
 ): Promise<z.infer<typeof stopFlexPlanOutputs>> {
   const signer = await getSignerOrProvider(args.network, logger, undefined, false);
   requireSigner(signer);
@@ -36,23 +36,17 @@ export async function stopFlexPlanAdapter(
   const chs = await ConsumerHostClient.create(args.network, signer, logger);
 
   const plans = await chs.listPlans();
-  console.log('AAAAA');
   const existingPlan = plans.find((p) => p.deployment.deployment === args.deploymentId);
-  console.log('BBBBBB', existingPlan);
   if (!existingPlan) {
     throw new Error('No existing flex plan for this deployment');
   }
-
-  console.log('CCCCCC');
 
   const plan = await chs.updatePlan(existingPlan.id, '0', 0).catch((e) => {
     console.error(e);
     throw e;
   });
 
-  console.log('UPDATED PLAN', plan);
-
-  return {};
+  return {plan};
 }
 
 export default class StopNetworkFlexPlan extends Command {
@@ -63,7 +57,9 @@ export default class StopNetworkFlexPlan extends Command {
     const {flags} = await this.parse(StopNetworkFlexPlan);
     const logger = commandLogger(this);
 
-    const result = await stopFlexPlanAdapter({...flags}, logger, makeCLIPrompt());
+    const result = await stopFlexPlanAdapter({...flags}, logger);
+
+    this.log(`Stopped Plan: ${JSON.stringify(result.plan, null, 2)}`);
 
     // Exit with success, walletconnect will keep things running
     this.exit(0);
@@ -80,8 +76,7 @@ export function registerStopNetworkFlexPlanMCPTool(server: McpServer): Registere
     },
     withStructuredResponse(async (args) => {
       const logger = mcpLogger(server.server);
-      const prompt = /*opts.supportsElicitation ? makeMCPElicitPrmompt(server) : */ undefined;
-      return stopFlexPlanAdapter(args, logger, prompt);
+      return stopFlexPlanAdapter(args, logger);
     })
   );
 }

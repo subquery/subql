@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {SQNetworks} from '@subql/network-config';
+import {IKeyValueStorage} from '@walletconnect/keyvaluestorage';
 import {Signer, utils} from 'ethers';
 import {SiweMessage, generateNonce} from 'siwe';
 import {Logger} from '../../../adapters/utils';
+import {CONSUMER_HOST_STORE_PATH} from '../../../constants';
+import {WALLET_DOMAIN} from '../constants';
+import {JSONFileStorage} from '../json-file-store';
 import {NetworkConsumerHostServiceApi, RequestParams} from './consumer-host-service-api';
 import {
   ApiKey,
@@ -14,7 +18,6 @@ import {
   HostingPlan,
   HostingPlanExtra,
 } from './schemas';
-import {FileTokenStore, TokenStore} from './tokenStore';
 
 const endpoints = {
   [SQNetworks.MAINNET]: 'https://chs.subquery.network',
@@ -25,7 +28,7 @@ const endpoints = {
 export class ConsumerHostClient {
   #network: SQNetworks;
   #api: NetworkConsumerHostServiceApi<unknown>;
-  #tokenStore: TokenStore;
+  #tokenStore: IKeyValueStorage;
   #authToken?: string;
 
   /**
@@ -35,7 +38,7 @@ export class ConsumerHostClient {
     network: SQNetworks,
     signer: Signer,
     logger: Logger,
-    tokenStore = new FileTokenStore()
+    tokenStore = new JSONFileStorage(CONSUMER_HOST_STORE_PATH)
   ): Promise<ConsumerHostClient> {
     const endpoint = endpoints[network];
     if (!endpoints) {
@@ -48,7 +51,7 @@ export class ConsumerHostClient {
     return client;
   }
 
-  constructor(network: SQNetworks, endpoint: string, tokenStore: TokenStore) {
+  constructor(network: SQNetworks, endpoint: string, tokenStore: IKeyValueStorage) {
     this.#network = network;
     this.#api = new NetworkConsumerHostServiceApi({
       baseUrl: endpoint,
@@ -58,7 +61,9 @@ export class ConsumerHostClient {
 
   async requestLoginToken(signer: Signer, logger?: Logger): Promise<void> {
     if (this.#authToken) return;
-    const existingToken = await this.#tokenStore.getToken(this.#network);
+    const address = await signer.getAddress();
+    const storeKey = `${this.#network}:${address}`;
+    const existingToken = await this.#tokenStore.getItem(storeKey);
     if (existingToken) {
       // This needs to be set in order for the API calls to work
       this.#authToken = existingToken;
@@ -70,13 +75,13 @@ export class ConsumerHostClient {
         return;
       }
       // Existing token doesn't work, request a new one
-      await this.#tokenStore.clearToken(this.#network);
+      await this.#tokenStore.removeItem(storeKey);
       this.#authToken = undefined;
     }
 
-    const [address, chainId] = await Promise.all([signer.getAddress(), signer.getChainId()]);
+    const chainId = await signer.getChainId();
     const newMsg = new SiweMessage({
-      domain: 'app.subquery.network', //'subquery.network', // Hard coded domains on the service, this gives an alert in metamask as the domain is not the same as in Wallet Connect
+      domain: WALLET_DOMAIN, //'subquery.network', // Hard coded domains on the service, this gives an alert in metamask as the domain is not the same as in Wallet Connect
       address: utils.getAddress(address),
       statement: `Login to SubQuery Network`, // TODO can this be changed?
       uri: 'https://subquery.network',
@@ -92,12 +97,9 @@ export class ConsumerHostClient {
 
     const res = await this.#api.login.authControllerUserToken(
       {
-        // consumer: address,
-        // chain_id: chainId,
         message: msg,
         signature,
-        // timestamp: newMsg.issuedAt ? new Date(newMsg.issuedAt).getTime() : undefined,
-      }, // This had to be modified in the openapi spec from the source on the service
+      },
       {format: 'json'}
     );
 
@@ -115,18 +117,17 @@ export class ConsumerHostClient {
     }
 
     this.#authToken = token;
-    await this.#tokenStore.setToken(this.#network, token);
+    await this.#tokenStore.setItem(storeKey, token);
   }
 
   async createPlan(deploymentId: string, price: bigint): Promise<HostingPlan> {
     const res = await this.#api.users.hostingPlanControllerCreate(
       {
-        // deployment: 330,
         deploymentId: deploymentId,
         price: price.toString(),
         // expiration: 3600 * 24 * 14, // 14 days in seconds, this has been picked from a default value in the front end
         // maximum: 2, // Unused according to the front end
-      } as any,
+      },
       this.#getRequestParams()
     );
 

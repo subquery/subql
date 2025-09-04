@@ -11,11 +11,11 @@ import {
 } from './consumer-host-service-api';
 
 export const apiKeySchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  apiKey: z.string(),
-  times: z.number(),
-  createdAt: z.string().datetime(),
+  id: z.number({description: 'The unique identifier of the api key'}),
+  name: z.string({description: 'The name given to the api key'}),
+  apiKey: z.string({description: 'The key to use'}),
+  times: z.number({description: 'The number of times the api key has been used'}),
+  createdAt: z.string({description: 'ISO Date when the api key was created'}).datetime(),
 });
 export type ApiKey = z.infer<typeof apiKeySchema>;
 
@@ -30,12 +30,12 @@ export function convertApiKey(apiKey: Apikey): ApiKey {
 }
 
 export const projectSchema = z.object({
-  id: z.number(),
-  owner: z.string(),
-  metadata: z.string(),
-  ptype: z.number(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  id: z.number({description: 'The unique identifier of the project'}),
+  owner: z.string({description: 'The address that owns the project'}),
+  metadata: z.string({description: 'The IPFS CID of the project metadata'}),
+  ptype: z.number({description: 'An enum representing the project type'}), // TODO change to enum
+  createdAt: z.string({description: 'ISO Date when the project was created'}).datetime(),
+  updatedAt: z.string({description: 'ISO Date when the project was updated'}).datetime(),
 });
 export type Project = z.infer<typeof projectSchema>;
 
@@ -51,14 +51,14 @@ export function convertProject(project: ApiProject): Project {
 }
 
 export const deploymentSchema = z.object({
-  id: z.number(),
-  projectId: z.number(),
-  deployment: z.string(),
-  isActivated: z.boolean(),
-  isLatest: z.boolean(),
-  metadata: z.string(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  id: z.number({description: 'The unique identifier of the deployment'}),
+  projectId: z.number({description: 'The unique identifier of the project this deployment belongs to'}),
+  deployment: z.string({description: 'The IPFS CID of the deployment'}),
+  isActivated: z.boolean({}),
+  isLatest: z.boolean({description: 'Whether this deployment is the latest for the project'}),
+  metadata: z.string({description: 'The IPFS CID of the deployment metadata'}),
+  createdAt: z.string({description: 'ISO Date when the deployment was created'}).datetime(),
+  updatedAt: z.string({description: 'ISO Date when the deployment was updated'}).datetime(),
 });
 export type Deployment = z.infer<typeof deploymentSchema>;
 
@@ -76,17 +76,17 @@ export function convertDeployment(deployment: ApiDeployment): Deployment {
 }
 
 export const hostingPlanSchema = z.object({
-  id: z.number(),
-  consumer: z.number(),
+  id: z.number({description: 'The unique identifier of the hosting plan'}),
+  consumer: z.number({description: 'The wallet address that consumes the plan'}),
   channels: z.string(),
-  deploymentId: z.number(),
+  deploymentId: z.number({description: 'The deployment id that is hosted'}),
   maximum: z.number(),
-  spent: z.string(),
-  price: z.string(),
-  isActivated: z.boolean(),
-  expiredAt: z.string().datetime(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  spent: z.string({description: 'The amount spent in SQT'}),
+  price: z.string({description: 'The price per 1000 requests in SQT'}),
+  isActivated: z.boolean({description: 'Whether the plan is still active'}),
+  expiredAt: z.string({description: 'ISO Date when the hosting plan expires'}).datetime(),
+  createdAt: z.string({description: 'ISO Date when the hosting plan was created'}).datetime(),
+  updatedAt: z.string({description: 'ISO Date when the hosting plan was updated'}).datetime(),
 });
 
 export type HostingPlan = z.infer<typeof hostingPlanSchema>;
