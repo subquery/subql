@@ -11,6 +11,7 @@ import {TsconfigPathsPlugin} from 'tsconfig-paths-webpack-plugin';
 import webpack, {Configuration} from 'webpack';
 import {merge} from 'webpack-merge';
 import {Logger} from '../adapters/utils';
+import {loadEnvConfig, getWebpackEnvDefinitions} from '../utils/env';
 
 /**
  * Webpack has been chosen as the bundler for a few reasons.
@@ -26,55 +27,62 @@ const getBaseConfig = (
   projectDir: string,
   outputDir: string,
   development?: boolean
-): webpack.Configuration => ({
-  target: 'node',
-  mode: development ? 'development' : 'production',
-  context: projectDir,
-  entry: buildEntries,
-  devtool: 'inline-source-map',
-  optimization: {
-    minimize: true,
-    minimizer: [
-      new TerserPlugin({
-        terserOptions: {
-          sourceMap: true,
-          format: {
-            beautify: true,
+): webpack.Configuration => {
+  // Load environment variables from .env file
+  const envConfig = loadEnvConfig(projectDir);
+  const envDefinitions = getWebpackEnvDefinitions(envConfig);
+
+  return {
+    target: 'node',
+    mode: development ? 'development' : 'production',
+    context: projectDir,
+    entry: buildEntries,
+    devtool: 'inline-source-map',
+    optimization: {
+      minimize: true,
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            sourceMap: true,
+            format: {
+              beautify: true,
+            },
+          },
+        }),
+      ],
+    },
+    plugins: [new webpack.DefinePlugin(envDefinitions)],
+    module: {
+      rules: [
+        {
+          test: /\.tsx?$/,
+          exclude: /node_modules/,
+          loader: require.resolve('ts-loader'),
+          options: {
+            compilerOptions: {
+              declaration: false,
+            },
           },
         },
-      }),
-    ],
-  },
-  module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        loader: require.resolve('ts-loader'),
-        options: {
-          compilerOptions: {
-            declaration: false,
-          },
+        {
+          test: /\.ya?ml$/,
+          use: 'yaml-loader',
         },
-      },
-      {
-        test: /\.ya?ml$/,
-        use: 'yaml-loader',
-      },
-    ],
-  },
+      ],
+    },
 
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js', '.json'],
-    plugins: [],
-  },
+    resolve: {
+      extensions: ['.tsx', '.ts', '.js', '.json'],
+      plugins: [],
+    },
 
-  output: {
-    path: outputDir,
-    filename: '[name].js',
-    libraryTarget: 'commonjs',
-  },
-});
+    output: {
+      path: outputDir,
+      filename: '[name].js',
+      libraryTarget: 'commonjs',
+    },
+  };
+};
 
 export function loadTsConfig(projectDir: string): any | undefined {
   const tsconfigPath = path.join(projectDir, 'tsconfig.json');
