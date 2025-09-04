@@ -4,7 +4,7 @@
 import {existsSync, writeFileSync, unlinkSync, mkdirSync, rmSync} from 'fs';
 import {tmpdir} from 'os';
 import {join} from 'path';
-import {loadEnvConfig, getWebpackEnvDefinitions, getSandboxEnvGlobals} from './env';
+import {loadEnvConfig, getWebpackEnvDefinitions} from './env';
 
 describe('Environment Configuration Utils', () => {
   let testDir: string;
@@ -61,8 +61,8 @@ describe('Environment Configuration Utils', () => {
 
       const config = loadEnvConfig(testDir);
 
-      // Should return parsed config or empty on error
-      expect(config).toBeDefined();
+      // Should return empty config on error
+      expect(config).toEqual({});
 
       consoleSpy.mockRestore();
     });
@@ -145,56 +145,6 @@ describe('Environment Configuration Utils', () => {
     });
   });
 
-  describe('getSandboxEnvGlobals', () => {
-    it('should create sandbox process.env object', () => {
-      const envConfig = {
-        DATABASE_URL: 'postgresql://localhost:5432/subql',
-        API_KEY: 'test-api-key',
-        DEBUG: 'true',
-        PORT: '3000',
-      };
-
-      const globals = getSandboxEnvGlobals(envConfig);
-
-      expect(globals).toEqual({
-        process: {
-          env: {
-            DATABASE_URL: 'postgresql://localhost:5432/subql',
-            API_KEY: 'test-api-key',
-            DEBUG: 'true',
-            PORT: '3000',
-          },
-        },
-      });
-    });
-
-    it('should skip undefined values', () => {
-      const envConfig = {
-        DEFINED_VAR: 'value',
-        UNDEFINED_VAR: undefined,
-      };
-
-      const globals = getSandboxEnvGlobals(envConfig);
-
-      expect(globals.process.env).toEqual({
-        DEFINED_VAR: 'value',
-      });
-      expect(globals.process.env.UNDEFINED_VAR).toBeUndefined();
-    });
-
-    it('should handle empty config', () => {
-      const envConfig = {};
-
-      const globals = getSandboxEnvGlobals(envConfig);
-
-      expect(globals).toEqual({
-        process: {
-          env: {},
-        },
-      });
-    });
-  });
-
   describe('Integration tests', () => {
     it('should work end-to-end from file to webpack definitions', () => {
       const envContent = [
@@ -207,18 +157,11 @@ describe('Environment Configuration Utils', () => {
 
       const config = loadEnvConfig(testDir);
       const definitions = getWebpackEnvDefinitions(config);
-      const globals = getSandboxEnvGlobals(config);
 
       expect(definitions).toEqual({
         'process.env.DATABASE_URL': '"postgresql://localhost:5432/subql"',
         'process.env.API_KEY': '"secret-key-123"',
         'process.env.DEBUG': '"true"',
-      });
-
-      expect(globals.process.env).toEqual({
-        DATABASE_URL: 'postgresql://localhost:5432/subql',
-        API_KEY: 'secret-key-123',
-        DEBUG: 'true',
       });
     });
   });

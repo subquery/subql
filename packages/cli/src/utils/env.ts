@@ -46,25 +46,3 @@ export function getWebpackEnvDefinitions(envConfig: EnvConfig): Record<string, s
 
   return definitions;
 }
-
-/**
- * Get environment variables as sandbox globals
- * @param envConfig - Environment configuration object
- * @returns Object with environment variables for sandbox injection
- */
-export function getSandboxEnvGlobals(envConfig: EnvConfig): Record<string, any> {
-  const processEnv: Record<string, string> = {};
-
-  Object.keys(envConfig).forEach((key) => {
-    const value = envConfig[key];
-    if (value !== undefined) {
-      processEnv[key] = value;
-    }
-  });
-
-  return {
-    process: {
-      env: processEnv,
-    },
-  };
-}
