@@ -48,8 +48,6 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
     });
   }
 
-  abstract buildDictionaryQueryEntries(dataSources: DS[]): DictionaryV1QueryEntry[];
-
   protected async init(): Promise<void> {
     const {query} = this.metadataQuery();
     try {

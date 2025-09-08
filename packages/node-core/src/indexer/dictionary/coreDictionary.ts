@@ -10,7 +10,7 @@ import {FieldSelector} from './v2';
 export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQueryEntry */>
   implements IDictionary<DS, FB>
 {
-  protected queriesMap?: BlockHeightMap<E>;
+  protected queriesMap?: BlockHeightMap<E | undefined>;
   protected _startHeight = 1;
   protected _metadata?: M;
   metadataValid: boolean | undefined;
@@ -28,7 +28,7 @@ export abstract class CoreDictionary<DS, FB, M /* Metadata */, E /* DictionaryQu
   ): Promise<DictionaryResponse<IBlock | number> | undefined>;
   protected abstract init(): Promise<void>;
   protected abstract dictionaryValidation(metaData?: M, startBlockHeight?: number): boolean;
-  protected abstract buildDictionaryQueryEntries(dataSources: DS[]): E;
+  protected abstract buildDictionaryQueryEntries(dataSources: DS[]): E | undefined;
   abstract queryMapValidByHeight(height: number): boolean;
   abstract getQueryEndBlock(targetBlockHeight: number, apiFinalizedHeight: number): number;
 
