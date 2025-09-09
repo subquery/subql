@@ -19,11 +19,13 @@ export interface DatasourceParams {
   templateName: string;
   args?: Record<string, unknown>;
   startBlock: number;
+  endBlock?: number;
 }
 
 export interface IDynamicDsService<DS> {
   dynamicDatasources: DS[];
   createDynamicDatasource(params: DatasourceParams): Promise<DS>;
+  destroyDynamicDatasource(templateName: string, currentBlockHeight: number): Promise<void>;
   getDynamicDatasources(forceReload?: boolean): Promise<DS[]>;
 }
 
@@ -91,6 +93,34 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
     }
   }
 
+  async destroyDynamicDatasource(templateName: string, currentBlockHeight: number, tx?: Transaction): Promise<void> {
+    if (!this._datasources || !this._datasourceParams) {
+      throw new Error('DynamicDsService has not been initialized');
+    }
+
+    const dsIndex = this._datasourceParams.findIndex((params) => params.templateName === templateName);
+    if (dsIndex === -1) {
+      throw new Error(`Dynamic datasource with template name "${templateName}" not found`);
+    }
+
+    const dsParam = this._datasourceParams[dsIndex];
+
+    if (dsParam.endBlock !== undefined) {
+      throw new Error(`Dynamic datasource "${templateName}" is already destroyed`);
+    }
+
+    const updatedParams = {...dsParam, endBlock: currentBlockHeight};
+    this._datasourceParams[dsIndex] = updatedParams;
+
+    if (this._datasources[dsIndex]) {
+      (this._datasources[dsIndex] as any).endBlock = currentBlockHeight;
+    }
+
+    await this.metadata.set(METADATA_KEY, this._datasourceParams, tx);
+
+    logger.info(`Destroyed dynamic datasource "${templateName}" at block ${currentBlockHeight}`);
+  }
+
   // Not force only seems to be used for project changes
   async getDynamicDatasources(forceReload?: boolean): Promise<DS[]> {
     // Workers should not cache this result in order to keep in sync
@@ -117,19 +147,19 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
    *
    * This will throw if the template cannot be found by name.
    *
-   * Inserts the startBlock into the template.
+   * Inserts the startBlock and optionally endBlock into the template.
    * */
-  protected getTemplate(templateName: string, startBlock?: number): DS {
+  protected getTemplate(templateName: string, startBlock?: number, endBlock?: number): DS {
     const t = (this.project.templates ?? []).find((t) => t.name === templateName);
     if (!t) {
       throw new Error(`Unable to find matching template in project for name: "${templateName}"`);
     }
     const {name, ...template} = cloneDeep(t);
-    return {...template, startBlock} as DS;
+    return {...template, startBlock, endBlock} as DS;
   }
 
   private async getDatasource(params: DatasourceParams): Promise<DS> {
-    const dsObj = this.getTemplate(params.templateName, params.startBlock);
+    const dsObj = this.getTemplate(params.templateName, params.startBlock, params.endBlock);
 
     try {
       await this.blockchainService.updateDynamicDs(params, dsObj);
