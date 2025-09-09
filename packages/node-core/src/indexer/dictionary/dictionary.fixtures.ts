@@ -141,7 +141,7 @@ export class TestDictionaryV2 extends DictionaryV2<TestFB, any, any> {
   }
 
   buildDictionaryQueryEntries(dataSources: any[]): DictionaryV2QueryEntry {
-    // Random non-empty object to satisfy running a query
+    // Test fixture object with non-empty conditions to satisfy running a query
     return {property: ['value']};
   }
 
