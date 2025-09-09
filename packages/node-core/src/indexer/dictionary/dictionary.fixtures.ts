@@ -8,7 +8,7 @@ import {BlockHeightMap} from '../../utils';
 import {IBlock} from '../types';
 import {DictionaryResponse} from './types';
 import {DictionaryV1} from './v1';
-import {DictionaryV2, DictionaryV2QueryEntry, RawDictionaryResponseData} from './v2';
+import {DictionaryV2, DictionaryV2Metadata, DictionaryV2QueryEntry, RawDictionaryResponseData} from './v2';
 
 // export use in dictionary service test
 export class TestDictionaryV1 extends DictionaryV1<any> {
@@ -132,8 +132,17 @@ export interface TestFB {
 }
 
 export class TestDictionaryV2 extends DictionaryV2<TestFB, any, any> {
+  get testMetadata(): DictionaryV2Metadata | undefined {
+    return this._metadata;
+  }
+
+  setMockedApi(mocked: {post: () => Promise<any> | any}): void {
+    this.dictionaryApi = mocked as any;
+  }
+
   buildDictionaryQueryEntries(dataSources: any[]): DictionaryV2QueryEntry {
-    return {};
+    // Random non-empty object to satisfy running a query
+    return {property: ['value']};
   }
 
   convertResponseBlocks<RFB>(result: RawDictionaryResponseData<RFB>): DictionaryResponse<IBlock<TestFB>> | undefined {
