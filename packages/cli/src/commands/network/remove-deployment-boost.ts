@@ -62,20 +62,6 @@ async function removeDeploymentBoostAdapter(
 
   const receipt = await checkTransactionSuccess(tx);
 
-  // receipt.events?.forEach((event) => {
-  //   try {
-  //     const parsedEvent = sdk.rewardsBooster.interface.parseLog(event);
-
-  //     const boostAddedEvent = sdk.rewardsBooster.interface.events['DeploymentBoosterAdded(bytes32,address,uint256)'];
-  //     if (parsedEvent.name === boostAddedEvent.name) {
-  //       // TODO check this is a new amount or total amount
-  //       const amount = (parsedEvent as unknown as DeploymentBoosterAddedEvent).args.amount;
-  //     }
-  //   } catch (e) {
-  //     // Do nothing, event might come from another contract or be unrelated
-  //   }
-  // });
-
   return {
     transactionHash: tx.hash,
   };

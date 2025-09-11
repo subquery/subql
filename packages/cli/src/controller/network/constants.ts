@@ -117,7 +117,13 @@ export async function resolveAddress(
 }
 
 export function cidToBytes32(cid: string): string {
-  return `0x${Buffer.from(base58Decode(cid)).slice(2).toString('hex')}`;
+  let bytes: Uint8Array;
+  try {
+    bytes = base58Decode(cid);
+  } catch (e) {
+    throw new Error('Invalid CID: failed to decode base58 string', {cause: e});
+  }
+  return `0x${Buffer.from(bytes).subarray(2).toString('hex')}`;
 }
 
 export const projectMetadataSchema = z

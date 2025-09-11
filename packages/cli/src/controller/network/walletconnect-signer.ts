@@ -139,7 +139,6 @@ ${uri}
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async signMessage(message: string): Promise<string> {
     return this.runRequest<string>('personal_sign', [hexlify(Buffer.from(message, 'utf8')), this.account]);
   }
