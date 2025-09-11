@@ -56,7 +56,7 @@ export default class DisconnectWallet extends Command {
     const {address} = await disconnectWalletAdapter(flags, commandLogger(this));
 
     if (!address) {
-      this.log('No account to disconect');
+      this.log('No account to disconnect');
     } else {
       this.log(`Disconnected account: ${address}.`);
     }
