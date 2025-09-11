@@ -10,7 +10,7 @@ import {CallToolResult, ElicitRequest, ServerNotification, ServerRequest} from '
 import {Args, Command, Flags} from '@oclif/core';
 import {Flag, Arg} from '@oclif/core/lib/interfaces';
 import fuzzy from 'fuzzy';
-import {z, ZodTypeAny, ZodObject, ZodOptional, ZodDefault, ZodArray} from 'zod';
+import {z, ZodTypeAny, ZodObject, ZodOptional, ZodDefault} from 'zod';
 
 export type Logger = {
   info: (message: string) => void;
