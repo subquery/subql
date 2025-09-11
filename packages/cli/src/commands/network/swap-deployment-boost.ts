@@ -89,7 +89,7 @@ export default class SwapDeploymentBoost extends Command {
     const result = await swapDeploymentBoostAdapter(flags, commandLogger(this), makeCLIPrompt());
 
     this.log(
-      `Swaped boost (${formatSQT(result.amount)})from deployment: ${flags.fromDeploymentId} to deployment ${flags.toDeploymentId}. TransactionHash: ${result.transactionHash}`
+      `Swapped boost (${formatSQT(result.amount)}) from deployment: ${flags.fromDeploymentId} to deployment ${flags.toDeploymentId}. TransactionHash: ${result.transactionHash}`
     );
   }
 }
