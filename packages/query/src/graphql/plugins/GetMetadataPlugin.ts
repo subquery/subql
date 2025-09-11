@@ -1,7 +1,6 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {URL} from 'url';
 import {getMetadataTableName, MetaData, METADATA_REGEX, MULTI_METADATA_REGEX, TableEstimate} from '@subql/utils';
 import {PgIntrospectionResultsByKind} from '@subql/x-graphile-build-pg';
 import {Build} from '@subql/x-postgraphile-core';
@@ -240,8 +239,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
         _metadatas(
           after: Cursor
           before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter # first: Int # offset: Int
-          # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
-        ): # last: Int
+          # last: Int
+        ): # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
         _Metadatas
       }
     `,

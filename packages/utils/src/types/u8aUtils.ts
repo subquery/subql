@@ -10,7 +10,7 @@ import {numberToU8a, u8aConcat} from '@polkadot/util';
  * @param byteArray
  */
 
-export function wrappedNumToU8a(num: number) {
+export function wrappedNumToU8a(num: number): Uint8Array {
   if (num >= 0) {
     return numberToU8a(num);
   }
