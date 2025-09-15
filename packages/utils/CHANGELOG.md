@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Address some linter related warnings (#2876)
+- Update polkadot dependenices (#2915)
 
 ## [2.21.1] - 2025-07-24
 ### Fixed
