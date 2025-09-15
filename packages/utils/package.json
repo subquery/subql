@@ -1,6 +1,6 @@
 {
   "name": "@subql/utils",
-  "version": "2.21.2-1",
+  "version": "2.21.2",
   "description": "",
   "packageManager": "yarn@3.1.1",
   "scripts": {
@@ -41,6 +41,5 @@
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
-  ],
-  "stableVersion": "2.21.2-0"
+  ]
 }
