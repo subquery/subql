@@ -20,6 +20,7 @@
     "@walletconnect/types": "^2.17.2",
     "@walletconnect/utils": "^2.17.2",
     "chalk": "^4",
+    "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "fuzzy": "^0.1.3",
     "glob": "^10.4",
