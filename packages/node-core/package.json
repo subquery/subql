@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-core",
-  "version": "18.3.2",
+  "version": "18.3.4-0",
   "description": "Common node features that are agnostic to blockchains",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -28,7 +28,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@apollo/client": "^3.11.2",
+    "@apollo/client": "^3.14.0",
     "@nestjs/common": "^11.0.16",
     "@nestjs/event-emitter": "^3.0.0",
     "@nestjs/schedule": "^5.0.1",
@@ -43,6 +43,7 @@
     "csv-stringify": "^6.5.1",
     "dayjs": "^1.11.12",
     "dotenv": "^16.4.5",
+    "graphql": "^15.8.0",
     "lodash": "^4.17.21",
     "lru-cache": "10.1.0",
     "merkle-tools": "^1.4.1",
@@ -56,5 +57,6 @@
   },
   "devDependencies": {
     "@types/yargs": "^16.0.9"
-  }
+  },
+  "stableVersion": "18.3.3"
 }

@@ -297,3 +297,31 @@ export function isMultichain(location: string): boolean {
   const multichainContent = yaml.load(readFileSync(location, 'utf8')) as MultichainProjectManifest;
   return !!multichainContent && !!multichainContent.projects;
 }
+
+export async function resultToBuffer(req: AsyncIterable<Uint8Array>): Promise<string> {
+  const scriptBufferArray: Uint8Array[] = [];
+  for await (const res of req) {
+    scriptBufferArray.push(res);
+  }
+  return Buffer.concat(scriptBufferArray.map((u8a) => Buffer.from(u8a))).toString('utf8');
+}
+
+/**
+ *
+ * @param req The ipfs response
+ * @param maybe if true any errors will result in undefined being returned
+ * @returns
+ */
+export async function resultToJson<T, B extends boolean>(
+  req: AsyncIterable<Uint8Array>,
+  maybe: B
+): Promise<B extends true ? T | undefined : T> {
+  try {
+    const str = await resultToBuffer(req);
+
+    return JSON.parse(str);
+  } catch (e) {
+    if (maybe) return undefined as B extends true ? T | undefined : T;
+    throw e;
+  }
+}

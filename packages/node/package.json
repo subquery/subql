@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "6.3.3",
+  "version": "6.3.5-0",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -19,6 +19,7 @@
     "subql-node": "./bin/run"
   },
   "dependencies": {
+    "@apollo/client": "^3.14.0",
     "@nestjs/common": "^11.0.16",
     "@nestjs/core": "^11.0.7",
     "@nestjs/event-emitter": "^3.0.0",
@@ -33,9 +34,6 @@
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.2.2"
   },
-  "peerDependencies": {
-    "@apollo/client": "^3.7.16"
-  },
   "devDependencies": {
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.7",
@@ -43,6 +41,7 @@
     "@types/jest": "^27.5.2",
     "@types/lodash": "^4.17.7",
     "dotenv": "^16.4.5",
+    "graphql": "^15.8.0",
     "nodemon": "^3.1.4",
     "rimraf": "^5.0.10"
   },
@@ -59,5 +58,6 @@
     "LICENSE",
     "README.md",
     "CHANGELOG.md"
-  ]
+  ],
+  "stableVersion": "6.3.4"
 }

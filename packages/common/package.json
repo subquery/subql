@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "5.7.5",
+  "version": "5.7.6-0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -15,7 +15,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "@subql/types-core": "workspace:~",
-    "axios": "^1.11.0",
+    "axios": "^1.12.0",
     "class-transformer": "^0.5.1",
     "class-validator": "0.14.1",
     "form-data": "^4.0.4",
@@ -41,5 +41,6 @@
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
-  ]
+  ],
+  "stableVersion": "5.7.5"
 }
