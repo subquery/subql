@@ -9802,6 +9802,7 @@ __metadata:
     "@walletconnect/types": ^2.17.2
     "@walletconnect/utils": ^2.17.2
     chalk: ^4
+    dotenv: ^16.4.5
     ejs: ^3.1.10
     eslint: ^8.8.0
     eslint-config-oclif: ^4.0.0
@@ -10113,6 +10114,7 @@ __metadata:
     cross-fetch: ^3.1.6
     csv-stringify: ^6.5.1
     dayjs: ^1.11.12
+    dotenv: ^16.4.5
     graphql: ^15.8.0
     lodash: ^4.17.21
     lru-cache: 10.1.0

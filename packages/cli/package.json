@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "CLI for SubQuery",
-  "version": "6.2.3-0",
+  "version": "6.2.3-1",
   "author": "SubQuery Pte Ltd.",
   "bin": {
     "subql": "./bin/run"
@@ -122,5 +122,5 @@
     "codegen": "yarn codegen:graphql && yarn codegen:chs"
   },
   "types": "lib/index.d.ts",
-  "stableVersion": "6.2.2"
+  "stableVersion": "6.2.3-0"
 }
