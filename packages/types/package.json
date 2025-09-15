@@ -33,6 +33,6 @@
     "@polkadot/api": "^16"
   },
   "devDependencies": {
-    "@polkadot/api": "^16.4.1"
+    "@polkadot/api": "^16.4.7"
   }
 }
