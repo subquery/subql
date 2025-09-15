@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Locked down graphql related dependencies (#2876)
+- Update polkadot dependenices (#2915)
 
 ## [18.3.3] - 2025-09-09
 ### Fixed
