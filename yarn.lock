@@ -9979,6 +9979,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@subql/common@^5.3.0, @subql/common@^5.3.1, @subql/common@^5.6.0, @subql/common@workspace:packages/common, @subql/common@workspace:~":
+  version: 0.0.0-use.local
+  resolution: "@subql/common@workspace:packages/common"
+  dependencies:
+    "@subql/types-core": "workspace:~"
+    "@types/js-yaml": ^4.0.9
+    "@types/semver": ^7.5.8
+    "@types/update-notifier": ^6
+    axios: ^1.12.0
+    class-transformer: ^0.5.1
+    class-validator: 0.14.1
+    form-data: ^4.0.4
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.2.2
+    semver: ^7.6.3
+    update-notifier: ^5.1.0
+  languageName: unknown
+  linkType: soft
+
 "@subql/common@npm:5.4.1-1":
   version: 5.4.1-1
   resolution: "@subql/common@npm:5.4.1-1"
@@ -10012,42 +10031,6 @@ __metadata:
   checksum: 2f578678b5af8190639ada7e2f22401b3ca7b7c7cab1bfdeb5860365c14e6c6a8724b02c95f1f8fedfcc01205d02d3de45cd486e2c3ee10ff5f898f973d6e0dc
   languageName: node
   linkType: hard
-
-"@subql/common@npm:^5.3.0, @subql/common@npm:^5.3.1, @subql/common@npm:^5.6.0":
-  version: 5.7.5
-  resolution: "@subql/common@npm:5.7.5"
-  dependencies:
-    "@subql/types-core": ~2.1.1
-    axios: ^1.11.0
-    class-transformer: ^0.5.1
-    class-validator: 0.14.1
-    form-data: ^4.0.4
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.2.2
-    semver: ^7.6.3
-    update-notifier: ^5.1.0
-  checksum: 92b3632af18783e1591632cdd6987902b2ffafbb157e360feeccff28d1b2431aca359d543a10c323ef2b94c93c02477af98d82579edc3d62f2b920239fcaef5c
-  languageName: node
-  linkType: hard
-
-"@subql/common@workspace:packages/common, @subql/common@workspace:~":
-  version: 0.0.0-use.local
-  resolution: "@subql/common@workspace:packages/common"
-  dependencies:
-    "@subql/types-core": "workspace:~"
-    "@types/js-yaml": ^4.0.9
-    "@types/semver": ^7.5.8
-    "@types/update-notifier": ^6
-    axios: ^1.12.0
-    class-transformer: ^0.5.1
-    class-validator: 0.14.1
-    form-data: ^4.0.4
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.2.2
-    semver: ^7.6.3
-    update-notifier: ^5.1.0
-  languageName: unknown
-  linkType: soft
 
 "@subql/contract-sdk@npm:^1.9.0":
   version: 1.9.0
@@ -10237,7 +10220,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@^2.0.0, @subql/types-core@^2.0.1, @subql/types-core@^2.0.2, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core, @subql/types-core@workspace:~, @subql/types-core@~2.1.1":
+"@subql/types-core@^2.0.0, @subql/types-core@^2.0.1, @subql/types-core@^2.0.2, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core, @subql/types-core@workspace:~":
   version: 0.0.0-use.local
   resolution: "@subql/types-core@workspace:packages/types-core"
   dependencies:
@@ -12897,17 +12880,6 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: d3782377512e67510787bf325b664f16c8b595ccdbcf52fca58433fbd082e33c3ef58a19e7d016ce92666be5a1a5ea82028add0cb841077981df9617bd071615
-  languageName: node
-  linkType: hard
-
-"axios@npm:^1.11.0":
-  version: 1.11.0
-  resolution: "axios@npm:1.11.0"
-  dependencies:
-    follow-redirects: ^1.15.6
-    form-data: ^4.0.4
-    proxy-from-env: ^1.1.0
-  checksum: 0a33dc600b588bfd3111b198d5985527ed89f722817455d7cdb66c1d055e5f8859cc2bebb7320888957fc8458ebe77d5f83af02af9cd260217c91c4e92b6dfb6
   languageName: node
   linkType: hard
 

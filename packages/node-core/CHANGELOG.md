@@ -5,9 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [18.4.0] - 2025-09-16
 ### Changed
 - Locked down graphql related dependencies (#2876)
 - Update polkadot dependenices (#2915)
+
+### Added
+- Support for .env in mapping handlers (#2901)
 
 ## [18.3.3] - 2025-09-09
 ### Fixed
@@ -1032,7 +1037,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.3.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.4.0...HEAD
+[18.4.0]: https://github.com/subquery/subql/compare/node-core/18.3.3...node-core/18.4.0
 [18.3.3]: https://github.com/subquery/subql/compare/node-core/18.3.2...node-core/18.3.3
 [18.3.2]: https://github.com/subquery/subql/compare/node-core/18.3.1...node-core/18.3.2
 [18.3.1]: https://github.com/subquery/subql/compare/node-core/18.3.0...node-core/18.3.1
