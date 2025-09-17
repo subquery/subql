@@ -4,7 +4,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {EventFragment, FunctionFragment} from '@ethersproject/abi';
+import {EventFragment, FunctionFragment, Interface} from '@ethersproject/abi';
 import {DEFAULT_TS_MANIFEST, NETWORK_FAMILY} from '@subql/common';
 import {getAbiInterface} from '@subql/common-ethereum';
 import {
@@ -40,6 +40,9 @@ import {
   yamlExtractor,
   SelectedMethod,
   UserInput,
+  extractCustomTypesFromAbi,
+  resolveCustomTypesInSignature,
+  generateTopic0Hash,
 } from './generate-controller';
 
 const mockConstructedFunctions: SelectedMethod[] = [
@@ -758,5 +761,169 @@ describe('CLI codegen:generate', () => {
       "{key: {key: 'value1'}}",
       "{key: [{key: 'value1'}, {key: 'value1'}]}",
     ]);
+  });
+});
+
+describe('Custom Type Resolution for Topic0 Encoding', () => {
+  const mockAbiWithCustomTypes = [
+    {
+      type: 'event',
+      name: 'DisputeOpen',
+      inputs: [
+        {name: 'disputeId', type: 'uint256', indexed: true, internalType: 'uint256'},
+        {name: 'fisherman', type: 'address', indexed: false, internalType: 'address'},
+        {name: 'runner', type: 'address', indexed: false, internalType: 'address'},
+        {name: '_type', type: 'uint8', indexed: false, internalType: 'enum DisputeType'},
+      ],
+    },
+    {
+      type: 'event',
+      name: 'Deposit',
+      inputs: [
+        {name: '_from', type: 'address', indexed: true, internalType: 'address'},
+        {name: '_id', type: 'bytes32', indexed: true, internalType: 'bytes32'},
+        {name: '_value', type: 'uint256', indexed: false, internalType: 'uint256'},
+        {
+          name: '_moreData',
+          type: 'tuple',
+          indexed: false,
+          internalType: 'struct MoreData',
+          components: [
+            {name: 'id1', type: 'bytes32', internalType: 'bytes32'},
+            {name: 'id2', type: 'bytes32', internalType: 'bytes32'},
+          ],
+        },
+      ],
+    },
+  ];
+
+  const mockInterface = {
+    events: {
+      'DisputeOpen(uint256,address,address,uint8)': {
+        name: 'DisputeOpen',
+        type: 'event',
+        anonymous: false,
+        inputs: [
+          {name: 'disputeId', type: 'uint256', indexed: true, internalType: 'uint256'},
+          {name: 'fisherman', type: 'address', indexed: false, internalType: 'address'},
+          {name: 'runner', type: 'address', indexed: false, internalType: 'address'},
+          {name: '_type', type: 'uint8', indexed: false, internalType: 'enum DisputeType'},
+        ],
+        format: () => 'DisputeOpen(uint256,address,address,uint8)',
+        _isFragment: true,
+      } as unknown as EventFragment,
+      'Deposit(address,bytes32,uint256,tuple)': {
+        name: 'Deposit',
+        type: 'event',
+        anonymous: false,
+        inputs: [
+          {name: '_from', type: 'address', indexed: true, internalType: 'address'},
+          {name: '_id', type: 'bytes32', indexed: true, internalType: 'bytes32'},
+          {name: '_value', type: 'uint256', indexed: false, internalType: 'uint256'},
+          {
+            name: '_moreData',
+            type: 'tuple',
+            indexed: false,
+            internalType: 'struct MoreData',
+            components: [
+              {name: 'id1', type: 'bytes32', internalType: 'bytes32'},
+              {name: 'id2', type: 'bytes32', internalType: 'bytes32'},
+            ],
+          },
+        ],
+        format: () => 'Deposit(address,bytes32,uint256,tuple)',
+        _isFragment: true,
+      } as unknown as EventFragment,
+    },
+    functions: {},
+  } as unknown as Interface;
+
+  describe('extractCustomTypesFromAbi', () => {
+    it('should extract enum types correctly', () => {
+      const customTypes = extractCustomTypesFromAbi(mockInterface);
+
+      expect(customTypes.has('DisputeType')).toBe(true);
+      const disputeType = customTypes.get('DisputeType');
+      expect(disputeType?.type).toBe('enum');
+      expect(disputeType?.resolvedType).toBe('uint8');
+    });
+
+    it('should extract struct types correctly', () => {
+      const customTypes = extractCustomTypesFromAbi(mockInterface);
+
+      expect(customTypes.has('MoreData')).toBe(true);
+      const moreDataType = customTypes.get('MoreData');
+      expect(moreDataType?.type).toBe('struct');
+      expect(moreDataType?.resolvedType).toBe('(bytes32,bytes32)');
+    });
+  });
+
+  describe('resolveCustomTypesInSignature', () => {
+    const customTypes = new Map([
+      ['DisputeType', {name: 'DisputeType', type: 'enum' as const, resolvedType: 'uint8'}],
+      ['MoreData', {name: 'MoreData', type: 'struct' as const, resolvedType: '(bytes32,bytes32)'}],
+    ]);
+
+    it('should resolve enum types in event signatures', () => {
+      const original = 'DisputeOpen(uint256 indexed disputeId, address fisherman, address runner, DisputeType _type)';
+      const resolved = resolveCustomTypesInSignature(original, customTypes);
+
+      expect(resolved).toBe('DisputeOpen(uint256 indexed disputeId, address fisherman, address runner, uint8 _type)');
+    });
+
+    it('should resolve struct types in event signatures', () => {
+      const original = 'Deposit(address indexed _from, bytes32 indexed _id, uint _value, MoreData _moreData)';
+      const resolved = resolveCustomTypesInSignature(original, customTypes);
+
+      expect(resolved).toBe(
+        'Deposit(address indexed _from, bytes32 indexed _id, uint _value, (bytes32,bytes32) _moreData)'
+      );
+    });
+
+    it('should handle signatures with no custom types', () => {
+      const original = 'Transfer(address indexed from, address indexed to, uint256 value)';
+      const resolved = resolveCustomTypesInSignature(original, customTypes);
+
+      expect(resolved).toBe(original);
+    });
+  });
+
+  describe('generateTopic0Hash', () => {
+    it('should generate correct keccak256 hash for resolved signatures', () => {
+      const signature = 'DisputeOpen(uint256,address,address,uint8)';
+      const hash = generateTopic0Hash(signature);
+
+      // Verify it's a proper keccak256 hash (64 chars + 0x prefix)
+      expect(hash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+      expect(hash).toHaveLength(66);
+    });
+
+    it('should normalize signatures by removing indexed keywords', () => {
+      const signatureWithIndexed = 'Transfer(address indexed from, address indexed to, uint256 value)';
+      const signatureWithoutIndexed = 'Transfer(address from, address to, uint256 value)';
+
+      const hash1 = generateTopic0Hash(signatureWithIndexed);
+      const hash2 = generateTopic0Hash(signatureWithoutIndexed);
+
+      // Both should produce the same hash since indexed is removed
+      expect(hash1).toBe(hash2);
+    });
+
+    it('should handle struct tuple encoding correctly', () => {
+      const signature = 'Deposit(address,bytes32,uint256,(bytes32,bytes32))';
+      const hash = generateTopic0Hash(signature);
+
+      expect(hash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+      expect(hash).toHaveLength(66);
+    });
+
+    it('should produce expected hash for known event signatures', () => {
+      // Test with well-known ERC20 Transfer event
+      const transferSignature = 'Transfer(address,address,uint256)';
+      const hash = generateTopic0Hash(transferSignature);
+
+      // This is the known keccak256 hash for Transfer(address,address,uint256)
+      expect(hash).toBe('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef');
+    });
   });
 });
