@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {NETWORK_FAMILY} from '@subql/common';
-import {DatasourceKind, TemplateKind} from '../codegen-controller';
-import {ExampleProjectInterface} from '../init-controller';
+import {DatasourceKind, TemplateKind} from '../codegen-controller.js';
+import {ExampleProjectInterface} from '../init-controller.js';
 
 export interface NetworkUtils {
   dsConverter: DsConvertFunction;

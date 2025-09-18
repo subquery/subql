@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {SubgraphProject} from './types';
+import {SubgraphProject} from './types.js';
 
 export const TestSubgraph: SubgraphProject = {
   specVersion: '0.0.4',

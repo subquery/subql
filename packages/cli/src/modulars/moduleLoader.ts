@@ -1,16 +1,19 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {existsSync} from 'fs';
-import path from 'path';
+import {existsSync} from 'node:fs';
+import path from 'node:path';
 import {NETWORK_FAMILY} from '@subql/common';
 import resolveFrom from 'resolve-from';
-import {networkPackages} from './config';
-import {ModuleCache} from './types';
+import {networkPackages} from './config.js';
+import {ModuleCache} from './types.js';
 
 const moduleCache: Partial<ModuleCache> = {};
 
-export function loadDependency<N extends NETWORK_FAMILY>(network: N, projectDir: string): ModuleCache[N] {
+export async function loadDependency<N extends NETWORK_FAMILY>(
+  network: N,
+  projectDir: string
+): Promise<ModuleCache[N]> {
   const packageName = networkPackages[network];
   if (!packageName) {
     throw new Error(`Unknown network: ${network}`);
@@ -21,7 +24,7 @@ export function loadDependency<N extends NETWORK_FAMILY>(network: N, projectDir:
       // We don't do this in tests because it will resolve mixed versions because dev dependenceies
       const projectDep =
         process.env.NODE_ENV === 'test' ? undefined : resolveFrom.silent(projectDir ?? process.cwd(), packageName);
-      moduleCache[network] = require(projectDep ?? packageName) as ModuleCache[N];
+      moduleCache[network] = (await import(projectDep ?? packageName)) as ModuleCache[N];
     } catch (error) {
       console.warn(`! Failed to load ${packageName} locally: ${error}. \n ! Attempting to load globally`);
       try {
@@ -33,7 +36,7 @@ export function loadDependency<N extends NETWORK_FAMILY>(network: N, projectDir:
         }
         const globalModulePath = path.join(globalNodePath, packageName);
         if (existsSync(globalModulePath)) {
-          moduleCache[network] = require(globalModulePath) as ModuleCache[N];
+          moduleCache[network] = (await import(globalModulePath)) as ModuleCache[N];
         } else {
           throw new Error(`Global module ${packageName} not found, please run "npm i -g ${packageName}" and retry`);
         }

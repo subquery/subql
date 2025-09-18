@@ -5,11 +5,11 @@ import {SQNetworks} from '@subql/network-config';
 import {IKeyValueStorage} from '@walletconnect/keyvaluestorage';
 import {Signer, utils} from 'ethers';
 import {SiweMessage, generateNonce} from 'siwe';
-import {Logger} from '../../../adapters/utils';
-import {CONSUMER_HOST_STORE_PATH} from '../../../constants';
-import {WALLET_DOMAIN} from '../constants';
-import {JSONFileStorage} from '../json-file-store';
-import {NetworkConsumerHostServiceApi, RequestParams} from './consumer-host-service-api';
+import {Logger} from '../../../adapters/utils.js';
+import {CONSUMER_HOST_STORE_PATH} from '../../../constants.js';
+import {WALLET_DOMAIN} from '../constants.js';
+import {JSONFileStorage} from '../json-file-store.js';
+import {NetworkConsumerHostServiceApi, RequestParams} from './consumer-host-service-api.js';
 import {
   ApiKey,
   convertApiKey,
@@ -17,7 +17,7 @@ import {
   convertHostingPlanExtra,
   HostingPlan,
   HostingPlanExtra,
-} from './schemas';
+} from './schemas.js';
 
 const endpoints = {
   [SQNetworks.MAINNET]: 'https://chs.subquery.network',

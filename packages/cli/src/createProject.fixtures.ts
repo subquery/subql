@@ -1,17 +1,17 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import childProcess from 'child_process';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import assert from 'node:assert';
+import childProcess from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import fetch from 'cross-fetch';
-import Build from './commands/build';
-import Codegen from './commands/codegen';
-import {cloneProjectTemplate, ExampleProjectInterface, prepare} from './controller/init-controller';
-import {ProjectSpecV1_0_0} from './types';
+import Build from './commands/build.js';
+import Codegen from './commands/codegen/index.js';
+import {cloneProjectTemplate, ExampleProjectInterface, prepare} from './controller/init-controller.js';
+import {ProjectSpecV1_0_0} from './types.js';
 
 const projectSpecV1_0_0: ProjectSpecV1_0_0 = {
   name: 'mocked_starter',

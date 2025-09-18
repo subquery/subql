@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import fs from 'fs';
-import path from 'path';
+import path from 'node:path';
 import {rimraf} from 'rimraf';
-import {codegen, processFields, validateEntityName} from './codegen-controller';
+import {codegen, processFields, validateEntityName} from './codegen-controller.js';
 
 jest.mock('fs', () => {
   const fs = jest.requireActual('fs');

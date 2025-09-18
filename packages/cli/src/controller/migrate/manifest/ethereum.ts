@@ -9,8 +9,8 @@ import type {
   EthereumDatasourceKind,
   EthereumHandlerKind,
 } from '@subql/types-ethereum';
-import {DEFAULT_HANDLER_BUILD_PATH} from '../../generate-controller';
-import {MigrateDatasourceKind, SubgraphDataSource, SubgraphTemplate} from '../types';
+import {DEFAULT_HANDLER_BUILD_PATH} from '../../generate-controller.js';
+import {MigrateDatasourceKind, SubgraphDataSource, SubgraphTemplate} from '../types.js';
 
 type EthTemplate = EthereumDsTemplate | EthereumCustomDsTemplate;
 

@@ -1,9 +1,9 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import fs from 'node:fs';
+import path from 'node:path';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {
   NETWORK_FAMILY,
@@ -28,7 +28,7 @@ import {
   withStructuredResponse,
   zodToArgs,
   zodToFlags,
-} from '../../adapters/utils';
+} from '../../adapters/utils.js';
 import {
   filterObjectsByStateMutability,
   generateHandlers,
@@ -42,10 +42,10 @@ import {
   saveAbiToFile,
   prepareUserInput,
   UserInput,
-} from '../../controller/generate-controller';
-import {loadDependency} from '../../modulars';
-import {extractFromTs, buildManifestFromLocation, getTsManifest} from '../../utils';
-import {fetchContractDeployHeight, tryFetchAbiFromExplorer} from '../../utils/etherscan';
+} from '../../controller/generate-controller.js';
+import {loadDependency} from '../../modulars/index.js';
+import {fetchContractDeployHeight, tryFetchAbiFromExplorer} from '../../utils/etherscan.js';
+import {extractFromTs, buildManifestFromLocation, getTsManifest} from '../../utils/index.js';
 
 const generateInputs = z.object({
   location: z.string({description: 'The path to the project, this can be a directory or a project manifest file.'}),
@@ -159,7 +159,7 @@ async function generateAdapter(
     }
   }
 
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum, args.location);
+  const ethModule = await loadDependency(NETWORK_FAMILY.ethereum, args.location);
   const abiName = ethModule.parseContractPath(args.abiPath).name;
 
   if (fs.existsSync(path.join(root, 'src/mappings/', `${abiName}Handlers.ts`))) {

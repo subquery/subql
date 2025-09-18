@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {SQNetworks} from '@subql/network-config';
 import {z} from 'zod';
@@ -12,9 +12,9 @@ import {
   mcpLogger,
   withStructuredResponse,
   zodToFlags,
-} from '../../adapters/utils';
-import {getSignerOrProvider, isSigner} from '../../controller/network/constants';
-import {WalletConnectSigner} from '../../controller/network/walletconnect-signer';
+} from '../../adapters/utils.js';
+import {getSignerOrProvider, isSigner} from '../../controller/network/constants.js';
+import {WalletConnectSigner} from '../../controller/network/walletconnect-signer.js';
 
 const disconnectWalletInputs = z.object({});
 type ConnectWalletInputs = z.infer<typeof disconnectWalletInputs>;

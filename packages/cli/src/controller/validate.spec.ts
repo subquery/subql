@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {NETWORK_FAMILY} from '@subql/common';
-import {isValidEnum} from '../utils';
+import {isValidEnum} from '../utils/index.js';
 
 describe('Tests for validate, CLI', () => {
   it('ensure EnumValidator', () => {

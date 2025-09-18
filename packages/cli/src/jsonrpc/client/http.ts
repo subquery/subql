@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import axios, {AxiosInstance} from 'axios';
-import {Response, ResponseError, ResponseSuccess, ResponseSuccessType} from './types';
+import {Response, ResponseError, ResponseSuccess, ResponseSuccessType} from './types.js';
 
 const TIMEOUT = 5000;
 

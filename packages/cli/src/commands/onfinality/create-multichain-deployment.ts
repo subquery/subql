@@ -1,11 +1,11 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import fs from 'fs';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 import {input} from '@inquirer/prompts';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import YAML from 'yaml';
@@ -23,8 +23,8 @@ import {
   withStructuredResponse,
   zodToArgs,
   zodToFlags,
-} from '../../adapters/utils';
-import {ROOT_API_URL_PROD} from '../../constants';
+} from '../../adapters/utils.js';
+import {ROOT_API_URL_PROD} from '../../constants.js';
 import {
   executeProjectDeployment,
   generateDeploymentChain,
@@ -33,10 +33,10 @@ import {
   projectsInfo,
   promptImageVersion,
   splitMultichainDataFields,
-} from '../../controller/deploy-controller';
-import {getDirectoryCid, uploadToIpfs} from '../../controller/publish-controller';
-import {DeploymentDataTypeSchema, DeploymentOptions, V3DeploymentIndexerType} from '../../types';
-import {addV, checkToken} from '../../utils';
+} from '../../controller/deploy-controller.js';
+import {getDirectoryCid, uploadToIpfs} from '../../controller/publish-controller.js';
+import {DeploymentDataTypeSchema, DeploymentOptions, V3DeploymentIndexerType} from '../../types.js';
+import {addV, checkToken} from '../../utils/index.js';
 
 const createMultichainDeploymentInputs = DeploymentOptions.extend({
   location: z

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {EthereumDatasourceKind} from '@subql/types-ethereum';
-import {TestSubgraph} from '../migrate.fixtures';
-import {convertEthereumDs, convertEthereumTemplate} from './ethereum';
+import {TestSubgraph} from '../migrate.fixtures.js';
+import {convertEthereumDs, convertEthereumTemplate} from './ethereum.js';
 
 describe('migrate eth manifest', () => {
   it(`convertEthereumDs`, () => {

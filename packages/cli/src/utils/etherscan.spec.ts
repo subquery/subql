@@ -1,8 +1,8 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {fetchContractDeployHeight, tryFetchAbiFromExplorer} from './etherscan';
-import {delay} from './utils';
+import {fetchContractDeployHeight, tryFetchAbiFromExplorer} from './etherscan.js';
+import {delay} from './utils.js';
 
 // Delays are added to avoid hitting rate limits on the free tier of Etherscan APIs
 

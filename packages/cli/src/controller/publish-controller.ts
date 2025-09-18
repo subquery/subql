@@ -1,9 +1,9 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import fs from 'fs';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   ReaderFactory,
   IPFS_WRITE_ENDPOINT,
@@ -14,7 +14,7 @@ import {
   IPFSHTTPClientLite,
 } from '@subql/common';
 import {Reader} from '@subql/types-core';
-import {loadDependency} from '../modulars';
+import {loadDependency} from '../modulars/index.js';
 
 const PIN_SERVICE = 'onfinality';
 
@@ -58,7 +58,7 @@ export async function uploadToIpfs(
     validateCommonProjectManifest(schema);
 
     const networkFamily = getProjectNetwork(schema);
-    const module = loadDependency(networkFamily, project);
+    const module = await loadDependency(networkFamily, project);
     assert(module, `Failed to load module for network ${networkFamily}`);
 
     let manifest;

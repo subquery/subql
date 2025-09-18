@@ -5,10 +5,10 @@ import path from 'node:path';
 import {stripVTControlCharacters} from 'node:util';
 import {confirm, input, search, checkbox} from '@inquirer/prompts';
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
-import {RequestHandlerExtra} from '@modelcontextprotocol/sdk/shared/protocol';
-import {CallToolResult, ElicitRequest, ServerNotification, ServerRequest} from '@modelcontextprotocol/sdk/types';
+import {RequestHandlerExtra} from '@modelcontextprotocol/sdk/shared/protocol.js';
+import {CallToolResult, ElicitRequest, ServerNotification, ServerRequest} from '@modelcontextprotocol/sdk/types.js';
 import {Args, Command, Flags} from '@oclif/core';
-import {Flag, Arg} from '@oclif/core/lib/interfaces';
+import type {Flag, Arg} from '@oclif/core/interfaces';
 import fuzzy from 'fuzzy';
 import {z, ZodTypeAny, ZodObject, ZodOptional, ZodDefault} from 'zod';
 

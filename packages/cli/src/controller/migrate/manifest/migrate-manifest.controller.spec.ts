@@ -1,17 +1,17 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import path from 'path';
+import path from 'node:path';
 import {NETWORK_FAMILY} from '@subql/common';
 import {EthereumDatasourceKind} from '@subql/types-ethereum';
-import {networkConverters} from '../constants';
-import {SubgraphProject} from '../types';
+import {networkConverters} from '../constants.js';
+import {SubgraphProject} from '../types.js';
 import {
   extractNetworkFromManifest,
   readSubgraphManifest,
   subgraphDsToSubqlDs,
   subgraphTemplateToSubqlTemplate,
-} from './migrate-manifest.controller';
+} from './migrate-manifest.controller.js';
 
 const testProjectPath = '../../../../test/migrate/testProject';
 

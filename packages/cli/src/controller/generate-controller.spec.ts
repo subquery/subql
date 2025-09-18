@@ -1,9 +1,9 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {DEFAULT_TS_MANIFEST, NETWORK_FAMILY} from '@subql/common';
 import {getAbiInterface} from '@subql/common-ethereum';
@@ -14,9 +14,9 @@ import {
   EthereumTransactionFilter,
   SubqlRuntimeDatasource as EthereumDs,
 } from '@subql/types-ethereum';
-import {makeCLIPrompt} from '../adapters/utils';
-import {ENDPOINT_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
-import {loadDependency} from '../modulars';
+import {makeCLIPrompt} from '../adapters/utils.js';
+import {ENDPOINT_REG, FUNCTION_REG, TOPICS_REG} from '../constants.js';
+import {loadDependency} from '../modulars/index.js';
 import {
   extractArrayValueFromTsManifest,
   extractFromTs,
@@ -24,7 +24,7 @@ import {
   replaceArrayValueInTsManifest,
   resolveToAbsolutePath,
   splitArrayString,
-} from '../utils';
+} from '../utils/index.js';
 import {
   constructDatasourcesTs,
   constructDatasourcesYaml,
@@ -40,7 +40,7 @@ import {
   yamlExtractor,
   SelectedMethod,
   UserInput,
-} from './generate-controller';
+} from './generate-controller.js';
 
 const mockConstructedFunctions: SelectedMethod[] = [
   {
@@ -128,12 +128,17 @@ const mockDsStr =
 describe('CLI codegen:generate', () => {
   const projectPath = path.join(__dirname, '../../test/schemaTest');
   const abiInterface = getAbiInterface(projectPath, './erc721.json');
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum, process.cwd());
-  const abiName = ethModule.parseContractPath('./erc721.json').name;
+  let ethModule: any;
+  let abiName: string;
   const eventFragments = abiInterface.events;
   const functionFragments = filterObjectsByStateMutability(abiInterface.functions);
 
-  it('Construct correct datasources', () => {
+  beforeAll(async () => {
+    ethModule = await loadDependency(NETWORK_FAMILY.ethereum, process.cwd());
+    abiName = ethModule.parseContractPath('./erc721.json').name;
+  });
+
+  it('Construct correct datasources', async () => {
     const mockUserInput: UserInput = {
       startBlock: 1,
       functions: mockConstructedFunctions,
@@ -141,7 +146,7 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    const constructedDs = constructDatasourcesYaml(mockUserInput, process.cwd());
+    const constructedDs = await constructDatasourcesYaml(mockUserInput, process.cwd());
     const expectedAsset = new Map();
     expectedAsset.set('Erc721', {file: './abis/erc721.json'});
     expect(constructedDs).toStrictEqual({
@@ -181,7 +186,7 @@ describe('CLI codegen:generate', () => {
 
   it('prepareInputFragments, no method passed, should prompt through inquirer', async () => {
     // when using ejs, jest spyOn does not work on inquirer
-    const inquirer = require('@inquirer/prompts');
+    const inquirer = await import('@inquirer/prompts');
 
     const promptSpy = jest.spyOn(inquirer, 'checkbox').mockResolvedValue(['Approval(address,address,uint256)']);
 
@@ -517,7 +522,7 @@ describe('CLI codegen:generate', () => {
       '        ]';
     expect(splitArrayString(dsArr).length).toBe(2);
   });
-  it('Correct constructedDataSourcesTs', () => {
+  it('Correct constructedDataSourcesTs', async () => {
     const mockUserInput: UserInput = {
       startBlock: 1,
       functions: mockConstructedFunctions,
@@ -525,7 +530,7 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    expect(constructDatasourcesTs(mockUserInput, process.cwd())).toStrictEqual(
+    expect(await constructDatasourcesTs(mockUserInput, process.cwd())).toStrictEqual(
       `{
     kind: EthereumDatasourceKind.Runtime,
     startBlock: 1,
@@ -558,7 +563,7 @@ describe('CLI codegen:generate', () => {
   }`
     );
   });
-  it('Construct correct ds for yaml', () => {
+  it('Construct correct ds for yaml', async () => {
     const mockUserInput: UserInput = {
       startBlock: 1,
       functions: mockConstructedFunctions,
@@ -566,7 +571,7 @@ describe('CLI codegen:generate', () => {
       abiPath: './abis/erc721.json',
       address: 'aaa',
     };
-    expect(constructDatasourcesYaml(mockUserInput, process.cwd())).toStrictEqual({
+    expect(await constructDatasourcesYaml(mockUserInput, process.cwd())).toStrictEqual({
       kind: EthereumDatasourceKind.Runtime,
       startBlock: 1,
       options: {

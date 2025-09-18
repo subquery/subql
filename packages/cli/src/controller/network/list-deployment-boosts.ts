@@ -3,9 +3,9 @@
 
 import {SQNetworks} from '@subql/network-config';
 import {z} from 'zod';
-import {GetDeploymentBoostQuery, GetDeploymentBoostQueryVariables} from './__graphql__/base-types';
-import {GetDeploymentBoost} from './__graphql__/network/deploymentsBooster.generated';
-import {cidToBytes32, getContractSDK, getQueryClient, getRpcProvider} from './constants';
+import {GetDeploymentBoostQuery, GetDeploymentBoostQueryVariables} from './__graphql__/base-types.js';
+import {GetDeploymentBoost} from './__graphql__/network/deploymentsBooster.generated.js';
+import {cidToBytes32, getContractSDK, getQueryClient, getRpcProvider} from './constants.js';
 
 export const boostsSchema = z.object({
   totalAmount: z.string({description: 'The amount of SQT boosted'}), // bigint

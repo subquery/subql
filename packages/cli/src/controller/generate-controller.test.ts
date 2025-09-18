@@ -1,17 +1,17 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import {EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {DEFAULT_TS_MANIFEST, loadFromJsonOrYaml, NETWORK_FAMILY} from '@subql/common';
 import {getAbiInterface} from '@subql/common-ethereum';
 import {SubqlRuntimeDatasource as EthereumDs} from '@subql/types-ethereum';
 import {rimraf} from 'rimraf';
 import {Document, stringify} from 'yaml';
-import {makeCLIPrompt} from '../adapters/utils';
-import ImportAbi from '../commands/codegen/import-abi';
-import {loadDependency} from '../modulars';
+import {makeCLIPrompt} from '../adapters/utils.js';
+import ImportAbi from '../commands/codegen/import-abi.js';
+import {loadDependency} from '../modulars/index.js';
 import {
   constructMethod,
   filterExistingMethods,
@@ -26,7 +26,7 @@ import {
   yamlExtractor,
   SelectedMethod,
   UserInput,
-} from './generate-controller';
+} from './generate-controller.js';
 
 const ROOT_MAPPING_DIR = 'src/mappings';
 const PROJECT_PATH = path.join(__dirname, '../../test/schemaTest');
@@ -162,8 +162,8 @@ const originalManifestData2 = {
   ],
 };
 
-const ethModule = loadDependency(NETWORK_FAMILY.ethereum, process.cwd());
-const abiName = ethModule.parseContractPath('./erc721.json').name;
+let ethModule: any;
+let abiName: string;
 
 const mockUserInput: UserInput = {
   startBlock: 1,
@@ -176,6 +176,10 @@ const mockUserInput: UserInput = {
 jest.setTimeout(30000);
 
 describe('CLI codegen:generate, Can write to file', () => {
+  beforeAll(async () => {
+    ethModule = await loadDependency(NETWORK_FAMILY.ethereum, process.cwd());
+    abiName = ethModule.parseContractPath('./erc721.json').name;
+  });
   afterEach(async () => {
     await Promise.all([
       rimraf(path.join(__dirname, '../../test/schemaTest/src')),

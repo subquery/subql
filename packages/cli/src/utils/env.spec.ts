@@ -1,10 +1,10 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {existsSync, writeFileSync, unlinkSync, mkdirSync, rmSync} from 'fs';
-import {tmpdir} from 'os';
-import {join} from 'path';
-import {loadEnvConfig, getWebpackEnvDefinitions} from './env';
+import {existsSync, writeFileSync, mkdirSync, rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {loadEnvConfig, getWebpackEnvDefinitions} from './env.js';
 
 describe('Environment Configuration Utils', () => {
   let testDir: string;

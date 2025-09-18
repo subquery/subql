@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {HttpJsonRpcClient, WsJsonRpcClient} from './client';
+import {HttpJsonRpcClient, WsJsonRpcClient} from './client/index.js';
 
 export async function getGenesisHash(endpoint: string): Promise<string> {
   const client = endpoint.startsWith('ws') ? new WsJsonRpcClient(endpoint) : new HttpJsonRpcClient(endpoint);

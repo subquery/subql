@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
 import {
@@ -11,10 +11,10 @@ import {
   mcpLogger,
   withStructuredResponse,
   zodToFlags,
-} from '../../adapters/utils';
-import {networkNameSchema, getSignerOrProvider, requireSigner} from '../../controller/network/constants';
-import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
-import {hostingPlanSchema} from '../../controller/network/consumer-host/schemas';
+} from '../../adapters/utils.js';
+import {networkNameSchema, getSignerOrProvider, requireSigner} from '../../controller/network/constants.js';
+import {ConsumerHostClient} from '../../controller/network/consumer-host/client.js';
+import {hostingPlanSchema} from '../../controller/network/consumer-host/schemas.js';
 
 const stopFlexPlanInputs = z.object({
   network: networkNameSchema,

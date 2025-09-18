@@ -7,14 +7,14 @@ import {hexlify} from '@ethersproject/bytes';
 import {Deferrable, resolveProperties} from '@ethersproject/properties';
 import {JsonRpcProvider, TransactionRequest, TransactionResponse} from '@ethersproject/providers';
 import {NETWORKS_CONFIG_INFO} from '@subql/network-config';
-import SignClient from '@walletconnect/sign-client';
+import {SignClient} from '@walletconnect/sign-client';
 import {SessionTypes} from '@walletconnect/types';
 import {getSdkError} from '@walletconnect/utils';
 import * as qrcode from 'qrcode-terminal';
-import {Logger} from '../../adapters/utils';
-import {WALLET_CONNECT_STORE_PATH} from '../../constants';
-import {WALLET_DOMAIN} from './constants';
-import {JSONFileStorage} from './json-file-store';
+import {Logger} from '../../adapters/utils.js';
+import {WALLET_CONNECT_STORE_PATH} from '../../constants.js';
+import {WALLET_DOMAIN} from './constants.js';
+import {JSONFileStorage} from './json-file-store.js';
 
 export const NO_EXISTING_CONN_ERROR = new Error(
   'No existing WalletConnect session found. Please connect your wallet first.'
@@ -27,8 +27,10 @@ const chainIds = Object.values(NETWORKS_CONFIG_INFO).reduce((acc, config) => {
   return acc;
 }, [] as Array<`eip155:${string}`>);
 
+type T = Awaited<ReturnType<typeof SignClient.init>>;
+
 export class WalletConnectSigner extends Signer {
-  private signClient: SignClient | null = null;
+  private signClient: T | null = null;
   private session: SessionTypes.Struct | null = null;
   private account: string | null = null;
 

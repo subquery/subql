@@ -1,15 +1,15 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs, {existsSync} from 'fs';
-import os from 'os';
-import path from 'path';
+import fs, {existsSync} from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import {DEFAULT_MULTICHAIN_MANIFEST} from '@subql/common';
 import {MultichainProjectManifest, ProjectManifestV1_0_0} from '@subql/types-core';
 import * as yaml from 'js-yaml';
 import {rimraf} from 'rimraf';
 import {YAMLSeq} from 'yaml';
-import {loadMultichainManifest, validateAndAddChainManifest} from './add-chain-controller';
+import {loadMultichainManifest, validateAndAddChainManifest} from './add-chain-controller.js';
 
 const multichainManifest: MultichainProjectManifest = {
   specVersion: '1.0.0',

@@ -1,9 +1,8 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
-import {ProjectType} from '@subql/contract-sdk';
 import {z} from 'zod';
 import {
   commandLogger,
@@ -12,10 +11,10 @@ import {
   mcpLogger,
   withStructuredResponse,
   zodToFlags,
-} from '../../adapters/utils';
-import {formatSQT, networkNameSchema, resolveAddress} from '../../controller/network/constants';
-import {listProjects, projectSchema} from '../../controller/network/list-projects';
-import {jsonToTable} from '../../utils';
+} from '../../adapters/utils.js';
+import {formatSQT, networkNameSchema, resolveAddress} from '../../controller/network/constants.js';
+import {listProjects, projectSchema} from '../../controller/network/list-projects.js';
+import {jsonToTable} from '../../utils/index.js';
 
 const listProjectsInputs = z.object({
   address: z.string({description: 'The address of the account that owns the projects'}).optional(),
