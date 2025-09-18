@@ -1,8 +1,12 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import path from 'path';
+import assert from 'node:assert';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import {
   DEFAULT_MANIFEST,
   getManifestPath,
@@ -13,7 +17,7 @@ import {
 } from '@subql/common';
 import type {SubstrateCustomDatasource} from '@subql/types';
 import {BaseDataSource, BaseTemplateDataSource, ProjectManifestV1_0_0, TemplateBase} from '@subql/types-core';
-import {CosmosRuntimeDatasource} from '@subql/types-cosmos/dist/project';
+import {CosmosRuntimeDatasource} from '@subql/types-cosmos/dist/project.js';
 import type {
   SubqlCustomDatasource as EthereumCustomDs,
   SubqlDatasource,
@@ -30,9 +34,10 @@ import {
   GraphQLJsonFieldType,
   setJsonObjectType,
 } from '@subql/utils';
-import {uniq, uniqBy, upperFirst} from 'lodash';
-import {loadDependency} from '../modulars';
-import {prepareDirPath, renderTemplate} from '../utils';
+import lodash from 'lodash';
+const {uniq, uniqBy, upperFirst} = lodash;
+import {loadDependency} from '../modulars/index.js';
+import {prepareDirPath, renderTemplate} from '../utils/index.js';
 
 export type TemplateKind = BaseTemplateDataSource;
 
@@ -238,7 +243,7 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   const cosmosManifests = plainManifests.filter((m) => m.networkFamily === NETWORK_FAMILY.cosmos);
   if (cosmosManifests.length > 0) {
-    const cosmosModule = loadDependency(NETWORK_FAMILY.cosmos, projectPath);
+    const cosmosModule = await loadDependency(NETWORK_FAMILY.cosmos, projectPath);
     await cosmosModule.projectCodegen(
       plainManifests,
       projectPath,
@@ -257,13 +262,13 @@ export async function codegen(projectPath: string, fileNames: string[] = [DEFAUL
 
   // as we determine it is eth network, ds type should SubqlDatasource
   if (ethManifests.length > 0 || (!starknetManifests && !!datasources.find((d) => (d as SubqlDatasource)?.assets))) {
-    const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
+    const ethModule = await loadDependency(NETWORK_FAMILY.ethereum, projectPath);
 
     await ethModule.generateAbis(datasources as EthereumDs[], projectPath, prepareDirPath, upperFirst, renderTemplate);
   }
 
   if (solanaManifests.length) {
-    const solModule = loadDependency(NETWORK_FAMILY.solana, projectPath);
+    const solModule = await loadDependency(NETWORK_FAMILY.solana, projectPath);
     await solModule.generateIDLInterfaces(datasources as SolanaDs[], projectPath, renderTemplate);
   }
 

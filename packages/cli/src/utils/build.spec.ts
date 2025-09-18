@@ -6,7 +6,7 @@ import path from 'path';
 import {MultichainProjectManifest} from '@subql/types-core';
 import * as yaml from 'js-yaml';
 import {rimraf} from 'rimraf';
-import {buildManifestFromLocation} from './build';
+import {buildManifestFromLocation} from './build.js';
 
 describe('Manifest generation', () => {
   afterEach(() => {

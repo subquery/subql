@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {stripVTControlCharacters} from 'node:util';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {ProjectNetworkConfig} from '@subql/types-core';
 import chalk from 'chalk';
@@ -22,7 +22,7 @@ import {
   Prompt,
   zodToArgs,
   zodToFlags,
-} from '../adapters/utils';
+} from '../adapters/utils.js';
 import {
   installDependencies,
   cloneProjectTemplate,
@@ -32,9 +32,9 @@ import {
   fetchExampleProjects,
   ExampleProjectInterface,
   Template,
-} from '../controller/init-controller';
-import {ProjectSpecBase} from '../types';
-import {resolveToAbsolutePath} from '../utils';
+} from '../controller/init-controller.js';
+import {ProjectSpecBase} from '../types.js';
+import {resolveToAbsolutePath} from '../utils/index.js';
 
 const initInputs = z.object({
   name: z.string({description: 'The name of the project to create'}),

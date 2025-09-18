@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {NETWORK_FAMILY} from '@subql/common';
-import {convertEthereumDs, convertEthereumTemplate} from './manifest/ethereum';
-import {NetworkUtils} from './types';
+import {convertEthereumDs, convertEthereumTemplate} from './manifest/ethereum.js';
+import {NetworkUtils} from './types.js';
 
 export const networkConverters: Partial<Record<NETWORK_FAMILY, NetworkUtils>> = {
   [NETWORK_FAMILY.ethereum]: {dsConverter: convertEthereumDs, templateConverter: convertEthereumTemplate},

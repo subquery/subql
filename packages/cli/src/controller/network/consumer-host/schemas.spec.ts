@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {convertApiKey} from './schemas';
+import {convertApiKey} from './schemas.js';
 
 describe('Parsing raw responses', () => {
   it('can parse an api key', () => {

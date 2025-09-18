@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {ICloseEvent, IMessageEvent, w3cwebsocket as WebSocket} from 'websocket';
-import {Request, ResponseSuccessType} from './types';
+import {Request, ResponseSuccessType} from './types.js';
 
 let id = 0;
 export class WsJsonRpcClient {

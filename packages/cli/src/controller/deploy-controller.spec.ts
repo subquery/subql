@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {splitMultichainDataFields} from './deploy-controller';
+import {splitMultichainDataFields} from './deploy-controller.js';
 
 jest.setTimeout(30000);
 

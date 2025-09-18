@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
 import {
@@ -11,10 +11,10 @@ import {
   mcpLogger,
   withStructuredResponse,
   zodToFlags,
-} from '../../adapters/utils';
-import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../../constants';
-import {createProject} from '../../controller/project-controller';
-import {checkToken} from '../../utils';
+} from '../../adapters/utils.js';
+import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../../constants.js';
+import {createProject} from '../../controller/project-controller.js';
+import {checkToken} from '../../utils/index.js';
 
 const createProjectInputs = z.object({
   org: z.string({description: 'Github organization name'}),

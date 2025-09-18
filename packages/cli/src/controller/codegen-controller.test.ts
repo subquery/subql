@@ -1,10 +1,10 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import {rimraf} from 'rimraf';
-import {codegen} from './codegen-controller';
+import {codegen} from './codegen-controller.js';
 
 jest.setTimeout(30000);
 
@@ -89,7 +89,7 @@ describe('Codegen can generate schema', () => {
     expect(fooFile).toContain(
       `import {
     Bar,
-} from '../enums';`
+} from '../enums.js';`
     );
   });
 

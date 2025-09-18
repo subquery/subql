@@ -3,10 +3,10 @@
 
 import {IPFSHTTPClientLite, IPFS_NODE_ENDPOINT} from '@subql/common';
 import {z} from 'zod';
-import {resultToJson} from '../../utils';
-import {DeploymentMetadata, deploymentMetadataSchema, ProjectMetadata, projectMetadataSchema} from './constants';
-import {ConsumerHostClient} from './consumer-host/client';
-import {hostingPlanExtraSchema} from './consumer-host/schemas';
+import {resultToJson} from '../../utils/index.js';
+import {DeploymentMetadata, deploymentMetadataSchema, ProjectMetadata, projectMetadataSchema} from './constants.js';
+import {ConsumerHostClient} from './consumer-host/client.js';
+import {hostingPlanExtraSchema} from './consumer-host/schemas.js';
 
 export const metaHostingPlanSchema = hostingPlanExtraSchema.extend({
   deploymentMeta: deploymentMetadataSchema.optional(),

@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
 import {
@@ -12,9 +12,9 @@ import {
   withStructuredResponse,
   zodToArgs,
   zodToFlags,
-} from '../../adapters/utils';
-import {networkNameSchema, getSignerOrProvider, requireSigner} from '../../controller/network/constants';
-import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
+} from '../../adapters/utils.js';
+import {networkNameSchema, getSignerOrProvider, requireSigner} from '../../controller/network/constants.js';
+import {ConsumerHostClient} from '../../controller/network/consumer-host/client.js';
 
 const removeApiKeyInputs = z.object({
   network: networkNameSchema,

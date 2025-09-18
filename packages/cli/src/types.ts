@@ -3,7 +3,7 @@
 
 import {ProjectNetworkConfig, RunnerSpecs} from '@subql/types-core';
 import {z} from 'zod';
-import {DEFAULT_DEPLOYMENT_TYPE} from './constants';
+import {DEFAULT_DEPLOYMENT_TYPE} from './constants.js';
 
 export interface ProjectSpecBase {
   name: string;

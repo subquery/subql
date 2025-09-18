@@ -4,7 +4,7 @@
 import assert from 'node:assert';
 import {existsSync} from 'node:fs';
 import path from 'node:path';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {getMultichainManifestPath, getProjectRootAndManifest} from '@subql/common';
 import {z} from 'zod';
@@ -18,10 +18,10 @@ import {
   withStructuredResponse,
   zodToArgs,
   zodToFlags,
-} from '../adapters/utils';
-import {createIPFSFile, uploadToIpfs} from '../controller/publish-controller';
-import {getOptionalToken, resolveToAbsolutePath} from '../utils';
-import {buildAdapter, buildInputs} from './build';
+} from '../adapters/utils.js';
+import {createIPFSFile, uploadToIpfs} from '../controller/publish-controller.js';
+import {getOptionalToken, resolveToAbsolutePath} from '../utils/index.js';
+import {buildAdapter, buildInputs} from './build.js';
 
 const publishInputs = z.object({
   location: z

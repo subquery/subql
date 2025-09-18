@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {NETWORK_FAMILY} from '@subql/common';
-import {getNetworkFamily} from './networkFamily';
+import {getNetworkFamily} from './networkFamily.js';
 
 describe('Get network family', () => {
   it('convert input to right network family', () => {

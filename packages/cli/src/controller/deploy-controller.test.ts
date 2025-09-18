@@ -1,9 +1,9 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ROOT_API_URL_PROD} from '../constants';
-import {DeploymentDataType, DeploymentType, V3DeploymentIndexerType, ValidateDataType} from '../types';
-import {delay} from '../utils';
+import {ROOT_API_URL_PROD} from '../constants.js';
+import {DeploymentDataType, DeploymentType, V3DeploymentIndexerType, ValidateDataType} from '../types.js';
+import {delay} from '../utils/index.js';
 import {
   createDeployment,
   promoteDeployment,
@@ -13,8 +13,8 @@ import {
   imageVersions,
   updateDeployment,
   projectsInfo,
-} from './deploy-controller';
-import {createProject, deleteProject, getProject} from './project-controller';
+} from './deploy-controller.js';
+import {createProject, deleteProject, getProject} from './project-controller.js';
 
 jest.setTimeout(120000);
 

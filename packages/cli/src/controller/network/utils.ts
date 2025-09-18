@@ -4,8 +4,8 @@
 import {formatEther} from '@ethersproject/units';
 import {ContractSDK} from '@subql/contract-sdk';
 import {BigNumber, Signer} from 'ethers';
-import {Logger, Prompt} from '../../adapters/utils';
-import {checkTransactionSuccess} from './constants';
+import {Logger, Prompt} from '../../adapters/utils.js';
+import {checkTransactionSuccess} from './constants.js';
 
 export async function checkAndIncreaseAllowance(
   signer: Signer,

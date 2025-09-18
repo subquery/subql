@@ -4,10 +4,10 @@
 import {IPFS_NODE_ENDPOINT, IPFSHTTPClientLite} from '@subql/common';
 import {SQNetworks} from '@subql/network-config';
 import {z} from 'zod';
-import {resultToJson} from '../../utils';
-import {GetDeploymentIndexersQuery, GetDeploymentIndexersQueryVariables} from './__graphql__/base-types';
-import {GetDeploymentIndexers} from './__graphql__/network/deployments.generated';
-import {getQueryClient} from './constants';
+import {resultToJson} from '../../utils/index.js';
+import {GetDeploymentIndexersQuery, GetDeploymentIndexersQueryVariables} from './__graphql__/base-types.js';
+import {GetDeploymentIndexers} from './__graphql__/network/deployments.generated.js';
+import {getQueryClient} from './constants.js';
 
 const indexerDeploymentMetadata = z.object({
   chainId: z.string(),

@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import path from 'node:path';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
-import {getMCPWorkingDirectory, zodToArgs, zodToFlags} from '../../adapters/utils';
-import {addChain} from '../../controller/add-chain-controller';
+import {getMCPWorkingDirectory, zodToArgs, zodToFlags} from '../../adapters/utils.js';
+import {addChain} from '../../controller/add-chain-controller.js';
 
 const multichainAddInputs = z.object({
   location: z

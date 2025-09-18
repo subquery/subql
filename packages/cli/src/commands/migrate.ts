@@ -1,13 +1,13 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import fs, {lstatSync} from 'fs';
-import path from 'path';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import assert from 'node:assert';
+import fs, {lstatSync} from 'node:fs';
+import path from 'node:path';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {makeTempDir} from '@subql/common';
-import git from 'simple-git';
+import {simpleGit as git} from 'simple-git';
 import {z} from 'zod';
 import {
   commandLogger,
@@ -17,14 +17,14 @@ import {
   mcpLogger,
   withStructuredResponse,
   zodToFlags,
-} from '../adapters/utils';
+} from '../adapters/utils.js';
 import {
   DEFAULT_SUBGRAPH_MANIFEST,
   DEFAULT_SUBGRAPH_SCHEMA,
   DEFAULT_SUBQL_MANIFEST,
   DEFAULT_SUBQL_SCHEMA,
-} from '../constants';
-import {preparePackage} from '../controller/init-controller';
+} from '../constants.js';
+import {preparePackage} from '../controller/init-controller.js';
 import {
   extractGitInfo,
   extractNetworkFromManifest,
@@ -35,8 +35,8 @@ import {
   prepareProject,
   readSubgraphManifest,
   subgraphValidation,
-} from '../controller/migrate';
-import {migrateMapping} from '../controller/migrate/mapping/migrate-mapping.controller';
+} from '../controller/migrate/index.js';
+import {migrateMapping} from '../controller/migrate/mapping/migrate-mapping.controller.js';
 
 const migrateSubgraphInputs = z.object({
   input: z.string({description: 'A directory or git repo to a subgraph project'}),

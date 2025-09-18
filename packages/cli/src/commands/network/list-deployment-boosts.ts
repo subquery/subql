@@ -1,16 +1,16 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
-import {getMCPStructuredResponse, withStructuredResponse, zodToFlags} from '../../adapters/utils';
-import {formatSQT, networkNameSchema} from '../../controller/network/constants';
+import {getMCPStructuredResponse, withStructuredResponse, zodToFlags} from '../../adapters/utils.js';
+import {formatSQT, networkNameSchema} from '../../controller/network/constants.js';
 import {
   listDeploymentBoosts,
   responseSchema as listBoostsResponseSchema,
-} from '../../controller/network/list-deployment-boosts';
-import {jsonToTable} from '../../utils';
+} from '../../controller/network/list-deployment-boosts.js';
+import {jsonToTable} from '../../utils/index.js';
 
 export const listBoostsInputs = z.object({
   network: networkNameSchema,

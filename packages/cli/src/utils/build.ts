@@ -1,9 +1,9 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import {existsSync, lstatSync, readFileSync, writeFileSync} from 'fs';
-import path from 'path';
+import assert from 'node:assert';
+import {existsSync, lstatSync, readFileSync, writeFileSync} from 'node:fs';
+import path from 'node:path';
 import {
   DEFAULT_MULTICHAIN_MANIFEST,
   DEFAULT_MULTICHAIN_TS_MANIFEST,
@@ -13,8 +13,8 @@ import {
 import {MultichainProjectManifest} from '@subql/types-core';
 import * as yaml from 'js-yaml';
 import * as tsNode from 'ts-node';
-import {loadEnvConfig} from './env';
-import {isMultichain} from './utils';
+import {loadEnvConfig} from './env.js';
+import {isMultichain} from './utils.js';
 
 const requireScriptWrapper = (scriptPath: string, outputPath: string): string =>
   `import {toJsonObject} from '@subql/common';` +

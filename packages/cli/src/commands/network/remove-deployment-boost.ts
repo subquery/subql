@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {parseEther} from '@ethersproject/units';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
-import {DeploymentBoosterAddedEvent} from '@subql/contract-sdk/typechain/contracts/RewardsBooster';
+import {DeploymentBoosterAddedEvent} from '@subql/contract-sdk/typechain/contracts/RewardsBooster.js';
 import {z} from 'zod';
 import {
   commandLogger,
@@ -14,7 +14,7 @@ import {
   MCPToolOptions,
   withStructuredResponse,
   zodToFlags,
-} from '../../adapters/utils';
+} from '../../adapters/utils.js';
 import {
   checkTransactionSuccess,
   getContractSDK,
@@ -23,8 +23,8 @@ import {
   networkNameSchema,
   requireSigner,
   formatSQT,
-} from '../../controller/network/constants';
-import {parseContractError} from '../../controller/network/contract-errors';
+} from '../../controller/network/constants.js';
+import {parseContractError} from '../../controller/network/contract-errors.js';
 
 const removeDeploymentBoostInputs = z.object({
   network: networkNameSchema,

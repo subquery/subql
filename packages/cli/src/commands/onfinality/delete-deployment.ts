@@ -1,13 +1,13 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
-import {getMCPStructuredResponse, withStructuredResponse, zodToFlags} from '../../adapters/utils';
-import {ROOT_API_URL_PROD} from '../../constants';
-import {deleteDeployment} from '../../controller/deploy-controller';
-import {checkToken} from '../../utils';
+import {getMCPStructuredResponse, withStructuredResponse, zodToFlags} from '../../adapters/utils.js';
+import {ROOT_API_URL_PROD} from '../../constants.js';
+import {deleteDeployment} from '../../controller/deploy-controller.js';
+import {checkToken} from '../../utils/index.js';
 
 const deleteDeploymentInputs = z.object({
   org: z.string({description: 'Github organization name'}),

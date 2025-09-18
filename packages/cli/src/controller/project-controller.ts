@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import axios from 'axios';
-import {CreateProject, ProjectDataType} from '../types';
-import {errorHandle} from '../utils';
+import {CreateProject, ProjectDataType} from '../types.js';
+import {errorHandle} from '../utils/index.js';
 
 interface CreateProjectResponse {
   key: string;

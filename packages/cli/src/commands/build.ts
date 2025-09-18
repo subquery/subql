@@ -4,13 +4,13 @@
 import assert from 'node:assert';
 import {existsSync, lstatSync} from 'node:fs';
 import path from 'node:path';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {glob} from 'glob';
 import {z} from 'zod';
-import {Logger, zodToFlags, mcpLogger, commandLogger, getMCPWorkingDirectory, zodToArgs} from '../adapters/utils';
-import {getBuildEntries, runBundle} from '../controller/build-controller';
-import {resolveToAbsolutePath, buildTsManifest} from '../utils';
+import {Logger, zodToFlags, mcpLogger, commandLogger, getMCPWorkingDirectory, zodToArgs} from '../adapters/utils.js';
+import {getBuildEntries, runBundle} from '../controller/build-controller.js';
+import {resolveToAbsolutePath, buildTsManifest} from '../utils/index.js';
 
 export const buildInputs = z.object({
   location: z

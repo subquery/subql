@@ -1,12 +1,12 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
+import assert from 'node:assert';
 import axios, {Axios} from 'axios';
 
 import chalk from 'chalk';
-import {Logger, Prompt} from '../adapters/utils';
-import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../constants';
+import {Logger, Prompt} from '../adapters/utils.js';
+import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../constants.js';
 import {
   DeploymentDataType,
   ProjectDataType,
@@ -19,8 +19,8 @@ import {
   DeploymentFlagsInterface,
   MultichainDataFieldType,
   DeploymentType,
-} from '../types';
-import {buildProjectKey, errorHandle} from '../utils';
+} from '../types.js';
+import {buildProjectKey, errorHandle} from '../utils/index.js';
 
 function getAxiosInstance(url: string, authToken?: string): Axios {
   const headers: Record<string, string> = {};

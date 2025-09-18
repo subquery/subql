@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import contractErrorCodes from '@subql/contract-sdk/publish/revertcode.json';
+import contractErrorCodes from '@subql/contract-sdk/publish/revertcode.json' with {type: 'json'};
 
 export type ContractErrorCode = keyof typeof contractErrorCodes;
 

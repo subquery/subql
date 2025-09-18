@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {getGenesisHash} from './index';
+import {getGenesisHash} from './index.js';
 
 const WS_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
 const HTTP_ENDPOINT = 'https://polkadot.api.onfinality.io/public';

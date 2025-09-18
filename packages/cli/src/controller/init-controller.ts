@@ -1,18 +1,18 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import childProcess, {execSync} from 'child_process';
-import fs from 'fs';
-import * as path from 'path';
+import childProcess, {execSync} from 'node:child_process';
+import fs from 'node:fs';
+import * as path from 'node:path';
 import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, loadFromJsonOrYaml, makeTempDir, NETWORK_FAMILY} from '@subql/common';
 import {ProjectManifestV1_0_0, ProjectNetworkConfig} from '@subql/types-core';
 import axios from 'axios';
 import {rimraf} from 'rimraf';
-import git from 'simple-git';
+import {simpleGit as git} from 'simple-git';
 import {parseDocument, YAMLMap, YAMLSeq} from 'yaml';
-import {BASE_TEMPLATE_URl, CAPTURE_CHAIN_ID_REG, CHAIN_ID_REG, ENDPOINT_REG} from '../constants';
-import {loadDependency} from '../modulars';
-import {isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
+import {BASE_TEMPLATE_URl, CAPTURE_CHAIN_ID_REG, CHAIN_ID_REG, ENDPOINT_REG} from '../constants.js';
+import {loadDependency} from '../modulars/index.js';
+import {isProjectSpecV1_0_0, ProjectSpecBase} from '../types.js';
 import {
   defaultEnvDevelopLocalPath,
   defaultEnvDevelopPath,
@@ -28,7 +28,7 @@ import {
   prepareDirPath,
   replaceArrayValueInTsManifest,
   validateEthereumTsManifest,
-} from '../utils';
+} from '../utils/index.js';
 
 export interface ExampleProjectInterface {
   name: string;
@@ -407,7 +407,7 @@ export async function validateEthereumProjectManifest(projectPath: string): Prom
   try {
     return isTs
       ? validateEthereumTsManifest(manifest)
-      : !!loadDependency(NETWORK_FAMILY.ethereum, projectPath).parseProjectManifest(manifest);
+      : !!(await loadDependency(NETWORK_FAMILY.ethereum, projectPath)).parseProjectManifest(manifest);
   } catch (e) {
     return false;
   }

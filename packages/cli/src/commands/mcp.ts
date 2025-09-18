@@ -1,41 +1,46 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {readFileSync} from 'fs';
+import {dirname, join} from 'path';
+import {fileURLToPath} from 'url';
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 import {Command} from '@oclif/core';
-import {MCPToolOptions} from '../adapters/utils';
-import {fetchNetworks} from '../controller/init-controller';
-import {registerBuildMCPTool} from './build';
-import {registerCodegenMCPTool} from './codegen';
-import {registerImportAbiMCPTool} from './codegen/import-abi';
-import {registerInitMCPTool} from './init';
-import {registerMigrateSubgraphMCPTool} from './migrate';
-import {registerMultichainAddMCPTool} from './multi-chain/add';
-import {registerAddDeploymentBoostMCPTool} from './network/add-deployment-boost';
-import {registerConnectWalletMCPTool} from './network/connect-wallet';
-import {registerCreateNetworkApiKeyMCPTool} from './network/create-api-key';
-import {registerCreateNetworkDeploymentMCPTool} from './network/create-deployment';
-import {registerCreateNetworkFlexPlanMCPTool} from './network/create-flex-plan';
-import {registerCreateNetworkProjectMCPTool} from './network/create-project';
-import {registerDisconnectWalletMCPTool} from './network/disconnect-wallet';
-import {registerListAccountBoostsMCPTool} from './network/list-account-boosts';
-import {registerListDeploymentBoostsMCPTool} from './network/list-deployment-boosts';
-import {registerListDeploymentIndexersMCPTool} from './network/list-deployment-indexers';
-import {registerListNetworkDeploymentsMCPTool} from './network/list-deployments';
-import {registerListFlexPlansMCPTool} from './network/list-flex-plans';
-import {registerListNetworkProjectsMCPTool} from './network/list-projects';
-import {registerRemoveDeploymentBoostMCPTool} from './network/remove-deployment-boost';
-import {registerStopNetworkFlexPlanMCPTool} from './network/stop-flex-plan';
-import {registerSwapDeploymentBoostMCPTool} from './network/swap-deployment-boost';
-import {registerCreateDeploymentMCPTool} from './onfinality/create-deployment';
-import {registerCreateMultichainDeploymentMCPTool} from './onfinality/create-multichain-deployment';
-import {registerCreateProjectMCPTool} from './onfinality/create-project';
-import {registerDeleteProjectMCPTool} from './onfinality/delete-project';
-import {registerPromoteDeploymentMCPTool} from './onfinality/promote-deployment';
-import {registerPublishMCPTool} from './publish';
+import {MCPToolOptions} from '../adapters/utils.js';
+import {fetchNetworks} from '../controller/init-controller.js';
+import {registerBuildMCPTool} from './build.js';
+import {registerImportAbiMCPTool} from './codegen/import-abi.js';
+import {registerCodegenMCPTool} from './codegen/index.js';
+import {registerInitMCPTool} from './init.js';
+import {registerMigrateSubgraphMCPTool} from './migrate.js';
+import {registerMultichainAddMCPTool} from './multi-chain/add.js';
+import {registerAddDeploymentBoostMCPTool} from './network/add-deployment-boost.js';
+import {registerConnectWalletMCPTool} from './network/connect-wallet.js';
+import {registerCreateNetworkApiKeyMCPTool} from './network/create-api-key.js';
+import {registerCreateNetworkDeploymentMCPTool} from './network/create-deployment.js';
+import {registerCreateNetworkFlexPlanMCPTool} from './network/create-flex-plan.js';
+import {registerCreateNetworkProjectMCPTool} from './network/create-project.js';
+import {registerDisconnectWalletMCPTool} from './network/disconnect-wallet.js';
+import {registerListAccountBoostsMCPTool} from './network/list-account-boosts.js';
+import {registerListDeploymentBoostsMCPTool} from './network/list-deployment-boosts.js';
+import {registerListDeploymentIndexersMCPTool} from './network/list-deployment-indexers.js';
+import {registerListNetworkDeploymentsMCPTool} from './network/list-deployments.js';
+import {registerListFlexPlansMCPTool} from './network/list-flex-plans.js';
+import {registerListNetworkProjectsMCPTool} from './network/list-projects.js';
+import {registerRemoveDeploymentBoostMCPTool} from './network/remove-deployment-boost.js';
+import {registerStopNetworkFlexPlanMCPTool} from './network/stop-flex-plan.js';
+import {registerSwapDeploymentBoostMCPTool} from './network/swap-deployment-boost.js';
+import {registerCreateDeploymentMCPTool} from './onfinality/create-deployment.js';
+import {registerCreateMultichainDeploymentMCPTool} from './onfinality/create-multichain-deployment.js';
+import {registerCreateProjectMCPTool} from './onfinality/create-project.js';
+import {registerDeleteProjectMCPTool} from './onfinality/delete-project.js';
+import {registerPromoteDeploymentMCPTool} from './onfinality/promote-deployment.js';
+import {registerPublishMCPTool} from './publish.js';
 
-const pjson = require('../../package.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const pjson = JSON.parse(readFileSync(join(__dirname, '../../package.json'), 'utf8'));
 
 export default class MCP extends Command {
   static description = 'Runs an MCP (Model Context Protocol) server over stdio';

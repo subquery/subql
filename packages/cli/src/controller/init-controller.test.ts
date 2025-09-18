@@ -1,13 +1,13 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import * as fs from 'fs';
-import path from 'path';
+import * as fs from 'node:fs';
+import path from 'node:path';
 import {makeTempDir} from '@subql/common';
 import {rimraf} from 'rimraf';
-import git from 'simple-git';
+import {simpleGit as git} from 'simple-git';
 import {parseDocument, Document} from 'yaml';
-import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
+import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types.js';
 import {
   cloneProjectGit,
   cloneProjectTemplate,
@@ -15,7 +15,7 @@ import {
   prepare,
   ExampleProjectInterface,
   readDefaults,
-} from './init-controller';
+} from './init-controller.js';
 
 async function testYAML(projectPath: string, project: ProjectSpecBase): Promise<{old: Document; new: Document}> {
   const yamlPath = path.join(`${projectPath}`, `project.yaml`);

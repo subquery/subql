@@ -1,8 +1,8 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import {DEFAULT_MULTICHAIN_MANIFEST, getProjectRootAndManifest, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {MultichainProjectManifest, ProjectManifestV1_0_0} from '@subql/types-core';
 import {Scalar, Document, parseDocument, YAMLSeq, YAMLMap} from 'yaml';

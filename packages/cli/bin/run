@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 
-const pjson = require('../package.json');
-const updateNotifier = require('update-notifier');
-const chalk = require('chalk');
-const semver = require('semver');
+import {readFileSync} from 'fs';
+import {fileURLToPath} from 'url';
+import {dirname, join} from 'path';
+import updateNotifier from 'update-notifier';
+import chalk from 'chalk';
+import semver from 'semver';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const pjson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'));
 
 const notifier = updateNotifier({pkg: pjson, updateCheckInterval: 0});
 

@@ -1,11 +1,11 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {IPFS_WRITE_ENDPOINT, IPFSHTTPClientLite} from '@subql/common';
 import {ProjectType} from '@subql/contract-sdk';
-import {ProjectCreatedEvent} from '@subql/contract-sdk/typechain/contracts/ProjectRegistry';
+import {ProjectCreatedEvent} from '@subql/contract-sdk/typechain/contracts/ProjectRegistry.js';
 import {z} from 'zod';
 import {
   commandLogger,
@@ -18,7 +18,7 @@ import {
   Prompt,
   withStructuredResponse,
   zodToFlags,
-} from '../../adapters/utils';
+} from '../../adapters/utils.js';
 import {
   checkTransactionSuccess,
   deploymentMetadataSchema,
@@ -28,8 +28,8 @@ import {
   projectMetadataSchema,
   projectTypeSchema,
   requireSigner,
-} from '../../controller/network/constants';
-import {parseContractError} from '../../controller/network/contract-errors';
+} from '../../controller/network/constants.js';
+import {parseContractError} from '../../controller/network/contract-errors.js';
 
 const createProjectInputs = z.object({
   network: networkNameSchema,

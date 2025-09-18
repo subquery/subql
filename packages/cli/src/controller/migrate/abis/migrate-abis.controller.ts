@@ -1,11 +1,13 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
-import {uniqWith} from 'lodash';
-import {DEFAULT_ABI_DIR} from '../../generate-controller';
-import {SubgraphDataSource, SubgraphProject} from '../types';
+import fs from 'node:fs';
+import path from 'node:path';
+import lodash from 'lodash';
+const {uniqWith} = lodash;
+
+import {DEFAULT_ABI_DIR} from '../../generate-controller.js';
+import {SubgraphDataSource, SubgraphProject} from '../types.js';
 
 function extractAllAbiFiles(dataSources: SubgraphDataSource[]): string[] {
   return uniqWith(dataSources.flatMap((dataSource) => dataSource.mapping.abis.map((abi) => abi.file).filter(Boolean)));

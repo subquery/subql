@@ -4,13 +4,13 @@
 import assert from 'node:assert';
 import {existsSync} from 'node:fs';
 import path from 'node:path';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {getProjectRootAndManifest, getSchemaPath} from '@subql/common';
 import {z} from 'zod';
-import {commandLogger, getMCPWorkingDirectory, Logger, mcpLogger, zodToArgs} from '../../adapters/utils';
-import {codegen} from '../../controller/codegen-controller';
-import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils';
+import {commandLogger, getMCPWorkingDirectory, Logger, mcpLogger, zodToArgs} from '../../adapters/utils.js';
+import {codegen} from '../../controller/codegen-controller.js';
+import {resolveToAbsolutePath, buildManifestFromLocation, getTsManifest} from '../../utils/index.js';
 
 const codegenInputs = z.object({
   location: z.string({description: 'The project directory or path to project manifest.'}).optional(),

@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {jsonToTable} from './jsonToTable';
+import {jsonToTable} from './jsonToTable.js';
 
 describe('jsonToTable', () => {
   it('should return empty string for empty array', () => {

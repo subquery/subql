@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {migrateSchemaFromString} from './migrate-schema.controller';
+import {migrateSchemaFromString} from './migrate-schema.controller.js';
 
 describe('Subgraph Graphql Schema migration', () => {
   it('correctly migrates a schema', () => {

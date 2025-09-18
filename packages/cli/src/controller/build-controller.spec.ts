@@ -1,10 +1,10 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {existsSync, writeFileSync, mkdirSync, rmSync} from 'fs';
-import {tmpdir} from 'os';
-import {join, resolve} from 'path';
-import {getBuildEntries} from './build-controller';
+import {existsSync, writeFileSync, mkdirSync, rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join, resolve} from 'node:path';
+import {getBuildEntries} from './build-controller.js';
 
 // Mock logger for tests that need it
 const mockLogger = {
@@ -49,7 +49,7 @@ describe('build controller', () => {
       }
     });
 
-    it('should load environment variables from .env file', () => {
+    it('should load environment variables from .env file', async () => {
       // Create .env file
       const envContent = [
         'DATABASE_URL=postgresql://localhost:5432/test',
@@ -59,7 +59,7 @@ describe('build controller', () => {
       writeFileSync(envPath, envContent);
 
       // Import the env utility and test it directly
-      const {getWebpackEnvDefinitions, loadEnvConfig} = require('../utils/env');
+      const {getWebpackEnvDefinitions, loadEnvConfig} = await import('../utils/env.js');
 
       const envConfig = loadEnvConfig(testDir);
       expect(envConfig).toEqual({
@@ -76,18 +76,18 @@ describe('build controller', () => {
       });
     });
 
-    it('should handle missing .env file gracefully', () => {
-      const {loadEnvConfig} = require('../utils/env');
+    it('should handle missing .env file gracefully', async () => {
+      const {loadEnvConfig} = await import('../utils/env.js');
 
       const envConfig = loadEnvConfig(testDir);
       expect(envConfig).toEqual({});
     });
 
-    it('should handle empty .env file', () => {
+    it('should handle empty .env file', async () => {
       // Create empty .env file
       writeFileSync(envPath, '');
 
-      const {loadEnvConfig} = require('../utils/env');
+      const {loadEnvConfig} = await import('../utils/env.js');
 
       const envConfig = loadEnvConfig(testDir);
       expect(envConfig).toEqual({});

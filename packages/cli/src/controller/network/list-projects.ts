@@ -6,10 +6,10 @@ import {ProjectType} from '@subql/contract-sdk';
 import {SQNetworks} from '@subql/network-config';
 import {utils} from 'ethers';
 import {z} from 'zod';
-import {resultToJson} from '../../utils';
-import {GetProjectsQuery, GetProjectsQueryVariables} from './__graphql__/base-types';
-import {GetProjects} from './__graphql__/network/projects.generated';
-import {getQueryClient, projectTypeSchema, gqlProjectTypeToProjectType, projectMetadataSchema} from './constants';
+import {resultToJson} from '../../utils/index.js';
+import {GetProjectsQuery, GetProjectsQueryVariables} from './__graphql__/base-types.js';
+import {GetProjects} from './__graphql__/network/projects.generated.js';
+import {getQueryClient, projectTypeSchema, gqlProjectTypeToProjectType, projectMetadataSchema} from './constants.js';
 
 export const projectSchema = z.object({
   id: z.string(),
