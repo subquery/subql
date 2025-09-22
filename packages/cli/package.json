@@ -34,7 +34,7 @@
     "resolve-from": "^5.0.0",
     "rimraf": "^5.0.10",
     "semver": "^7.6.3",
-    "simple-git": "^3.25.0",
+    "simple-git": "^3.28.0",
     "siwe": "^3.0.0",
     "terser-webpack-plugin": "^5.3.14",
     "ts-loader": "^9.5.1",
