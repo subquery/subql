@@ -81,6 +81,7 @@ module.exports = {
   // An array of file extensions your modules use
 
   moduleFileExtensions: ['js', 'json', 'ts'],
+  // extensionsToTreatAsEsm: ['.ts'],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   // moduleNameMapper: {},
@@ -95,6 +96,7 @@ module.exports = {
     '^@subql/types-core/(.*)$': '<rootDir>/packages/types-core/src/$1',
     '^@subql/utils$': '<rootDir>/packages/utils/src/',
     '^@subql/utils/(.*)$': '<rootDir>/packages/utils/src/$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1', // For ESM packages (CLI)
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
@@ -191,10 +193,20 @@ module.exports = {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    '^.+\\.(ts|tsx)?$': [
+    // ESM package (CLI)
+    '^.+\\.(t|j)sx?$': [
       'ts-jest',
       {
-        tsconfig: 'tsconfig.test.json',
+        useESM: true,
+        tsconfig: '<rootDir>/packages/cli/tsconfig.json',
+      },
+    ],
+    // Fallback for everything else (CJS)
+    // Important: this must come last because regex order matters
+    '^(?!.*packages/cli).*\\.(t|j)sx?$': [
+      'ts-jest',
+      {
+        useESM: false,
       },
     ],
   },

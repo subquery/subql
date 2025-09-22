@@ -1,6 +1,6 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-export * from './types';
-export * from './config';
-export * from './moduleLoader';
+export * from './types.js';
+export * from './config.js';
+export * from './moduleLoader.js';

@@ -4,8 +4,8 @@
 import {mapToObject, ReaderFactory, toJsonObject} from '@subql/common';
 import {parseProjectManifest} from '@subql/common-substrate';
 import {rimraf} from 'rimraf';
-import {createMultiChainTestProject, createTestProject} from '../createProject.fixtures';
-import {getDirectoryCid, uploadToIpfs} from './publish-controller';
+import {createMultiChainTestProject, createTestProject} from '../createProject.fixtures.js';
+import {getDirectoryCid, uploadToIpfs} from './publish-controller.js';
 
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST!;

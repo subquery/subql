@@ -1,8 +1,12 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi';
 import {NETWORK_FAMILY} from '@subql/common';
 import type {
@@ -13,18 +17,19 @@ import type {
   SubqlRuntimeDatasource as EthereumDs,
   SubqlRuntimeHandler,
 } from '@subql/types-ethereum';
-import {difference, pickBy, upperFirst} from 'lodash';
+import lodash from 'lodash';
+const {difference, pickBy, upperFirst} = lodash;
 import {Document, parseDocument, YAMLSeq} from 'yaml';
-import {Prompt} from '../adapters/utils';
-import {ADDRESS_REG, FUNCTION_REG, TOPICS_REG} from '../constants';
-import {loadDependency} from '../modulars';
+import {Prompt} from '../adapters/utils.js';
+import {ADDRESS_REG, FUNCTION_REG, TOPICS_REG} from '../constants.js';
+import {loadDependency} from '../modulars/index.js';
 import {
   extractFromTs,
   renderTemplate,
   replaceArrayValueInTsManifest,
   resolveToAbsolutePath,
   splitArrayString,
-} from '../utils';
+} from '../utils/index.js';
 
 export interface SelectedMethod {
   name: string;
@@ -190,8 +195,8 @@ function generateFormattedHandlers(
   return formattedHandlers;
 }
 
-export function constructDatasourcesTs(userInput: UserInput, projectPath: string): string {
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
+export async function constructDatasourcesTs(userInput: UserInput, projectPath: string): Promise<string> {
+  const ethModule = await loadDependency(NETWORK_FAMILY.ethereum, projectPath);
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => kind);
   const handlersString = tsStringify(formattedHandlers);
@@ -211,8 +216,8 @@ export function constructDatasourcesTs(userInput: UserInput, projectPath: string
   }`;
 }
 
-export function constructDatasourcesYaml(userInput: UserInput, projectPath: string): EthereumDs {
-  const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
+export async function constructDatasourcesYaml(userInput: UserInput, projectPath: string): Promise<EthereumDs> {
+  const ethModule = await loadDependency(NETWORK_FAMILY.ethereum, projectPath);
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
   const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => {
     if (kind === 'EthereumHandlerKind.Call') return 'ethereum/TransactionHandler' as EthereumHandlerKind.Call;
@@ -405,7 +410,7 @@ export async function generateManifestTs(
   userInput: UserInput,
   existingManifestData: string
 ): Promise<void> {
-  const inputDs = constructDatasourcesTs(userInput, manifestPath);
+  const inputDs = await constructDatasourcesTs(userInput, manifestPath);
 
   const extractedDs = extractFromTs(existingManifestData, {dataSources: undefined}) as {dataSources: string};
   const v = prependDatasources(extractedDs.dataSources, inputDs);
@@ -418,7 +423,7 @@ export async function generateManifestYaml(
   userInput: UserInput,
   existingManifestData: Document
 ): Promise<void> {
-  const inputDs = constructDatasourcesYaml(userInput, manifestPath);
+  const inputDs = await constructDatasourcesYaml(userInput, manifestPath);
   const dsNode = existingManifestData.get('dataSources') as YAMLSeq;
   if (!dsNode || !dsNode.items.length) {
     // To ensure output is in yaml format

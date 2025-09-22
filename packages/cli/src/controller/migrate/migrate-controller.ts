@@ -1,12 +1,12 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import {NETWORK_FAMILY} from '@subql/common';
-import {cloneProjectTemplate, fetchExampleProjects} from '../init-controller';
-import {graphNetworkNameChainId} from './constants';
-import {ChainInfo, SubgraphProject} from './types';
+import {cloneProjectTemplate, fetchExampleProjects} from '../init-controller.js';
+import {graphNetworkNameChainId} from './constants.js';
+import {ChainInfo, SubgraphProject} from './types.js';
 
 /**
  *

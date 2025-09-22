@@ -1,6 +1,6 @@
-import * as Types from '../base-types';
+import * as Types from '../base-types.js';
 
-import gql from 'graphql-tag';
+import {gql} from 'graphql-tag';
 
 export const GetFlexPlans = gql`
   query GetFlexPlans($address: String!) {

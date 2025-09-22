@@ -1,8 +1,8 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import assert from 'node:assert';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
 import {
@@ -15,8 +15,8 @@ import {
   Prompt,
   withStructuredResponse,
   zodToFlags,
-} from '../../adapters/utils';
-import {ROOT_API_URL_PROD} from '../../constants';
+} from '../../adapters/utils.js';
+import {ROOT_API_URL_PROD} from '../../constants.js';
 import {
   executeProjectDeployment,
   generateDeploymentChain,
@@ -25,9 +25,9 @@ import {
   projectsInfo,
   promptImageVersion,
   splitEndpoints,
-} from '../../controller/deploy-controller';
-import {DeploymentDataTypeSchema, DeploymentOptions, V3DeploymentIndexerType} from '../../types';
-import {addV, checkToken} from '../../utils';
+} from '../../controller/deploy-controller.js';
+import {DeploymentDataTypeSchema, DeploymentOptions, V3DeploymentIndexerType} from '../../types.js';
+import {addV, checkToken} from '../../utils/index.js';
 
 const createDeploymentInputs = DeploymentOptions.extend({
   ipfsCID: z.string({description: 'The IPFC CID of the published project'}),

@@ -8,7 +8,7 @@ import {
   HostingPlanList as ApiHostingPlanList,
   Project as ApiProject,
   Deployment as ApiDeployment,
-} from './consumer-host-service-api';
+} from './consumer-host-service-api.js';
 
 export const apiKeySchema = z.object({
   id: z.number({description: 'The unique identifier of the api key'}),

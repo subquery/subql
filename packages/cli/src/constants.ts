@@ -1,9 +1,9 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import path from 'path';
-import {DeploymentType} from './types';
+import assert from 'node:assert';
+import path from 'node:path';
+import {DeploymentType} from './types.js';
 
 //DEPLOYMENT
 export const DEFAULT_DEPLOYMENT_TYPE = 'primary' satisfies DeploymentType;

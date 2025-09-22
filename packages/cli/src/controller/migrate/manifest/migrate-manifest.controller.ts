@@ -1,15 +1,20 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import {CommonSubqueryProject} from '@subql/types-core';
-import {upperFirst} from 'lodash';
+import lodash from 'lodash';
+const {upperFirst} = lodash;
 import YAML from 'yaml';
-import {findRunnerByNetworkFamily, prepareDirPath, renderTemplate} from '../../../utils';
-import {TemplateKind} from '../../codegen-controller';
-import {graphToSubqlNetworkFamily, networkConverters} from '../constants';
-import {getChainIdByNetworkName} from '../migrate-controller';
+import {findRunnerByNetworkFamily, prepareDirPath, renderTemplate} from '../../../utils/index.js';
+import {TemplateKind} from '../../codegen-controller.js';
+import {graphToSubqlNetworkFamily, networkConverters} from '../constants.js';
+import {getChainIdByNetworkName} from '../migrate-controller.js';
 import {
   MigrateDatasourceKind,
   SubgraphDataSource,
@@ -18,7 +23,7 @@ import {
   ChainInfo,
   DsConvertFunction,
   TemplateConvertFunction,
-} from '../types';
+} from '../types.js';
 
 const PROJECT_TEMPLATE_PATH = path.resolve(__dirname, '../../../template/project.ts.ejs');
 

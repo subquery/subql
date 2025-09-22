@@ -7,6 +7,7 @@ const config: CodegenConfig = {
   overwrite: true,
   schema: 'https://gateway.subquery.network/query/QmQqqmwwaBben8ncfHo3DMnDxyWFk5QcEdTmbevzKj7DBd',
   documents: 'src/controller/network/queries/*.graphql',
+  emitLegacyCommonJSImports: false,
   config: {
     namingConvention: {
       enumValues: 'keep',
@@ -32,6 +33,7 @@ const config: CodegenConfig = {
       preset: 'near-operation-file',
       config: {
         importOperationTypesFrom: 'Types',
+        gqlImport: 'graphql-tag#gql',
       },
       presetConfig: {
         folder: '../__graphql__/network',

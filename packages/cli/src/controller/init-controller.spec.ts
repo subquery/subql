@@ -1,13 +1,12 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import * as fs from 'fs';
-import os from 'os';
-import path from 'path';
+import * as fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import {DEFAULT_TS_MANIFEST} from '@subql/common';
-import git from 'simple-git';
-import {ENDPOINT_REG} from '../constants';
-import {extractFromTs, findReplace, validateEthereumTsManifest} from '../utils';
+import {ENDPOINT_REG} from '../constants.js';
+import {extractFromTs, findReplace, validateEthereumTsManifest} from '../utils/index.js';
 import {
   cloneProjectGit,
   fetchExampleProjects,
@@ -16,14 +15,14 @@ import {
   prepareManifest,
   preparePackage,
   validateEthereumProjectManifest,
-} from './init-controller';
+} from './init-controller.js';
 
-jest.mock('simple-git', () => {
-  const mGit = {
-    clone: jest.fn(),
-  };
-  return jest.fn(() => mGit);
-});
+// jest.mock('simple-git', () => {
+//   const mGit = {
+//     clone: jest.fn(),
+//   };
+//   return jest.fn(() => mGit);
+// });
 
 jest.setTimeout(30000);
 
@@ -59,9 +58,6 @@ describe('Cli can create project (mocked)', () => {
   });
   it('throw error when git clone failed', async () => {
     const tempPath = await makeTempDir();
-    (git().clone as jest.Mock).mockImplementationOnce((cb) => {
-      cb(new Error());
-    });
     await expect(cloneProjectGit(tempPath, projectSpec.name, 'invalid_url', 'invalid_branch')).rejects.toThrow(
       /Failed to clone starter template from git/
     );

@@ -4,15 +4,15 @@
 import {JsonRpcProvider, Provider} from '@ethersproject/providers';
 import {Wallet} from '@ethersproject/wallet';
 import {ProjectType, ContractSDK, networks} from '@subql/contract-sdk';
-import {GraphqlQueryClient} from '@subql/network-clients/dist/clients/queryClient';
+import {GraphqlQueryClient} from '@subql/network-clients/dist/clients/queryClient.js';
 import {NETWORK_CONFIGS, SQNetworks, SQT_DECIMAL} from '@subql/network-config';
 import {base58Decode} from '@subql/utils';
 import {BigNumberish, ContractReceipt, ContractTransaction, Signer} from 'ethers';
-import {formatUnits} from 'ethers/lib/utils';
+import {formatUnits} from 'ethers/lib/utils.js';
 import {z} from 'zod';
-import {Logger} from '../../adapters/utils';
-import {ProjectType as ProjectTypeGql} from './__graphql__/base-types';
-import {NO_EXISTING_CONN_ERROR, walletConnectSigner} from './walletconnect-signer';
+import {Logger} from '../../adapters/utils.js';
+import {ProjectType as ProjectTypeGql} from './__graphql__/base-types.js';
+import {NO_EXISTING_CONN_ERROR, walletConnectSigner} from './walletconnect-signer.js';
 
 export const WALLET_DOMAIN = 'app.subquery.network';
 

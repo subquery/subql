@@ -4,10 +4,10 @@
 import {IPFS_NODE_ENDPOINT, IPFSHTTPClientLite} from '@subql/common';
 import {SQNetworks} from '@subql/network-config';
 import {z} from 'zod';
-import {resultToJson} from '../../utils';
-import {GetProjectDeploymentsQuery, GetProjectDeploymentsQueryVariables} from './__graphql__/base-types';
-import {GetProjectDeployments} from './__graphql__/network/deployments.generated';
-import {DeploymentMetadata, deploymentMetadataSchema, getQueryClient} from './constants';
+import {resultToJson} from '../../utils/index.js';
+import {GetProjectDeploymentsQuery, GetProjectDeploymentsQueryVariables} from './__graphql__/base-types.js';
+import {GetProjectDeployments} from './__graphql__/network/deployments.generated.js';
+import {DeploymentMetadata, deploymentMetadataSchema, getQueryClient} from './constants.js';
 
 export const deploymentSchema = z.object({
   deploymentId: z.string(),

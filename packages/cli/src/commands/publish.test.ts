@@ -1,11 +1,11 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import {rimraf} from 'rimraf';
-import {createTestProject} from '../createProject.fixtures';
-import Publish from './publish';
+import {createTestProject} from '../createProject.fixtures.js';
+import Publish from './publish.js';
 
 jest.setTimeout(300_000); // 300s
 describe('Integration test - Publish', () => {

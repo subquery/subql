@@ -1,11 +1,11 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import {makeTempDir, NETWORK_FAMILY} from '@subql/common';
-import {extractGitInfo, getChainIdByNetworkName, improveProjectInfo, prepareProject} from './migrate-controller';
-import {TestSubgraph} from './migrate.fixtures';
+import {extractGitInfo, getChainIdByNetworkName, improveProjectInfo, prepareProject} from './migrate-controller.js';
+import {TestSubgraph} from './migrate.fixtures.js';
 
 const testProjectPath = '../../../test/migrate/testProject';
 

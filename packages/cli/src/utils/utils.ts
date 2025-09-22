@@ -1,10 +1,10 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import fs, {existsSync, readFileSync} from 'fs';
-import os from 'os';
-import path from 'path';
+import assert from 'node:assert';
+import fs, {existsSync, readFileSync} from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import {input} from '@inquirer/prompts';
 import {
   DEFAULT_ENV,
@@ -22,7 +22,7 @@ import ejs from 'ejs';
 import * as yaml from 'js-yaml';
 import JSON5 from 'json5';
 import {rimraf} from 'rimraf';
-import {ACCESS_TOKEN_PATH} from '../constants';
+import {ACCESS_TOKEN_PATH} from '../constants.js';
 
 export async function delay(sec: number): Promise<void> {
   return new Promise((resolve) => {

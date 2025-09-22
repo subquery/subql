@@ -1,9 +1,9 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ROOT_API_URL_PROD} from '../constants';
-import {delay} from '../utils';
-import {createProject, deleteProject} from './project-controller';
+import {ROOT_API_URL_PROD} from '../constants.js';
+import {delay} from '../utils/index.js';
+import {createProject, deleteProject} from './project-controller.js';
 
 const projectSpec = {
   org: process.env.SUBQL_ORG_TEST,

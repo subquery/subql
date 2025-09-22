@@ -1,15 +1,16 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import {loadFromJsonOrYaml} from '@subql/common';
 import {projectCodegen} from '@subql/common-cosmos';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
 import type {CosmosDatasource, CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '@subql/types-cosmos';
 import {upperFirst} from 'lodash';
+// const {upperFirst} = lodash;
 import {rimraf} from 'rimraf';
-import {prepareDirPath, renderTemplate} from '../utils';
+import {prepareDirPath, renderTemplate} from '../utils/index.js';
 
 const PROJECT_PATH = path.join(__dirname, '../../test/protoTest1');
 const MOCK_CHAINTYPES: any = {

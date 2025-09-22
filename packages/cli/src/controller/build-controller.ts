@@ -1,17 +1,17 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import {readFileSync, existsSync} from 'fs';
-import path from 'path';
+import assert from 'node:assert';
+import {readFileSync, existsSync} from 'node:fs';
+import path from 'node:path';
 import {globSync} from 'glob';
 import {parse} from 'jsonc-parser';
 import TerserPlugin from 'terser-webpack-plugin';
 import {TsconfigPathsPlugin} from 'tsconfig-paths-webpack-plugin';
 import webpack, {Configuration} from 'webpack';
 import {merge} from 'webpack-merge';
-import {Logger} from '../adapters/utils';
-import {loadEnvConfig, getWebpackEnvDefinitions} from '../utils/env';
+import {Logger} from '../adapters/utils.js';
+import {loadEnvConfig, getWebpackEnvDefinitions} from '../utils/env.js';
 
 /**
  * Webpack has been chosen as the bundler for a few reasons.

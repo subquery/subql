@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {parseEther} from '@ethersproject/units';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
 import {
@@ -16,7 +16,7 @@ import {
   Prompt,
   withStructuredResponse,
   zodToFlags,
-} from '../../adapters/utils';
+} from '../../adapters/utils.js';
 import {
   checkTransactionSuccess,
   getContractSDK,
@@ -25,9 +25,9 @@ import {
   networkNameSchema,
   requireSigner,
   formatSQT,
-} from '../../controller/network/constants';
-import {parseContractError} from '../../controller/network/contract-errors';
-import {checkAndIncreaseAllowance} from '../../controller/network/utils';
+} from '../../controller/network/constants.js';
+import {parseContractError} from '../../controller/network/contract-errors.js';
+import {checkAndIncreaseAllowance} from '../../controller/network/utils.js';
 
 const swapDeploymentBoostInputs = z.object({
   network: networkNameSchema,

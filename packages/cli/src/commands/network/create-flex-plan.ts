@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {parseEther} from '@ethersproject/units';
-import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
+import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {Command} from '@oclif/core';
 import {z} from 'zod';
 import {
@@ -14,7 +14,7 @@ import {
   Prompt,
   withStructuredResponse,
   zodToFlags,
-} from '../../adapters/utils';
+} from '../../adapters/utils.js';
 import {
   networkNameSchema,
   getSignerOrProvider,
@@ -22,11 +22,11 @@ import {
   getContractSDK,
   checkTransactionSuccess,
   formatSQT,
-} from '../../controller/network/constants';
-import {ConsumerHostClient} from '../../controller/network/consumer-host/client';
-import {hostingPlanSchema} from '../../controller/network/consumer-host/schemas';
-import {listDeploymentBoosts} from '../../controller/network/list-deployment-boosts';
-import {checkAndIncreaseAllowance} from '../../controller/network/utils';
+} from '../../controller/network/constants.js';
+import {ConsumerHostClient} from '../../controller/network/consumer-host/client.js';
+import {hostingPlanSchema} from '../../controller/network/consumer-host/schemas.js';
+import {listDeploymentBoosts} from '../../controller/network/list-deployment-boosts.js';
+import {checkAndIncreaseAllowance} from '../../controller/network/utils.js';
 
 const createFlexPlanInputs = z.object({
   network: networkNameSchema,
