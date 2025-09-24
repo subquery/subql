@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (--version)
-@subql/cli/6.2.3-2 linux-x64 node-v22.19.0
+@subql/cli/6.3.1-0 linux-x64 node-v22.19.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -37,6 +37,7 @@ USAGE
 <!-- commands -->
 
 - [`subql build [LOCATION]`](#subql-build-location)
+- [`subql build-manifest [LOCATION]`](#subql-build-manifest-location)
 - [`subql codegen [LOCATION]`](#subql-codegen-location)
 - [`subql codegen:import-abi LOCATION`](#subql-codegenimport-abi-location)
 - [`subql import-abi LOCATION`](#subql-import-abi-location)
@@ -88,7 +89,24 @@ DESCRIPTION
   Build this SubQuery project code into a bundle
 ```
 
-_See code: [src/commands/build.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/build.ts)_
+_See code: [src/commands/build.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/build.ts)_
+
+## `subql build-manifest [LOCATION]`
+
+Build TypeScript manifest file to YAML (generates project.yaml from project.ts)
+
+```
+USAGE
+  $ subql build-manifest [LOCATION]
+
+ARGUMENTS
+  LOCATION  The path to the project, this can be a directory or a project manifest file.
+
+DESCRIPTION
+  Build TypeScript manifest file to YAML (generates project.yaml from project.ts)
+```
+
+_See code: [src/commands/build-manifest.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/build-manifest.ts)_
 
 ## `subql codegen [LOCATION]`
 
@@ -105,7 +123,7 @@ DESCRIPTION
   Generate entity types from the GraphQL schema and contract interfaces
 ```
 
-_See code: [src/commands/codegen/index.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/codegen/index.ts)_
+_See code: [src/commands/codegen/index.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/codegen/index.ts)_
 
 ## `subql codegen:import-abi LOCATION`
 
@@ -136,7 +154,7 @@ ALIASES
   $ subql import-abi
 ```
 
-_See code: [src/commands/codegen/import-abi.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/codegen/import-abi.ts)_
+_See code: [src/commands/codegen/import-abi.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/codegen/import-abi.ts)_
 
 ## `subql import-abi LOCATION`
 
@@ -193,7 +211,7 @@ DESCRIPTION
   Initialize a SubQuery project from a template
 ```
 
-_See code: [src/commands/init.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/init.ts)_
 
 ## `subql mcp`
 
@@ -207,7 +225,7 @@ DESCRIPTION
   Runs an MCP (Model Context Protocol) server over stdio
 ```
 
-_See code: [src/commands/mcp.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/mcp.ts)_
+_See code: [src/commands/mcp.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/mcp.ts)_
 
 ## `subql migrate`
 
@@ -226,7 +244,7 @@ DESCRIPTION
   Migrate a Subgraph project to a SubQuery project, including the manifest and schema.
 ```
 
-_See code: [src/commands/migrate.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/migrate.ts)_
+_See code: [src/commands/migrate.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/migrate.ts)_
 
 ## `subql multi-chain:add [LOCATION]`
 
@@ -246,7 +264,7 @@ DESCRIPTION
   Add new chain manifest to multi-chain project
 ```
 
-_See code: [src/commands/multi-chain/add.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/multi-chain/add.ts)_
+_See code: [src/commands/multi-chain/add.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/multi-chain/add.ts)_
 
 ## `subql network:add-deployment-boost`
 
@@ -267,7 +285,7 @@ DESCRIPTION
   Increase the boost for a deployment
 ```
 
-_See code: [src/commands/network/add-deployment-boost.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/add-deployment-boost.ts)_
+_See code: [src/commands/network/add-deployment-boost.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/add-deployment-boost.ts)_
 
 ## `subql network:connect-wallet`
 
@@ -281,7 +299,7 @@ DESCRIPTION
   Connect a wallet via Wallet Connect for interacting with the network
 ```
 
-_See code: [src/commands/network/connect-wallet.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/connect-wallet.ts)_
+_See code: [src/commands/network/connect-wallet.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/connect-wallet.ts)_
 
 ## `subql network:create-api-key NAME`
 
@@ -302,7 +320,7 @@ DESCRIPTION
   Create an API key for making queries via the SubQuery Network
 ```
 
-_See code: [src/commands/network/create-api-key.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/create-api-key.ts)_
+_See code: [src/commands/network/create-api-key.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/create-api-key.ts)_
 
 ## `subql network:create-deployment`
 
@@ -325,7 +343,7 @@ DESCRIPTION
   Create a new deployment for a SubQuery project
 ```
 
-_See code: [src/commands/network/create-deployment.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/create-deployment.ts)_
+_See code: [src/commands/network/create-deployment.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/create-deployment.ts)_
 
 ## `subql network:create-flex-plan`
 
@@ -346,7 +364,7 @@ DESCRIPTION
   Create a new Flex Plan for querying a SubQuery deployment on the SubQuery Network
 ```
 
-_See code: [src/commands/network/create-flex-plan.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/create-flex-plan.ts)_
+_See code: [src/commands/network/create-flex-plan.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/create-flex-plan.ts)_
 
 ## `subql network:create-project`
 
@@ -377,7 +395,7 @@ DESCRIPTION
   Create a new SubQuery project on the SubQuery network
 ```
 
-_See code: [src/commands/network/create-project.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/create-project.ts)_
+_See code: [src/commands/network/create-project.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/create-project.ts)_
 
 ## `subql network:disconnect-wallet`
 
@@ -391,7 +409,7 @@ DESCRIPTION
   Disconnect a wallet connected via WalletConnect
 ```
 
-_See code: [src/commands/network/disconnect-wallet.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/disconnect-wallet.ts)_
+_See code: [src/commands/network/disconnect-wallet.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/disconnect-wallet.ts)_
 
 ## `subql network:list-account-boosts`
 
@@ -410,7 +428,7 @@ DESCRIPTION
   Get a list of the deployments an account boosts
 ```
 
-_See code: [src/commands/network/list-account-boosts.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/list-account-boosts.ts)_
+_See code: [src/commands/network/list-account-boosts.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/list-account-boosts.ts)_
 
 ## `subql network:list-api-keys`
 
@@ -428,7 +446,7 @@ DESCRIPTION
   List API keys for making queries via the SubQuery Network
 ```
 
-_See code: [src/commands/network/list-api-keys.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/list-api-keys.ts)_
+_See code: [src/commands/network/list-api-keys.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/list-api-keys.ts)_
 
 ## `subql network:list-deployment-boosts`
 
@@ -447,7 +465,7 @@ DESCRIPTION
   Get a list of boosts made to a project deployment
 ```
 
-_See code: [src/commands/network/list-deployment-boosts.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/list-deployment-boosts.ts)_
+_See code: [src/commands/network/list-deployment-boosts.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/list-deployment-boosts.ts)_
 
 ## `subql network:list-deployment-indexers`
 
@@ -466,7 +484,7 @@ DESCRIPTION
   List the indexers for a deployment on the SubQuery Network
 ```
 
-_See code: [src/commands/network/list-deployment-indexers.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/list-deployment-indexers.ts)_
+_See code: [src/commands/network/list-deployment-indexers.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/list-deployment-indexers.ts)_
 
 ## `subql network:list-deployments`
 
@@ -485,7 +503,7 @@ DESCRIPTION
   List deployments for a SubQuery project
 ```
 
-_See code: [src/commands/network/list-deployments.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/list-deployments.ts)_
+_See code: [src/commands/network/list-deployments.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/list-deployments.ts)_
 
 ## `subql network:list-flex-plans`
 
@@ -504,7 +522,7 @@ DESCRIPTION
   List your Flex Plans for querying projects on the SubQuery Network
 ```
 
-_See code: [src/commands/network/list-flex-plans.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/list-flex-plans.ts)_
+_See code: [src/commands/network/list-flex-plans.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/list-flex-plans.ts)_
 
 ## `subql network:list-projects`
 
@@ -525,7 +543,7 @@ DESCRIPTION
   List projects for a given account on then SubQuery network
 ```
 
-_See code: [src/commands/network/list-projects.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/list-projects.ts)_
+_See code: [src/commands/network/list-projects.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/list-projects.ts)_
 
 ## `subql network:remove-api-key NAME`
 
@@ -546,7 +564,7 @@ DESCRIPTION
   Remove an API key used for making queries via the SubQuery Network
 ```
 
-_See code: [src/commands/network/remove-api-key.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/remove-api-key.ts)_
+_See code: [src/commands/network/remove-api-key.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/remove-api-key.ts)_
 
 ## `subql network:remove-deployment-boost`
 
@@ -567,7 +585,7 @@ DESCRIPTION
   Decrease the boost amount for a project deployment on the SubQuery network
 ```
 
-_See code: [src/commands/network/remove-deployment-boost.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/remove-deployment-boost.ts)_
+_See code: [src/commands/network/remove-deployment-boost.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/remove-deployment-boost.ts)_
 
 ## `subql network:stop-flex-plan`
 
@@ -586,7 +604,7 @@ DESCRIPTION
   Stop a Flex Plan for a deployment on the SubQuery Network
 ```
 
-_See code: [src/commands/network/stop-flex-plan.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/stop-flex-plan.ts)_
+_See code: [src/commands/network/stop-flex-plan.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/stop-flex-plan.ts)_
 
 ## `subql network:swap-deployment-boost`
 
@@ -608,7 +626,7 @@ DESCRIPTION
   Swap the boost from one deployment to another deployment on the SubQuery Network
 ```
 
-_See code: [src/commands/network/swap-deployment-boost.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/network/swap-deployment-boost.ts)_
+_See code: [src/commands/network/swap-deployment-boost.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/network/swap-deployment-boost.ts)_
 
 ## `subql onfinality:create-deployment`
 
@@ -653,7 +671,7 @@ DESCRIPTION
   Create a project deployment on the OnFinality managed services
 ```
 
-_See code: [src/commands/onfinality/create-deployment.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/onfinality/create-deployment.ts)_
+_See code: [src/commands/onfinality/create-deployment.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/onfinality/create-deployment.ts)_
 
 ## `subql onfinality:create-multichain-deployment [LOCATION]`
 
@@ -700,7 +718,7 @@ DESCRIPTION
   Create a multi-chain project deployment no the OnFinality managed services
 ```
 
-_See code: [src/commands/onfinality/create-multichain-deployment.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/onfinality/create-multichain-deployment.ts)_
+_See code: [src/commands/onfinality/create-multichain-deployment.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/onfinality/create-multichain-deployment.ts)_
 
 ## `subql onfinality:create-project`
 
@@ -725,7 +743,7 @@ DESCRIPTION
   Create a project on the OnFinality managed services
 ```
 
-_See code: [src/commands/onfinality/create-project.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/onfinality/create-project.ts)_
+_See code: [src/commands/onfinality/create-project.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/onfinality/create-project.ts)_
 
 ## `subql onfinality:delete-deployment`
 
@@ -744,7 +762,7 @@ DESCRIPTION
   Delete a deployment from the OnFinality managed services
 ```
 
-_See code: [src/commands/onfinality/delete-deployment.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/onfinality/delete-deployment.ts)_
+_See code: [src/commands/onfinality/delete-deployment.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/onfinality/delete-deployment.ts)_
 
 ## `subql onfinality:delete-project`
 
@@ -762,7 +780,7 @@ DESCRIPTION
   Delete a project on the OnFinality managed services
 ```
 
-_See code: [src/commands/onfinality/delete-project.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/onfinality/delete-project.ts)_
+_See code: [src/commands/onfinality/delete-project.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/onfinality/delete-project.ts)_
 
 ## `subql onfinality:promote-deployment`
 
@@ -781,7 +799,7 @@ DESCRIPTION
   Promote a deployment on the OnFinality managed services from a Stage environment to Production
 ```
 
-_See code: [src/commands/onfinality/promote-deployment.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/onfinality/promote-deployment.ts)_
+_See code: [src/commands/onfinality/promote-deployment.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/onfinality/promote-deployment.ts)_
 
 ## `subql publish [LOCATION]`
 
@@ -802,6 +820,6 @@ DESCRIPTION
   Upload this SubQuery project to IPFS for distribution
 ```
 
-_See code: [src/commands/publish.ts](https://github.com/subquery/subql/blob/cli/6.2.3-2/packages/cli/src/commands/publish.ts)_
+_See code: [src/commands/publish.ts](https://github.com/subquery/subql/blob/cli/6.3.1-0/packages/cli/src/commands/publish.ts)_
 
 <!-- commandsstop -->
