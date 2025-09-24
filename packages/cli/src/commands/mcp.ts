@@ -7,6 +7,7 @@ import {Command} from '@oclif/core';
 import {MCPToolOptions} from '../adapters/utils';
 import {fetchNetworks} from '../controller/init-controller';
 import {registerBuildMCPTool} from './build';
+import {registerBuildManifestMCPTool} from './build-manifest';
 import {registerCodegenMCPTool} from './codegen';
 import {registerImportAbiMCPTool} from './codegen/import-abi';
 import {registerInitMCPTool} from './init';
@@ -98,6 +99,7 @@ export default class MCP extends Command {
     registerStopNetworkFlexPlanMCPTool(server);
     registerCreateNetworkApiKeyMCPTool(server);
     registerDisconnectWalletMCPTool(server);
+    registerBuildManifestMCPTool(server);
 
     const transport = new StdioServerTransport();
     await server.connect(transport);
