@@ -5,8 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.4.1] - 2025-09-26
 ### Added
 - Build manifest command (#2923)
+
+### Changed
+- Rerelease of previous version
 
 ## [6.4.0] - 2025-09-25
 ### Added
@@ -855,7 +860,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/6.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/6.4.1...HEAD
+[6.4.1]: https://github.com/subquery/subql/compare/cli/6.4.0...cli/6.4.1
 [6.4.0]: https://github.com/subquery/subql/compare/cli/6.3.0...cli/6.4.0
 [6.3.0]: https://github.com/subquery/subql/compare/cli/6.2.2...cli/6.3.0
 [6.2.2]: https://github.com/subquery/subql/compare/cli/6.2.1...cli/6.2.2
