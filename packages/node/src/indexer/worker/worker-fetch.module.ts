@@ -39,7 +39,7 @@ import { WorkerService } from './worker.service';
       provide: 'IProjectService',
       useClass: ProjectService,
     },
-    // This is alised so it satisfies the BlockchainService, other services are updated to reflect this
+    // This is aliased so it satisfies the BlockchainService, other services are updated to reflect this
     {
       provide: 'RuntimeService',
       useClass: WorkerRuntimeService,
