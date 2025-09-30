@@ -89,7 +89,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async onModuleDestroy(): Promise<void> {
     await Promise.all([this.apolloServer?.stop(), this.wsCleanup?.dispose()]);
   }

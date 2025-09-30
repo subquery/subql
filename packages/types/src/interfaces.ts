@@ -1,10 +1,10 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {AnyTuple, Codec} from '@polkadot/types-codec/types';
-import {GenericExtrinsic} from '@polkadot/types/extrinsic';
-import {EventRecord, SignedBlock, Header} from '@polkadot/types/interfaces';
 import {IEvent} from '@polkadot/types/types';
+import {GenericExtrinsic} from '@polkadot/types/extrinsic';
+import {AnyTuple, Codec} from '@polkadot/types-codec/types';
+import {EventRecord, SignedBlock, Header} from '@polkadot/types/interfaces';
 
 export interface SubstrateBlock extends SignedBlock {
   // parent block's spec version, can be used to decide the correct metadata that should be used for this block.
