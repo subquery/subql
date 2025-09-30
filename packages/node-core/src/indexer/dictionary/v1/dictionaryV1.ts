@@ -4,7 +4,6 @@
 import {ApolloClient, gql, HttpLink, InMemoryCache, NormalizedCacheObject} from '@apollo/client/core';
 import {DictionaryQueryCondition, DictionaryQueryEntry as DictionaryV1QueryEntry} from '@subql/types-core';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData as DictionaryV1Metadata} from '@subql/utils';
-import fetch from 'cross-fetch';
 import {NodeConfig} from '../../../configure';
 import {getLogger} from '../../../logger';
 import {profiler} from '../../../profiler';
@@ -36,7 +35,7 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
 
     this._client = new ApolloClient({
       cache: new InMemoryCache({resultCaching: true}),
-      link: new HttpLink({uri: dictionaryEndpoint, fetch}),
+      link: new HttpLink({uri: dictionaryEndpoint}),
       defaultOptions: {
         watchQuery: {
           fetchPolicy: 'no-cache',
