@@ -5,7 +5,6 @@ import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
 import {IProjectNetworkConfig} from '@subql/types-core';
-import fetch from 'cross-fetch';
 import {NodeConfig} from '../../configure';
 import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
