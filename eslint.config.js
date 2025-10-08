@@ -14,23 +14,18 @@ const js = require('@eslint/js');
 module.exports = defineConfig([
   js.configs.recommended,
   {
-    plugins: {
-      '@typescript-eslint': typescriptEslint,
-    },
-  },
-  {
+    files: ['**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.jest,
       },
 
       parser: tsParser,
-      sourceType: 'module',
+      // sourceType: 'module',
 
       parserOptions: {
         tsconfigRootDir: __dirname,
-        project: ['./tsconfig.json', './packages/*/tsconfig.json'],
+        project: true, //['./tsconfig.json', './packages/*/tsconfig.json'],
         warnOnUnsupportedTypeScriptVersion: false,
       },
     },
@@ -39,13 +34,12 @@ module.exports = defineConfig([
       headers,
       import: importX,
       'sort-destructure-keys': sortDestructureKeys,
-      jest,
+      '@typescript-eslint': typescriptEslint,
     },
 
     rules: {
       ...typescriptEslint.configs['recommended'].rules,
       ...typescriptEslint.configs['recommended-type-checked'].rules,
-      ...jest.configs['flat/recommended'].rules,
       'require-await': 'off',
       '@typescript-eslint/require-await': 'error',
       '@typescript-eslint/explicit-function-return-type': 'off',
@@ -58,6 +52,8 @@ module.exports = defineConfig([
       '@typescript-eslint/no-unnecessary-type-assertion': 'off',
       '@typescript-eslint/restrict-plus-operands': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-unsafe-enum-comparison': 'off',
+      '@typescript-eslint/no-base-to-string': 'off',
       '@typescript-eslint/unbound-method': 'warn',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'warn',
@@ -132,6 +128,7 @@ module.exports = defineConfig([
         },
       ],
 
+      'no-undef': 'off', //https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
       'no-console': 'off',
       'no-duplicate-imports': 'error',
       'no-return-await': 'error',
@@ -152,7 +149,18 @@ module.exports = defineConfig([
   {
     files: ['**/*.test.ts', '**/*.spec.ts'],
 
+    plugins: {
+      jest,
+    },
+
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+      },
+    },
+
     rules: {
+      ...jest.configs['flat/recommended'].rules,
       '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
@@ -168,6 +176,8 @@ module.exports = defineConfig([
     '**/*.proto',
     '**/*.ts.snap',
     '**/sourcemap-test-*.js',
+    '**/*.js',
+    'packages/cli/graphql-codegen.ts',
     'packages/cli/src/controller/network/__graphql__/**/*',
   ]),
 ]);

@@ -122,7 +122,6 @@ mockDS.forEach((ds, index, dataSources) => {
   m.set(ds.startBlock, dataSources.slice(0, index + 1));
 });
 
-// eslint-disable-next-line jest/no-export
 export const dsMap = new BlockHeightMap(m);
 
 export interface TestFB {
@@ -136,7 +135,7 @@ export class TestDictionaryV2 extends DictionaryV2<TestFB, any, any> {
     return this._metadata;
   }
 
-  setMockedApi(mocked: {post: () => Promise<any> | any}): void {
+  setMockedApi(mocked: {post: () => any}): void {
     this.dictionaryApi = mocked as any;
   }
 

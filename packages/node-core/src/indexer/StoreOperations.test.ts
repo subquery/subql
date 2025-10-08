@@ -21,6 +21,7 @@ interface DelegationFrom {
   nested?: TestJson;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 type EraProps = Omit<EraEntity, NonNullable<FunctionPropertyNames<EraEntity>> | '_name'>;
 
 class EraEntity implements Entity {

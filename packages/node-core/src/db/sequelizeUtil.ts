@@ -28,11 +28,10 @@ export function formatColumnName(columnName: string): string {
 // Rewrite due to method is not exported from sequelize
 // This method is same from https://github.com/sequelize/sequelize/blob/26beda5bf76bd65e30264ebf135e39efaa7d514d/packages/core/src/utils/string.ts#L89
 export function generateIndexName(tableName: TableName, index: IndexesOptions): string {
-  if (typeof tableName !== 'string' && tableName.tableName) {
-    tableName = tableName.tableName;
-  }
+  const tableNameStr = typeof tableName === 'string' ? tableName : tableName.tableName;
+
   if (!index.fields) {
-    throw new Error(`Index on table ${tableName} has not fields:
+    throw new Error(`Index on table ${tableNameStr} has not fields:
 ${NodeUtil.inspect(index)}`);
   }
 
@@ -44,7 +43,7 @@ ${NodeUtil.inspect(index)}`);
     throw new Error(`Generate index name failed, index ${index.name} field should be string type`);
   });
 
-  let out = `${tableName}_${fields.join('_')}`;
+  let out = `${tableNameStr}_${fields.join('_')}`;
 
   if (index.unique) {
     out += '_unique';

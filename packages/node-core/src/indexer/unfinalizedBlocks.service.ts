@@ -30,8 +30,8 @@ export interface IUnfinalizedBlocksService<B> extends IUnfinalizedBlocksServiceU
   init(reindex: (targetHeader: Header) => Promise<void>): Promise<Header | undefined>;
   processUnfinalizedBlocks(block: IBlock<B> | undefined): Promise<Header | undefined>;
   processUnfinalizedBlockHeader(header: Header | undefined): Promise<Header | undefined>;
-  resetUnfinalizedBlocks(tx?: Transaction): void;
-  resetLastFinalizedVerifiedHeight(tx?: Transaction): void;
+  resetUnfinalizedBlocks(tx?: Transaction): Promise<void>;
+  resetLastFinalizedVerifiedHeight(tx?: Transaction): Promise<void>;
   getMetadataUnfinalizedBlocks(): Promise<UnfinalizedBlocks>;
 }
 
@@ -246,7 +246,6 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
 
     let lastHeight = header.blockHeight;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const indexedBlocks: ProofOfIndex[] = await poiModel.getPoiBlocksBefore(lastHeight);
 

@@ -97,7 +97,6 @@ class TestWorkerService extends BaseWorkerService<number, Header> {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async processFetchedBlock(block: IBlock<number>): Promise<ProcessBlockResponse> {
     const res = await indexBlockFunction?.(block);
 
@@ -195,9 +194,6 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
           };
         },
       } as any;
-
-      // Needs to be before block dispatcher constructor
-      blockchainService as any;
 
       return new BlockDispatcher(
         nodeConfig,

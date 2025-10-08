@@ -104,7 +104,7 @@ export class ConsumerHostClient {
     );
 
     if (!res.ok) {
-      console.error(`Login failed: ${res.statusText}, ${res.body}`);
+      console.error(`Login failed: ${res.statusText}, ${res.text}`);
       throw new Error(`Failed to login: ${res.error}`);
     }
 

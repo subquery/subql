@@ -102,7 +102,7 @@ async function createMultichainDeploymentAdapter(
 
   args.queryVersion = addV(args.queryVersion);
 
-  for await (const [multichainProjectPath, multichainProjectCid] of fileToCidMap) {
+  for (const [multichainProjectPath, multichainProjectCid] of fileToCidMap) {
     if (!multichainProjectPath || multichainProjectPath === path.basename(multichainManifestPath)) continue;
 
     const validator = await ipfsCID_validate(multichainProjectCid, authToken, ROOT_API_URL_PROD);

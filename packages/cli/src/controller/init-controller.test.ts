@@ -46,7 +46,11 @@ async function testYAML(projectPath: string, project: ProjectSpecBase): Promise<
 const fileExists = async (file: string): Promise<boolean> => {
   return new Promise<boolean>((resolve, reject) => {
     fs.access(file, fs.constants.F_OK, (err) => {
-      err ? reject(err) : resolve(true);
+      if (err) {
+        reject(err);
+      } else {
+        resolve(true);
+      }
     });
   });
 };

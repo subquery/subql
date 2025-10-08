@@ -24,6 +24,7 @@ export class HttpJsonRpcClient {
       params,
     });
     if ((res.data as ResponseError).error) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw (res.data as ResponseError).error;
     }
     return (res.data as ResponseSuccess<T>).result;

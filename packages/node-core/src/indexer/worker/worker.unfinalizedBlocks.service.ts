@@ -31,12 +31,13 @@ export class WorkerUnfinalizedBlocksService<T> implements IUnfinalizedBlocksServ
   init(reindex: (targetHeader: Header) => Promise<void>): Promise<Header> {
     throw new Error('This method should not be called from a worker');
   }
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async resetUnfinalizedBlocks(): Promise<void> {
+
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  resetUnfinalizedBlocks(): Promise<void> {
     throw new Error('This method should not be called from a worker');
   }
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async resetLastFinalizedVerifiedHeight(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  resetLastFinalizedVerifiedHeight(): Promise<void> {
     throw new Error('This method should not be called from a worker');
   }
 
