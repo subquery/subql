@@ -15,7 +15,7 @@ class TestDynamicDsService extends DynamicDsService<BaseDataSource, ISubqueryPro
   }
 
   // Make it public
-  getTemplate(templateName: string, startBlock?: number | undefined): BaseDataSource {
+  getTemplate(templateName: string, startBlock?: number): BaseDataSource {
     return super.getTemplate(templateName, startBlock);
   }
 }
@@ -117,7 +117,6 @@ describe('DynamicDsService', () => {
     expect(template2.startBlock).toEqual(2);
     expect((template2 as any).name).toBeUndefined();
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(project.templates![0]).toEqual({name: 'Test'});
   });
 });

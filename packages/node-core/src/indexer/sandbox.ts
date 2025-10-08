@@ -46,7 +46,7 @@ const logger = getLogger('sandbox');
 export class Sandbox extends NodeVM {
   private root: string;
   private entry: string;
-  private sourceMap: any | undefined;
+  private sourceMap: any;
 
   constructor(
     option: SandboxOption,
@@ -151,13 +151,11 @@ export class Sandbox extends NodeVM {
     return json;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async findLineInfo(
     sourcemap: any,
     compiledLineNumber: number,
     compiledColumnNumber: number
   ): Promise<NullableMappedPosition> {
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     const consumer = await new SourceMapConsumer(sourcemap);
     const lineInfo = consumer.originalPositionFor({line: compiledLineNumber, column: compiledColumnNumber});
 

@@ -3,23 +3,25 @@
 
 import {Store, Entity} from '@subql/types-core';
 
-export class EntityClass implements Entity {
+type Properties = {id: string};
+
+export class EntityClass<P extends Properties> implements Entity {
   id: string;
   // Name needs to be private so that it can be converted to a generated entity
   #name: string;
   #store: Store;
 
-  constructor(name: string, properties: {id: string} & any, store: Store) {
+  constructor(name: string, properties: P, store: Store) {
     this.#name = name;
     this.#store = store;
     this.id = properties.id;
     Object.assign(this, properties);
   }
 
-  static create<T extends Entity>(name: string, properties: ({id: string} & any) | null, store: Store): T | undefined {
+  static create<T extends Entity>(name: string, properties: T | null | undefined, store: Store): T | undefined {
     if (!properties) return undefined;
 
-    return new EntityClass(name, properties, store) as unknown as T;
+    return new EntityClass<T>(name, properties, store) as unknown as T;
   }
 
   async save(): Promise<void> {
