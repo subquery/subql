@@ -9953,7 +9953,7 @@ __metadata:
     resolve-from: ^5.0.0
     rimraf: ^5.0.10
     semver: ^7.6.3
-    simple-git: ^3.25.0
+    simple-git: ^3.28.0
     siwe: ^3.0.0
     swagger-typescript-api: ^13.2.8
     terser-webpack-plugin: ^5.3.14
@@ -25891,14 +25891,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"simple-git@npm:^3.25.0":
-  version: 3.25.0
-  resolution: "simple-git@npm:3.25.0"
+"simple-git@npm:^3.28.0":
+  version: 3.28.0
+  resolution: "simple-git@npm:3.28.0"
   dependencies:
     "@kwsites/file-exists": ^1.1.1
     "@kwsites/promise-deferred": ^1.1.1
-    debug: ^4.3.5
-  checksum: 0f54f03882f3b733fc5b61826935b3a6b1d2f8976fe74a488ef72d05baf1f8eb6f465867dcf72c1b7292b20843de23e900160c5c9b5d6933b3db2188cb79e1d2
+    debug: ^4.4.0
+  checksum: d4f4a56f0eaf916e3c4b801342f6e6c32e73a3eb8c5497f61f71ff21f30462c64537ba76f2cc835d6cd1ffe6198bd52b3e242b0a70444c8cd21faa9f61f75634
   languageName: node
   linkType: hard
 
