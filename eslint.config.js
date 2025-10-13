@@ -21,11 +21,10 @@ module.exports = defineConfig([
       },
 
       parser: tsParser,
-      // sourceType: 'module',
 
       parserOptions: {
         tsconfigRootDir: __dirname,
-        project: true, //['./tsconfig.json', './packages/*/tsconfig.json'],
+        project: true,
         warnOnUnsupportedTypeScriptVersion: false,
       },
     },
