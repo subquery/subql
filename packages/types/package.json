@@ -1,6 +1,6 @@
 {
   "name": "@subql/types",
-  "version": "3.14.2",
+  "version": "3.14.3-0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -34,5 +34,6 @@
   },
   "devDependencies": {
     "@polkadot/api": "^16.4.7"
-  }
+  },
+  "stableVersion": "3.14.2"
 }
