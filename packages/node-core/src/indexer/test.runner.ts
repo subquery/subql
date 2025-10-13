@@ -36,7 +36,7 @@ export class TestRunner<A, SA, B, DS> {
     @Inject('IIndexerManager') protected readonly indexerManager: IIndexerManager<B, DS>
   ) {}
 
-  private async fetchBlock(height: number): Promise<IBlock<B>> {
+  private async fetchBlock(height: number, test: SubqlTest): Promise<IBlock<B>> {
     try {
       const [block] = await this.apiService.fetchBlocks([height]);
       return block;
@@ -73,7 +73,7 @@ export class TestRunner<A, SA, B, DS> {
     try {
       // Fetch block
       logger.debug('Fetching block');
-      const block = await this.fetchBlock(test.blockHeight);
+      const block = await this.fetchBlock(test.blockHeight, test);
 
       await this.storeService.setBlockHeader(block.getHeader());
       // Ensure a block height is set so that data is flushed correctly
@@ -83,7 +83,7 @@ export class TestRunner<A, SA, B, DS> {
 
       // Init entities
       logger.debug('Initializing entities');
-      await Promise.all(test.dependentEntities.map((entity) => entity.save?.()));
+      await Promise.all(test.dependentEntities.map((entity) => entity.save?.() ?? Promise.resolve()));
 
       logger.debug('Running handler');
 

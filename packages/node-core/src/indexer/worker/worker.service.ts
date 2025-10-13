@@ -25,7 +25,7 @@ export abstract class BaseWorkerService<
   B /* BlockContent */,
   R extends Header /* FetchBlockResponse */,
   DS extends BaseDataSource = BaseDataSource,
-  E = {} /* Extra params for fetching blocks. Substrate uses specVersion in here*/,
+  E = any /* Extra params for fetching blocks. Substrate uses specVersion in here*/,
 > {
   private fetchedBlocks: Record<string, IBlock<B>> = {};
   private _isIndexing = false;

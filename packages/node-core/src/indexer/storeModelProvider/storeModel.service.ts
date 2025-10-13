@@ -74,7 +74,7 @@ export class PlainStoreModelService extends BaseStoreModelService<IModel<any>> i
 
       // Commit all data from exporters here to make exporting and commiting atomic
       await Promise.all(
-        this.getAllExporters().map((exporter) => (isTxExporter(exporter) ? exporter.commit() : undefined))
+        this.getAllExporters().map((exporter) => (isTxExporter(exporter) ? exporter.commit() : Promise.resolve()))
       );
 
       await tx.commit();

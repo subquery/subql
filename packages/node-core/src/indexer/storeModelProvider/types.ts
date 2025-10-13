@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ModelStatic, Transaction} from '@subql/x-sequelize';
+import {Transaction} from '@subql/x-sequelize';
 import {LRUCache} from 'lru-cache';
 import {ModifiedDbModels} from '../../db/migration-service';
 import {MetadataRepo, PoiRepo} from '../entities';
@@ -67,4 +67,4 @@ export type SetValue<T> = {
 
 export type SetData<T> = Record<string, SetValueModel<T>>;
 
-export class GetData<T extends {}> extends LRUCache<string, T, unknown> {}
+export class GetData<T extends Record<string, unknown>> extends LRUCache<string, T, unknown> {}

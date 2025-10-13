@@ -319,7 +319,7 @@ export async function prepareEnv(projectPath: string, project: ProjectSpecBase):
   }
 
   //adding env configs
-  const envData = `ENDPOINT=${project.endpoint}\nCHAIN_ID=${chainId}`;
+  const envData = `ENDPOINT=${JSON.stringify(project.endpoint)}\nCHAIN_ID=${chainId}`;
   await fs.promises.writeFile(envPath, envData, 'utf8');
   await fs.promises.writeFile(envDevelopPath, envData, 'utf8');
   await fs.promises.writeFile(envLocalPath, envData, 'utf8');

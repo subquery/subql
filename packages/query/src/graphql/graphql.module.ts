@@ -89,7 +89,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async onModuleDestroy(): Promise<void> {
     await Promise.all([this.apolloServer?.stop(), this.wsCleanup?.dispose()]);
   }
@@ -244,6 +243,7 @@ function limitBatchedQueries(req: Request, res: Response, next: NextFunction): v
         const queries = req.body;
         if (Array.isArray(queries) && queries.length > argv['query-batch-limit']) {
           errors.push(new UserInputError('Batch query limit exceeded'));
+          // eslint-disable-next-line @typescript-eslint/only-throw-error
           throw errors;
         }
       } catch (error: any) {

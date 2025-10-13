@@ -84,7 +84,7 @@ const getBaseConfig = (
   };
 };
 
-export function loadTsConfig(projectDir: string): any | undefined {
+export function loadTsConfig(projectDir: string): any {
   const tsconfigPath = path.join(projectDir, 'tsconfig.json');
   if (existsSync(tsconfigPath)) {
     const tsconfig = readFileSync(tsconfigPath, 'utf-8');
@@ -141,7 +141,7 @@ export async function runBundle(
       if (stats.hasErrors()) {
         const info = stats.toJson();
 
-        reject(info.errors?.map((e) => e.message).join('\n') ?? 'Unknown error');
+        reject(new Error(info.errors?.map((e) => e.message).join('\n') ?? 'Unknown error'));
         return;
       }
 

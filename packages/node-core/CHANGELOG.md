@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Remove `cross-fetch` in favour of built in nodejs fetch (#2928)
+- Minor improvements and fixes from upgrading to eslint 9 with stricter settings (#2929)
 
 ## [18.4.0] - 2025-09-16
 ### Changed

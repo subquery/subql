@@ -13,6 +13,7 @@ import {
   DsProcessorService,
   DynamicDsService,
   MultiChainRewindService,
+  Header,
 } from '@subql/node-core';
 import { SubstrateDatasourceKind, SubstrateHandlerKind } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
@@ -86,7 +87,7 @@ class TestProjectService extends ProjectService<any, any> {
     return Promise.resolve();
   }
 
-  async initUnfinalized(): Promise<any | undefined> {
+  async initUnfinalized(): Promise<Header | undefined> {
     return Promise.resolve(undefined);
   }
 }
@@ -209,7 +210,7 @@ describe('ProjectService', () => {
         },
         {
           provide: MultiChainRewindService,
-          // eslint-disable-next-line @typescript-eslint/no-empty-function
+
           useValue: { init: () => {} },
         },
       ],
@@ -251,7 +252,10 @@ describe('ProjectService', () => {
     await projectUpgradeService.setCurrentHeight(5);
 
     expect((projectService as any).apiService.api._options.types).toStrictEqual(
-      { TestType: 'u32', DispatchErrorModule: 'DispatchErrorModuleU8' },
+      {
+        TestType: 'u32',
+        DispatchErrorModule: 'DispatchErrorModuleU8',
+      },
     );
 
     expect(spyOnApiUpdateChainTypes).toHaveBeenCalledTimes(1);

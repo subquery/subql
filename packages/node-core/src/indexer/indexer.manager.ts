@@ -192,13 +192,15 @@ export abstract class BaseIndexerManager<
         monitorWrite(
           () => `- Handler: ${handler.handler}, args:${handledStringify(data, this.nodeConfig.monitorObjectMaxDepth)}`
         );
-        this.nodeConfig.profiler
-          ? await profilerWrap(
-              vm.securedExec.bind(vm),
-              'handlerPerformance',
-              handler.handler
-            )(handler.handler, [parsedData])
-          : await vm.securedExec(handler.handler, [parsedData]);
+        if (this.nodeConfig.profiler) {
+          await profilerWrap(
+            vm.securedExec.bind(vm),
+            'handlerPerformance',
+            handler.handler
+          )(handler.handler, [parsedData]);
+        } else {
+          await vm.securedExec(handler.handler, [parsedData]);
+        }
       }
     } else if (this.blockchainService.isCustomDs(ds)) {
       const handlers = this.filterCustomDsHandlers<K>(ds, data, this.processorMap[kind], (data, baseFilter) => {
@@ -212,7 +214,6 @@ export abstract class BaseIndexerManager<
 
       const vm = await getVM(ds);
       for (const handler of handlers) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         monitorWrite(
           () => `- Handler: ${handler.handler}, args:${handledStringify(data, this.nodeConfig.monitorObjectMaxDepth)}`
         );

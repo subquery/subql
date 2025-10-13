@@ -104,9 +104,7 @@ export async function getHeaderForHash(
 ): Promise<Header> {
   const block = await api.rpc.chain.getBlock(blockHash).catch((e) => {
     logger.error(
-      `failed to fetch Block hash="${blockHash}" ${getApiDecodeErrMsg(
-        e.message,
-      )}`,
+      `failed to fetch Block hash="${blockHash}" ${getApiDecodeErrMsg(e.message)}`,
     );
     throw ApiPromiseConnection.handleError(e);
   });
@@ -267,7 +265,7 @@ export function filterEvent(
 
 export function filterEvents(
   events: SubstrateEvent[],
-  filterOrFilters?: SubstrateEventFilter | SubstrateEventFilter[] | undefined,
+  filterOrFilters?: SubstrateEventFilter | SubstrateEventFilter[],
 ): SubstrateEvent[] {
   if (
     !filterOrFilters ||
@@ -309,9 +307,7 @@ export async function getBlockByHeight(
 
   const block = await api.rpc.chain.getBlock(blockHash).catch((e) => {
     logger.error(
-      `failed to fetch Block hash="${blockHash}" height="${height}"${getApiDecodeErrMsg(
-        e.message,
-      )}`,
+      `failed to fetch Block hash="${blockHash}" height="${height}"${getApiDecodeErrMsg(e.message)}`,
     );
     throw ApiPromiseConnection.handleError(e);
   });
@@ -375,9 +371,7 @@ export async function fetchEventsRange(
     hashs.map((hash) =>
       api.query.system.events.at(hash).catch((e) => {
         logger.error(
-          `failed to fetch events at block ${hash}${getApiDecodeErrMsg(
-            e.message,
-          )}`,
+          `failed to fetch events at block ${hash}${getApiDecodeErrMsg(e.message)}`,
         );
         throw ApiPromiseConnection.handleError(e);
       }),

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Swap `websocket` for `ws` dependency to fix CVEs (#2931)
+- Minor improvements and fixes from upgrading to eslint 9 with stricter settings (#2929)
 
 ## [6.4.1] - 2025-09-26
 ### Added
