@@ -7,6 +7,10 @@ on:
       - ".github/workflows/**"
   workflow_dispatch:
 
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 concurrency:
   # Same group as prerelease
   group: publish
@@ -119,7 +123,6 @@ jobs:
         with:
           package-path: packages/utils
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Types-core
         if: steps.changed-types-core.outputs.changed == 'true'
@@ -127,7 +130,6 @@ jobs:
         with:
           package-path: packages/types-core
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Types
         if: steps.changed-types.outputs.changed == 'true'
@@ -135,7 +137,6 @@ jobs:
         with:
           package-path: packages/types
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Common
         if: steps.changed-common.outputs.changed == 'true'
@@ -143,7 +144,6 @@ jobs:
         with:
           package-path: packages/common
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Common Substrate
         if: steps.changed-common-substrate.outputs.changed == 'true'
@@ -151,7 +151,6 @@ jobs:
         with:
           package-path: packages/common-substrate
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Testing
         if: steps.changed-testing.outputs.changed == 'true'
@@ -159,7 +158,6 @@ jobs:
         with:
           package-path: packages/testing
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Node Core
         if: steps.changed-node-core.outputs.changed == 'true'
@@ -167,7 +165,6 @@ jobs:
         with:
           package-path: packages/node-core
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Node
         if: steps.changed-node.outputs.changed == 'true'
@@ -175,7 +172,6 @@ jobs:
         with:
           package-path: packages/node
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Query
         if: steps.changed-query.outputs.changed == 'true'
@@ -183,7 +179,6 @@ jobs:
         with:
           package-path: packages/query
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Cli
         if: steps.changed-cli.outputs.changed == 'true'
@@ -191,4 +186,3 @@ jobs:
         with:
           package-path: packages/cli
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
