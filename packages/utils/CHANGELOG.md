@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.22.0] - 2025-10-15
 ### Changed
 - Minor improvements and fixes from upgrading to eslint 9 with stricter settings (#2929)
 
@@ -230,7 +232,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update polkadot/api to 9
 
-[Unreleased]: https://github.com/subquery/subql/compare/utils/2.21.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/utils/2.22.0...HEAD
+[2.22.0]: https://github.com/subquery/subql/compare/utils/2.21.2...utils/2.22.0
 [2.21.2]: https://github.com/subquery/subql/compare/utils/2.21.1...utils/2.21.2
 [2.21.1]: https://github.com/subquery/subql/compare/utils/2.21.0...utils/2.21.1
 [2.21.0]: https://github.com/subquery/subql/compare/utils/2.20.1...utils/2.21.0
