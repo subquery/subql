@@ -60,9 +60,6 @@ jobs:
       changed-testing: ${{ steps.changed-testing.outputs.changed }}
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 100
-          token: ${{ secrets.REPO_TOKEN }}
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v5
@@ -139,6 +136,10 @@ jobs:
       && github.repository == 'subquery/subql'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
       # Publish to npm and github releases
       - name: Publish Utils
         if: needs.setup.outputs.changed-utils == 'true'
@@ -219,6 +220,10 @@ jobs:
       && github.repository == 'subquery/subql'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
       # Prerelease publish steps
       - name: Bump utils & deploy
         if: needs.setup.outputs.changed-utils == 'true'
