@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 100
+          fetch-depth: 0
           token: ${{ secrets.REPO_TOKEN }}
 
       - name: Setup Node.js environment
