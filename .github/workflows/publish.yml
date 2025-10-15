@@ -60,6 +60,8 @@ jobs:
       changed-testing: ${{ steps.changed-testing.outputs.changed }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 100 # Needed to detect changes by having commit history
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v5
@@ -286,7 +288,7 @@ jobs:
           package-path: packages/cli
 
       - name: Commit changes
-        uses: EndBug/add-and-commit@v5
+        uses: EndBug/add-and-commit@v9
         with:
           message: "[SKIP CI] Prerelease"
         env:
