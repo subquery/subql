@@ -1,8 +1,7 @@
 {
   "name": "@subql/utils",
-  "version": "2.22.1-1",
+  "version": "2.22.1-2",
   "description": "",
-  "packageManager": "yarn@3.1.1",
   "scripts": {
     "build": "tsc -b",
     "changelog:release": "echo \"Updating changelog $npm_package_version\" && npx chan release $npm_package_version --git-url \"https://github.com/subquery/subql\" --release-prefix=\"utils/\""
