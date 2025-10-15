@@ -1,6 +1,6 @@
 {
   "name": "@subql/utils",
-  "version": "2.22.1-2",
+  "version": "2.22.1-3",
   "description": "",
   "scripts": {
     "build": "tsc -b",
@@ -41,5 +41,5 @@
     "CHANGELOG.md",
     "LICENSE"
   ],
-  "stableVersion": "2.22.0"
+  "stableVersion": "2.22.1-2"
 }
