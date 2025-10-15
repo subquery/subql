@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "5.7.7-0",
+  "version": "5.8.0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -41,6 +41,5 @@
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
-  ],
-  "stableVersion": "5.7.6"
+  ]
 }

@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.24.0] - 2025-10-15
 ### Changed
 - Minor improvements and fixes from upgrading to eslint 9 with stricter settings (#2929)
 
@@ -453,7 +455,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/2.23.6...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/2.24.0...HEAD
+[2.24.0]: https://github.com/subquery/subql/compare/query/2.23.6...query/2.24.0
 [2.23.6]: https://github.com/subquery/subql/compare/query/2.23.5...query/2.23.6
 [2.23.5]: https://github.com/subquery/subql/compare/query/2.23.4...query/2.23.5
 [2.23.4]: https://github.com/subquery/subql/compare/query/2.23.3...query/2.23.4

@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "CLI for SubQuery",
-  "version": "6.4.2-3",
+  "version": "6.5.0",
   "author": "SubQuery Pte Ltd.",
   "bin": {
     "subql": "./bin/run"
@@ -121,6 +121,5 @@
     "codegen:chs": "swagger-typescript-api generate -p chs-swagger.yml -o src/controller/network/consumer-host --api-class-name NetworkConsumerHostServiceApi -n consumer-host-service-api.ts",
     "codegen": "yarn codegen:graphql && yarn codegen:chs"
   },
-  "types": "lib/index.d.ts",
-  "stableVersion": "6.4.2-2"
+  "types": "lib/index.d.ts"
 }
