@@ -11,7 +11,7 @@ on:
 
 permissions:
   id-token: write  # Required for OIDC
-  contents: read
+  contents: write # Required for prerelease commit
 
 concurrency:
   group: publish
@@ -225,6 +225,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
 
       # Prerelease publish steps
       - name: Bump utils & deploy
