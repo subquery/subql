@@ -6,6 +6,10 @@ on:
     paths-ignore:
       - ".github/workflows/**"
 
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 concurrency:
   group: publish
   cancel-in-progress: false
@@ -87,70 +91,60 @@ jobs:
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/utils
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump types-core & deploy
         if: steps.changed-types-core.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/types-core
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump types & deploy
         if: steps.changed-types.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/types
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump common & deploy
         if: steps.changed-common.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/common
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump common substrate & deploy
         if: steps.changed-common-substrate.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/common-substrate
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump testing & deploy
         if: steps.changed-testing.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/testing
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump node-core & deploy
         if: steps.changed-node-core.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/node-core
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump node & deploy
         if: steps.changed-node.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/node
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump query & deploy
         if: steps.changed-query.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/query
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump cli & deploy
         if: steps.changed-cli.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/cli
-          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v5
