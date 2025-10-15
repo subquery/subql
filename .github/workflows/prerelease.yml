@@ -30,6 +30,12 @@ jobs:
         with:
           node-version: lts/*
 
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Npm version
+        run: npm -v
+
       - uses: marceloprado/has-changed-path@v1
         id: changed-utils
         with:
