@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - npm-gh-oidc
     paths-ignore:
       - ".github/workflows/**"
 
