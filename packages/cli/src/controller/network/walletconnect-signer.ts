@@ -193,7 +193,7 @@ ${uri}
     const txHash = await this.runRequest<string>('eth_sendTransaction', [txParams]);
 
     // WARNING this is a workaround for WalletConnect and is not actually the full transaction.
-    // The transaction is wrappped to provide the `.wait` method so we can wait for confirmation and get the receipt.
+    // The transaction is wrapped to provide the `.wait` method so we can wait for confirmation and get the receipt.
     return this.provider._wrapTransaction(
       {
         ...resolved,
