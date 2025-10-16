@@ -5,7 +5,7 @@ import {
   // @ts-ignore
 } from '@subql/types';
 
-// Can expand the Datasource processor types via the genreic param
+// Can expand the Datasource processor types via the generic param
 const project: SubstrateProject = {
   specVersion: '1.0.0',
   version: '0.0.1',
