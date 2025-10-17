@@ -116,6 +116,34 @@ export abstract class BaseIndexerManager<
           dynamicDsCreated = true;
         }, 'createDynamicDatasource');
 
+        // Inject function to get dynamic datasources by template into vm
+        vm.freeze((templateName: string) => {
+          return this.dynamicDsService.getDynamicDatasourcesByTemplate(templateName);
+        }, 'getDynamicDatasources');
+
+        // Inject function to destroy ds into vm
+        vm.freeze(async (templateName?: string, index?: number) => {
+          if (!templateName) {
+            throw new Error('Cannot destroy datasource: template name must be provided');
+          }
+
+          await this.dynamicDsService.destroyDynamicDatasource(templateName, blockHeight, index);
+
+          // Mark datasources with this template for removal from current processing
+          filteredDataSources.forEach((fds) => {
+            const dsParams = this.dynamicDsService.dynamicDatasources.find((dynamicDs) => {
+              // Find the corresponding params for this datasource
+              const params = (this.dynamicDsService as any)._datasourceParams?.find(
+                (p: any) => p.templateName === templateName && p.startBlock === (fds as any).startBlock
+              );
+              return params !== undefined;
+            });
+            if (dsParams) {
+              (fds as any).endBlock = blockHeight;
+            }
+          });
+        }, 'destroyDynamicDatasource');
+
         return vm;
       });
     }
