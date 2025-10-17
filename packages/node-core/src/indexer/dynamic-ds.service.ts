@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {Inject, Injectable} from '@nestjs/common';
-import {BaseCustomDataSource, BaseDataSource, BaseTemplateDataSource} from '@subql/types-core';
+import {BaseCustomDataSource, BaseDataSource, BaseTemplateDataSource, DynamicDatasourceInfo} from '@subql/types-core';
 import {Transaction} from '@subql/x-sequelize';
 import {cloneDeep} from 'lodash';
 import {IBlockchainService} from '../blockchain.service';
@@ -25,8 +25,9 @@ export interface DatasourceParams {
 export interface IDynamicDsService<DS> {
   dynamicDatasources: DS[];
   createDynamicDatasource(params: DatasourceParams): Promise<DS>;
-  destroyDynamicDatasource(templateName: string, currentBlockHeight: number): Promise<void>;
+  destroyDynamicDatasource(templateName: string, currentBlockHeight: number, index?: number): Promise<void>;
   getDynamicDatasources(forceReload?: boolean): Promise<DS[]>;
+  getDynamicDatasourcesByTemplate(templateName: string): DynamicDatasourceInfo[];
 }
 
 @Injectable()
@@ -93,32 +94,79 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
     }
   }
 
-  async destroyDynamicDatasource(templateName: string, currentBlockHeight: number, tx?: Transaction): Promise<void> {
+  getDynamicDatasourcesByTemplate(templateName: string): DynamicDatasourceInfo[] {
+    if (!this._datasourceParams) {
+      throw new Error('DynamicDsService has not been initialized');
+    }
+
+    const matchingDatasources = this._datasourceParams
+      .map((params, globalIndex) => ({params, globalIndex}))
+      .filter(({params}) => params.templateName === templateName && params.endBlock === undefined);
+
+    return matchingDatasources.map(({globalIndex, params}, index) => ({
+      index,
+      templateName: params.templateName,
+      startBlock: params.startBlock,
+      endBlock: params.endBlock,
+      args: params.args,
+    }));
+  }
+
+  async destroyDynamicDatasource(
+    templateName: string,
+    currentBlockHeight: number,
+    index?: number,
+    tx?: Transaction
+  ): Promise<void> {
     if (!this._datasources || !this._datasourceParams) {
       throw new Error('DynamicDsService has not been initialized');
     }
 
-    const dsIndex = this._datasourceParams.findIndex((params) => params.templateName === templateName);
-    if (dsIndex === -1) {
-      throw new Error(`Dynamic datasource with template name "${templateName}" not found`);
+    // Get all matching datasources for this template
+    const matchingDatasources = this._datasourceParams
+      .map((params, globalIndex) => ({params, globalIndex}))
+      .filter(({params}) => params.templateName === templateName && params.endBlock === undefined);
+
+    if (matchingDatasources.length === 0) {
+      throw new Error(`Dynamic datasource with template name "${templateName}" not found or already destroyed`);
     }
 
-    const dsParam = this._datasourceParams[dsIndex];
+    // Determine which datasources to destroy
+    let datasourcesToDestroy: {params: DatasourceParams; globalIndex: number}[];
 
-    if (dsParam.endBlock !== undefined) {
-      throw new Error(`Dynamic datasource "${templateName}" is already destroyed`);
+    if (index !== undefined) {
+      // Destroy specific datasource by index
+      if (index < 0 || index >= matchingDatasources.length) {
+        throw new Error(
+          `Index ${index} is out of bounds. There are ${matchingDatasources.length} active datasource(s) for template "${templateName}"`
+        );
+      }
+      datasourcesToDestroy = [matchingDatasources[index]];
+    } else {
+      // Destroy all matching datasources
+      datasourcesToDestroy = matchingDatasources;
     }
 
-    const updatedParams = {...dsParam, endBlock: currentBlockHeight};
-    this._datasourceParams[dsIndex] = updatedParams;
+    // Update each datasource
+    for (const {globalIndex} of datasourcesToDestroy) {
+      const dsParam = this._datasourceParams[globalIndex];
+      const updatedParams = {...dsParam, endBlock: currentBlockHeight};
+      this._datasourceParams[globalIndex] = updatedParams;
 
-    if (this._datasources[dsIndex]) {
-      (this._datasources[dsIndex] as any).endBlock = currentBlockHeight;
+      if (this._datasources[globalIndex]) {
+        (this._datasources[globalIndex] as any).endBlock = currentBlockHeight;
+      }
     }
 
     await this.metadata.set(METADATA_KEY, this._datasourceParams, tx);
 
-    logger.info(`Destroyed dynamic datasource "${templateName}" at block ${currentBlockHeight}`);
+    if (datasourcesToDestroy.length === 1) {
+      logger.info(`Destroyed dynamic datasource "${templateName}" at block ${currentBlockHeight}`);
+    } else {
+      logger.info(
+        `Destroyed ${datasourcesToDestroy.length} dynamic datasource(s) with template "${templateName}" at block ${currentBlockHeight}`
+      );
+    }
   }
 
   // Not force only seems to be used for project changes
