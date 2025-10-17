@@ -225,7 +225,6 @@ describe('DynamicDsService', () => {
     expect(template2.startBlock).toEqual(2);
     expect((template2 as any).name).toBeUndefined();
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(project.templates![0]).toEqual({name: 'Test'});
   });
 

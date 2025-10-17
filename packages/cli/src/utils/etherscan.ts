@@ -35,7 +35,7 @@ async function runRequest<T>(chainId: string | number, params: Record<string, st
  * @param chainId - The chain ID of the Ethereum network.
  * @returns The ABI as a JSON object or undefined if the fetch fails.
  */
-export async function tryFetchAbiFromExplorer(address: string, chainId: number | string): Promise<unknown | undefined> {
+export async function tryFetchAbiFromExplorer(address: string, chainId: number | string): Promise<unknown> {
   try {
     const result = await runRequest<string>(chainId, {
       module: 'contract',

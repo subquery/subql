@@ -178,3 +178,4 @@ package-lock.json
 lib
 
 .DS_Store
+.claude

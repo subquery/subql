@@ -43,7 +43,7 @@ const mockInstance = async (
   return registerApp<SubqueryProject>(
     argv,
     createSubQueryProject,
-    jest.fn(),
+    () => {}, //jest.fn(),
     '',
   );
 };

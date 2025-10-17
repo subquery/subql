@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ICloseEvent, IMessageEvent, w3cwebsocket as WebSocket} from 'websocket';
+import WebSocket from 'ws';
 import {Request, ResponseSuccessType} from './types';
 
 let id = 0;
@@ -30,11 +30,11 @@ export class WsJsonRpcClient {
       this._ws = new WebSocket(this.address);
 
       this.isReady = new Promise((resolve) => {
-        this._ws.onopen = () => resolve(this);
+        this._ws.on('open', () => resolve(this));
       });
 
-      this._ws.onclose = this.onSocketClose;
-      this._ws.onmessage = this.onSocketMessage;
+      this._ws.on('close', this.onSocketClose);
+      this._ws.on('message', this.onSocketMessage);
     } catch (error) {
       console.error(error);
     }
@@ -54,18 +54,18 @@ export class WsJsonRpcClient {
     this._ws.close();
   }
 
-  private onSocketClose = (event: ICloseEvent): void => {
+  private onSocketClose = (code: number, reason: Buffer): void => {
     if (this.isDestroyed) return;
 
-    console.error(`disconnected from ${this.address} code: '${event.code}' reason: '${event.reason}'`);
+    console.error(`disconnected from ${this.address} code: '${code}' reason: '${reason.toString()}'`);
     setTimeout((): void => {
       this.connect();
     }, 1000);
   };
 
-  private onSocketMessage = ({data: dataStr}: IMessageEvent) => {
+  private onSocketMessage = (dataStr: WebSocket.Data) => {
     try {
-      const data = JSON.parse(String(dataStr));
+      const data = JSON.parse(dataStr.toString());
       if (data.id !== undefined && data.id !== null && this.handlers[data.id]) {
         const [resolve, reject] = this.handlers[data.id];
         delete this.handlers[data.id];

@@ -37,7 +37,7 @@ export default class DeleteProject extends Command {
 
 export function registerDeleteProjectMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    DeleteProject.name,
+    `onfinality:${DeleteProject.name}`,
     {
       description: DeleteProject.description,
       inputSchema: deleteProjectInputs.shape,

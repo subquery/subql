@@ -6,6 +6,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [18.5.0] - 2025-10-15
+### Changed
+- Remove `cross-fetch` in favour of built in nodejs fetch (#2928)
+- Minor improvements and fixes from upgrading to eslint 9 with stricter settings (#2929)
+
+## [18.4.0] - 2025-09-16
+### Changed
+- Locked down graphql related dependencies (#2876)
+- Update polkadot dependenices (#2915)
+
+### Added
+- Support for .env in mapping handlers (#2901)
+
+## [18.3.3] - 2025-09-09
+### Fixed
+- Dictionary v2 being used with empty filter conditions (#2909)
+
 ## [18.3.2] - 2025-08-29
 ### Changed
 - Fixed typos (#2895)
@@ -1025,7 +1042,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.3.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.5.0...HEAD
+[18.5.0]: https://github.com/subquery/subql/compare/node-core/18.4.0...node-core/18.5.0
+[18.4.0]: https://github.com/subquery/subql/compare/node-core/18.3.3...node-core/18.4.0
+[18.3.3]: https://github.com/subquery/subql/compare/node-core/18.3.2...node-core/18.3.3
 [18.3.2]: https://github.com/subquery/subql/compare/node-core/18.3.1...node-core/18.3.2
 [18.3.1]: https://github.com/subquery/subql/compare/node-core/18.3.0...node-core/18.3.1
 [18.3.0]: https://github.com/subquery/subql/compare/node-core/18.2.1...node-core/18.3.0

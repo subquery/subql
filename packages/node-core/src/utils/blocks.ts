@@ -41,7 +41,7 @@ export function filterBypassBlocks<B = any>(
   if (!bypassBlocks?.length) return enqueuedBlocks;
 
   return enqueuedBlocks.filter((b) => {
-    if (typeof b === 'number') !inBypassBlocks(bypassBlocks, b);
+    if (typeof b === 'number') return !inBypassBlocks(bypassBlocks, b);
     return !inBypassBlocks(bypassBlocks, getBlockHeight(b));
   });
 }

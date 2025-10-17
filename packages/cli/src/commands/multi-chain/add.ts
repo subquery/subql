@@ -43,7 +43,7 @@ export default class MultiChainAdd extends Command {
 
 export function registerMultichainAddMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    MultiChainAdd.name,
+    `multichain:${MultiChainAdd.name}`,
     {
       description: MultiChainAdd.description,
       inputSchema: multichainAddInputs.shape,

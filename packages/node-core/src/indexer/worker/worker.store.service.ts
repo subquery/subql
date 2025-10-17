@@ -6,7 +6,7 @@ import {unwrapProxyArgs} from './utils';
 
 export type HostStore = {
   // This matches the store interface
-  storeGet: (entity: string, id: string) => Promise<any | null>;
+  storeGet: (entity: string, id: string) => Promise<any>;
   storeGetByField: <T extends Entity>(
     entity: string,
     field: keyof T,
@@ -18,7 +18,7 @@ export type HostStore = {
     filter: FieldsExpression<T>[],
     options: GetOptions<T>
   ) => Promise<T[]>;
-  storeGetOneByField: (entity: string, field: string, value: any) => Promise<any | null>;
+  storeGetOneByField: (entity: string, field: string, value: any) => Promise<any>;
   storeSet: (entity: string, id: string, data: any) => Promise<void>;
   storeBulkCreate: (entity: string, data: any[]) => Promise<void>;
   storeBulkUpdate: (entity: string, data: any[], fields?: string[]) => Promise<void>;

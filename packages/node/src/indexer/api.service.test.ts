@@ -96,7 +96,6 @@ describe('ApiService', () => {
     const api = apiService.api;
 
     const apiAt = await api.at(TEST_BLOCKHASH);
-    apiAt.registry;
     expect(api.registry.getDefinition('TestType')).toEqual('u32');
     // workaround for ending the test immediately (before return of subscribeRuntimeVersion)
     // will cause an unhandled promise rejection and affect the result of next test.

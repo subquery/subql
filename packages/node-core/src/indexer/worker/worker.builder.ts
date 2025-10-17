@@ -133,6 +133,7 @@ abstract class WorkerIO {
           e as any,
           `Failed to post message, function="${String(fnName)}", args="${JSON.stringify(args)}"`
         );
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
         reject(e);
       }
     });
@@ -162,7 +163,7 @@ export class WorkerHost<T extends AsyncMethods> extends WorkerIO {
     return this._reqCounter--;
   }
 
-  getWorkerData(): any | undefined {
+  getWorkerData(): any {
     return workers.workerData;
   }
 }

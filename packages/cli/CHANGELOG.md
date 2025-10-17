@@ -6,6 +6,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.5.0] - 2025-10-15
+### Changed
+- Swap `websocket` for `ws` dependency to fix CVEs (#2931)
+- Minor improvements and fixes from upgrading to eslint 9 with stricter settings (#2929)
+
+### Removed
+- Unused `ora` dependency (#2934)
+
+## [6.4.1] - 2025-09-26
+### Added
+- Build manifest command (#2923)
+
+### Changed
+- Rerelease of previous version
+
+## [6.4.0] - 2025-09-25
+### Added
+- Build manifest command (#2923)
+
+## [6.3.0] - 2025-09-16
+### Added
+- Support for consumer operations on the network via CLI and MCP (#2876)
+- Support for .env in mapping handlers (#2901)
+
 ## [6.2.2] - 2025-08-29
 ### Changed
 - Fixed typos (#2895)
@@ -844,7 +868,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/6.2.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/6.5.0...HEAD
+[6.5.0]: https://github.com/subquery/subql/compare/cli/6.4.1...cli/6.5.0
+[6.4.1]: https://github.com/subquery/subql/compare/cli/6.4.0...cli/6.4.1
+[6.4.0]: https://github.com/subquery/subql/compare/cli/6.3.0...cli/6.4.0
+[6.3.0]: https://github.com/subquery/subql/compare/cli/6.2.2...cli/6.3.0
 [6.2.2]: https://github.com/subquery/subql/compare/cli/6.2.1...cli/6.2.2
 [6.2.1]: https://github.com/subquery/subql/compare/cli/6.2.0...cli/6.2.1
 [6.2.0]: https://github.com/subquery/subql/compare/cli/6.1.3...cli/6.2.0
