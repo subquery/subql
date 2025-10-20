@@ -10465,7 +10465,7 @@ __metadata:
     "@types/pino": "npm:^6.3.12"
     chalk: "npm:^4.1.2"
     detect-port: "npm:^1.6.1"
-    flatted: "npm:^3.3.1"
+    flatted: "npm:^3.3.3"
     graphql: "npm:^15.8.0"
     graphql-tag: "npm:^2.12.6"
     lodash: "npm:^4.17.21"
@@ -17742,17 +17742,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flatted@npm:^3.2.9":
+"flatted@npm:^3.2.9, flatted@npm:^3.3.3":
   version: 3.3.3
   resolution: "flatted@npm:3.3.3"
   checksum: 10/8c96c02fbeadcf4e8ffd0fa24983241e27698b0781295622591fc13585e2f226609d95e422bcf2ef044146ffacb6b68b1f20871454eddf75ab3caa6ee5f4a1fe
-  languageName: node
-  linkType: hard
-
-"flatted@npm:^3.3.1":
-  version: 3.3.1
-  resolution: "flatted@npm:3.3.1"
-  checksum: 10/7b8376061d5be6e0d3658bbab8bde587647f68797cf6bfeae9dea0e5137d9f27547ab92aaff3512dd9d1299086a6d61be98e9d48a56d17531b634f77faadbc49
   languageName: node
   linkType: hard
 
