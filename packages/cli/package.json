@@ -75,7 +75,7 @@
     "eslint-config-oclif": "^4.0.0",
     "eslint-config-oclif-typescript": "^1.0.3",
     "oclif": "^4.20.8",
-    "swagger-typescript-api": "^13.2.8"
+    "swagger-typescript-api": "^13.2.15"
   },
   "engines": {
     "node": ">=20.0.0"
