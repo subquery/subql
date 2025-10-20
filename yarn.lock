@@ -10264,7 +10264,7 @@ __metadata:
     "@subql/utils": "workspace:~"
     "@types/express": "npm:^4.17.21"
     "@types/jest": "npm:^27.5.2"
-    "@types/lodash": "npm:^4.17.7"
+    "@types/lodash": "npm:^4.17.20"
     dotenv: "npm:^16.4.5"
     fetch-h2: "npm:3.0.2"
     graphql: "npm:^15.8.0"
@@ -10299,7 +10299,7 @@ __metadata:
     "@types/express": "npm:^4.17.21"
     "@types/express-pino-logger": "npm:^4.0.5"
     "@types/jest": "npm:^27.5.2"
-    "@types/lodash": "npm:^4.17.7"
+    "@types/lodash": "npm:^4.17.20"
     "@types/ws": "npm:^8"
     "@types/yargs": "npm:^16.0.9"
     apollo-server-express: "npm:^3.12.0"
@@ -11176,13 +11176,6 @@ __metadata:
   version: 4.17.20
   resolution: "@types/lodash@npm:4.17.20"
   checksum: 10/8cd8ad3bd78d2e06a93ae8d6c9907981d5673655fec7cb274a4d9a59549aab5bb5b3017361280773b8990ddfccf363e14d1b37c97af8a9fe363de677f9a61524
-  languageName: node
-  linkType: hard
-
-"@types/lodash@npm:^4.17.7":
-  version: 4.17.7
-  resolution: "@types/lodash@npm:4.17.7"
-  checksum: 10/b8177f19cf962414a66989837481b13f546afc2e98e8d465bec59e6ac03a59c584eb7053ce511cde3a09c5f3096d22a5ae22cfb56b23f3b0da75b0743b6b1a44
   languageName: node
   linkType: hard
 
