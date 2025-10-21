@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.5.1] - 2025-10-22
+### Changed
+- Fix some typos (#2938)
+- Update swagger-typescript-api (#2939)
+
 ## [6.5.0] - 2025-10-15
 ### Changed
 - Swap `websocket` for `ws` dependency to fix CVEs (#2931)
@@ -868,7 +873,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/6.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/6.5.1...HEAD
+[6.5.1]: https://github.com/subquery/subql/compare/cli/6.5.0...cli/6.5.1
 [6.5.0]: https://github.com/subquery/subql/compare/cli/6.4.1...cli/6.5.0
 [6.4.1]: https://github.com/subquery/subql/compare/cli/6.4.0...cli/6.4.1
 [6.4.0]: https://github.com/subquery/subql/compare/cli/6.3.0...cli/6.4.0
