@@ -62,17 +62,6 @@ jobs:
         with:
           fetch-depth: 100 # Needed to detect changes by having commit history
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v5
-        with:
-          node-version: lts/*
-
-      - name: Update npm
-        run: npm install -g npm@latest
-
-      - name: Npm version
-        run: npm -v
-
       - uses: marceloprado/has-changed-path@v1
         id: changed-utils
         with:
@@ -123,11 +112,6 @@ jobs:
         with:
           paths: packages/testing
 
-      - run: yarn
-
-      - name: build
-        run: yarn build
-
   release:
     name: Release Publish
     needs: [pre-ci, setup]
@@ -140,6 +124,19 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - run: yarn
+
+      - name: build
+        run: yarn build
 
       # Publish to npm and github releases
       - name: Publish Utils
@@ -225,6 +222,19 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.REPO_TOKEN }} # Needed to push changes back to repo
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - run: yarn
+
+      - name: build
+        run: yarn build
 
       # Prerelease publish steps
       - name: Bump utils & deploy
