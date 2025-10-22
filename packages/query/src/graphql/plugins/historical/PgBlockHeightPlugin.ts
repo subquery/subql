@@ -53,13 +53,26 @@ export const PgBlockHeightPlugin: Plugin = async (builder, options) => {
         return field;
       }
 
-      addArgDataGenerator(({blockHeight, timestamp}) => ({
-        pgQuery: (queryBuilder: QueryBuilder) => {
-          // If timestamp provided use that as the value
-          addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
-          addRangeQuery(queryBuilder, sql);
-        },
-      }));
+      addArgDataGenerator(({blockHeight, blockRange, timestamp}) => {
+        if (blockRange) {
+          return {};
+        }
+
+        // Only process explicit blockHeight/timestamp (not default values)
+        const hasExplicitBlockHeight = blockHeight && blockHeight !== '9223372036854775807';
+        const hasExplicitTimestamp = timestamp && timestamp !== '9223372036854775807';
+
+        if (!hasExplicitBlockHeight && !hasExplicitTimestamp) {
+          return {};
+        }
+
+        return {
+          pgQuery: (queryBuilder: QueryBuilder) => {
+            addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
+            addRangeQuery(queryBuilder, sql);
+          },
+        };
+      });
       return field;
     }
   );
@@ -81,13 +94,28 @@ export const PgBlockHeightPlugin: Plugin = async (builder, options) => {
         return args;
       }
 
-      addArgDataGenerator(({blockHeight, timestamp}) => ({
-        pgQuery: (queryBuilder: QueryBuilder) => {
-          // If timestamp provided use that as the value
-          addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
-          addRangeQuery(queryBuilder, sql);
-        },
-      }));
+      addArgDataGenerator(({blockHeight, blockRange, timestamp}) => {
+        // If blockRange is provided, let PgBlockRangePlugin handle it
+        if (blockRange) {
+          return {};
+        }
+
+        // Only process explicit blockHeight/timestamp (not default values)
+        const hasExplicitBlockHeight = blockHeight && blockHeight !== '9223372036854775807';
+        const hasExplicitTimestamp = timestamp && timestamp !== '9223372036854775807';
+
+        if (!hasExplicitBlockHeight && !hasExplicitTimestamp) {
+          return {};
+        }
+
+        return {
+          pgQuery: (queryBuilder: QueryBuilder) => {
+            // If timestamp provided use that as the value
+            addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
+            addRangeQuery(queryBuilder, sql);
+          },
+        };
+      });
 
       if (historicalMode === 'timestamp') {
         return extend(args, {
