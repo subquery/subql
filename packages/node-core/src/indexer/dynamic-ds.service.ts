@@ -25,7 +25,7 @@ export interface DatasourceParams {
 export interface IDynamicDsService<DS> {
   dynamicDatasources: DS[];
   createDynamicDatasource(params: DatasourceParams): Promise<DS>;
-  destroyDynamicDatasource(templateName: string, currentBlockHeight: number, index?: number): Promise<void>;
+  destroyDynamicDatasource(templateName: string, currentBlockHeight: number, index: number): Promise<void>;
   getDynamicDatasources(forceReload?: boolean): Promise<DS[]>;
   getDynamicDatasourcesByTemplate(templateName: string): DynamicDatasourceInfo[];
 }
@@ -115,58 +115,51 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
   async destroyDynamicDatasource(
     templateName: string,
     currentBlockHeight: number,
-    index?: number,
+    index: number,
     tx?: Transaction
   ): Promise<void> {
     if (!this._datasources || !this._datasourceParams) {
       throw new Error('DynamicDsService has not been initialized');
     }
 
-    // Get all matching datasources for this template
-    const matchingDatasources = this._datasourceParams
-      .map((params, globalIndex) => ({params, globalIndex}))
-      .filter(({params}) => params.templateName === templateName && params.endBlock === undefined);
+    // Get all matching datasources using the existing method
+    const matchingDatasourcesInfo = this.getDynamicDatasourcesByTemplate(templateName);
 
-    if (matchingDatasources.length === 0) {
+    if (matchingDatasourcesInfo.length === 0) {
       throw new Error(`Dynamic datasource with template name "${templateName}" not found or already destroyed`);
     }
 
-    // Determine which datasources to destroy
-    let datasourcesToDestroy: {params: DatasourceParams; globalIndex: number}[];
-
-    if (index !== undefined) {
-      // Destroy specific datasource by index
-      if (index < 0 || index >= matchingDatasources.length) {
-        throw new Error(
-          `Index ${index} is out of bounds. There are ${matchingDatasources.length} active datasource(s) for template "${templateName}"`
-        );
-      }
-      datasourcesToDestroy = [matchingDatasources[index]];
-    } else {
-      // Destroy all matching datasources
-      datasourcesToDestroy = matchingDatasources;
+    // Validate index
+    if (index < 0 || index >= matchingDatasourcesInfo.length) {
+      throw new Error(
+        `Index ${index} is out of bounds. There are ${matchingDatasourcesInfo.length} active datasource(s) for template "${templateName}"`
+      );
     }
 
-    // Update each datasource
-    for (const {globalIndex} of datasourcesToDestroy) {
-      const dsParam = this._datasourceParams[globalIndex];
-      const updatedParams = {...dsParam, endBlock: currentBlockHeight};
-      this._datasourceParams[globalIndex] = updatedParams;
+    // Get the datasource info at the specified index
+    const dsInfo = matchingDatasourcesInfo[index];
 
-      if (this._datasources[globalIndex]) {
-        (this._datasources[globalIndex] as any).endBlock = currentBlockHeight;
-      }
+    // Find the global index in _datasourceParams
+    const globalIndex = this._datasourceParams.findIndex(
+      (p) => p.templateName === dsInfo.templateName && p.startBlock === dsInfo.startBlock && p.endBlock === undefined
+    );
+
+    if (globalIndex === -1) {
+      throw new Error(`Could not find datasource in internal storage`);
+    }
+
+    // Update the datasource
+    const dsParam = this._datasourceParams[globalIndex];
+    const updatedParams = {...dsParam, endBlock: currentBlockHeight};
+    this._datasourceParams[globalIndex] = updatedParams;
+
+    if (this._datasources[globalIndex]) {
+      (this._datasources[globalIndex] as any).endBlock = currentBlockHeight;
     }
 
     await this.metadata.set(METADATA_KEY, this._datasourceParams, tx);
 
-    if (datasourcesToDestroy.length === 1) {
-      logger.info(`Destroyed dynamic datasource "${templateName}" at block ${currentBlockHeight}`);
-    } else {
-      logger.info(
-        `Destroyed ${datasourcesToDestroy.length} dynamic datasource(s) with template "${templateName}" at block ${currentBlockHeight}`
-      );
-    }
+    logger.info(`Destroyed dynamic datasource "${templateName}" at block ${currentBlockHeight}`);
   }
 
   // Not force only seems to be used for project changes

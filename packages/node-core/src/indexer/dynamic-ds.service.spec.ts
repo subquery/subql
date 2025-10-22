@@ -90,7 +90,7 @@ describe('DynamicDsService', () => {
     const meta = mockMetadata([testParam1]);
     await service.init(meta);
 
-    await expect(service.destroyDynamicDatasource('NonExistent', 50)).rejects.toThrow(
+    await expect(service.destroyDynamicDatasource('NonExistent', 50, 0)).rejects.toThrow(
       'Dynamic datasource with template name "NonExistent" not found'
     );
   });
@@ -100,7 +100,7 @@ describe('DynamicDsService', () => {
     const meta = mockMetadata([destroyedParam]);
     await service.init(meta);
 
-    await expect(service.destroyDynamicDatasource('Test', 50)).rejects.toThrow(
+    await expect(service.destroyDynamicDatasource('Test', 50, 0)).rejects.toThrow(
       'Dynamic datasource with template name "Test" not found or already destroyed'
     );
   });
@@ -255,7 +255,7 @@ describe('DynamicDsService', () => {
   });
 
   it('throws error when service not initialized for destruction', async () => {
-    await expect(service.destroyDynamicDatasource('Test', 50)).rejects.toThrow(
+    await expect(service.destroyDynamicDatasource('Test', 50, 0)).rejects.toThrow(
       'DynamicDsService has not been initialized'
     );
   });
@@ -344,19 +344,6 @@ describe('DynamicDsService', () => {
       expect(updatedParams[3]).toEqual(testParamOther); // Not destroyed
     });
 
-    it('destroys all datasources when no index provided', async () => {
-      const meta = mockMetadata([testParam1, testParam2, testParam3, testParamOther]);
-      await service.init(meta);
-
-      await service.destroyDynamicDatasource('Test', 75);
-
-      const updatedParams = (service as any)._datasourceParams;
-      expect(updatedParams[0]).toEqual({...testParam1, endBlock: 75});
-      expect(updatedParams[1]).toEqual({...testParam2, endBlock: 75});
-      expect(updatedParams[2]).toEqual({...testParam3, endBlock: 75});
-      expect(updatedParams[3]).toEqual(testParamOther); // Different template, not destroyed
-    });
-
     it('throws error when index is out of bounds', async () => {
       const meta = mockMetadata([testParam1, testParam2]);
       await service.init(meta);
@@ -419,31 +406,6 @@ describe('DynamicDsService', () => {
       expect(datasources[0].endBlock).toBeUndefined();
       expect(datasources[1].endBlock).toBe(100);
       expect(datasources[2].endBlock).toBeUndefined();
-    });
-
-    it('logs correctly when destroying single datasource', async () => {
-      const meta = mockMetadata([testParam1, testParam2]);
-      await service.init(meta);
-
-      const logSpy = jest.spyOn(console, 'info').mockImplementation();
-
-      await service.destroyDynamicDatasource('Test', 50, 0);
-
-      // The logger.info should be called with single datasource message
-      // Note: actual implementation uses getLogger which might not be console
-      logSpy.mockRestore();
-    });
-
-    it('logs correctly when destroying all datasources', async () => {
-      const meta = mockMetadata([testParam1, testParam2, testParam3]);
-      await service.init(meta);
-
-      const logSpy = jest.spyOn(console, 'info').mockImplementation();
-
-      await service.destroyDynamicDatasource('Test', 50);
-
-      // The logger.info should be called with multiple datasources message
-      logSpy.mockRestore();
     });
 
     it('allows destroying datasources from different templates independently', async () => {

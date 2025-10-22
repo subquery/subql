@@ -8,11 +8,7 @@ import {DatasourceParams, IDynamicDsService} from '../dynamic-ds.service';
 
 export type HostDynamicDS<DS> = {
   dynamicDsCreateDynamicDatasource: (params: DatasourceParams) => Promise<DS>;
-  dynamicDsDestroyDynamicDatasource: (
-    templateName: string,
-    currentBlockHeight: number,
-    index?: number
-  ) => Promise<void>;
+  dynamicDsDestroyDynamicDatasource: (templateName: string, currentBlockHeight: number, index: number) => Promise<void>;
   dynamicDsGetDynamicDatasources: () => Promise<DS[]>;
   dynamicDsGetDynamicDatasourcesByTemplate: (templateName: string) => DynamicDatasourceInfo[];
 };
@@ -41,7 +37,7 @@ export class WorkerDynamicDsService<DS> implements IDynamicDsService<DS> {
     return this.host.dynamicDsCreateDynamicDatasource(JSON.parse(JSON.stringify(params)));
   }
 
-  async destroyDynamicDatasource(templateName: string, currentBlockHeight: number, index?: number): Promise<void> {
+  async destroyDynamicDatasource(templateName: string, currentBlockHeight: number, index: number): Promise<void> {
     return this.host.dynamicDsDestroyDynamicDatasource(templateName, currentBlockHeight, index);
   }
 

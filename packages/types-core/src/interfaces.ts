@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export type DynamicDatasourceCreator = (name: string, args: Record<string, unknown>) => Promise<void>;
-export type DynamicDatasourceDestructor = (name?: string, index?: number) => Promise<void>;
+export type DynamicDatasourceDestructor = (name: string, index: number) => Promise<void>;
 
 export interface DynamicDatasourceInfo {
   index: number;

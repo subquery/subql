@@ -122,26 +122,24 @@ export abstract class BaseIndexerManager<
         }, 'getDynamicDatasources');
 
         // Inject function to destroy ds into vm
-        vm.freeze(async (templateName?: string, index?: number) => {
-          if (!templateName) {
-            throw new Error('Cannot destroy datasource: template name must be provided');
-          }
-
+        vm.freeze(async (templateName: string, index: number) => {
           await this.dynamicDsService.destroyDynamicDatasource(templateName, blockHeight, index);
 
-          // Mark datasources with this template for removal from current processing
-          filteredDataSources.forEach((fds) => {
-            const dsParams = this.dynamicDsService.dynamicDatasources.find((dynamicDs) => {
-              // Find the corresponding params for this datasource
-              const params = (this.dynamicDsService as any)._datasourceParams?.find(
-                (p: any) => p.templateName === templateName && p.startBlock === (fds as any).startBlock
-              );
-              return params !== undefined;
-            });
-            if (dsParams) {
-              (fds as any).endBlock = blockHeight;
-            }
+          // Remove destroyed datasources from current processing
+          // Filter out datasources that have been destroyed
+          const updatedFilteredDataSources = filteredDataSources.filter((fds) => {
+            const dsParam = (this.dynamicDsService as any)._datasourceParams?.find(
+              (p: any) =>
+                p.templateName === (fds as any).mapping?.file?.split('/').pop()?.replace('.js', '') ||
+                (p.startBlock === (fds as any).startBlock && p.templateName === templateName)
+            );
+            // Keep datasource if it does not have an endBlock (still active)
+            return !dsParam || dsParam.endBlock === undefined;
           });
+
+          // Update the filteredDataSources array in place
+          filteredDataSources.length = 0;
+          filteredDataSources.push(...updatedFilteredDataSources);
         }, 'destroyDynamicDatasource');
 
         return vm;
