@@ -103,8 +103,8 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
       .map((params, globalIndex) => ({params, globalIndex}))
       .filter(({params}) => params.templateName === templateName && params.endBlock === undefined);
 
-    return matchingDatasources.map(({globalIndex, params}, index) => ({
-      index,
+    return matchingDatasources.map(({globalIndex, params}) => ({
+      index: globalIndex,
       templateName: params.templateName,
       startBlock: params.startBlock,
       endBlock: params.endBlock,
@@ -122,39 +122,33 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
       throw new Error('DynamicDsService has not been initialized');
     }
 
-    // Get all matching datasources using the existing method
-    const matchingDatasourcesInfo = this.getDynamicDatasourcesByTemplate(templateName);
-
-    if (matchingDatasourcesInfo.length === 0) {
-      throw new Error(`Dynamic datasource with template name "${templateName}" not found or already destroyed`);
-    }
-
-    // Validate index
-    if (index < 0 || index >= matchingDatasourcesInfo.length) {
+    // Validate the global index is within bounds
+    if (index < 0 || index >= this._datasourceParams.length) {
       throw new Error(
-        `Index ${index} is out of bounds. There are ${matchingDatasourcesInfo.length} active datasource(s) for template "${templateName}"`
+        `Index ${index} is out of bounds. There are ${this._datasourceParams.length} datasource(s) in total`
       );
     }
 
-    // Get the datasource info at the specified index
-    const dsInfo = matchingDatasourcesInfo[index];
+    // Get the datasource at the global index
+    const dsParam = this._datasourceParams[index];
 
-    // Find the global index in _datasourceParams
-    const globalIndex = this._datasourceParams.findIndex(
-      (p) => p.templateName === dsInfo.templateName && p.startBlock === dsInfo.startBlock && p.endBlock === undefined
-    );
+    // Validate it matches the template name and is not already destroyed
+    if (dsParam.templateName !== templateName) {
+      throw new Error(
+        `Datasource at index ${index} has template name "${dsParam.templateName}", not "${templateName}"`
+      );
+    }
 
-    if (globalIndex === -1) {
-      throw new Error(`Could not find datasource in internal storage`);
+    if (dsParam.endBlock !== undefined) {
+      throw new Error(`Dynamic datasource at index ${index} is already destroyed`);
     }
 
     // Update the datasource
-    const dsParam = this._datasourceParams[globalIndex];
     const updatedParams = {...dsParam, endBlock: currentBlockHeight};
-    this._datasourceParams[globalIndex] = updatedParams;
+    this._datasourceParams[index] = updatedParams;
 
-    if (this._datasources[globalIndex]) {
-      (this._datasources[globalIndex] as any).endBlock = currentBlockHeight;
+    if (this._datasources[index]) {
+      (this._datasources[index] as any).endBlock = currentBlockHeight;
     }
 
     await this.metadata.set(METADATA_KEY, this._datasourceParams, tx);

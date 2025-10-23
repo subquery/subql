@@ -91,7 +91,7 @@ describe('DynamicDsService', () => {
     await service.init(meta);
 
     await expect(service.destroyDynamicDatasource('NonExistent', 50, 0)).rejects.toThrow(
-      'Dynamic datasource with template name "NonExistent" not found'
+      'Datasource at index 0 has template name "Test", not "NonExistent"'
     );
   });
 
@@ -101,7 +101,7 @@ describe('DynamicDsService', () => {
     await service.init(meta);
 
     await expect(service.destroyDynamicDatasource('Test', 50, 0)).rejects.toThrow(
-      'Dynamic datasource with template name "Test" not found or already destroyed'
+      'Dynamic datasource at index 0 is already destroyed'
     );
   });
 
@@ -299,7 +299,9 @@ describe('DynamicDsService', () => {
       const datasources = service.getDynamicDatasourcesByTemplate('Test');
 
       expect(datasources).toHaveLength(2);
+      expect(datasources[0].index).toBe(1); // Global index
       expect(datasources[0].startBlock).toBe(2);
+      expect(datasources[1].index).toBe(2); // Global index
       expect(datasources[1].startBlock).toBe(3);
     });
 
@@ -349,7 +351,7 @@ describe('DynamicDsService', () => {
       await service.init(meta);
 
       await expect(service.destroyDynamicDatasource('Test', 50, 5)).rejects.toThrow(
-        'Index 5 is out of bounds. There are 2 active datasource(s) for template "Test"'
+        'Index 5 is out of bounds. There are 2 datasource(s) in total'
       );
     });
 
@@ -358,36 +360,39 @@ describe('DynamicDsService', () => {
       await service.init(meta);
 
       await expect(service.destroyDynamicDatasource('Test', 50, -1)).rejects.toThrow(
-        'Index -1 is out of bounds. There are 2 active datasource(s) for template "Test"'
+        'Index -1 is out of bounds. There are 2 datasource(s) in total'
       );
     });
 
-    it('throws error when trying to destroy with index but no active datasources exist', async () => {
+    it('throws error when trying to destroy already destroyed datasource', async () => {
       const destroyedParam = {...testParam1, endBlock: 30};
       const meta = mockMetadata([destroyedParam]);
       await service.init(meta);
 
       await expect(service.destroyDynamicDatasource('Test', 50, 0)).rejects.toThrow(
-        'Dynamic datasource with template name "Test" not found or already destroyed'
+        'Dynamic datasource at index 0 is already destroyed'
       );
     });
 
-    it('correctly handles index after some datasources are destroyed', async () => {
+    it('correctly handles global index after some datasources are destroyed', async () => {
       const meta = mockMetadata([testParam1, testParam2, testParam3, testParam4]);
       await service.init(meta);
 
-      // Destroy the first one
+      // Destroy the first one using global index 0
       await service.destroyDynamicDatasource('Test', 40, 0);
 
-      // Now indices are: [1->0, 2->1, 3->2]
+      // Now only 3 active datasources for 'Test' template, with global indices 1, 2, 3
       const activeDatasources = service.getDynamicDatasourcesByTemplate('Test');
       expect(activeDatasources).toHaveLength(3);
+      expect(activeDatasources[0].index).toBe(1); // Global index
       expect(activeDatasources[0].startBlock).toBe(2);
+      expect(activeDatasources[1].index).toBe(2); // Global index
       expect(activeDatasources[1].startBlock).toBe(3);
+      expect(activeDatasources[2].index).toBe(3); // Global index
       expect(activeDatasources[2].startBlock).toBe(4);
 
-      // Destroy what is now at index 1 (was originally testParam3)
-      await service.destroyDynamicDatasource('Test', 60, 1);
+      // Destroy using global index 2 (testParam3)
+      await service.destroyDynamicDatasource('Test', 60, 2);
 
       const updatedParams = (service as any)._datasourceParams;
       expect(updatedParams[0]).toEqual({...testParam1, endBlock: 40});
@@ -413,12 +418,22 @@ describe('DynamicDsService', () => {
       await service.init(meta);
 
       await service.destroyDynamicDatasource('Test', 50, 0);
-      await service.destroyDynamicDatasource('Other', 60, 0);
+      await service.destroyDynamicDatasource('Other', 60, 2);
 
       const updatedParams = (service as any)._datasourceParams;
       expect(updatedParams[0]).toEqual({...testParam1, endBlock: 50});
       expect(updatedParams[1]).toEqual(testParam2); // Not destroyed
       expect(updatedParams[2]).toEqual({...testParamOther, endBlock: 60});
+    });
+
+    it('throws error when template name does not match global index', async () => {
+      const meta = mockMetadata([testParam1, testParam2, testParamOther]);
+      await service.init(meta);
+
+      // Try to destroy 'Test' template with index 2, which is 'Other' template
+      await expect(service.destroyDynamicDatasource('Test', 50, 2)).rejects.toThrow(
+        'Datasource at index 2 has template name "Other", not "Test"'
+      );
     });
   });
 });

@@ -89,7 +89,7 @@ export abstract class BaseIndexerManager<
     const blockHeight = block.getHeader().blockHeight;
     monitorWrite(`- BlockHash: ${block.getHeader().blockHash}`);
 
-    const filteredDataSources = this.filterDataSources(blockHeight, dataSources);
+    let filteredDataSources = this.filterDataSources(blockHeight, dataSources);
 
     this.assertDataSources(filteredDataSources, blockHeight);
 
@@ -125,21 +125,19 @@ export abstract class BaseIndexerManager<
         vm.freeze(async (templateName: string, index: number) => {
           await this.dynamicDsService.destroyDynamicDatasource(templateName, blockHeight, index);
 
-          // Remove destroyed datasources from current processing
-          // Filter out datasources that have been destroyed
-          const updatedFilteredDataSources = filteredDataSources.filter((fds) => {
-            const dsParam = (this.dynamicDsService as any)._datasourceParams?.find(
-              (p: any) =>
-                p.templateName === (fds as any).mapping?.file?.split('/').pop()?.replace('.js', '') ||
-                (p.startBlock === (fds as any).startBlock && p.templateName === templateName)
-            );
-            // Keep datasource if it does not have an endBlock (still active)
-            return !dsParam || dsParam.endBlock === undefined;
-          });
+          // Remove the destroyed datasource from current processing
+          // The datasource at the global index now has an endBlock set
+          const destroyedDsParam = (this.dynamicDsService as any)._datasourceParams[index];
 
-          // Update the filteredDataSources array in place
-          filteredDataSources.length = 0;
-          filteredDataSources.push(...updatedFilteredDataSources);
+          // Filter out the destroyed datasource by matching startBlock and args
+          filteredDataSources = filteredDataSources.filter((fds) => {
+            const fdsStartBlock = (fds as any).startBlock;
+            const fdsArgs = JSON.stringify((fds as any).options || {});
+            const paramArgs = JSON.stringify(destroyedDsParam.args || {});
+
+            // Keep datasource if it doesn't match the destroyed one
+            return !(fdsStartBlock === destroyedDsParam.startBlock && fdsArgs === paramArgs);
+          });
         }, 'destroyDynamicDatasource');
 
         return vm;
