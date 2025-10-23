@@ -28,6 +28,7 @@ export interface IDynamicDsService<DS> {
   destroyDynamicDatasource(templateName: string, currentBlockHeight: number, index: number): Promise<void>;
   getDynamicDatasources(forceReload?: boolean): Promise<DS[]>;
   getDynamicDatasourcesByTemplate(templateName: string): DynamicDatasourceInfo[];
+  getDatasourceParamByIndex(index: number): DatasourceParams | undefined;
 }
 
 @Injectable()
@@ -94,6 +95,14 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
     }
   }
 
+  /**
+   * Get all active (non-destroyed) dynamic datasources for a specific template.
+   *
+   * @param templateName - The name of the template to filter by
+   * @returns Array of datasource info objects with global indices. The `index` field
+   *          represents the global position in the internal datasource array and should
+   *          be used when calling `destroyDynamicDatasource()`.
+   */
   getDynamicDatasourcesByTemplate(templateName: string): DynamicDatasourceInfo[] {
     if (!this._datasourceParams) {
       throw new Error('DynamicDsService has not been initialized');
@@ -110,6 +119,19 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
       endBlock: params.endBlock,
       args: params.args,
     }));
+  }
+
+  /**
+   * Get datasource parameters by global index.
+   *
+   * @param index - Global index in the internal datasource parameters array
+   * @returns DatasourceParams if found, undefined otherwise
+   */
+  getDatasourceParamByIndex(index: number): DatasourceParams | undefined {
+    if (!this._datasourceParams || index < 0 || index >= this._datasourceParams.length) {
+      return undefined;
+    }
+    return this._datasourceParams[index];
   }
 
   async destroyDynamicDatasource(
@@ -143,13 +165,17 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
       throw new Error(`Dynamic datasource at index ${index} is already destroyed`);
     }
 
-    // Update the datasource
+    // Update the datasource params
     const updatedParams = {...dsParam, endBlock: currentBlockHeight};
     this._datasourceParams[index] = updatedParams;
 
-    if (this._datasources[index]) {
-      (this._datasources[index] as any).endBlock = currentBlockHeight;
+    // Update the datasource object if it exists
+    // Note: _datasources and _datasourceParams arrays should always be in sync.
+    // If the index is valid for params, it must also be valid for datasources.
+    if (!this._datasources[index]) {
+      throw new Error(`Datasources array out of sync with params at index ${index}`);
     }
+    (this._datasources[index] as any).endBlock = currentBlockHeight;
 
     await this.metadata.set(METADATA_KEY, this._datasourceParams, tx);
 
