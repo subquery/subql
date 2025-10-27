@@ -29,7 +29,7 @@
   ],
   "dependencies": {
     "@apollo/client": "^3.14.0",
-    "@nestjs/common": "^11.0.16",
+    "@nestjs/common": "^11.1.8",
     "@nestjs/event-emitter": "^3.0.0",
     "@nestjs/schedule": "^5.0.1",
     "@subql/common": "workspace:~",
