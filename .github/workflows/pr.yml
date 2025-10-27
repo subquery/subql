@@ -75,7 +75,7 @@ jobs:
           base-coverage-file: report-main.json
 
       - name: Archive code coverage results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: code-coverage-report
           path: report.json
