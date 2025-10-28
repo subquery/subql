@@ -16,6 +16,7 @@ import {
   CustomDatasourceTemplate,
   EthereumBlockFilter,
 } from '@subql/types-ethereum';
+import { resolveTopicFiltersInProject } from '../utils/project';
 
 const { version: packageVersion } = require('../../package.json');
 
@@ -55,6 +56,17 @@ export async function createSubQueryProject(
     isRuntimeDs,
     isCustomDs,
   });
+
+  // Resolve custom types in topic filters at project load time
+  resolveTopicFiltersInProject(project.dataSources, root);
+
+  // Also resolve in templates
+  if (project.templates && project.templates.length > 0) {
+    resolveTopicFiltersInProject(
+      project.templates as SubqlEthereumDataSource[],
+      root,
+    );
+  }
 
   return project;
 }
