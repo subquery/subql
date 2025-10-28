@@ -128,10 +128,7 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
    * @returns DatasourceParams if found, undefined otherwise
    */
   getDatasourceParamByIndex(index: number): DatasourceParams | undefined {
-    if (!this._datasourceParams || index < 0 || index >= this._datasourceParams.length) {
-      return undefined;
-    }
-    return this._datasourceParams[index];
+    return this._datasourceParams?.[index];
   }
 
   async destroyDynamicDatasource(
@@ -144,15 +141,15 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
       throw new Error('DynamicDsService has not been initialized');
     }
 
-    // Validate the global index is within bounds
-    if (index < 0 || index >= this._datasourceParams.length) {
+    // Get the datasource at the global index
+    const dsParam = this._datasourceParams[index];
+
+    // Validate datasource exists
+    if (!dsParam) {
       throw new Error(
         `Index ${index} is out of bounds. There are ${this._datasourceParams.length} datasource(s) in total`
       );
     }
-
-    // Get the datasource at the global index
-    const dsParam = this._datasourceParams[index];
 
     // Validate it matches the template name and is not already destroyed
     if (dsParam.templateName !== templateName) {

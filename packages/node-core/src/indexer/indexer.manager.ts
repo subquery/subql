@@ -125,28 +125,11 @@ export abstract class BaseIndexerManager<
         vm.freeze(async (templateName: string, index: number) => {
           await this.dynamicDsService.destroyDynamicDatasource(templateName, blockHeight, index);
 
-          // Remove the destroyed datasource from current processing
-          // The datasource at the global index now has an endBlock set
-          const destroyedDsParam = this.dynamicDsService.getDatasourceParamByIndex(index);
-
-          if (!destroyedDsParam) {
-            logger.warn(`Unable to filter destroyed datasource at index ${index} - params not found`);
-            return;
-          }
-
-          // Filter out the destroyed datasource by matching startBlock and args
+          // Re-filter datasources to exclude the destroyed one
+          // The destroyed datasource now has endBlock set, so filterDataSources will exclude it
           // Note: Reassigning filteredDataSources is intentional - subsequent handlers
           // within the same block will see the updated filtered list
-          filteredDataSources = filteredDataSources.filter((fds) => {
-            const fdsStartBlock = (fds as any).startBlock;
-            // For custom datasources, args are stored in processor.options
-            // For runtime datasources, they may be stored differently
-            const fdsArgs = JSON.stringify((fds as any).processor?.options || (fds as any).options || {});
-            const paramArgs = JSON.stringify(destroyedDsParam.args || {});
-
-            // Keep datasource if it doesn't match the destroyed one
-            return !(fdsStartBlock === destroyedDsParam.startBlock && fdsArgs === paramArgs);
-          });
+          filteredDataSources = this.filterDataSources(blockHeight, filteredDataSources);
         }, 'destroyDynamicDatasource');
 
         return vm;
