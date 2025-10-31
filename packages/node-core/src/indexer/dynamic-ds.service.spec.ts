@@ -435,5 +435,25 @@ describe('DynamicDsService', () => {
         'Datasource at index 2 has template name "Other", not "Test"'
       );
     });
+
+    it('sets endBlock correctly allowing in-place removal during block processing', async () => {
+      const meta = mockMetadata([testParam1, testParam2, testParam3]);
+      await service.init(meta);
+
+      // Destroy datasource at index 1 at block 50
+      await service.destroyDynamicDatasource('Test', 50, 1);
+
+      // Verify the datasource has endBlock set
+      const dsParam = service.getDatasourceParamByIndex(1);
+      expect(dsParam).toBeDefined();
+      expect(dsParam?.endBlock).toBe(50);
+      expect(dsParam?.startBlock).toBe(2);
+      expect(dsParam?.templateName).toBe('Test');
+
+      // Verify the internal _datasources array also has endBlock set
+      const datasources = (service as any)._datasources;
+      expect(datasources[1]).toBeDefined();
+      expect((datasources[1] as any).endBlock).toBe(50);
+    });
   });
 });

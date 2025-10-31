@@ -89,7 +89,7 @@ export abstract class BaseIndexerManager<
     const blockHeight = block.getHeader().blockHeight;
     monitorWrite(`- BlockHash: ${block.getHeader().blockHash}`);
 
-    let filteredDataSources = this.filterDataSources(blockHeight, dataSources);
+    const filteredDataSources = this.filterDataSources(blockHeight, dataSources);
 
     this.assertDataSources(filteredDataSources, blockHeight);
 
@@ -125,11 +125,21 @@ export abstract class BaseIndexerManager<
         vm.freeze(async (templateName: string, index: number) => {
           await this.dynamicDsService.destroyDynamicDatasource(templateName, blockHeight, index);
 
-          // Re-filter datasources to exclude the destroyed one
-          // The destroyed datasource now has endBlock set, so filterDataSources will exclude it
-          // Note: Reassigning filteredDataSources is intentional - subsequent handlers
-          // within the same block will see the updated filtered list
-          filteredDataSources = this.filterDataSources(blockHeight, filteredDataSources);
+          // Remove the destroyed datasource from the current processing array
+          // Find the datasource by matching the global index stored in the service
+          const destroyedDsParam = this.dynamicDsService.getDatasourceParamByIndex(index);
+          if (destroyedDsParam) {
+            const dsIndex = filteredDataSources.findIndex((fds) => {
+              return (
+                fds.startBlock === destroyedDsParam.startBlock &&
+                JSON.stringify((fds as any).options || (fds as any).processor?.options || {}) ===
+                  JSON.stringify(destroyedDsParam.args || {})
+              );
+            });
+            if (dsIndex !== -1) {
+              filteredDataSources.splice(dsIndex, 1);
+            }
+          }
         }, 'destroyDynamicDatasource');
 
         return vm;
