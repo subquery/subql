@@ -5,6 +5,7 @@ import {isMainThread} from 'worker_threads';
 import {Inject, Injectable} from '@nestjs/common';
 import {BaseDataSource, Store} from '@subql/types-core';
 import {NodeConfig} from '../configure';
+import {loadProjectEnvConfig, createSandboxProcessEnv} from '../utils/env';
 import {InMemoryCacheService} from './inMemoryCache.service';
 import {IndexerSandbox} from './sandbox';
 import {StoreService} from './store.service';
@@ -15,6 +16,7 @@ import {hostStoreToStore} from './worker';
 @Injectable()
 export class SandboxService<Api, UnsafeApi> {
   private processorCache: Record<string, IndexerSandbox> = {};
+  private envConfig: Record<string, string> = {};
 
   constructor(
     @Inject(isMainThread ? StoreService : 'Null')
@@ -22,7 +24,11 @@ export class SandboxService<Api, UnsafeApi> {
     private readonly cacheService: InMemoryCacheService,
     private readonly nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') private readonly project: ISubqueryProject
-  ) {}
+  ) {
+    // Load environment variables from .env file
+    const projectEnvConfig = loadProjectEnvConfig(this.project.root);
+    this.envConfig = createSandboxProcessEnv(projectEnvConfig);
+  }
 
   getDsProcessor(
     ds: BaseDataSource,
@@ -43,6 +49,7 @@ export class SandboxService<Api, UnsafeApi> {
           root: this.project.root,
           entry,
           chainId: this.project.network.chainId,
+          envConfig: this.envConfig,
         },
         this.nodeConfig
       );

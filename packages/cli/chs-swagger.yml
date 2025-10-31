@@ -1,0 +1,791 @@
+---
+swagger: '2.0'
+info:
+  description: 'API Docs for Subquery Consumer Host Service'
+  version: '1.0.0'
+  title: 'Subquery Consumer Host Service'
+  license:
+    name: 'Apache 2.0'
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: 'localhost:8000'
+tags:
+  - name: 'general'
+    description: 'General operations'
+schemes:
+  - 'https'
+  - 'http'
+
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+
+paths:
+  /login:
+    post:
+      tags:
+        - 'general'
+      summary: 'User login to get token'
+      operationId: 'auth_controller::user_token'
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Payload object used to sign user in and return token to user'
+          required: true
+          schema:
+            $ref: '#/definitions/Payload'
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            $ref: '#/definitions/QueryToken'
+  /query/{project}:
+    post:
+      tags:
+        - 'general'
+      summary: 'Consumer send query'
+      description: 'Returns the result of the query'
+      operationId: 'query_controller::query'
+      parameters:
+        - name: 'project'
+          in: 'path'
+          description: 'Project ID'
+          required: true
+          type: 'integer'
+          format: 'int64'
+        - name: 'apikey'
+          in: 'formData'
+          description: 'apikey for query'
+          required: true
+          type: 'string'
+        - name: 'body'
+          in: 'body'
+          description: 'query to send'
+          required: true
+      responses:
+        403:
+          description: 'user inactive'
+  /sign/{project}:
+    post:
+      tags:
+        - 'general'
+      summary: 'Consumer sign to open state channel'
+      description: 'Returns the state channel info'
+      operationId: 'query_controller::sign'
+      parameters:
+        - name: 'project'
+          in: 'path'
+          description: 'Project ID'
+          required: true
+          type: 'integer'
+          format: 'int64'
+        - name: 'apikey'
+          in: 'formData'
+          description: 'apikey for query'
+          required: true
+          type: 'string'
+      responses:
+        403:
+          description: 'user inactive'
+        200:
+          description: 'successful operation'
+          schema:
+            $ref: '#/definitions/QueryState'
+  /projects:
+    get:
+      tags:
+        - 'general'
+      summary: 'Get all projects'
+      operationId: 'project_controller::index'
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/Project'
+  /projects/{id}:
+    get:
+      tags:
+        - 'general'
+      summary: 'Get the project by id'
+      operationId: 'project_controller::show'
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Project ID'
+          required: true
+          type: 'integer'
+          format: 'int64'
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            $ref: '#/definitions/ProjectDetail'
+  # /users/projects:
+  #   post:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Consumer select a project to open a state channel'
+  #     operationId: 'project_controller::create'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - in: 'body'
+  #         name: 'body'
+  #         description: 'OpenChannel object used to open a state channel'
+  #         required: true
+  #         schema:
+  #           $ref: '#/definitions/OpenChannel'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/StateChannel'
+  # /users/channels:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Get all channels of a consumer'
+  #     operationId: 'channel_controller::index'
+  #     security:
+  #       - bearerAuth: []
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           type: 'array'
+  #           items:
+  #             $ref: '#/definitions/StateChannel'
+  # /users/channels/{channel}:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Get a channel with channel id'
+  #     operationId: 'channel_controller::show'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - name: 'channel'
+  #         in: 'path'
+  #         description: 'Channel ID'
+  #         required: true
+  #         type: 'string'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/StateChannel'
+  # /users/channels/{channel}/fund:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Fund more amount to the state channel'
+  #     operationId: 'channel_controller::fund'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - name: 'channel'
+  #         in: 'path'
+  #         description: 'Channel ID'
+  #         required: true
+  #         type: 'string'
+  #       - in: 'body'
+  #         name: 'body'
+  #         description: 'Fund object used to fund more amount to the state channel'
+  #         required: true
+  #         schema:
+  #           $ref: '#/definitions/Fund'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/TX'
+  #       400:
+  #         description: 'invalid fund amount / invalid callback signature'
+  # /users/channels/{channel}/finalize:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Finalize early the state channel and claim'
+  #     operationId: 'channel_controller::finalize'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - name: 'channel'
+  #         in: 'path'
+  #         description: 'Channel ID'
+  #         required: true
+  #         type: 'string'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/TX'
+  # /users/channels/{channel}/claim:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Finalize early the state channel and claim'
+  #     operationId: 'channel_controller::claim'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - name: 'channel'
+  #         in: 'path'
+  #         description: 'Channel ID'
+  #         required: true
+  #         type: 'string'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/TX'
+  #       400:
+  #         description: 'channel not expired'
+  #       401:
+  #         description: 'user not approved'
+  # /users/channels/{channel}/terminate:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Terminate the state channel'
+  #     operationId: 'channel_controller::terminate'
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - name: 'channel'
+  #         in: 'path'
+  #         description: 'Channel ID'
+  #         required: true
+  #         type: 'string'
+  #     responses:
+  #       200:
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/TX'
+  /users/apikeys:
+    get:
+      tags:
+        - 'user'
+      summary: 'Get all apikeys of a user'
+      operationId: 'user_controller::apikey_index'
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/Apikey'
+  /users/apikeys/new:
+    post:
+      tags:
+        - 'user'
+      summary: 'Generate an Apikey for user'
+      operationId: 'user_controller::apikey_create'
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: 'body'
+          in: 'body'
+          description: 'Payload object used to create an Apikey'
+          required: true
+          schema:
+            $ref: '#/definitions/NewApiKey'
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            $ref: '#/definitions/Apikey'
+  /users/apikeys/{id}/delete:
+    post:
+      tags:
+        - 'user'
+      summary: 'Delete an Apikey for user'
+      operationId: 'user_controller::apikey_remove'
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Apikey ID'
+          required: true
+          type: 'integer'
+          format: 'int64'
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            $ref: '#/definitions/Apikey'
+        400:
+          description: 'invalid Apikey to delete'
+  /users/hosting-plans:
+    get:
+      tags:
+        - 'user'
+      summary: 'Get all hosting plans of a user'
+      operationId: 'hosting_plan_controller::index'
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            type: 'array'
+            items:
+              $ref: '#/definitions/HostingPlanList'
+    post:
+      tags:
+        - 'user'
+      summary: 'Create a new hosting plan for user'
+      operationId: 'hosting_plan_controller::create'
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: 'body'
+          name: 'body'
+          description: 'Options object used to create a new hosting plan'
+          required: true
+          schema:
+            $ref: '#/definitions/CreateHostingPlan'
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            $ref: '#/definitions/HostingPlan'
+
+  /users/hosting-plans/{id}:
+    post:
+      tags:
+        - 'user'
+      summary: 'Update a hosting plan for user'
+      operationId: 'hosting_plan_controller::edit'
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: 'id'
+          in: 'path'
+          description: 'Hosting Plan ID'
+          required: true
+          type: 'integer'
+          format: 'int64'
+        - in: 'body'
+          name: body
+          description: 'Options object used to update a hosting plan'
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateHostingPlan'
+      responses:
+        200:
+          description: 'successful operation'
+          schema:
+            $ref: '#/definitions/HostingPlan'
+
+definitions:
+  Payload:
+    type: 'object'
+    properties:
+      message:
+        type: 'string'
+        description: 'The message that has a signature for it'
+      signature:
+        type: 'string'
+        description: 'User signature'
+      # These are not right in the provided code
+      # consumer:
+      #   type: 'string'
+      #   description: 'User address'
+      # timestamp:
+      #   type: 'integer'
+      #   format: 'int32'
+      # chain_id:
+      #   type: 'integer'
+      #   format: 'int32'
+  QueryToken:
+    type: 'object'
+    properties:
+      token:
+        type: 'string'
+        description: 'User token'
+  QueryState:
+    type: 'object'
+    properties:
+      channel_id:
+        type: 'integer'
+        format: 'U256'
+      indexer:
+        type: 'string'
+        description: 'Indexer address'
+      consumer:
+        type: 'string'
+        description: 'Consumer address'
+      spent:
+        type: 'integer'
+        format: 'U256'
+      remote:
+        type: 'integer'
+        format: 'U256'
+      is_final:
+        type: 'boolean'
+      indexer_sign:
+        type: 'string'
+      consumer_sign:
+        type: 'string'
+  Project:
+    type: 'object'
+    properties:
+      id:
+        type: 'integer'
+        format: 'i32'
+      owner:
+        type: 'string'
+        description: 'Owner address'
+      metadata:
+        type: 'string'
+        description: 'Project metadata'
+      is_actived:
+        type: 'boolean'
+      created_at:
+        type: 'string'
+        description: 'create timestamp'
+      updated_at:
+        type: 'string'
+        description: 'update timestamp'
+      ptype:
+        type: 'integer'
+    required:
+      - id
+      - owner
+      - metadata
+      - is_actived
+      - created_at
+      - updated_at
+      - ptype
+  Deployment:
+    type: 'object'
+    properties:
+      id:
+        type: 'integer'
+        format: 'i32'
+      project_id:
+        type: 'integer'
+        format: 'i32'
+      deployment:
+        type: 'string'
+        description: 'deployment hash'
+      metadata:
+        type: 'string'
+        description: 'metadata hash'
+      # version:
+      #   type: 'string'
+      is_actived:
+        type: 'boolean'
+      is_latest:
+        type: 'boolean'
+      created_at:
+        type: 'string'
+        description: 'create timestamp'
+      updated_at:
+        type: 'string'
+        description: 'update timestamp'
+    required:
+      - id
+      - project_id
+      - deployment
+      - metadata
+      - is_actived
+      - is_latest
+      - created_at
+      - updated_at
+  DeploymentIndexer:
+    type: 'object'
+    properties:
+      id:
+        type: 'integer'
+        format: 'i32'
+      deployment_id:
+        type: 'integer'
+        format: 'i32'
+      indexer_id:
+        type: 'integer'
+        format: 'i32'
+      indexer:
+        type: 'string'
+      price:
+        type: 'string'
+      max_time:
+        type: 'integer'
+        format: 'i32'
+      block_height:
+        type: 'string'
+      status:
+        type: 'integer'
+        format: 'i16'
+      status_at:
+        type: 'string'
+        description: 'status update timestamp'
+      score:
+        type: 'integer'
+        format: 'i32'
+      reality:
+        type: 'integer'
+        format: 'i32'
+      is_actived:
+        type: 'boolean'
+      created_at:
+        type: 'string'
+        description: 'create timestamp'
+      updated_at:
+        type: 'string'
+        description: 'update timestamp'
+  ProjectDetail:
+    type: 'object'
+    properties:
+      project:
+        type: 'object'
+        $ref: '#/definitions/Project'
+      deployment:
+        type: 'object'
+        $ref: '#/definitions/Deployment'
+      indexers:
+        type: 'array'
+        items:
+          $ref: '#/definitions/DeploymentIndexer'
+  OpenChannel:
+    type: 'object'
+    properties:
+      deployment_indexer:
+        type: 'integer'
+        format: 'i32'
+        description: 'deployment indexer id'
+      amount:
+        type: 'string'
+        description: 'u256 string'
+      expiration:
+        type: 'integer'
+        format: 'i32'
+        description: 'seconds'
+      signature:
+        type: 'string'
+        description: 'signature string, if approved, set empty'
+  StateChannel:
+    type: 'object'
+    properties:
+      id:
+        type: 'integer'
+        format: 'i32'
+      user_id:
+        type: 'integer'
+        format: 'i32'
+      indexer_id:
+        type: 'integer'
+        format: 'i32'
+      status:
+        type: 'integer'
+        format: 'i16'
+      channel:
+        type: 'string'
+      total:
+        type: 'string'
+      spent:
+        type: 'string'
+      onchain:
+        type: 'string'
+      price:
+        type: 'string'
+      is_final:
+        type: 'boolean'
+      indexer_sign:
+        type: 'string'
+      consumer_sign:
+        type: 'string'
+      expired_at:
+        type: 'string'
+        description: 'expired timestamp'
+      terminated_at:
+        type: 'string'
+        description: 'terminated timestamp'
+      terminate_by_indexer:
+        type: 'boolean'
+      deployment:
+        type: 'string'
+      is_actived:
+        type: 'boolean'
+      created_at:
+        type: 'string'
+        description: 'create timestamp'
+      updated_at:
+        type: 'string'
+        description: 'update timestamp'
+  Fund:
+    type: 'object'
+    properties:
+      amount:
+        type: 'string'
+      callback:
+        type: 'string'
+  TX:
+    type: 'string'
+    description: 'transaction hash'
+  NewApiKey:
+    type: 'object'
+    properties:
+      name:
+        type: 'string'
+        description: 'Apikey name'
+    required:
+      - name
+  Apikey:
+    type: 'object'
+    required:
+      - id
+      - user_id
+      - name
+      - value
+      - times
+      - created_at
+      - updated_at
+    properties:
+      id:
+        type: 'integer'
+        format: 'i32'
+      user_id:
+        type: 'integer'
+        format: 'i32'
+      name:
+        type: 'string'
+      value:
+        type: 'string'
+      times:
+        type: 'integer'
+        format: 'i32'
+      created_at:
+        type: 'string'
+        description: 'create timestamp'
+      updated_at:
+        type: 'string'
+        description: 'update timestamp'
+  HostingPlan:
+    type: 'object'
+    required:
+      - id
+      - user_id
+      - deployment_id
+      - channels
+      - closed
+      - maximum
+      - price
+      - spent
+      - expired_at
+      - is_actived
+      - created_at
+      - updated_at
+      - deployment
+      - project
+    properties:
+      id:
+        type: 'integer'
+        format: 'i32'
+      user_id:
+        type: 'integer'
+        format: 'i32'
+      deployment_id:
+        type: 'integer'
+        format: 'i32'
+      channels:
+        type: 'string'
+      closed:
+        type: 'string'
+      maximum:
+        type: 'integer'
+        format: 'i32'
+      price:
+        type: 'string'
+      spent:
+        type: 'string'
+      expired_at:
+        type: 'string'
+      is_actived:
+        type: 'boolean'
+      created_at:
+        type: 'string'
+      updated_at:
+        type: 'string'
+  HostingPlanList:
+    type: 'object'
+    required:
+      - id
+      - user_id
+      - deployment_id
+      - channels
+      - closed
+      - maximum
+      - price
+      - spent
+      - expired_at
+      - is_actived
+      - created_at
+      - updated_at
+      - deployment
+      - project
+    properties:
+      id:
+        type: 'integer'
+        format: 'i32'
+      user_id:
+        type: 'integer'
+        format: 'i32'
+      deployment_id:
+        type: 'integer'
+        format: 'i32'
+      channels:
+        type: 'string'
+      closed:
+        type: 'string'
+      maximum:
+        type: 'integer'
+        format: 'i32'
+      price:
+        type: 'string'
+      spent:
+        type: 'string'
+      expired_at:
+        type: 'string'
+      is_actived:
+        type: 'boolean'
+      created_at:
+        type: 'string'
+      updated_at:
+        type: 'string'
+      deployment:
+        type: 'object'
+        $ref: '#/definitions/Deployment'
+      project:
+        type: 'object'
+        $ref: '#/definitions/Project'
+  CreateHostingPlan:
+    type: 'object'
+    required:
+      - price
+    properties:
+      deployment:
+        type: 'integer'
+        format: 'i32'
+      deploymentId:
+        type: 'string'
+      price:
+        type: 'string'
+  UpdateHostingPlan:
+    type: 'object'
+    required:
+      - price
+      - expiration
+    properties:
+      price:
+        type: 'string' # u256 string
+      expiration:
+        type: 'integer'
+        format: 'i32' # seconds

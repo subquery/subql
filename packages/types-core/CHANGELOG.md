@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2025-10-15
+### Changed
+- Minor improvements and fixes from upgrading to eslint 9 with stricter settings (#2929)
+
 ## [2.1.1] - 2025-07-14
 ### Fixed
 - Missing deps for imported deps (#2842)
@@ -90,7 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of new package containing types common to all chains
 
-[Unreleased]: https://github.com/subquery/subql/compare/types-core/2.1.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types-core/2.2.0...HEAD
+[2.2.0]: https://github.com/subquery/subql/compare/types-core/2.1.1...types-core/2.2.0
 [2.1.1]: https://github.com/subquery/subql/compare/types-core/2.1.0...types-core/2.1.1
 [2.1.0]: https://github.com/subquery/subql/compare/types-core/2.0.2...types-core/2.1.0
 [2.0.2]: https://github.com/subquery/subql/compare/types-core/2.0.1...types-core/2.0.2

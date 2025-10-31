@@ -96,7 +96,7 @@ export class ProjectService<
   async init(startHeight?: number): Promise<void> {
     this.ensureTimezone();
 
-    for await (const [, project] of this.projectUpgradeService.projects) {
+    for (const [, project] of this.projectUpgradeService.projects) {
       await project.applyCronTimestamps(this.blockchainService.getBlockTimestamp.bind(this));
     }
 
@@ -374,7 +374,11 @@ export class ProjectService<
       const sortedEvents = events.sort((a, b) => a.block - b.block || Number(b.start) - Number(a.start));
 
       sortedEvents.forEach((event) => {
-        event.start ? activeDataSources.add(event.ds) : activeDataSources.delete(event.ds);
+        if (event.start) {
+          activeDataSources.add(event.ds);
+        } else {
+          activeDataSources.delete(event.ds);
+        }
         dsMap.set(event.block, Array.from(activeDataSources));
       });
     }

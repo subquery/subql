@@ -273,6 +273,7 @@ export function IsNetworkEndpoint<T extends object>(cls: ClassConstructor<T>, va
   };
 }
 
+/* eslint-disable no-redeclare */
 // Overload the function so that if input is undefineable then output is undefineable
 export function normalizeNetworkEndpoints<T extends IEndpointConfig = IEndpointConfig>(
   input: string | string[] | Record<string, T>,
@@ -300,6 +301,7 @@ export function normalizeNetworkEndpoints<T extends IEndpointConfig = IEndpointC
   }
   return input;
 }
+/* eslint-enable no-redeclare */
 
 export function notifyUpdates(pjson: Package, logger: Pino.Logger): void {
   const notifier = updateNotifier({pkg: pjson, updateCheckInterval: 0});

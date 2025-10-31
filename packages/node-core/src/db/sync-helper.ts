@@ -20,7 +20,7 @@ import {MultiChainRewindEvent} from '../events';
 import {MultiChainRewindStatus} from '../indexer';
 import {EnumType} from '../utils';
 import {formatAttributes, generateIndexName, modelToTableName} from './sequelizeUtil';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+
 const Toposort = require('toposort-class');
 
 export type Query = {
@@ -320,24 +320,24 @@ export function createRewindTriggerFunction(schema: string): string {
     BEGIN
       IF TG_OP = 'INSERT' THEN
         PERFORM pg_notify(
-          '${triggerName}', 
+          '${triggerName}',
           format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.Rewind}', NEW."chainId")
         );
       ELSIF TG_OP = 'UPDATE' THEN
         IF NEW.status = '${MultiChainRewindStatus.Complete}' THEN
           PERFORM pg_notify(
-            '${triggerName}', 
+            '${triggerName}',
             format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.RewindComplete}', NEW."chainId")
           );
         ELSIF NEW."rewindTimestamp" < OLD."rewindTimestamp" THEN
           PERFORM pg_notify(
-            '${triggerName}', 
+            '${triggerName}',
             format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.RewindTimestampDecreased}', NEW."chainId")
           );
         END IF;
       ELSIF TG_OP = 'DELETE' THEN
         PERFORM pg_notify(
-          '${triggerName}', 
+          '${triggerName}',
           format('{"event":"%s","chainId":"%s"}', '${MultiChainRewindEvent.FullyRewind}', OLD."chainId")
         );
       END IF;

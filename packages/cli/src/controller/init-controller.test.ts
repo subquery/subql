@@ -42,14 +42,10 @@ async function testYAML(projectPath: string, project: ProjectSpecBase): Promise<
   };
 }
 
-// async
-const fileExists = async (file: string): Promise<boolean> => {
-  return new Promise<boolean>((resolve, reject) => {
-    fs.access(file, fs.constants.F_OK, (err) => {
-      err ? reject(err) : resolve(true);
-    });
-  });
-};
+async function fileExists(file: string): Promise<boolean> {
+  await fs.promises.access(file, fs.constants.F_OK);
+  return true;
+}
 
 jest.setTimeout(30000);
 

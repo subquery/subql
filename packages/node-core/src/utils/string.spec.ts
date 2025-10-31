@@ -29,6 +29,7 @@ describe('handledStringify', () => {
   it('should handle unknown errors gracefully', () => {
     const obj = {
       toJSON() {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw 'Unknown error'; // Simulate an unknown error
       },
     };

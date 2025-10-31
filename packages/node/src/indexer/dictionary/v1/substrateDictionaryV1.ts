@@ -179,9 +179,7 @@ export function buildDictionaryV1QueryEntries(
   return uniqBy(
     queryEntries,
     (item) =>
-      `${item.entity}|${JSON.stringify(
-        sortBy(item.conditions, (c) => c.field),
-      )}`,
+      `${item.entity}|${JSON.stringify(sortBy(item.conditions, (c) => c.field))}`,
   );
 }
 

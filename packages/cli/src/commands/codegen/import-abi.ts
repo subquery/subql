@@ -80,6 +80,7 @@ const generateOutputs = z.object({
   functions: z.array(z.string({description: 'Handlers for functions generated during the generation process'})),
 });
 
+// eslint-disable-next-line complexity
 async function generateAdapter(
   workingDir: string,
   args: GenerateInputs,
@@ -175,6 +176,10 @@ async function generateAdapter(
 
   const selectedEvents = await prepareInputFragments('event', args.events, eventsFragments, abiName, prompt);
   const selectedFunctions = await prepareInputFragments('function', args.functions, functionFragments, abiName, prompt);
+
+  if (!Object.keys(selectedEvents).length && !Object.keys(selectedFunctions).length) {
+    throw new Error(`When importing an ABI, please select at least one event or function`);
+  }
 
   let userInput: UserInput;
 

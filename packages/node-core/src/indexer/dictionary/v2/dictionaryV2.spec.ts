@@ -19,28 +19,25 @@ describe('Individual dictionary V2 test', () => {
     await dictionary.mockInit();
   });
 
-  it('can init metadata and set start height', async () => {
-    await (dictionary as any).init();
-    expect((dictionary as any)._metadata).toBeDefined();
-    expect((dictionary as any)._metadata.start).toBe(1);
+  it('can init metadata and set start height', () => {
+    expect(dictionary.testMetadata).toBeDefined();
+    expect(dictionary.testMetadata?.start).toBe(1);
   }, 500000);
 
-  it('should get correct getQueryEndBlock', async () => {
-    await (dictionary as any).init();
+  it('should get correct getQueryEndBlock', () => {
     // should use targeted query end height, start height + batch size
     const queryEndBlock1 = dictionary.getQueryEndBlock(1000, 1000000);
     expect(queryEndBlock1).toBe(1000);
 
     // should use dictionary metadata end, mock that api and targetHeight are beyond dictionary metadata
     const queryEndBlock2 = dictionary.getQueryEndBlock(10000000000, 10000000000);
-    expect(queryEndBlock2).toBe((dictionary as any)._metadata.end);
+    expect(queryEndBlock2).toBe(dictionary.testMetadata?.end);
   }, 500000);
 
   it('can get data', async () => {
-    await (dictionary as any).init();
     dictionary.updateQueriesMap(mockedDsMap);
     // mock api return
-    (dictionary as any).dictionaryApi = {
+    dictionary.setMockedApi({
       post: () => {
         return {
           status: 200,
@@ -53,20 +50,20 @@ describe('Individual dictionary V2 test', () => {
           },
         };
       },
-    };
+    });
 
     const data = await dictionary.getData(100, 1100, 100, {event: {}, method: {}});
     expect(data?.batchBlocks).toStrictEqual([105, 205, 600, 705]);
     expect(data?.lastBufferedHeight).toBe(705);
     // can update metadata block height
-    expect((dictionary as any).metadata.end).toBe(1000000);
+    expect(dictionary.testMetadata?.end).toBe(1000000);
 
     // can throw error if response failed
-    (dictionary as any).dictionaryApi = {
+    dictionary.setMockedApi({
       post: () => {
         throw new Error('Mock post error');
       },
-    };
+    });
     await expect(() => dictionary.getData(100, 1100, 100, {event: {}, method: {}})).rejects.toThrow(
       'Dictionary query failed Error: Mock post error'
     );
@@ -74,18 +71,15 @@ describe('Individual dictionary V2 test', () => {
     jest.clearAllMocks();
   }, 500000);
 
-  it('can determine current dictionary query map is valid with block height', async () => {
-    await (dictionary as any).init();
+  it('can determine current dictionary query map is valid with block height', () => {
     dictionary.updateQueriesMap(mockedDsMap);
     expect(dictionary.queryMapValidByHeight(105)).toBeTruthy();
     expect(dictionary.queryMapValidByHeight(1)).toBeFalsy();
   });
 
   it('should able to handle convertResponseBlocks return empty array blocks and lastBufferedHeight is undefined', async () => {
-    await (dictionary as any).init();
     dictionary.updateQueriesMap(mockedDsMap);
-    // mock api return
-    (dictionary as any).dictionaryApi = {
+    dictionary.setMockedApi({
       post: () => {
         return {
           status: 200,
@@ -98,7 +92,7 @@ describe('Individual dictionary V2 test', () => {
           },
         };
       },
-    };
+    });
     // mock convertResponseBlocks
     (dictionary as any).convertResponseBlocks = () => {
       return {
