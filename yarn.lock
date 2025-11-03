@@ -10304,7 +10304,7 @@ __metadata:
     "@types/yargs": "npm:^16.0.9"
     apollo-server-express: "npm:^3.12.0"
     compression: "npm:^1.8.0"
-    express-pino-logger: "npm:^6.0.0"
+    express-pino-logger: "npm:^7.0.0"
     graphile-build: "npm:^4.12.2"
     graphile-utils: "npm:^4.13.0"
     graphql: "npm:^15.8.0"
@@ -17074,12 +17074,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-pino-logger@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "express-pino-logger@npm:6.0.0"
+"express-pino-logger@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "express-pino-logger@npm:7.0.0"
   dependencies:
-    pino-http: "npm:^5.3.0"
-  checksum: 10/ea53b364d667de8652421c4d14b27ef18fc4f4e706be98efb3c932a181a108627323a47fdd3c01c32eb40276c0054aa32140bfcb6252a8cec776b16113ced4c2
+    pino-http: "npm:^6.0.0"
+  checksum: 10/b213ace84818ef81a38b10576e59fadbfe6aeb11da19c1d2ebd180040a7dfb3474a318979695d65ed43e6fa9c4415f42bf1cfcca9cea99c976f3c8f2c15b89db
   languageName: node
   linkType: hard
 
@@ -23637,14 +23637,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-http@npm:^5.3.0":
-  version: 5.8.0
-  resolution: "pino-http@npm:5.8.0"
+"pino-http@npm:^6.0.0":
+  version: 6.6.0
+  resolution: "pino-http@npm:6.6.0"
   dependencies:
     fast-url-parser: "npm:^1.1.3"
-    pino: "npm:^6.13.0"
-    pino-std-serializers: "npm:^4.0.0"
-  checksum: 10/6578f0a3f2535ea301a98ae70f4004009d2c42c99efd42892a358d46764ce3a46461e41f485ad5da8bafa231082de85f7a0cdc615a626f780651430a4bdddbaa
+    get-caller-file: "npm:^2.0.5"
+    pino: "npm:^7.5.0"
+    pino-std-serializers: "npm:^5.0.0"
+  checksum: 10/bcdb7bd996fa3e70b77ad77b7753693056778814351b2bd1bd3cf57fa91b0752fa5af4ff2d793ff6266b913d7e122a32e3163e5254f7380308ff1acee2feb626
   languageName: node
   linkType: hard
 
@@ -23662,7 +23663,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:7.11.0":
+"pino-std-serializers@npm:^5.0.0":
+  version: 5.6.0
+  resolution: "pino-std-serializers@npm:5.6.0"
+  checksum: 10/706d3bd66cf31cc2abd959b810f3dedc4f3642a50f90171df79c5c739f724a8806892221f2f23114b0d27205a1e273cd889d91e49ed41e856299eed7d5ed7909
+  languageName: node
+  linkType: hard
+
+"pino@npm:7.11.0, pino@npm:^7.5.0":
   version: 7.11.0
   resolution: "pino@npm:7.11.0"
   dependencies:
@@ -23683,7 +23691,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:^6.13.0, pino@npm:^6.13.3":
+"pino@npm:^6.13.3":
   version: 6.14.0
   resolution: "pino@npm:6.14.0"
   dependencies:
