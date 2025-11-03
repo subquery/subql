@@ -7234,9 +7234,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/testing@npm:^11.0.7":
-  version: 11.0.7
-  resolution: "@nestjs/testing@npm:11.0.7"
+"@nestjs/testing@npm:^11.1.8":
+  version: 11.1.8
+  resolution: "@nestjs/testing@npm:11.1.8"
   dependencies:
     tslib: "npm:2.8.1"
   peerDependencies:
@@ -7249,26 +7249,7 @@ __metadata:
       optional: true
     "@nestjs/platform-express":
       optional: true
-  checksum: 10/a7751d09bf15ecc44de74f38ec68fc79f56e4dc64e27953f5168a28a41c14ca88512deec26e3399dbae73c238491a93b0b2d79d99367cce74e0458ade0fe6536
-  languageName: node
-  linkType: hard
-
-"@nestjs/testing@npm:^9.4.0":
-  version: 9.4.3
-  resolution: "@nestjs/testing@npm:9.4.3"
-  dependencies:
-    tslib: "npm:2.5.3"
-  peerDependencies:
-    "@nestjs/common": ^9.0.0
-    "@nestjs/core": ^9.0.0
-    "@nestjs/microservices": ^9.0.0
-    "@nestjs/platform-express": ^9.0.0
-  peerDependenciesMeta:
-    "@nestjs/microservices":
-      optional: true
-    "@nestjs/platform-express":
-      optional: true
-  checksum: 10/a148ccfb0570c8f883bfcb64cff65902f9e8ce1efe2e20fa0fccf14e680fcb4632c012e2caea0336138756572e645418a2d69681e7ea85c0c20dbb4f1645053b
+  checksum: 10/2492cb13b52a93888ca3991110dc3899f84e8f64bcd735c682c15d905b152203b58943945301a7e743010c5d2b34052d58bab9c1c5ba8913bdacb866155c7c0a
   languageName: node
   linkType: hard
 
@@ -10280,7 +10261,7 @@ __metadata:
     "@nestjs/platform-express": "npm:^11.0.7"
     "@nestjs/schedule": "npm:^5.0.1"
     "@nestjs/schematics": "npm:^11.0.0"
-    "@nestjs/testing": "npm:^11.0.7"
+    "@nestjs/testing": "npm:^11.1.8"
     "@polkadot/api": "npm:^16.4.7"
     "@subql/common-substrate": "workspace:~"
     "@subql/node-core": "workspace:~"
@@ -10314,7 +10295,7 @@ __metadata:
     "@nestjs/core": "npm:^9.4.0"
     "@nestjs/platform-express": "npm:^9.4.0"
     "@nestjs/schematics": "npm:^9.2.0"
-    "@nestjs/testing": "npm:^9.4.0"
+    "@nestjs/testing": "npm:^11.1.8"
     "@subql/common": "workspace:~"
     "@subql/utils": "workspace:~"
     "@subql/x-graphile-build-pg": "npm:4.13.0-0.2.5"
