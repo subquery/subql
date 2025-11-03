@@ -10147,7 +10147,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common@npm:^5.7.0, @subql/common@npm:^5.7.2, @subql/common@npm:^5.7.3, @subql/common@workspace:packages/common, @subql/common@workspace:~":
+"@subql/common@npm:^5.7.0, @subql/common@npm:^5.7.2, @subql/common@npm:^5.7.3":
+  version: 5.8.0
+  resolution: "@subql/common@npm:5.8.0"
+  dependencies:
+    "@subql/types-core": "npm:~2.2.0"
+    axios: "npm:^1.12.0"
+    class-transformer: "npm:^0.5.1"
+    class-validator: "npm:0.14.1"
+    form-data: "npm:^4.0.4"
+    js-yaml: "npm:^4.1.0"
+    reflect-metadata: "npm:^0.2.2"
+    semver: "npm:^7.6.3"
+    update-notifier: "npm:^5.1.0"
+  checksum: 10/5d59911d3b4688dd446601a4a1fb3259fb9a2c7112e0667f8c480f1d00ad96fd4d0df89229d5ed14344f0531b789496bd10ed1ae1f57cdad2e56ac53dad37cc5
+  languageName: node
+  linkType: hard
+
+"@subql/common@workspace:packages/common, @subql/common@workspace:~":
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
@@ -10371,7 +10388,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-core@npm:^2.1.0, @subql/types-core@npm:^2.1.1, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core, @subql/types-core@workspace:~":
+"@subql/types-core@npm:^2.1.0, @subql/types-core@npm:^2.1.1, @subql/types-core@npm:~2.2.0, @subql/types-core@workspace:^, @subql/types-core@workspace:packages/types-core, @subql/types-core@workspace:~":
   version: 0.0.0-use.local
   resolution: "@subql/types-core@workspace:packages/types-core"
   dependencies:
@@ -13259,6 +13276,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"axios@npm:^1.12.0, axios@npm:^1.13.1":
+  version: 1.13.1
+  resolution: "axios@npm:1.13.1"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.4"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10/8046c15f3ffb5d5d45ce33074f69a9226d4c4312b205307d8a8f0d38bd549fdec7612b307a092b82d7af51d8f3a211ae27589f56a65643655acd01c6ee9bfdac
+  languageName: node
+  linkType: hard
+
 "axios@npm:^1.12.2":
   version: 1.12.2
   resolution: "axios@npm:1.12.2"
@@ -13267,17 +13295,6 @@ __metadata:
     form-data: "npm:^4.0.4"
     proxy-from-env: "npm:^1.1.0"
   checksum: 10/886a79770594eaad76493fecf90344b567bd956240609b5dcd09bd0afe8d3e6f1ad6d3257a93a483b6192b409d4b673d9515a34619e3e3ed1b2c0ec2a83b20ba
-  languageName: node
-  linkType: hard
-
-"axios@npm:^1.13.1":
-  version: 1.13.1
-  resolution: "axios@npm:1.13.1"
-  dependencies:
-    follow-redirects: "npm:^1.15.6"
-    form-data: "npm:^4.0.4"
-    proxy-from-env: "npm:^1.1.0"
-  checksum: 10/8046c15f3ffb5d5d45ce33074f69a9226d4c4312b205307d8a8f0d38bd549fdec7612b307a092b82d7af51d8f3a211ae27589f56a65643655acd01c6ee9bfdac
   languageName: node
   linkType: hard
 
