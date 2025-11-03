@@ -10321,14 +10321,12 @@ __metadata:
     "@subql/x-postgraphile-core": "npm:4.13.0-0.2.0"
     "@types/compression": "npm:^1.7.5"
     "@types/express": "npm:^4.17.21"
-    "@types/express-pino-logger": "npm:^4.0.5"
     "@types/jest": "npm:^27.5.2"
     "@types/lodash": "npm:^4.17.20"
     "@types/ws": "npm:^8"
     "@types/yargs": "npm:^16.0.9"
     apollo-server-express: "npm:^3.12.0"
     compression: "npm:^1.8.0"
-    express-pino-logger: "npm:^6.0.0"
     graphile-build: "npm:^4.12.2"
     graphile-utils: "npm:^4.13.0"
     graphql: "npm:^15.8.0"
@@ -10338,6 +10336,7 @@ __metadata:
     nodemon: "npm:^3.1.4"
     pg: "npm:^8.12.0"
     pg-tsquery: "npm:^8.4.2"
+    pino-http: "npm:^5.8.0"
     postgraphile: "npm:^4.13.0"
     postgraphile-plugin-connection-filter: "npm:^2.2.2"
     rxjs: "npm:^7.1.0"
@@ -10998,16 +10997,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express-pino-logger@npm:^4.0.5":
-  version: 4.0.5
-  resolution: "@types/express-pino-logger@npm:4.0.5"
-  dependencies:
-    "@types/pino": "npm:6.3"
-    "@types/pino-http": "npm:*"
-  checksum: 10/2c14592e25b2a168cd0f333743c4def061e7c3a3c57b6dcb730e5a9ad717f7c5fb21f5893a2c3b6f06e4205132765f3c2e056d124c19e8c28bb99b7e29fcfd7a
-  languageName: node
-  linkType: hard
-
 "@types/express-serve-static-core@npm:4.17.31":
   version: 4.17.31
   resolution: "@types/express-serve-static-core@npm:4.17.31"
@@ -11344,15 +11333,6 @@ __metadata:
     pg-protocol: "npm:*"
     pg-types: "npm:^2.2.0"
   checksum: 10/a64da7168842bb4c907cceb9ed1253ddc69d4caf5e6f01c79b453c22187cb6488f356bec287a9f1a6c67729fd1c3532632bb439fa7618feb026149c70fdfb4d5
-  languageName: node
-  linkType: hard
-
-"@types/pino-http@npm:*":
-  version: 5.8.4
-  resolution: "@types/pino-http@npm:5.8.4"
-  dependencies:
-    "@types/pino": "npm:6.3"
-  checksum: 10/9520c7ea5e2f4b6950d0635d26d3e37f70ef8199c3f6815e9f8dca887a9e967f81b4f1228b91d63b9506f4e9f3cac921170fd84b07ba62fbbe675b4d2579951a
   languageName: node
   linkType: hard
 
@@ -17106,15 +17086,6 @@ __metadata:
   version: 3.1.2
   resolution: "exponential-backoff@npm:3.1.2"
   checksum: 10/ca2f01f1aa4dafd3f3917bd531ab5be08c6f5f4b2389d2e974f903de3cbeb50b9633374353516b6afd70905775e33aba11afab1232d3acf0aa2963b98a611c51
-  languageName: node
-  linkType: hard
-
-"express-pino-logger@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "express-pino-logger@npm:6.0.0"
-  dependencies:
-    pino-http: "npm:^5.3.0"
-  checksum: 10/ea53b364d667de8652421c4d14b27ef18fc4f4e706be98efb3c932a181a108627323a47fdd3c01c32eb40276c0054aa32140bfcb6252a8cec776b16113ced4c2
   languageName: node
   linkType: hard
 
@@ -23672,7 +23643,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-http@npm:^5.3.0":
+"pino-http@npm:^5.8.0":
   version: 5.8.0
   resolution: "pino-http@npm:5.8.0"
   dependencies:
