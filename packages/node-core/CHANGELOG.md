@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [18.5.1] - 2025-11-05
 ### Fixed
 - Lock down VM2 version to avoid a breaking change (#2959)
 
@@ -1044,7 +1046,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.5.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.5.1...HEAD
+[18.5.1]: https://github.com/subquery/subql/compare/node-core/18.5.0...node-core/18.5.1
 [18.5.0]: https://github.com/subquery/subql/compare/node-core/18.4.0...node-core/18.5.0
 [18.4.0]: https://github.com/subquery/subql/compare/node-core/18.3.3...node-core/18.4.0
 [18.3.3]: https://github.com/subquery/subql/compare/node-core/18.3.2...node-core/18.3.3

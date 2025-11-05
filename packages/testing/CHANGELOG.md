@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2025-11-05
+### Changed
+- Update package manager (#2937)
+
 ## [2.3.0] - 2025-07-01
 ### Removed
 - Test files and artifacts from published package (#2838)
@@ -54,7 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Major release 2.0.0, align with other package versions
 
-[Unreleased]: https://github.com/subquery/subql/compare/testing/2.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/testing/2.3.1...HEAD
+[2.3.1]: https://github.com/subquery/subql/compare/testing/2.3.0...testing/2.3.1
 [2.3.0]: https://github.com/subquery/subql/compare/testing/2.2.4...testing/2.3.0
 [2.2.4]: https://github.com/subquery/subql/compare/testing/2.2.3...testing/2.2.4
 [2.2.3]: https://github.com/subquery/subql/compare/testing/2.2.2...testing/2.2.3
