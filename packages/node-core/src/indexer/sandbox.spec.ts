@@ -5,7 +5,7 @@ import {existsSync, writeFileSync, mkdirSync, rmSync} from 'fs';
 import {tmpdir} from 'os';
 import * as path from 'path';
 import {join} from 'path';
-import {VMScript} from 'vm2';
+import {NodeVM, VMScript} from 'vm2';
 import {NodeConfig} from '../configure/NodeConfig';
 import {IndexerSandbox, TestSandbox} from './sandbox';
 
@@ -13,7 +13,30 @@ describe('sandbox for subql-node', () => {
   let vm: IndexerSandbox;
 
   afterEach(() => {
-    vm.removeAllListeners();
+    vm?.removeAllListeners();
+  });
+
+  // This was caused by vm2@3.10.0 changes that were breaking in a minor release.
+  it('Can use older libraries that use prototypes to set properties', () => {
+    const script = `
+      const util = require('util');
+      const EventEmitter = require('events');
+
+      function MyStream() {
+        console.log("This is sha1");
+      }
+
+      util.inherits(MyStream, EventEmitter);
+    `;
+
+    const vmScript = new VMScript(script);
+    const vm = new NodeVM({
+      console: 'inherit',
+      require: {
+        builtin: ['util', 'events'],
+      },
+    });
+    expect(() => vm.run(vmScript)).not.toThrow();
   });
 
   it('wait until promise resolved', async () => {
@@ -232,7 +255,7 @@ describe('Sandbox Environment Variable Support', () => {
           apiKey: process.env.API_KEY,
           hasProcess: typeof process !== 'undefined'
         };
-        
+
         global.subqlTests = [result];
       `;
       const testPath = join(srcDir, 'test.js');
@@ -269,7 +292,7 @@ describe('Sandbox Environment Variable Support', () => {
           hasProcess: typeof process !== 'undefined',
           processType: typeof process
         };
-        
+
         global.subqlTests = [result];
       `;
       const testPath = join(srcDir, 'test.js');
