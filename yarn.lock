@@ -21790,11 +21790,11 @@ __metadata:
   linkType: hard
 
 "min-document@npm:^2.19.0":
-  version: 2.19.0
-  resolution: "min-document@npm:2.19.0"
+  version: 2.19.2
+  resolution: "min-document@npm:2.19.2"
   dependencies:
     dom-walk: "npm:^0.1.0"
-  checksum: 10/4e45a0686c81cc04509989235dc6107e2678a59bb48ce017d3c546d7d9a18d782e341103e66c78081dd04544704e2196e529905c41c2550bca069b69f95f07c8
+  checksum: 10/9c98ea950451ac3292762fdc7a076ef2d365d795280a2a9357a5d1a17d80c44ecab2354ad507432411c1605515731259b41ce97b87f0b7126e1dfe610b2674ae
   languageName: node
   linkType: hard
 
