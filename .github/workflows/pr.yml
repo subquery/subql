@@ -7,6 +7,8 @@ jobs:
   code-style:
     name: code-style
     runs-on: ubuntu-latest
+    env:
+      YARN_ENABLE_HARDENED_MODE: 0
     steps:
       - uses: actions/checkout@v5
       - name: Setup Node.js environment
@@ -46,6 +48,7 @@ jobs:
       SUBQL_ACCESS_TOKEN_TEST: ${{ secrets.SUBQL_ACCESS_TOKEN_TEST }}
       SUBQL_ORG_TEST: ${{ secrets.SUBQL_ORG_TEST }}
       ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+      YARN_ENABLE_HARDENED_MODE: 0
     steps:
       - uses: actions/checkout@v5
 

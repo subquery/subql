@@ -8,6 +8,8 @@ import type {
   RuntimeDatasourceTemplate as EthereumDsTemplate,
   EthereumDatasourceKind,
   EthereumHandlerKind,
+  EthereumTransactionFilter,
+  EthereumLogFilter,
 } from '@subql/types-ethereum';
 import {DEFAULT_HANDLER_BUILD_PATH} from '../../generate-controller';
 import {MigrateDatasourceKind, SubgraphDataSource, SubgraphTemplate} from '../types';
@@ -44,7 +46,7 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
             handler: h.handler,
             filter: {
               topics: [h.event],
-            },
+            } satisfies EthereumLogFilter,
           };
         }),
         ...(ds.mapping.callHandlers ?? []).map((h) => {
@@ -53,8 +55,8 @@ function baseDsConversion<D extends EthereumDs | EthTemplate>(
             migrateHandlerType: 'EthereumHandlerKind.Call',
             handler: h.handler,
             filter: {
-              f: h.function,
-            },
+              function: h.function,
+            } satisfies EthereumTransactionFilter,
           };
         }),
       ],

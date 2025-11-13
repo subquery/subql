@@ -55,11 +55,12 @@ describe('Migrate controller', () => {
     expect(extractGitInfo('https://google.com')).toBe(undefined);
   });
 
-  it('should get chain id, getChainIdByNetworkName', () => {
-    expect(getChainIdByNetworkName(NETWORK_FAMILY.ethereum, 'mainnet')).toBe('1');
-    expect(() => getChainIdByNetworkName(NETWORK_FAMILY.ethereum, 'newnetwork')).toThrow();
+  it('should get chain id, getChainIdByNetworkName', async () => {
+    await expect(getChainIdByNetworkName(NETWORK_FAMILY.ethereum, 'mainnet')).resolves.toBe('1');
+    await expect(getChainIdByNetworkName(NETWORK_FAMILY.ethereum, 'lens')).resolves.toBe('232');
+    await expect(getChainIdByNetworkName(NETWORK_FAMILY.ethereum, 'newnetwork')).rejects.toThrow();
     // not support yet
-    expect(() => getChainIdByNetworkName(NETWORK_FAMILY.algorand, 'algorand')).toThrow();
+    await expect(getChainIdByNetworkName(NETWORK_FAMILY.algorand, 'algorand')).rejects.toThrow();
   });
 
   it('prepareProject', async () => {
