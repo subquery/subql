@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Dynamic networks mapping for subgraph migration (#2964)
 
+### Fixed
+- Subgraph migration transaction handler filter (#2964)
+
 ## [6.5.1] - 2025-10-22
 ### Changed
 - Fix some typos (#2938)
