@@ -116,6 +116,32 @@ export abstract class BaseIndexerManager<
           dynamicDsCreated = true;
         }, 'createDynamicDatasource');
 
+        // Inject function to get dynamic datasources by template into vm
+        vm.freeze((templateName: string) => {
+          return this.dynamicDsService.getDynamicDatasourcesByTemplate(templateName);
+        }, 'getDynamicDatasources');
+
+        // Inject function to destroy ds into vm
+        vm.freeze(async (templateName: string, index: number) => {
+          await this.dynamicDsService.destroyDynamicDatasource(templateName, blockHeight, index);
+
+          // Remove the destroyed datasource from the current processing array
+          // Find the datasource by matching the global index stored in the service
+          const destroyedDsParam = this.dynamicDsService.getDatasourceParamByIndex(index);
+          if (destroyedDsParam) {
+            const dsIndex = filteredDataSources.findIndex((fds) => {
+              return (
+                fds.startBlock === destroyedDsParam.startBlock &&
+                JSON.stringify((fds as any).options || (fds as any).processor?.options || {}) ===
+                  JSON.stringify(destroyedDsParam.args || {})
+              );
+            });
+            if (dsIndex !== -1) {
+              filteredDataSources.splice(dsIndex, 1);
+            }
+          }
+        }, 'destroyDynamicDatasource');
+
         return vm;
       });
     }
