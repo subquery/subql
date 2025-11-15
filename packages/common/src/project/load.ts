@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
 import {plainToClass} from 'class-transformer';
-import {validateSync} from 'class-validator';
+import {validateSync, ValidationError} from 'class-validator';
 import yaml from 'js-yaml';
 import {gte} from 'semver';
 import {CommonProjectManifestV1_0_0Impl} from '../';
@@ -91,8 +91,11 @@ export function validateCommonProjectManifest(raw: unknown): void {
   const projectManifest = plainToClass<CommonProjectManifestV1_0_0Impl, unknown>(CommonProjectManifestV1_0_0Impl, raw);
   const errors = validateSync(projectManifest, {whitelist: true});
   if (errors?.length) {
-    // TODO: print error details
-    const errorMsgs = errors.map((e) => e.toString()).join('\n');
+    const errorMsgs = errors.map((error: ValidationError) => {
+      const property = error.property;
+      const constraints = error.constraints ? Object.values(error.constraints).join(', ') : 'unknown constraint';
+      return `  - ${property}: ${constraints}`;
+    }).join('\n');
     throw new Error(`project validation failed.\n${errorMsgs}`);
   }
 }
