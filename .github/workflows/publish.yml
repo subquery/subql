@@ -29,9 +29,10 @@ jobs:
 
       - id: get_commit_message
         run: |
-          if [ -n "${{ github.event.head_commit.message }}" ]
+          COMMIT_MSG_TEMP="${{ github.event.head_commit.message }}"
+          if [ -n "$COMMIT_MSG_TEMP" ]
           then
-            commit_msg="${{ github.event.head_commit.message }}"
+            commit_msg="$COMMIT_MSG_TEMP"
             echo "commit-message=${commit_msg}" | head -n 1 >> "$GITHUB_OUTPUT"
           else
             commit_message=$(git log -1 --pretty=%B | head -n 1)
