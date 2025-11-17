@@ -259,7 +259,10 @@ export function eventToTopic(input: string): string {
   if (isHexString(input)) return input;
 
   if (!eventTopicsCache[input]) {
-    eventTopicsCache[input] = id(EventFragment.fromString(input).format());
+    const cleanedInput = input.replace(/\bindexed\b/g, '');
+    eventTopicsCache[input] = id(
+      EventFragment.fromString(cleanedInput).format(),
+    );
   }
 
   return eventTopicsCache[input];

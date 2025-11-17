@@ -81,7 +81,10 @@ function validateAbi(datasources: SubqlRuntimeDatasource[], projectPath: string)
         if (!mappingHandler.filter.topics || !mappingHandler.filter.topics.length) continue;
 
         const notMatch = mappingHandler.filter.topics.find(
-          (topic) => topic && topic !== NOT_NULL_FILTER && !abiEvents.includes(EventFragment.fromString(topic).format())
+          (topic) =>
+            topic &&
+            topic !== NOT_NULL_FILTER &&
+            !abiEvents.includes(EventFragment.fromString(topic.replace(/\bindexed\b/g, '')).format())
         );
 
         if (notMatch) topicIssues.push(notMatch);

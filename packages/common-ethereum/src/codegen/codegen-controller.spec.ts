@@ -353,6 +353,41 @@ describe('Codegen spec', () => {
     ).rejects.toThrow(/Topic: "NotExist\(address a\)" not found in erc20 contract interface/);
   });
 
+  it('validate Abi.json Indexed Topic', async () => {
+    const ds: SubqlRuntimeDatasource = {
+      kind: EthereumDatasourceKind.Runtime,
+      startBlock: 1,
+      options: {
+        abi: 'erc20',
+        address: '',
+      },
+      assets: new Map([['erc20', {file: './abis/erc20.json'}]]),
+      mapping: {
+        file: '',
+        handlers: [
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Event,
+            filter: {
+              topics: ['Transfer(indexed address a,indexed address b,uint256 c)'],
+            },
+          },
+          {
+            handler: 'handleTransaction',
+            kind: EthereumHandlerKind.Event,
+            filter: {
+              topics: ['Transfer(indexed address a,indexed address b,uint256 c)'],
+            },
+          },
+        ],
+      },
+    };
+
+    await expect(
+      generateAbis([ds], PROJECT_PATH, undefined as any, undefined as any, undefined as any)
+    ).resolves.toBeDefined();
+  });
+
   it('validates abi with !null filter', async () => {
     const ds: SubqlRuntimeDatasource = {
       kind: EthereumDatasourceKind.Runtime,

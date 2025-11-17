@@ -19,6 +19,12 @@ describe('String utilities', () => {
       expect(eventToTopic(signature)).toBe(expected);
     });
 
+    it('should generate topic hash for standard event signature with indexed', () => {
+      const signature = 'Transfer(indexed address, indexed address,uint256)';
+      const expected = id('Transfer(address,address,uint256)');
+      expect(eventToTopic(signature)).toBe(expected);
+    });
+
     it('should generate topic hash for resolved signatures (enum as uint8)', () => {
       // After project load-time resolution, enum types are already resolved to uint8
       const resolvedSignature = 'DisputeOpen(uint256,address,address,uint8)';
