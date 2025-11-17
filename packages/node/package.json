@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-ethereum",
-  "version": "6.2.2-1",
+  "version": "6.3.0",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -69,6 +69,5 @@
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
-  ],
-  "stableVersion": "6.2.2-0"
+  ]
 }

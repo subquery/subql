@@ -4,8 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased]
+
+## [6.3.0] - 2025-11-17
 ### Added
 - Support for `indexed` option in event topic0 filters (#400)
 
@@ -654,7 +655,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.2.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.3.0...HEAD
+[6.3.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.2.1...node-ethereum/6.3.0
 [6.2.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.2.0...node-ethereum/6.2.1
 [6.2.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.1.1...node-ethereum/6.2.0
 [6.1.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.1.0...node-ethereum/6.1.1
