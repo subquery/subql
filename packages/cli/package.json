@@ -71,7 +71,7 @@
     "@types/semver": "^7.5.8",
     "@types/update-notifier": "^6",
     "@types/ws": "^8.5.13",
-    "eslint": "^8.8.0",
+    "eslint": "^9.39.1",
     "eslint-config-oclif": "^4.0.0",
     "eslint-config-oclif-typescript": "^1.0.3",
     "oclif": "^4.20.8",
