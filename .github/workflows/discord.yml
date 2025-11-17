@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Send release details to Discord
-        uses: rjstone/discord-webhook-notify@v1
+        uses: rjstone/discord-webhook-notify@v2
         with:
           webhookUrl: ${{ secrets.DISCORD_RELEASE_NOTES_WEBHOOK }}
           color: '#6499ff'

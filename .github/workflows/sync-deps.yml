@@ -15,9 +15,9 @@ jobs:
       SUBQL_ACCESS_TOKEN_TEST: ${{ secrets.SUBQL_ACCESS_TOKEN_TEST }}
       SUBQL_ORG_TEST: ${{ secrets.SUBQL_ORG_TEST }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
           node-version: lts/*
       - run: yarn

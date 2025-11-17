@@ -1,0 +1,172 @@
+name: "Publish"
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - ".github/workflows/**"
+
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+
+  pre-ci:
+    name: Pre-CI (Extract Commit Message)
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      commit-message: ${{ steps.get_commit_message.outputs.commit-message }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - id: get_commit_message
+        run: |
+          if [ -n "${{ github.event.head_commit.message }}" ]
+          then
+            commit_msg="${{ github.event.head_commit.message }}"
+            echo "commit-message=${commit_msg}" | head -n 1 >> "$GITHUB_OUTPUT"
+          else
+            commit_message=$(git log -1 --pretty=%B | head -n 1)
+            echo "commit-message=$commit_message" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Debug commit message
+        run: |
+          echo "Commit message: ${{ steps.get_commit_message.outputs.commit-message }}"
+
+  setup:
+    name: Setup & Detect Changes
+    needs: pre-ci
+    runs-on: ubuntu-latest
+    outputs:
+      changed-types: ${{ steps.changed-types.outputs.changed }}
+      changed-common-ethereum: ${{ steps.changed-common-ethereum.outputs.changed }}
+      changed-node: ${{ steps.changed-node.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 100 # Needed to detect changes by having commit history
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-types
+        with:
+          paths: packages/types
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-common-ethereum
+        with:
+          paths: packages/common-ethereum
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-node
+        with:
+          paths: packages/node
+
+  release:
+    name: Release Publish
+    needs: [pre-ci, setup]
+    if: >
+      !startsWith(github.event.head_commit.message, '[SKIP CI]')
+      && startsWith(github.event.head_commit.message, '[release]')
+      && github.repository == 'subquery/subql-ethereum'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - run: yarn
+
+      - name: build
+        run: yarn build
+
+      # Publish to npm and github releases
+      - name: Publish Types
+        if: needs.setup.outputs.changed-types == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Publish Common Ethereum
+        if: needs.setup.outputs.changed-common-ethereum == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/common-ethereum
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Publish Node
+        if: needs.setup.outputs.changed-node == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/node
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+  prerelease:
+    name: Prerelease Publish
+    needs: [pre-ci, setup]
+    if: >
+      !startsWith(needs.pre-ci.outputs.commit-message, '[SKIP CI]')
+      && !startsWith(needs.pre-ci.outputs.commit-message, '[release]')
+      && github.repository == 'subquery/subql-ethereum'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.REPO_TOKEN }} # Needed to push changes back to repo
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - run: yarn
+
+      - name: build
+        run: yarn build
+
+      # Prerelease publish steps
+      - name: Bump types & deploy
+        if: needs.setup.outputs.changed-types == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/types
+
+      - name: Bump common Ethereum & deploy
+        if: needs.setup.outputs.changed-common-ethereum == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/common-ethereum
+
+      - name: Bump node & deploy
+        if: needs.setup.outputs.changed-node == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/node
+
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "[SKIP CI] Prerelease"
+          default_author: github_actions

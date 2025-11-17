@@ -9,21 +9,16 @@ inputs:
   repo-token:
     description: 'token to create github release'
     required: true
-  npm-token:
-    description: 'token to push to npm registry'
-    required: true
-  
+
 runs:
   using: "composite"
   steps:
     - working-directory: ${{ inputs.package-path }}
-      run: echo "Changes exist in ${{ inputs.package-path }}" && yarn npm publish --access public 
-      env:
-        NPM_TOKEN: ${{ inputs.npm-token }}
+      run: echo "Changes exist in ${{ inputs.package-path }}" && yarn npm publish --access public
       shell: bash
 
     - working-directory: ${{ github.workspace }}
       run: node ${{ github.action_path }}/gh-release-script.js ${{ github.workspace }}/${{ inputs.package-path }} ${{ github.sha }}
-      env: 
+      env:
         REPO_TOKEN: ${{ inputs.repo-token }}
       shell: bash
