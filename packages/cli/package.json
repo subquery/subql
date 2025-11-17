@@ -58,7 +58,7 @@
     "@subql/common-algorand": "^4.4.3",
     "@subql/common-concordium": "^4.0.1",
     "@subql/common-cosmos": "^5.5.0",
-    "@subql/common-ethereum": "^4.9.3",
+    "@subql/common-ethereum": "^4.10.0",
     "@subql/common-near": "^4.3.4",
     "@subql/common-solana": "^1.2.0",
     "@subql/common-starknet": "^1.3.0",
