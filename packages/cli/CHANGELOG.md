@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.6.1] - 2025-11-20
+### Changed
+- Update glob dependency (#2970)
+
 ## [6.6.0] - 2025-11-17
 ### Added
 - Dynamic networks mapping for subgraph migration (#2964)
@@ -880,7 +884,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/6.6.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/6.6.1...HEAD
+[6.6.1]: https://github.com/subquery/subql/compare/cli/6.6.0...cli/6.6.1
 [6.6.0]: https://github.com/subquery/subql/compare/cli/6.5.1...cli/6.6.0
 [6.5.1]: https://github.com/subquery/subql/compare/cli/6.5.0...cli/6.5.1
 [6.5.0]: https://github.com/subquery/subql/compare/cli/6.4.1...cli/6.5.0
