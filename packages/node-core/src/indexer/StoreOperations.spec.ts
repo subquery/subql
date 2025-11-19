@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {GraphQLJsonFieldType, u8aToHex} from '@subql/utils';
+import {GraphQLJsonFieldType, GraphQLModelsType, u8aToHex} from '@subql/utils';
 import {StoreOperations} from './StoreOperations';
 import {OperationType} from './types';
 
@@ -277,5 +277,147 @@ describe('StoreOperations', () => {
       operationStack.put(o.operation, o.entityType, o.data);
     }
     expect(() => operationStack.makeOperationMerkleTree()).not.toThrow();
+  });
+
+  describe('arrays', () => {
+    // There was no explicit support for arrays, and most data types converted to bytes without issue if they were arrays.
+    // BigInt, Bytes and Date were a problem so there is a specific case for that.
+    it('retains support for arrays as a single value', () => {
+      const models: GraphQLModelsType[] = [
+        {
+          name: 'DelegationEntity',
+          fields: [
+            {
+              name: 'id',
+              type: 'ID',
+              isArray: false,
+              nullable: false,
+              isEnum: false,
+            },
+            {
+              name: 'delegatorAddress',
+              type: 'String',
+              isArray: true,
+              nullable: false,
+              isEnum: false,
+            },
+          ],
+          indexes: <any[]>[],
+        },
+      ];
+      const operationStack = new StoreOperations(models);
+
+      const data = {
+        id: 'Test',
+        delegatorAddress: ['0x2fd781561631df6Ae95B8f590b38ea8f1267d690', '0xCcFC53103Dc0D227abc190a678afe969f38c14e0'],
+      };
+
+      operationStack.put(OperationType.Set, 'DelegationEntity', data);
+
+      operationStack.makeOperationMerkleTree();
+      expect(operationStack.getOperationLeafCount()).toBe(1);
+      const mRoot = operationStack.getOperationMerkleRoot();
+
+      expect(Buffer.from(mRoot!).toString('hex')).toEqual(
+        '25f69c94b779ed53fb6acafb0360148fc3e57944d965d0a2c1f3296747a9646f'
+      );
+    });
+
+    it('Can generate an operation hash all types as an array', () => {
+      const models: GraphQLModelsType[] = [
+        {
+          name: 'DelegationEntity',
+          fields: [
+            {
+              name: 'id',
+              type: 'ID',
+              isArray: false,
+              nullable: false,
+              isEnum: false,
+            },
+            {
+              name: 'bigIntArray',
+              type: 'BigInt',
+              isArray: true,
+              nullable: false,
+              isEnum: false,
+            },
+            {
+              name: 'boolArray',
+              type: 'Boolean',
+              isArray: true,
+              nullable: false,
+              isEnum: false,
+            },
+            {
+              name: 'bytesArray',
+              type: 'Bytes',
+              isArray: true,
+              nullable: false,
+              isEnum: false,
+            },
+            {
+              name: 'dateArray',
+              type: 'Date',
+              isArray: true,
+              nullable: false,
+              isEnum: false,
+            },
+            {
+              name: 'floatArray',
+              type: 'Float',
+              isArray: true,
+              nullable: false,
+              isEnum: false,
+            },
+            {
+              name: 'intArray',
+              type: 'Int',
+              isArray: true,
+              nullable: false,
+              isEnum: false,
+            },
+            {
+              name: 'jsonArray',
+              type: 'Json',
+              isArray: true,
+              nullable: false,
+              isEnum: false,
+            },
+            {
+              name: 'stringArray',
+              type: 'String',
+              isArray: true,
+              nullable: false,
+              isEnum: false,
+            },
+          ],
+          indexes: <any[]>[],
+        },
+      ];
+      const operationStack = new StoreOperations(models);
+
+      const data = {
+        id: 'Test',
+        bigIntArray: [200000000000000000000000n, 1000000000000000000000n],
+        booleanArray: [true, false],
+        bytesArray: [Buffer.from('hello'), Buffer.from('world')],
+        dateArray: [new Date('2020-05-29T13:28:36.000Z'), new Date('2021-05-29T13:28:36.000Z')],
+        floatArray: [3.14, 2.71],
+        intArray: [42, 69],
+        jsonArray: [{foo: 'bar'}, {baz: 123}],
+        stringArray: ['Hello', 'World'],
+      };
+
+      operationStack.put(OperationType.Set, 'DelegationEntity', data);
+
+      operationStack.makeOperationMerkleTree();
+      expect(operationStack.getOperationLeafCount()).toBe(1);
+      const mRoot = operationStack.getOperationMerkleRoot();
+
+      expect(Buffer.from(mRoot!).toString('hex')).toEqual(
+        '43cd725db69074a79a180875507033219d2da8957e21e551d31118daf8375865'
+      );
+    });
   });
 });
