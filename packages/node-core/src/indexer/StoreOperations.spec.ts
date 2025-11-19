@@ -343,7 +343,7 @@ describe('StoreOperations', () => {
               isEnum: false,
             },
             {
-              name: 'boolArray',
+              name: 'booleanArray',
               type: 'Boolean',
               isArray: true,
               nullable: false,
@@ -416,7 +416,7 @@ describe('StoreOperations', () => {
       const mRoot = operationStack.getOperationMerkleRoot();
 
       expect(Buffer.from(mRoot!).toString('hex')).toEqual(
-        '43cd725db69074a79a180875507033219d2da8957e21e551d31118daf8375865'
+        '348f203090055906afd4c2d8ac470a2403537bd4c5e3fdc67ce8a6b6b5eda414'
       );
     });
   });

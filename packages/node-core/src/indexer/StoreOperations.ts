@@ -40,7 +40,7 @@ export class StoreOperations {
             throw new Error('Unable to get type by scalar name');
           }
 
-          // This should be done for all types when we have an array, but for backwards compatibility this is only for BigInt and Bytes as using an array would throw an error.
+          // This should be done for all types when we have an array, but for backwards compatibility this is only for BigInt, Date and Bytes as using an array would throw an error.
           if (field.isArray && ['BigInt', 'Bytes', 'Date'].includes(type.name)) {
             for (const item of fieldValue as Array<any>) {
               dataBufferArray.push(type.hashCode(item));
