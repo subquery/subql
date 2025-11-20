@@ -32,7 +32,7 @@
     "@subql/types-ethereum": "workspace:*",
     "@typechain/ethers-v5": "^11.1.1",
     "@zilliqa-js/crypto": "^3.5.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "pino": "^6.13.3",
     "reflect-metadata": "^0.1.13",
     "typechain": "^8.3.1"
