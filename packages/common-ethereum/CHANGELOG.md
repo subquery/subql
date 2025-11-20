@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.10.1] - 2025-11-20
+### Changed
+- Update `@subql/common` (#403)
+
 ## [4.10.0] - 2025-11-17
 ### Added
 - Support for `indexed` option in event topic0 filters (#400)
@@ -269,7 +273,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync with main sdk (#14)
 
 ## [0.1.0] - 2022-10-31
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/4.10.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/4.10.1...HEAD
+[4.10.1]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/4.10.0...common-ethereum/4.10.1
 [4.10.0]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/4.9.3...common-ethereum/4.10.0
 [4.9.3]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/4.9.2...common-ethereum/4.9.3
 [4.9.2]: https://github.com/subquery/subql-ethereum/compare/common-ethereum/4.9.1...common-ethereum/4.9.2

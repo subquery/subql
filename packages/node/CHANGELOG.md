@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.3.1] - 2025-11-20
+### Changed
+- Update `@subql/node-core` with POI fixes for arrays (#403)
+
 ## [6.3.0] - 2025-11-17
 ### Added
 - Support for `indexed` option in event topic0 filters (#400)
@@ -655,7 +659,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Init release
 
-[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.3.1...HEAD
+[6.3.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.3.0...node-ethereum/6.3.1
 [6.3.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.2.1...node-ethereum/6.3.0
 [6.2.1]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.2.0...node-ethereum/6.2.1
 [6.2.0]: https://github.com/subquery/subql-ethereum/compare/node-ethereum/6.1.1...node-ethereum/6.2.0
