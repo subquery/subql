@@ -11,7 +11,7 @@
     "@apollo/client": "^3.14.0",
     "@inquirer/prompts": "^5.3.6",
     "@modelcontextprotocol/sdk": "^1.17.2",
-    "@oclif/core": "^4.3.3",
+    "@oclif/core": "^4.8.0",
     "@subql/common": "workspace:~",
     "@subql/contract-sdk": "^1.9.0",
     "@subql/network-clients": "^1.1.0",
