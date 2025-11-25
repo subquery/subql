@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [19.0.0] - 2025-11-26
 ### Changed
 - Update the `toBlockResponse` function signature on the worker service to take an `IBlock<B>` instead of a `B` type (#2978)
 
@@ -1056,7 +1058,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/18.5.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/19.0.0...HEAD
+[19.0.0]: https://github.com/subquery/subql/compare/node-core/18.5.3...node-core/19.0.0
 [18.5.3]: https://github.com/subquery/subql/compare/node-core/18.5.2...node-core/18.5.3
 [18.5.2]: https://github.com/subquery/subql/compare/node-core/18.5.1...node-core/18.5.2
 [18.5.1]: https://github.com/subquery/subql/compare/node-core/18.5.0...node-core/18.5.1
