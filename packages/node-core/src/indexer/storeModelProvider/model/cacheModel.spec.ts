@@ -59,6 +59,7 @@ jest.mock('@subql/x-sequelize', () => {
       bulkCreate: jest.fn((records: {id: string}[]) => {
         records.map((r) => (pendingData[r.id] = r));
       }),
+      getAttributes: jest.fn(() => ({})),
       destroy: jest.fn(({where: {id}}) => pendingDeletes.push(id)),
     }),
     sync: jest.fn(),
@@ -197,7 +198,7 @@ describe('cacheModel', () => {
       );
 
       /* get usese the get cache */
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       const entity = (await testModel.get('entity1_id_0x01'))!;
 
       expect(entity).toBeDefined();
@@ -209,7 +210,7 @@ describe('cacheModel', () => {
       expect(entity2?.field1).toEqual(2);
 
       /* getBy methods use set cache */
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       const [entity3] = (await testModel.getByFields([['field1', '=', 2]], {limit: 1}))!;
       expect(entity3?.field1).toEqual(2);
 
