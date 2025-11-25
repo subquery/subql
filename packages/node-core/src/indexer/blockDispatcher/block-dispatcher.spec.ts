@@ -88,11 +88,11 @@ class TestWorkerService extends BaseWorkerService<number, Header> {
   async fetchChainBlock(height: number): Promise<IBlock<number>> {
     return fetchBlocksFunction(height);
   }
-  toBlockResponse(block: number): Header {
+  toBlockResponse(block: IBlock<number>): Header {
     return {
-      blockHeight: block,
-      blockHash: block.toString(),
-      parentHash: (block - 1).toString(),
+      blockHeight: block.block,
+      blockHash: block.block.toString(),
+      parentHash: (block.block - 1).toString(),
       timestamp: new Date(),
     };
   }
