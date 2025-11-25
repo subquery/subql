@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "6.4.5-0",
+  "version": "6.4.5",
   "description": "",
   "author": "Ian He",
   "license": "GPL-3.0",
@@ -58,6 +58,5 @@
     "LICENSE",
     "README.md",
     "CHANGELOG.md"
-  ],
-  "stableVersion": "6.4.4"
+  ]
 }
