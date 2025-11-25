@@ -96,9 +96,10 @@ export class PlainModel<T extends BaseEntity = BaseEntity> implements IModel<T> 
       );
     }
 
+    const allKeys = Object.keys(this.model.getAttributes()) as (keyof T)[];
     await this.model.bulkCreate(data as CreationAttributes<Model<T, T>>[], {
       transaction: tx,
-      updateOnDuplicate: Object.keys(data[0]) as unknown as (keyof T)[],
+      updateOnDuplicate: allKeys,
     });
 
     if (this.exporters.length) {

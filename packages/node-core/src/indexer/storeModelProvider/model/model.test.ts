@@ -55,8 +55,8 @@ describe('Model provider consistency test', () => {
   });
 
   describe('disable historical', () => {
-    let plainModel: PlainModel<{id: string; field1: number}>;
-    let cacheModel: CachedModel<{id: string; field1: number}>;
+    let plainModel: PlainModel<{id: string; field1?: number}>;
+    let cacheModel: CachedModel<{id: string; field1?: number}>;
     let i = 0;
     beforeAll(() => {
       plainModel = new PlainModel(model, false);
@@ -116,6 +116,28 @@ describe('Model provider consistency test', () => {
       const cacheResult3 = await cacheModel.getByFields([], {limit: 10});
       expect(result3.length).toEqual(2);
       expect(cacheResult3).toEqual(result3);
+    });
+
+    it('update with optional fields', async () => {
+      // This test checks that `updateOnDuplicate` is correct, previously it would use Object.keys(data[0]) which would cause issues when later data has more keys,
+      const data = [
+        {id: '1', field1: 1},
+        {id: '2', field1: 2},
+      ];
+
+      // Set some initial data
+      await plainModel.bulkUpdate(data, 1);
+      const initial2 = await plainModel.get('2');
+      expect(initial2).toEqual({id: '2', field1: 2});
+
+      // Set new data + update previous data
+      const data2 = [
+        {id: '3'}, // Omit field1 because its optional
+        {id: '2', field1: 3},
+      ];
+      await plainModel.bulkUpdate(data2, 2);
+      const updated2 = await plainModel.get('2');
+      expect(updated2).toEqual({id: '2', field1: 3});
     });
   });
 
