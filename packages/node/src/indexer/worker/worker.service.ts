@@ -61,11 +61,11 @@ export class WorkerService extends BaseWorkerService<
 
   // TODO test this with LightBlockContent
   protected toBlockResponse(
-    block: BlockContent /* | LightBlockContent*/,
+    block: IBlock<BlockContent> /*| IBlock<LightBlockContent>*/,
   ): FetchBlockResponse {
     return {
-      ...substrateBlockToHeader(block.block),
-      specVersion: block.block.specVersion,
+      ...block.getHeader(),
+      specVersion: block.block.block.specVersion,
     };
   }
 

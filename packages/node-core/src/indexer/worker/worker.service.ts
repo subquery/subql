@@ -33,7 +33,7 @@ export abstract class BaseWorkerService<
   private queue: AutoQueue<IBlock<B>>;
 
   protected abstract fetchChainBlock(heights: number, extra: E): Promise<IBlock<B>>;
-  protected abstract toBlockResponse(block: B): R;
+  protected abstract toBlockResponse(block: IBlock<B>): R;
   protected abstract processFetchedBlock(block: IBlock<B>, dataSources: DS[]): Promise<ProcessBlockResponse>;
   protected abstract getBlockSize(block: IBlock<B>): number;
 
@@ -64,7 +64,7 @@ export abstract class BaseWorkerService<
       });
 
       // Return info to get the runtime version, this lets the worker thread know
-      return this.toBlockResponse(block.block);
+      return this.toBlockResponse(block);
     } catch (e: any) {
       if (!isTaskFlushedError(e)) {
         logger.error(e, `Failed to fetch block ${height}`);

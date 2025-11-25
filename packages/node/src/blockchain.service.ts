@@ -41,7 +41,6 @@ import {
 const BLOCK_TIME_VARIANCE = 5000; //ms
 const INTERVAL_PERCENT = 0.9;
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../package.json');
 
 @Injectable()
@@ -105,7 +104,6 @@ export class BlockchainService
       );
     }
 
-    // const start = new Date();
     return worker.fetchBlock(height, blockSpecVersion);
   }
 
