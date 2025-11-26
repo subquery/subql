@@ -3,11 +3,21 @@
 
 import {PgEntity, PgEntityKind, SQL} from '@subql/x-graphile-build-pg';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function makeRangeQuery(tableName: SQL, blockHeight: SQL, sql: any): SQL {
   return sql.fragment`${tableName}._block_range @> ${blockHeight}`;
 }
 
-// Used to filter out _block_range attributes
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function makeBlockRangeQuery(tableName: SQL, blockRange: [string, string], sql: any): SQL {
+  const [startBlock, endBlock] = blockRange;
+  return sql.fragment`${tableName}._block_range && int8range(${sql.value(startBlock)}::bigint, ${sql.value(endBlock)}::bigint, '[]')`;
+}
+
+export function extractBlockHeightFromRange(blockRangeColumn: string): string {
+  return `lower(${blockRangeColumn})`;
+}
+
 export function hasBlockRange(entity?: PgEntity): boolean {
   if (!entity) {
     return true;
@@ -18,7 +28,7 @@ export function hasBlockRange(entity?: PgEntity): boolean {
       return entity.attributes.some(({name}) => name === '_block_range');
     }
     case PgEntityKind.CONSTRAINT: {
-      return hasBlockRange(entity.class); // DOESNT WORK && notBlockRange(pgFieldIntrospection.foreignClass)
+      return hasBlockRange(entity.class);
     }
     default:
       return true;
