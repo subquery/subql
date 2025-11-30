@@ -24,7 +24,7 @@ jobs:
     outputs:
       commit-message: ${{ steps.get_commit_message.outputs.commit-message }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -58,7 +58,7 @@ jobs:
       changed-query: ${{ steps.changed-query.outputs.changed }}
       changed-testing: ${{ steps.changed-testing.outputs.changed }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 100 # Needed to detect changes by having commit history
 
@@ -121,7 +121,7 @@ jobs:
       && github.repository == 'subquery/subql'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -218,7 +218,7 @@ jobs:
       && github.repository == 'subquery/subql'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.REPO_TOKEN }} # Needed to push changes back to repo
