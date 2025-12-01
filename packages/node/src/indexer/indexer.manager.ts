@@ -97,9 +97,12 @@ export class IndexerManager extends BaseIndexerManager<
     dataSources: SubstrateProjectDs[],
     getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
+    // Extract block height for checking destroyed datasources
+    const blockHeight = blockContent.block.block.header.number.toNumber();
+
     if (isFullBlock(blockContent)) {
       const { block, events, extrinsics } = blockContent;
-      await this.indexContent(SubstrateHandlerKind.Block)(
+      await this.indexContent(SubstrateHandlerKind.Block, blockHeight)(
         block,
         dataSources,
         getVM,
@@ -131,7 +134,7 @@ export class IndexerManager extends BaseIndexerManager<
 
       // Run initialization events
       for (const event of groupedEvents.init) {
-        await this.indexContent(SubstrateHandlerKind.Event)(
+        await this.indexContent(SubstrateHandlerKind.Event, blockHeight)(
           event,
           dataSources,
           getVM,
@@ -139,7 +142,7 @@ export class IndexerManager extends BaseIndexerManager<
       }
 
       for (const extrinsic of extrinsics) {
-        await this.indexContent(SubstrateHandlerKind.Call)(
+        await this.indexContent(SubstrateHandlerKind.Call, blockHeight)(
           extrinsic,
           dataSources,
           getVM,
@@ -151,7 +154,7 @@ export class IndexerManager extends BaseIndexerManager<
         );
 
         for (const event of extrinsicEvents) {
-          await this.indexContent(SubstrateHandlerKind.Event)(
+          await this.indexContent(SubstrateHandlerKind.Event, blockHeight)(
             event,
             dataSources,
             getVM,
@@ -161,7 +164,7 @@ export class IndexerManager extends BaseIndexerManager<
 
       // Run finalization events
       for (const event of groupedEvents.finalize) {
-        await this.indexContent(SubstrateHandlerKind.Event)(
+        await this.indexContent(SubstrateHandlerKind.Event, blockHeight)(
           event,
           dataSources,
           getVM,
@@ -169,7 +172,7 @@ export class IndexerManager extends BaseIndexerManager<
       }
     } else {
       for (const event of blockContent.events) {
-        await this.indexContent(SubstrateHandlerKind.Event)(
+        await this.indexContent(SubstrateHandlerKind.Event, blockHeight)(
           event,
           dataSources,
           getVM,
@@ -180,6 +183,7 @@ export class IndexerManager extends BaseIndexerManager<
 
   private indexContent(
     kind: SubstrateHandlerKind,
+    blockHeight: number,
   ): (
     content:
       | SubstrateBlock
@@ -191,6 +195,14 @@ export class IndexerManager extends BaseIndexerManager<
   ) => Promise<void> {
     return async (content, dataSources, getVM) => {
       for (const ds of dataSources) {
+        // Skip datasources that have been destroyed at or before this block
+        // When a datasource is destroyed, its endBlock is set to the current blockHeight
+        // We want to exclude it from processing in subsequent handlers within the same block
+        const endBlock =
+          'endBlock' in ds ? (ds as { endBlock?: number }).endBlock : undefined;
+        if (endBlock !== undefined && endBlock <= blockHeight) {
+          continue;
+        }
         await this.indexData(kind, content, ds, getVM);
       }
     };

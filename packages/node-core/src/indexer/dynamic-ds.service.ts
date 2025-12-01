@@ -169,10 +169,13 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
     // Update the datasource object if it exists
     // Note: _datasources and _datasourceParams arrays should always be in sync.
     // If the index is valid for params, it must also be valid for datasources.
-    if (!this._datasources[index]) {
+    const datasource = this._datasources[index];
+    if (!datasource) {
       throw new Error(`Datasources array out of sync with params at index ${index}`);
     }
-    (this._datasources[index] as any).endBlock = currentBlockHeight;
+    // Set endBlock on the datasource object
+    // BaseDataSource type doesn't include endBlock, but it exists at runtime
+    Object.assign(datasource, {endBlock: currentBlockHeight});
 
     await this.metadata.set(METADATA_KEY, this._datasourceParams, tx);
 

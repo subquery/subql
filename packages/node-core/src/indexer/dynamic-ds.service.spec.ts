@@ -120,17 +120,17 @@ describe('DynamicDsService', () => {
     const newParam = {templateName: 'Test', startBlock: 60};
     await service.createDynamicDatasource(newParam);
 
-    const finalParams = (service as any)._datasourceParams;
-    const destroyedCount = finalParams.filter((p) => p.endBlock !== undefined).length;
-    const activeCount = finalParams.filter((p) => p.endBlock === undefined).length;
+    const finalParams: DatasourceParams[] = (service as any)._datasourceParams;
+    const destroyedCount = finalParams.filter((p: DatasourceParams) => p.endBlock !== undefined).length;
+    const activeCount = finalParams.filter((p: DatasourceParams) => p.endBlock === undefined).length;
 
     expect(destroyedCount).toBeGreaterThanOrEqual(1);
     expect(activeCount).toBeGreaterThanOrEqual(1);
 
-    const destroyedParam = finalParams.find((p) => p.startBlock === 1 && p.endBlock === 50);
+    const destroyedParam = finalParams.find((p: DatasourceParams) => p.startBlock === 1 && p.endBlock === 50);
     expect(destroyedParam).toBeDefined();
 
-    const newParamFound = finalParams.find((p) => p.startBlock === 60 && !p.endBlock);
+    const newParamFound = finalParams.find((p: DatasourceParams) => p.startBlock === 60 && !p.endBlock);
     expect(newParamFound).toBeDefined();
   });
 
