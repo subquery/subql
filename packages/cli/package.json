@@ -9,7 +9,7 @@
   "bugs": "https://github.com/subquery/subql/issues",
   "dependencies": {
     "@apollo/client": "^3.14.0",
-    "@inquirer/prompts": "^5.3.6",
+    "@inquirer/prompts": "^8.0.2",
     "@modelcontextprotocol/sdk": "^1.17.2",
     "@oclif/core": "^4.8.0",
     "@subql/common": "workspace:~",
