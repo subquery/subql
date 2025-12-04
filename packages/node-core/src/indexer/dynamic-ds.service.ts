@@ -174,8 +174,7 @@ export class DynamicDsService<DS extends BaseDataSource = BaseDataSource, P exte
       throw new Error(`Datasources array out of sync with params at index ${index}`);
     }
     // Set endBlock on the datasource object
-    // BaseDataSource type doesn't include endBlock, but it exists at runtime
-    Object.assign(datasource, {endBlock: currentBlockHeight});
+    datasource.endBlock = currentBlockHeight;
 
     await this.metadata.set(METADATA_KEY, this._datasourceParams, tx);
 

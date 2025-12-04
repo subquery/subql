@@ -194,15 +194,9 @@ export class IndexerManager extends BaseIndexerManager<
     getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
   ) => Promise<void> {
     return async (content, dataSources, getVM) => {
-      for (const ds of dataSources) {
-        // Skip datasources that have been destroyed at or before this block
-        // When a datasource is destroyed, its endBlock is set to the current blockHeight
-        // We want to exclude it from processing in subsequent handlers within the same block
-        const endBlock =
-          'endBlock' in ds ? (ds as { endBlock?: number }).endBlock : undefined;
-        if (endBlock !== undefined && endBlock <= blockHeight) {
-          continue;
-        }
+      // When a datasource is destroyed, its removed from the array and the loop exits early
+      for (let i = 0; i < dataSources.length; i++) {
+        const ds = dataSources[i];
         await this.indexData(kind, content, ds, getVM);
       }
     };

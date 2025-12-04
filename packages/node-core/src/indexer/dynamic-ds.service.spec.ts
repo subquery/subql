@@ -455,5 +455,74 @@ describe('DynamicDsService', () => {
       expect(datasources[1]).toBeDefined();
       expect((datasources[1] as any).endBlock).toBe(50);
     });
+
+    it('destroyed datasource is filtered out in subsequent block processing', async () => {
+      const meta = mockMetadata([testParam1, testParam2, testParam3]);
+      await service.init(meta);
+
+      const blockHeight = 100;
+      const datasources = (service as any)._datasources;
+
+      // Simulate filtering datasources for block 100 (all should be included initially)
+      const filterDataSources = (blockHeight: number, dataSources: BaseDataSource[]) => {
+        return dataSources.filter(
+          (ds) =>
+            ds.startBlock !== undefined &&
+            ds.startBlock <= blockHeight &&
+            ((ds as any).endBlock ?? Number.MAX_SAFE_INTEGER) > blockHeight
+        );
+      };
+
+      // Initial state: all 3 datasources should be active
+      let filteredDs = filterDataSources(blockHeight, datasources);
+      expect(filteredDs.length).toBe(3);
+
+      // Simulate processing: DS2 destroys DS3 during block 100
+      await service.destroyDynamicDatasource('Test', blockHeight, 2);
+
+      // Re-filter datasources
+      filteredDs = filterDataSources(blockHeight, datasources);
+
+      // After destruction, only DS1 and DS2 should remain
+      expect(filteredDs.length).toBe(2);
+      expect(filteredDs[0].startBlock).toBe(1); // DS1
+      expect(filteredDs[1].startBlock).toBe(2); // DS2
+
+      // Verify DS3 was destroyed
+      expect((datasources[2] as any).endBlock).toBe(blockHeight);
+    });
+
+    it('demonstrates traditional for loop pattern works with array reassignment', async () => {
+      const meta = mockMetadata([testParam1, testParam2, testParam3]);
+      await service.init(meta);
+
+      const blockHeight = 100;
+      let datasources = (service as any)._datasources;
+
+      const processed: number[] = [];
+
+      for (let i = 0; i < datasources.length; i++) {
+        const ds = datasources[i];
+        processed.push(ds.startBlock);
+
+        // When processing DS2, destroy DS3 and re-filter
+        if (ds.startBlock === 2) {
+          await service.destroyDynamicDatasource('Test', blockHeight, 2);
+
+          // Re-filter datasources using filter and reassignment
+          datasources = datasources.filter(
+            (d: any) =>
+              d.startBlock !== undefined &&
+              d.startBlock <= blockHeight &&
+              (d.endBlock ?? Number.MAX_SAFE_INTEGER) > blockHeight
+          );
+        }
+      }
+      expect(processed).toEqual([1, 2]);
+
+      // Verify DS3 has endBlock set
+      const allDs = (service as any)._datasources;
+      expect((allDs[2] as any).endBlock).toBe(blockHeight);
+    });
   });
 });

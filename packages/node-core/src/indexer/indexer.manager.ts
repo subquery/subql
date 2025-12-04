@@ -89,7 +89,7 @@ export abstract class BaseIndexerManager<
     const blockHeight = block.getHeader().blockHeight;
     monitorWrite(`- BlockHash: ${block.getHeader().blockHash}`);
 
-    const filteredDataSources = this.filterDataSources(blockHeight, dataSources);
+    let filteredDataSources = this.filterDataSources(blockHeight, dataSources);
 
     this.assertDataSources(filteredDataSources, blockHeight);
 
@@ -124,8 +124,9 @@ export abstract class BaseIndexerManager<
         // Inject function to destroy ds into vm
         vm.freeze(async (templateName: string, index: number) => {
           await this.dynamicDsService.destroyDynamicDatasource(templateName, blockHeight, index);
-          // Note: The datasource object in filteredDataSources is updated with endBlock
-          // The child class implementation should check ds.endBlock before processing
+
+          // Re-filter datasources to exclude the destroyed one
+          filteredDataSources = this.filterDataSources(blockHeight, filteredDataSources);
         }, 'destroyDynamicDatasource');
 
         return vm;
@@ -151,7 +152,7 @@ export abstract class BaseIndexerManager<
       (ds) =>
         ds.startBlock !== undefined &&
         ds.startBlock <= nextProcessingHeight &&
-        (ds.endBlock ?? Number.MAX_SAFE_INTEGER) >= nextProcessingHeight
+        (ds.endBlock ?? Number.MAX_SAFE_INTEGER) > nextProcessingHeight
     );
 
     // perform filter for custom ds
