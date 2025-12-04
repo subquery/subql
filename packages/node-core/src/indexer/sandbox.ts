@@ -21,6 +21,7 @@ export interface SandboxOption {
   root: string;
   entry: string;
   chainId: string;
+  envConfig?: Record<string, string>;
 }
 
 const DEFAULT_OPTION = (unsafe = false): NodeVMOptions => {
@@ -44,7 +45,7 @@ const logger = getLogger('sandbox');
 export class Sandbox extends NodeVM {
   private root: string;
   private entry: string;
-  private sourceMap: any | undefined;
+  private sourceMap: any;
 
   constructor(
     option: SandboxOption,
@@ -68,6 +69,11 @@ export class Sandbox extends NodeVM {
     this.entry = option.entry;
 
     this.freeze(option.chainId, 'chainId');
+
+    // Inject environment variables if provided
+    if (option.envConfig) {
+      this.freeze({env: option.envConfig}, 'process');
+    }
 
     const sourceMapFile = path.join(this.root, this.entry);
 
@@ -144,13 +150,11 @@ export class Sandbox extends NodeVM {
     return json;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async findLineInfo(
     sourcemap: any,
     compiledLineNumber: number,
     compiledColumnNumber: number
   ): Promise<NullableMappedPosition> {
-    // eslint-disable-next-line @typescript-eslint/await-thenable
     const consumer = await new SourceMapConsumer(sourcemap);
     const lineInfo = consumer.originalPositionFor({line: compiledLineNumber, column: compiledColumnNumber});
 
@@ -218,9 +222,12 @@ export class TestSandbox extends Sandbox {
     this.injectGlobals(option);
   }
 
-  private injectGlobals({store}: SandboxOption) {
+  private injectGlobals({envConfig, store}: SandboxOption) {
     if (store) {
       this.freeze(store, 'store');
+    }
+    if (envConfig) {
+      this.freeze({env: envConfig}, 'process');
     }
     this.freeze(logger, 'logger');
   }

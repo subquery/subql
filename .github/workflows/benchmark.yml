@@ -65,7 +65,7 @@ jobs:
 
     steps:
       #Check out
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 100
           token: ${{ secrets.REPO_TOKEN }}
@@ -156,7 +156,7 @@ jobs:
           utcOffset: "+12:00"
 
       - name: Upload reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: benchmark-${{steps.current-time.outputs.formattedTime}}-${{steps.query_meta.outputs.indexer_version}}
           path: output/benchmark/

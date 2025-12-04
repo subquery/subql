@@ -13,11 +13,11 @@ import {ApolloServerPluginCacheControl, ApolloServerPluginLandingPageDisabled} f
 import {ApolloServer, UserInputError} from 'apollo-server-express';
 import compression from 'compression';
 import {NextFunction, Request, Response} from 'express';
-import PinoLogger from 'express-pino-logger';
 import {GraphQLSchema} from 'graphql';
 import {useServer} from 'graphql-ws/lib/use/ws';
 import {set} from 'lodash';
 import {Pool, PoolClient} from 'pg';
+import pinoLogger from 'pino-http';
 import {makePluginHook} from 'postgraphile';
 import {WebSocketServer} from 'ws';
 import {Config} from '../configure';
@@ -89,7 +89,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async onModuleDestroy(): Promise<void> {
     await Promise.all([this.apolloServer?.stop(), this.wsCleanup?.dispose()]);
   }
@@ -223,7 +222,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       this.wsCleanup = useServer({schema, context: {pgClient: this.pgPool}}, wsServer);
     }
 
-    app.use(PinoLogger(PinoConfig));
+    app.use(pinoLogger(PinoConfig));
     app.use(limitBatchedQueries);
     app.use(compression());
 
@@ -244,6 +243,7 @@ function limitBatchedQueries(req: Request, res: Response, next: NextFunction): v
         const queries = req.body;
         if (Array.isArray(queries) && queries.length > argv['query-batch-limit']) {
           errors.push(new UserInputError('Batch query limit exceeded'));
+          // eslint-disable-next-line @typescript-eslint/only-throw-error
           throw errors;
         }
       } catch (error: any) {

@@ -35,7 +35,7 @@ describe('Promise Utils', () => {
       const fn = jest.fn(() => {
         if (count < 1) {
           count++;
-          return Promise.reject();
+          return Promise.reject(new Error('Test'));
         }
         return Promise.resolve();
       });

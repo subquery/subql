@@ -6,6 +6,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.4.6] - 2025-11-26
+### Fixed
+- skipTransactions combined with workers throwing an error getting the block timestamp (#2978)
+
+## [6.4.5] - 2025-11-25
+### Fixed
+- Updating models updateOnDuplicate field being calculated incorrectly (#2976)
+
+## [6.4.4] - 2025-11-20
+### Fixed
+- POI issues with array fields (#2972)
+
+## [6.4.3] - 2025-11-05
+### Fixed
+- Lock down VM2 version to avoid a breaking change (#2959)
+
+## [6.4.2] - 2025-10-22
+### Changed
+- Update `@subql/common-substrate`
+
+## [6.4.0] - 2025-10-15
+### Changed
+- Minor improvements and fixes from upgrading to eslint 9 with stricter settings (#2929)
+
+## [6.3.5] - 2025-09-16
+### Changed
+- Locked down graphql related dependencies (#2876)
+- Update polkadot dependenices (#2915)
+
+## [6.3.4] - 2025-09-09
+### Fixed
+- Dictionary v2 being used with empty filter conditions (#2909)
+
 ## [6.3.3] - 2025-07-30
 ### Fixed
 - Indexes not being checked correctly (#2871)
@@ -1459,7 +1492,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/6.3.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/6.4.6...HEAD
+[6.4.6]: https://github.com/subquery/subql/compare/node/6.4.5...node/6.4.6
+[6.4.5]: https://github.com/subquery/subql/compare/node/6.4.4...node/6.4.5
+[6.4.4]: https://github.com/subquery/subql/compare/node/6.4.3...node/6.4.4
+[6.4.3]: https://github.com/subquery/subql/compare/node/6.4.2...node/6.4.3
+[6.4.2]: https://github.com/subquery/subql/compare/node/6.4.0...node/6.4.2
+[6.4.0]: https://github.com/subquery/subql/compare/node/6.3.5...node/6.4.0
+[6.3.5]: https://github.com/subquery/subql/compare/node/6.3.4...node/6.3.5
+[6.3.4]: https://github.com/subquery/subql/compare/node/6.3.3...node/6.3.4
 [6.3.3]: https://github.com/subquery/subql/compare/node/6.3.2...node/6.3.3
 [6.3.2]: https://github.com/subquery/subql/compare/node/6.3.1...node/6.3.2
 [6.3.1]: https://github.com/subquery/subql/compare/node/6.3.0...node/6.3.1

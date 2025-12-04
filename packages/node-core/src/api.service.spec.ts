@@ -15,7 +15,7 @@ class TestApiService extends ApiService {
     index: number,
     endpoint: string,
     config: IEndpointConfig,
-    postConnectedHook?: ((connection: IApiConnectionSpecific, endpoint: string, index: number) => void) | undefined
+    postConnectedHook?: (connection: IApiConnectionSpecific, endpoint: string, index: number) => void
   ): void {
     /* No Op to avoid creating intervals/timeouts in tests*/
   }

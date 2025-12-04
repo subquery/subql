@@ -88,16 +88,15 @@ class TestWorkerService extends BaseWorkerService<number, Header> {
   async fetchChainBlock(height: number): Promise<IBlock<number>> {
     return fetchBlocksFunction(height);
   }
-  toBlockResponse(block: number): Header {
+  toBlockResponse(block: IBlock<number>): Header {
     return {
-      blockHeight: block,
-      blockHash: block.toString(),
-      parentHash: (block - 1).toString(),
+      blockHeight: block.block,
+      blockHash: block.block.toString(),
+      parentHash: (block.block - 1).toString(),
       timestamp: new Date(),
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async processFetchedBlock(block: IBlock<number>): Promise<ProcessBlockResponse> {
     const res = await indexBlockFunction?.(block);
 
@@ -195,9 +194,6 @@ describe.each<[string, () => IBlockDispatcher<number>]>([
           };
         },
       } as any;
-
-      // Needs to be before block dispatcher constructor
-      blockchainService as any;
 
       return new BlockDispatcher(
         nodeConfig,

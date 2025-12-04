@@ -57,7 +57,7 @@ export class Logger {
   private childLoggers: {[category: string]: Pino.Logger} = {};
   private _debugFilter: string[];
 
-  constructor({filepath, level: logLevel = 'info', nestedKey, outputFormat, rotate, debugFilter = []}: LoggerOption) {
+  constructor({debugFilter = [], filepath, level: logLevel = 'info', nestedKey, outputFormat, rotate}: LoggerOption) {
     this._debugFilter = debugFilter;
 
     const options = {

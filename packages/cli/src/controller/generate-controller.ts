@@ -245,7 +245,8 @@ export async function prepareInputFragments<T extends ConstructorFragment | Frag
 ): Promise<Record<string, T>> {
   if (!rawInput) {
     if (!prompt) {
-      throw new Error(`${type} options must be provided`);
+      // No items selected or
+      return {};
     }
 
     const selected = await prompt({

@@ -46,20 +46,22 @@ describe('migrate manifest controller', () => {
     );
   });
 
-  it(`extractNetworkFromManifest, should extract network info, throw if network not same`, () => {
-    const chainInfo = extractNetworkFromManifest(subgraph);
+  it(`extractNetworkFromManifest, should extract network info, throw if network not same`, async () => {
+    const chainInfo = await extractNetworkFromManifest(subgraph);
     expect(chainInfo).toStrictEqual({networkFamily: NETWORK_FAMILY.ethereum, chainId: '1'});
 
     const mockPloygonDs = {...subgraph.dataSources[0]};
     mockPloygonDs.network = 'polygon';
     subgraph.dataSources.push(mockPloygonDs);
-    expect(() => extractNetworkFromManifest(subgraph)).toThrow(
+    await expect(extractNetworkFromManifest(subgraph)).rejects.toThrow(
       `All network values in subgraph Networks should be the same. Got mainnet,polygon`
     );
   });
 
-  it(`extractNetworkFromManifest, should throw if can not determine network family from ds`, () => {
+  it(`extractNetworkFromManifest, should throw if can not determine network family from ds`, async () => {
     delete (subgraph.dataSources[0] as any).kind;
-    expect(() => extractNetworkFromManifest(subgraph)).toThrow(`Subgraph dataSource kind or network not been found`);
+    await expect(extractNetworkFromManifest(subgraph)).rejects.toThrow(
+      `Subgraph dataSource kind or network not been found`
+    );
   });
 });

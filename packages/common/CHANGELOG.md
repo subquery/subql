@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.8.2] - 2025-11-20
+### Changed
+- Update js-yaml (#2960)
+
+## [5.8.1] - 2025-11-05
+### Changed
+- Update axios (#2952)
+
+## [5.8.0] - 2025-10-15
+### Changed
+- Minor improvements and fixes from upgrading to eslint 9 with stricter settings (#2929)
+
+## [5.7.6] - 2025-09-16
+### Changed
+- Improved error message relating to IPFS (#2876)
+
 ## [5.7.5] - 2025-08-29
 ### Changed
 - Fixed typos (#2895)
@@ -482,7 +498,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/5.7.5...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/5.8.2...HEAD
+[5.8.2]: https://github.com/subquery/subql/compare/common/5.8.1...common/5.8.2
+[5.8.1]: https://github.com/subquery/subql/compare/common/5.8.0...common/5.8.1
+[5.8.0]: https://github.com/subquery/subql/compare/common/5.7.6...common/5.8.0
+[5.7.6]: https://github.com/subquery/subql/compare/common/5.7.5...common/5.7.6
 [5.7.5]: https://github.com/subquery/subql/compare/common/5.7.4...common/5.7.5
 [5.7.4]: https://github.com/subquery/subql/compare/common/5.7.3...common/5.7.4
 [5.7.3]: https://github.com/subquery/subql/compare/common/5.7.2...common/5.7.3

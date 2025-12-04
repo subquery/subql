@@ -1,0 +1,304 @@
+name: "Publish"
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  pre-ci:
+    name: Pre-CI (Extract Commit Message)
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      commit-message: ${{ steps.get_commit_message.outputs.commit-message }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - id: get_commit_message
+        run: |
+          if [ -n "${{ github.event.head_commit.message }}" ]
+          then
+            echo "commit-message=${{ github.event.head_commit.message }}" | head -n 1 >> "$GITHUB_OUTPUT"
+          else
+            commit_message=$(git log -1 --pretty=%B | head -n 1)
+            echo "commit-message=$commit_message" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Debug commit message
+        run: |
+          echo "Commit message: ${{ steps.get_commit_message.outputs.commit-message }}"
+
+  setup:
+    name: Setup & Detect Changes
+    needs: pre-ci
+    runs-on: ubuntu-latest
+    outputs:
+      changed-utils: ${{ steps.changed-utils.outputs.changed }}
+      changed-types-core: ${{ steps.changed-types-core.outputs.changed }}
+      changed-types: ${{ steps.changed-types.outputs.changed }}
+      changed-common: ${{ steps.changed-common.outputs.changed }}
+      changed-common-substrate: ${{ steps.changed-common-substrate.outputs.changed }}
+      changed-cli: ${{ steps.changed-cli.outputs.changed }}
+      changed-node-core: ${{ steps.changed-node-core.outputs.changed }}
+      changed-node: ${{ steps.changed-node.outputs.changed }}
+      changed-query: ${{ steps.changed-query.outputs.changed }}
+      changed-testing: ${{ steps.changed-testing.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 100 # Needed to detect changes by having commit history
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-utils
+        with:
+          paths: packages/utils
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-types-core
+        with:
+          paths: packages/types-core
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-types
+        with:
+          paths: packages/types
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-common
+        with:
+          paths: packages/common
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-common-substrate
+        with:
+          paths: packages/common-substrate
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-cli
+        with:
+          paths: packages/cli
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-node-core
+        with:
+          paths: packages/node-core
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-node
+        with:
+          paths: packages/node
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-query
+        with:
+          paths: packages/query
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-testing
+        with:
+          paths: packages/testing
+
+  release:
+    name: Release Publish
+    needs: [pre-ci, setup]
+    if: >
+      !startsWith(needs.pre-ci.outputs.commit-message, '[SKIP CI]')
+      && startsWith(needs.pre-ci.outputs.commit-message, '[release]')
+      && github.repository == 'subquery/subql'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - run: yarn
+
+      - name: build
+        run: yarn build
+
+      # Publish to npm and github releases
+      - name: Publish Utils
+        if: needs.setup.outputs.changed-utils == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/utils
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Publish Types-core
+        if: needs.setup.outputs.changed-types-core == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types-core
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Publish Types
+        if: needs.setup.outputs.changed-types == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Publish Common
+        if: needs.setup.outputs.changed-common == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/common
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Publish Common Substrate
+        if: needs.setup.outputs.changed-common-substrate == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/common-substrate
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Publish Testing
+        if: needs.setup.outputs.changed-testing == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/testing
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Publish Node Core
+        if: needs.setup.outputs.changed-node-core == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/node-core
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Publish Node
+        if: needs.setup.outputs.changed-node == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/node
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Publish Query
+        if: needs.setup.outputs.changed-query == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/query
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Publish Cli
+        if: needs.setup.outputs.changed-cli == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/cli
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+  prerelease:
+    name: Prerelease Publish
+    needs: [pre-ci, setup]
+    if: >
+      !startsWith(needs.pre-ci.outputs.commit-message, '[SKIP CI]')
+      && !startsWith(needs.pre-ci.outputs.commit-message, '[release]')
+      && github.repository == 'subquery/subql'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.REPO_TOKEN }} # Needed to push changes back to repo
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - run: yarn
+
+      - name: build
+        run: yarn build
+
+      # Prerelease publish steps
+      - name: Bump utils & deploy
+        if: needs.setup.outputs.changed-utils == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/utils
+
+      - name: Bump types-core & deploy
+        if: needs.setup.outputs.changed-types-core == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/types-core
+
+      - name: Bump types & deploy
+        if: needs.setup.outputs.changed-types == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/types
+
+      - name: Bump common & deploy
+        if: needs.setup.outputs.changed-common == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/common
+
+      - name: Bump common substrate & deploy
+        if: needs.setup.outputs.changed-common-substrate == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/common-substrate
+
+      - name: Bump testing & deploy
+        if: needs.setup.outputs.changed-testing == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/testing
+
+      - name: Bump node-core & deploy
+        if: needs.setup.outputs.changed-node-core == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/node-core
+
+      - name: Bump node & deploy
+        if: needs.setup.outputs.changed-node == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/node
+
+      - name: Bump query & deploy
+        if: needs.setup.outputs.changed-query == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/query
+
+      - name: Bump cli & deploy
+        if: needs.setup.outputs.changed-cli == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/cli
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "[SKIP CI] Prerelease"
+          default_author: github_actions

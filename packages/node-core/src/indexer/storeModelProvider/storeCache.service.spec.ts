@@ -41,6 +41,7 @@ jest.mock('@subql/x-sequelize', () => {
       ]),
       bulkCreate: jest.fn(),
       destroy: jest.fn(),
+      getAttributes: jest.fn(() => ({id: null, field1: null})),
     }),
     sync: jest.fn(),
     transaction: () => {

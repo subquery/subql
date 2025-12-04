@@ -5,7 +5,6 @@ import fs from 'fs';
 import path from 'path';
 import {NETWORK_FAMILY} from '@subql/common';
 import {cloneProjectTemplate, fetchExampleProjects} from '../init-controller';
-import {graphNetworkNameChainId} from './constants';
 import {ChainInfo, SubgraphProject} from './types';
 
 /**
@@ -63,13 +62,27 @@ export async function prepareProject(chainInfo: ChainInfo, subqlDir: string): Pr
   }
   await cloneProjectTemplate(path.parse(subqlDir).dir, path.parse(subqlDir).name, templateProject);
 }
-//TODO, this might can be dynamic
-export function getChainIdByNetworkName(networkFamily: NETWORK_FAMILY, chainName: string): string {
-  const chainId = graphNetworkNameChainId[networkFamily]?.[chainName];
-  if (!chainId) {
+
+export async function getChainIdByNetworkName(networkFamily: NETWORK_FAMILY, chainName: string): Promise<string> {
+  const graphFamily = networkFamily.toLowerCase() === 'ethereum' ? 'eip155' : networkFamily.toLowerCase();
+  const url = `https://raw.githubusercontent.com/graphprotocol/networks-registry/refs/heads/main/registry/${graphFamily}/${chainName}.json`;
+
+  try {
+    const res = await fetch(url);
+
+    const data = (await res.json()) as {caip2Id: string};
+
+    const [prefix, chainId] = data.caip2Id.split(':');
+
+    if (!chainId) {
+      // Should be re-caught and thrown below
+      throw new Error('Invalid data');
+    }
+
+    return chainId;
+  } catch (e) {
     throw new Error(`Could not find chainId for network ${networkFamily} chain ${chainName}`);
   }
-  return chainId;
 }
 
 function networkFamilyToTemplateNetwork(networkFamily: NETWORK_FAMILY): string {

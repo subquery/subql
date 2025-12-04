@@ -52,6 +52,5 @@ type OtherEntity @entity {
 type FooEntity @entity {
   id: ID!
   example: ExampleEntity!
-}
-"
+}"
 `;

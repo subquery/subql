@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.5.5] - 2025-11-20
+### Changed
+- Update `@subql/common`
+
+## [4.5.3] - 2025-10-22
+### Changed
+- Update `@subql/common`
+
 ## [4.5.2] - 2025-07-30
 ### Changed
 - Lock down class-transformer and class-validator versions (#2871)
@@ -229,7 +237,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/4.5.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/4.5.4...HEAD
+[4.5.4]: https://github.com/subquery/subql/compare/common-substrate/4.5.3...common-substrate/4.5.4
+[4.5.3]: https://github.com/subquery/subql/compare/common-substrate/4.5.2...common-substrate/4.5.3
 [4.5.2]: https://github.com/subquery/subql/compare/common-substrate/4.5.1...common-substrate/4.5.2
 [4.5.1]: https://github.com/subquery/subql/compare/common-substrate/4.5.0...common-substrate/4.5.1
 [4.5.0]: https://github.com/subquery/subql/compare/common-substrate/4.4.0...common-substrate/4.5.0

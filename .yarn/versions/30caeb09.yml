@@ -1,0 +1,4 @@
+undecided:
+  - "@subql/node-core"
+  - "@subql/types"
+  - "@subql/utils"

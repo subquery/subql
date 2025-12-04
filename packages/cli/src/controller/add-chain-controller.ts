@@ -28,7 +28,7 @@ type DockerComposeEnvironment = {
 };
 
 type DockerComposeHealthcheck = {
-  test: Array<string | 'CMD'>;
+  test: ['CMD', ...string[]];
   interval: string;
   timeout: string;
   retries: number;

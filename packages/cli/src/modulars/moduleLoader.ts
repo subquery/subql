@@ -18,7 +18,9 @@ export function loadDependency<N extends NETWORK_FAMILY>(network: N, projectDir:
   if (!moduleCache[network]) {
     try {
       // Resolve the package from the project directory, otherwise look relative to the current package
-      const projectDep = resolveFrom.silent(projectDir ?? process.cwd(), packageName);
+      // We don't do this in tests because it will resolve mixed versions because dev dependenceies
+      const projectDep =
+        process.env.NODE_ENV === 'test' ? undefined : resolveFrom.silent(projectDir ?? process.cwd(), packageName);
       moduleCache[network] = require(projectDep ?? packageName) as ModuleCache[N];
     } catch (error) {
       console.warn(`! Failed to load ${packageName} locally: ${error}. \n ! Attempting to load globally`);

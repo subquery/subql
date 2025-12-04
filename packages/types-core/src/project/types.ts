@@ -61,7 +61,7 @@ export interface CommonSubqueryProject<
   /**
    * The network configuration for the SubQuery project.
    *
-   * This defines what network you are wanting to index as well as the details on how to conect to it.
+   * This defines what network you are wanting to index as well as the details on how to connect to it.
    * @readonly
    * @type {N}
    */

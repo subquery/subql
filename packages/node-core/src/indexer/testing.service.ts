@@ -8,7 +8,6 @@ import {SubqlTest} from '@subql/testing/interfaces';
 import {BaseDataSource, IProjectNetworkConfig} from '@subql/types-core';
 import chalk from 'chalk';
 import {cloneDeep} from 'lodash';
-import {IApi} from '../api.service';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {SandboxOption, TestSandbox} from './sandbox';
@@ -113,7 +112,11 @@ export abstract class TestingService<A, SA, B, DS extends BaseDataSource> {
         this.indexBlock.bind(this)
       );
 
-      failedTests > 0 ? this.totalFailedTests++ : this.totalPassedTests++;
+      if (failedTests > 0) {
+        this.totalFailedTests++;
+      } else {
+        this.totalPassedTests++;
+      }
 
       if (failedTestSummary) {
         this.failedTestsSummary.push(failedTestSummary);

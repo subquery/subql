@@ -271,11 +271,12 @@ export class CachedModel<T extends BaseEntity = BaseEntity>
         }
       }
 
+      const allKeys = Object.keys(this.model.getAttributes()) as (keyof T)[];
       dbOperation = Promise.all([
         records.length &&
           this.model.bulkCreate(records, {
             transaction: tx,
-            updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[],
+            updateOnDuplicate: allKeys,
           }),
         Object.keys(removeRecords).length &&
           this.model.destroy({where: {id: Object.keys(removeRecords)} as any, transaction: tx}),

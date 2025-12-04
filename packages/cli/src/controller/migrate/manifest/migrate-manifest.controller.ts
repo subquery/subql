@@ -49,7 +49,7 @@ export function readSubgraphManifest(inputPath: string, subgraphPath: string): S
   }
 }
 
-export function extractNetworkFromManifest(subgraphProject: SubgraphProject): ChainInfo {
+export async function extractNetworkFromManifest(subgraphProject: SubgraphProject): Promise<ChainInfo> {
   const subgraphDsKinds = subgraphProject.dataSources.map((d) => d.kind).filter((k) => k !== undefined);
   const subgraphDsNetworks = subgraphProject.dataSources.map((d) => d.network).filter((n) => n !== undefined);
   if (!subgraphDsKinds.length || !subgraphDsNetworks.length) {
@@ -64,7 +64,7 @@ export function extractNetworkFromManifest(subgraphProject: SubgraphProject): Ch
   if (!networkFamily) {
     throw new Error(`Corresponding SubQuery network is not found with subgraph data source kind ${firstDsKind}`);
   }
-  return {networkFamily, chainId: getChainIdByNetworkName(networkFamily, firstDsNetwork)};
+  return {networkFamily, chainId: await getChainIdByNetworkName(networkFamily, firstDsNetwork)};
 }
 
 /**

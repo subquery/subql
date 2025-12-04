@@ -117,7 +117,7 @@ export abstract class DictionaryV2<
     fieldSelector: FieldSelector
   ): Promise<DictionaryResponse<IBlock<FB> | number> | undefined> {
     const {conditions, queryEndBlock} = this.getQueryConditions(startBlock, endBlock);
-    if (!conditions) {
+    if (!conditions || Object.keys(conditions).length === 0) {
       return undefined;
     }
     const requestData = {

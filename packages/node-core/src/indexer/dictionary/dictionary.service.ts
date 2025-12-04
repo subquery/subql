@@ -5,7 +5,6 @@ import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {NETWORK_FAMILY} from '@subql/common';
 import {IProjectNetworkConfig} from '@subql/types-core';
-import fetch from 'cross-fetch';
 import {NodeConfig} from '../../configure';
 import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
@@ -162,7 +161,7 @@ export abstract class DictionaryService<DS, FB> implements IDictionaryCtrl<DS, F
       if (!response.ok) {
         throw new Error(`Bad response, code="${response.status}" body="${await response.text()}"`);
       }
-      const dictionaryJson = await response.json();
+      const dictionaryJson: any = await response.json();
 
       const dictionaries = dictionaryJson[networkFamily.toLowerCase()][chainId];
 

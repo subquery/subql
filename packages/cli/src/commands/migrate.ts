@@ -101,7 +101,7 @@ async function migrateSubgraphAdapter(
     const subgraphManifest = readSubgraphManifest(subgraphManifestPath, subgraphDir);
     improveProjectInfo(subgraphDir, subgraphManifest);
     subgraphValidation(subgraphManifest);
-    const chainInfo = extractNetworkFromManifest(subgraphManifest);
+    const chainInfo = await extractNetworkFromManifest(subgraphManifest);
     await prepareProject(chainInfo, subqlDir);
     await migrateAbis(subgraphManifest, subgraphDir, subqlDir);
     await migrateManifest(chainInfo, subgraphManifest, subqlManifestPath);
