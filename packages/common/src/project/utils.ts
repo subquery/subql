@@ -16,6 +16,7 @@ import {
   registerDecorator,
   validateSync,
   ValidationArguments,
+  ValidationError,
   ValidationOptions,
   ValidatorConstraint,
   ValidatorConstraintInterface,
@@ -199,10 +200,41 @@ export async function delay(sec: number): Promise<void> {
   });
 }
 
+/**
+ * Recursively formats validation errors into a structured format.
+ * Handles nested errors (errors with children) by recursively processing them.
+ * Formats array indices with brackets for better readability (e.g., dataSources[0].mapping.handlers[1].filter).
+ */
+function formatValidationErrors(errors: ValidationError[], parentPath = ''): string[] {
+  const errorMessages: string[] = [];
+  
+  for (const error of errors) {
+    // Check if property is a numeric string (array index)
+    const isArrayIndex = /^\d+$/.test(error.property);
+    const propertyPath = parentPath
+      ? isArrayIndex
+        ? `${parentPath}[${error.property}]`
+        : `${parentPath}.${error.property}`
+      : error.property;
+    
+    if (error.constraints && Object.keys(error.constraints).length > 0) {
+      const constraints = Object.values(error.constraints).join(', ');
+      errorMessages.push(`  - ${propertyPath}: ${constraints}`);
+    }
+    
+    // Recursively handle nested errors
+    if (error.children && error.children.length > 0) {
+      errorMessages.push(...formatValidationErrors(error.children, propertyPath));
+    }
+  }
+  
+  return errorMessages;
+}
+
 export function validateObject(object: any, errorMessage = 'failed to validate object.'): void {
   const errors = validateSync(object, {whitelist: true, forbidNonWhitelisted: true});
   if (errors?.length) {
-    const errorMsgs = errors.map((e) => e.toString()).join('\n');
+    const errorMsgs = formatValidationErrors(errors).join('\n');
     throw new Error(`${errorMessage}\n${errorMsgs}`);
   }
 }
