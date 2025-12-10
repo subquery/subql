@@ -86,16 +86,43 @@ export function getFileContent(path: string, identifier: string): string {
   }
 }
 
+/**
+ * Recursively formats validation errors into a structured format.
+ * Handles nested errors (errors with children) by recursively processing them.
+ * Formats array indices with brackets for better readability (e.g., dataSources[0].mapping.handlers[1].filter).
+ */
+function formatValidationErrors(errors: ValidationError[], parentPath = ''): string[] {
+  const errorMessages: string[] = [];
+  
+  for (const error of errors) {
+    // Check if property is a numeric string (array index)
+    const isArrayIndex = /^\d+$/.test(error.property);
+    const propertyPath = parentPath
+      ? isArrayIndex
+        ? `${parentPath}[${error.property}]`
+        : `${parentPath}.${error.property}`
+      : error.property;
+    
+    if (error.constraints && Object.keys(error.constraints).length > 0) {
+      const constraints = Object.values(error.constraints).join(', ');
+      errorMessages.push(`  - ${propertyPath}: ${constraints}`);
+    }
+    
+    // Recursively handle nested errors
+    if (error.children && error.children.length > 0) {
+      errorMessages.push(...formatValidationErrors(error.children, propertyPath));
+    }
+  }
+  
+  return errorMessages;
+}
+
 //  Validate generic/common section for project manifest
 export function validateCommonProjectManifest(raw: unknown): void {
   const projectManifest = plainToClass<CommonProjectManifestV1_0_0Impl, unknown>(CommonProjectManifestV1_0_0Impl, raw);
   const errors = validateSync(projectManifest, {whitelist: true});
   if (errors?.length) {
-    const errorMsgs = errors.map((error: ValidationError) => {
-      const property = error.property;
-      const constraints = error.constraints ? Object.values(error.constraints).join(', ') : 'unknown constraint';
-      return `  - ${property}: ${constraints}`;
-    }).join('\n');
+    const errorMsgs = formatValidationErrors(errors).join('\n');
     throw new Error(`project validation failed.\n${errorMsgs}`);
   }
 }
