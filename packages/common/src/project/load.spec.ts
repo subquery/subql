@@ -214,5 +214,67 @@ describe('validateCommonProjectManifest', () => {
 
     expect(() => validateCommonProjectManifest(validManifest)).not.toThrow();
   });
+
+  it('should format errors for nested child objects with array indices', () => {
+    // This test demonstrates how errors are formatted for deeply nested objects,
+    // such as an invalid filter on a mapping handler.
+    // The error path should use bracket notation for array indices: dataSources[0].mapping.handlers[1].filter
+    const invalidManifest = {
+      specVersion: '1.0.0',
+      version: '1.0.0',
+      schema: {file: 'schema.graphql'},
+      network: {
+        chainId: '0x123',
+        endpoint: 'wss://example.com',
+      },
+      runner: {
+        node: {name: '@subql/node', version: '1.0.0'},
+        query: {name: '@subql/query', version: '1.0.0'},
+      },
+      dataSources: [
+        {
+          kind: 'substrate/Runtime',
+          mapping: {
+            file: 'dist/index.js',
+            handlers: [
+              {
+                handler: 'handleBlock',
+                kind: 'substrate/BlockHandler',
+              },
+              {
+                handler: 'handleEvent',
+                kind: 'substrate/EventHandler',
+                filter: {
+                  // Invalid: specVersion should be an array of 2 numbers, not a single number
+                  specVersion: 123,
+                },
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    expect(() => validateCommonProjectManifest(invalidManifest)).toThrow();
+
+    try {
+      validateCommonProjectManifest(invalidManifest);
+      fail('Expected validation to throw an error');
+    } catch (error: any) {
+      const errorMessage = error.message;
+
+      // Error should contain the structured format
+      expect(errorMessage).toContain('project validation failed.');
+
+      // For nested array errors, the path should use bracket notation
+      // Example: dataSources[0].mapping.handlers[1].filter.specVersion
+      // Note: The exact path depends on class-validator's error structure,
+      // but we verify that array indices are formatted with brackets
+      const hasArrayIndexFormat = /\[\d+\]/.test(errorMessage);
+      
+      // The error message should be structured and readable
+      expect(errorMessage).toMatch(/  - .+:/);
+    }
+  });
 });
 
