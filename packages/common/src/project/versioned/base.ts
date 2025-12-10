@@ -18,6 +18,7 @@ import {
   IsString,
   Validate,
   ValidateNested,
+  ValidationError,
   validateSync,
 } from 'class-validator';
 import yaml from 'js-yaml';
@@ -50,10 +51,41 @@ export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0>
     return this._deployment;
   }
 
+  /**
+   * Recursively formats validation errors into a structured format.
+   * Handles nested errors (errors with children) by recursively processing them.
+   * Formats array indices with brackets for better readability (e.g., dataSources[0].mapping.handlers[1].filter).
+   */
+  private formatValidationErrors(errors: ValidationError[], parentPath = ''): string[] {
+    const errorMessages: string[] = [];
+    
+    for (const error of errors) {
+      // Check if property is a numeric string (array index)
+      const isArrayIndex = /^\d+$/.test(error.property);
+      const propertyPath = parentPath
+        ? isArrayIndex
+          ? `${parentPath}[${error.property}]`
+          : `${parentPath}.${error.property}`
+        : error.property;
+      
+      if (error.constraints && Object.keys(error.constraints).length > 0) {
+        const constraints = Object.values(error.constraints).join(', ');
+        errorMessages.push(`  - ${propertyPath}: ${constraints}`);
+      }
+      
+      // Recursively handle nested errors
+      if (error.children && error.children.length > 0) {
+        errorMessages.push(...this.formatValidationErrors(error.children, propertyPath));
+      }
+    }
+    
+    return errorMessages;
+  }
+
   validate(): void {
     const errors = validateSync(this.deployment, {whitelist: true, forbidNonWhitelisted: true});
     if (errors?.length) {
-      const errorMsgs = errors.map((e) => e.toString()).join('\n');
+      const errorMsgs = this.formatValidationErrors(errors).join('\n');
       throw new Error(`Failed to parse project. Please see below for more information.\n${errorMsgs}`);
     }
   }
