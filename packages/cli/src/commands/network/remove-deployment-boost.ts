@@ -85,7 +85,7 @@ export default class RemoveDeploymentBoost extends Command {
 
 export function registerRemoveDeploymentBoostMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    `network:${RemoveDeploymentBoost.name}`,
+    `network.${RemoveDeploymentBoost.name}`,
     {
       description: RemoveDeploymentBoost.description,
       inputSchema: removeDeploymentBoostInputs.shape,

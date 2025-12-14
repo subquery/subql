@@ -6,7 +6,12 @@ import {stripVTControlCharacters} from 'node:util';
 import {confirm, input, search, checkbox} from '@inquirer/prompts';
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {RequestHandlerExtra} from '@modelcontextprotocol/sdk/shared/protocol';
-import {CallToolResult, ElicitRequest, ServerNotification, ServerRequest} from '@modelcontextprotocol/sdk/types';
+import {
+  CallToolResult,
+  ElicitRequestFormParams,
+  ServerNotification,
+  ServerRequest,
+} from '@modelcontextprotocol/sdk/types';
 import {Args, Command, Flags} from '@oclif/core';
 import {Flag, Arg} from '@oclif/core/lib/interfaces';
 import fuzzy from 'fuzzy';
@@ -185,7 +190,7 @@ export function mcpLogger(server: McpServer['server']): Logger {
   const log = (level: 'error' | 'debug' | 'info' | 'notice') => (input: string) => {
     void server.sendLoggingMessage({
       level,
-      message: stripVTControlCharacters(input),
+      data: stripVTControlCharacters(input),
     });
   };
   return {
@@ -243,7 +248,7 @@ export function makeInputSchema<T extends keyof PromptTypes>(
   mmultiple?: boolean,
   options?: PromptTypes[T][],
   defaultValue?: PromptTypes[T]
-): ElicitRequest['params']['requestedSchema'] {
+): ElicitRequestFormParams['requestedSchema'] {
   if (type === 'string') {
     return {
       type: 'object',
@@ -256,7 +261,7 @@ export function makeInputSchema<T extends keyof PromptTypes>(
         },
       },
       required: ['input'],
-      additionalProperties: false,
+      // additionalProperties: false,
     };
     // } else if (type === 'number') {
     //   return zodToJsonSchema(
@@ -284,6 +289,7 @@ export function makeInputSchema<T extends keyof PromptTypes>(
 export function makeMCPElicitPrmompt(server: McpServer): Prompt {
   return async ({defaultValue, message, multiple, options, required, type}) => {
     const res = await server.server.elicitInput({
+      mode: 'form',
       message,
       requestedSchema: makeInputSchema(type, required, multiple, options, defaultValue),
     });

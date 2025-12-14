@@ -59,7 +59,7 @@ export default class CreateNetworkApiKey extends Command {
 
 export function registerCreateNetworkApiKeyMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    `network:${CreateNetworkApiKey.name}`,
+    `network.${CreateNetworkApiKey.name}`,
     {
       description: CreateNetworkApiKey.description,
       inputSchema: createApiKeyInputs.shape,

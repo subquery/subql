@@ -57,7 +57,7 @@ export default class ConnectWallet extends Command {
 
 export function registerConnectWalletMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    `network:${ConnectWallet.name}`,
+    `network.${ConnectWallet.name}`,
     {
       description: ConnectWallet.description,
       inputSchema: connectWalletInputs.shape,

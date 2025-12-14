@@ -109,7 +109,7 @@ export default class CreateNetworkDeployment extends Command {
 
 export function registerCreateNetworkDeploymentMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    `network:${CreateNetworkDeployment.name}`,
+    `network.${CreateNetworkDeployment.name}`,
     {
       description: CreateNetworkDeployment.description,
       inputSchema: (opts.supportsElicitation

@@ -80,7 +80,7 @@ export default class ListFlexPlans extends Command {
 
 export function registerListFlexPlansMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    `network:${ListFlexPlans.name}`,
+    `network.${ListFlexPlans.name}`,
     {
       description: ListFlexPlans.description,
       inputSchema: listFlexPlansInputs.shape,

@@ -56,7 +56,7 @@ export default class ListNetworkDeployments extends Command {
 
 export function registerListNetworkDeploymentsMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    `network:${ListNetworkDeployments.name}`,
+    `network.${ListNetworkDeployments.name}`,
     {
       description: ListNetworkDeployments.description,
       inputSchema: listDeploymentsInputs.shape,

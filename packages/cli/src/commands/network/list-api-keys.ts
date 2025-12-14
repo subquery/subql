@@ -59,7 +59,7 @@ export default class ListNetworkApiKeys extends Command {
 
 export function registerListNetworkApiKeysMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    `network:${ListNetworkApiKeys.name}`,
+    `network.${ListNetworkApiKeys.name}`,
     {
       description: ListNetworkApiKeys.description,
       inputSchema: listApiKeysInputs.shape,
