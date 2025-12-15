@@ -46,8 +46,8 @@ export default class MCP extends Command {
       {
         name: 'SubQuery CLI',
         version: pjson.version,
-        description:
-          'Interact with SubQuery CLI commands using Model Context Protocol. This allows you to initialize, build and deploy your SubQuery projects.',
+        // description:
+        //   'Interact with SubQuery CLI commands using Model Context Protocol. This allows you to initialize, build and deploy your SubQuery projects.',
       },
       {
         capabilities: {

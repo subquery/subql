@@ -188,7 +188,7 @@ export default class CreateNetworkProject extends Command {
 
 export function registerCreateNetworkProjectMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    `network:${CreateNetworkProject.name}`,
+    `network.${CreateNetworkProject.name}`,
     {
       description: CreateNetworkProject.description,
       inputSchema: (opts.supportsElicitation ? createProjectInputs : createProjectInputs.required({description: true}))

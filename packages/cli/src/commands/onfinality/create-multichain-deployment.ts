@@ -192,7 +192,7 @@ const nonInteractiveCreateMultichainDeploymentInputs = createMultichainDeploymen
 
 export function registerCreateMultichainDeploymentMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    `onfinality:${CreateMultichainDeployment.name}`,
+    `onfinality.${CreateMultichainDeployment.name}`,
     {
       description: CreateMultichainDeployment.description,
       inputSchema: (opts.supportsElicitation

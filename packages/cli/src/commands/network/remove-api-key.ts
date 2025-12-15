@@ -64,7 +64,7 @@ export default class RemoveApiKey extends Command {
 
 export function registerRemoveApiKeyMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    `network:${RemoveApiKey.name}`,
+    `network.${RemoveApiKey.name}`,
     {
       description: RemoveApiKey.description,
       inputSchema: removeApiKeyInputs.shape,

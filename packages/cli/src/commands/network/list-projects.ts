@@ -78,7 +78,7 @@ export default class ListProjects extends Command {
 
 export function registerListNetworkProjectsMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    `network:${ListProjects.name}`,
+    `network.${ListProjects.name}`,
     {
       description: ListProjects.description,
       inputSchema: listProjectsInputs.shape,

@@ -74,7 +74,7 @@ export default class ListAccountBoosts extends Command {
 
 export function registerListAccountBoostsMCPTool(server: McpServer): RegisteredTool {
   return server.registerTool(
-    `network:${ListAccountBoosts.name}`,
+    `network.${ListAccountBoosts.name}`,
     {
       description: ListAccountBoosts.description,
       inputSchema: listBoostsInputs.shape,

@@ -89,14 +89,16 @@ export default class SwapDeploymentBoost extends Command {
     const result = await swapDeploymentBoostAdapter(flags, commandLogger(this), makeCLIPrompt());
 
     this.log(
-      `Swapped boost (${formatSQT(result.amount)}) from deployment: ${flags.fromDeploymentId} to deployment ${flags.toDeploymentId}. TransactionHash: ${result.transactionHash}`
+      `Swapped boost (${formatSQT(result.amount)}) from deployment: ${flags.fromDeploymentId} to deployment ${
+        flags.toDeploymentId
+      }. TransactionHash: ${result.transactionHash}`
     );
   }
 }
 
 export function registerSwapDeploymentBoostMCPTool(server: McpServer, opts: MCPToolOptions): RegisteredTool {
   return server.registerTool(
-    `network:${SwapDeploymentBoost.name}`,
+    `network.${SwapDeploymentBoost.name}`,
     {
       description: SwapDeploymentBoost.description,
       inputSchema: swapDeploymentBoostInputs.shape,
