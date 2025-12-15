@@ -6931,7 +6931,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:^1.24.3":
+"@modelcontextprotocol/sdk@npm:1.24.3":
   version: 1.24.3
   resolution: "@modelcontextprotocol/sdk@npm:1.24.3"
   dependencies:
@@ -9927,7 +9927,7 @@ __metadata:
     "@graphql-codegen/typescript-document-nodes": "npm:^4.0.16"
     "@graphql-codegen/typescript-operations": "npm:^4.6.1"
     "@inquirer/prompts": "npm:^5.3.6"
-    "@modelcontextprotocol/sdk": "npm:^1.24.3"
+    "@modelcontextprotocol/sdk": "npm:1.24.3"
     "@oclif/core": "npm:^4.8.0"
     "@subql/common": "workspace:~"
     "@subql/common-algorand": "npm:^4.4.3"
