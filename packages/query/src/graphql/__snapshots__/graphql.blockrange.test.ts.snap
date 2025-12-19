@@ -1,0 +1,78 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GraphqlBlockRange should filter entities by block range 1`] = `
+"with __local_0__ as (select to_json(lower(__local_1__._block_range)) as "__block_height", to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id"), 'name'::text, (__local_1__."name"), 'value'::text, ((__local_1__."value"))::text))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_blockrange_test"."test_entities" as __local_1__
+
+where (__local_1__._block_range && int8range($1::bigint, $2::bigint, '[]')) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_2__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_2__.data from __local_2__), '[]'::json) as "data" "
+`;
+
+exports[`GraphqlBlockRange should handle empty block range gracefully 1`] = `
+"with __local_0__ as (select to_json(lower(__local_1__._block_range)) as "__block_height", to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id"), 'name'::text, (__local_1__."name")))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_blockrange_test"."test_entities" as __local_1__
+
+where (__local_1__._block_range && int8range($1::bigint, $2::bigint, '[]')) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_2__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_2__.data from __local_2__), '[]'::json) as "data" "
+`;
+
+exports[`GraphqlBlockRange should include __block_height in SQL for result transformation 1`] = `
+"with __local_0__ as (select to_json(lower(__local_1__._block_range)) as "__block_height", to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id"), 'name'::text, (__local_1__."name")))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_blockrange_test"."test_entities" as __local_1__
+
+where (__local_1__._block_range && int8range($1::bigint, $2::bigint, '[]')) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_2__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_2__.data from __local_2__), '[]'::json) as "data" "
+`;
+
+exports[`GraphqlBlockRange should return single entity with block range filter 1`] = `
+"select 
+to_json(lower(__local_0__._block_range)) as "__block_height", to_json((__local_0__."id")) as "id", to_json((__local_0__."name")) as "name", to_json(((__local_0__."value"))::text) as "value"
+from "subquery_blockrange_test"."test_entities" as __local_0__
+
+where (__local_0__."id" = $1) and (__local_0__._block_range && int8range($2::bigint, $3::bigint, '[]')) and (TRUE) and (TRUE)
+
+
+"
+`;
+
+exports[`GraphqlBlockRange should validate blockRange parameter format 1`] = `
+"with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id"), 'name'::text, (__local_1__."name")))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_blockrange_test"."test_entities" as __local_1__
+
+where (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_2__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_2__.data from __local_2__), '[]'::json) as "data" "
+`;
+
+exports[`GraphqlBlockRange should work with existing blockHeight parameter (backwards compatibility) 1`] = `
+"with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id"), 'name'::text, (__local_1__."name")))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_blockrange_test"."test_entities" as __local_1__
+
+where (__local_1__._block_range @> $1::bigint) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_2__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_2__.data from __local_2__), '[]'::json) as "data" "
+`;
+
+exports[`GraphqlBlockRange should work with filtering and block range together 1`] = `
+"with __local_0__ as (select to_json(lower(__local_1__._block_range)) as "__block_height", to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id"), 'name'::text, (__local_1__."name"), 'value'::text, ((__local_1__."value"))::text))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_blockrange_test"."test_entities" as __local_1__
+
+where (__local_1__._block_range && int8range($1::bigint, $2::bigint, '[]')) and (((__local_1__."name" LIKE $3))) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_2__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_2__.data from __local_2__), '[]'::json) as "data" "
+`;
