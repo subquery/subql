@@ -21,7 +21,7 @@ import {
   validateSync,
 } from 'class-validator';
 import yaml from 'js-yaml';
-import {IsEndBlockGreater, toJsonObject} from '../utils';
+import {IsEndBlockGreater, toJsonObject, formatValidationErrors} from '../utils';
 import {ParentProjectModel} from './v1_0_0/models';
 
 export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0>
@@ -53,7 +53,7 @@ export abstract class ProjectManifestBaseImpl<D extends BaseDeploymentV1_0_0>
   validate(): void {
     const errors = validateSync(this.deployment, {whitelist: true, forbidNonWhitelisted: true});
     if (errors?.length) {
-      const errorMsgs = errors.map((e) => e.toString()).join('\n');
+      const errorMsgs = formatValidationErrors(errors).join('\n');
       throw new Error(`Failed to parse project. Please see below for more information.\n${errorMsgs}`);
     }
   }
