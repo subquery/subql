@@ -5,12 +5,12 @@ import fs from 'fs';
 import path from 'path';
 import {ProjectManifestV1_0_0} from '@subql/types-core';
 import {plainToClass} from 'class-transformer';
-import {validateSync, ValidationError} from 'class-validator';
+import {validateSync} from 'class-validator';
 import yaml from 'js-yaml';
 import {gte} from 'semver';
 import {CommonProjectManifestV1_0_0Impl} from '../';
 import {NETWORK_FAMILY, runnerMapping} from '../constants';
-import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsYamlOrJSON} from './utils';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsYamlOrJSON, formatValidationErrors} from './utils';
 export function loadFromJsonOrYaml(file: string): unknown {
   const {ext} = path.parse(file);
   if (!extensionIsYamlOrJSON(ext)) {
@@ -84,37 +84,6 @@ export function getFileContent(path: string, identifier: string): string {
     const err_msg = `Failed to load ${identifier} file, ${error}`;
     throw new Error(err_msg);
   }
-}
-
-/**
- * Recursively formats validation errors into a structured format.
- * Handles nested errors (errors with children) by recursively processing them.
- * Formats array indices with brackets for better readability (e.g., dataSources[0].mapping.handlers[1].filter).
- */
-function formatValidationErrors(errors: ValidationError[], parentPath = ''): string[] {
-  const errorMessages: string[] = [];
-  
-  for (const error of errors) {
-    // Check if property is a numeric string (array index)
-    const isArrayIndex = /^\d+$/.test(error.property);
-    const propertyPath = parentPath
-      ? isArrayIndex
-        ? `${parentPath}[${error.property}]`
-        : `${parentPath}.${error.property}`
-      : error.property;
-    
-    if (error.constraints && Object.keys(error.constraints).length > 0) {
-      const constraints = Object.values(error.constraints).join(', ');
-      errorMessages.push(`  - ${propertyPath}: ${constraints}`);
-    }
-    
-    // Recursively handle nested errors
-    if (error.children && error.children.length > 0) {
-      errorMessages.push(...formatValidationErrors(error.children, propertyPath));
-    }
-  }
-  
-  return errorMessages;
 }
 
 //  Validate generic/common section for project manifest
