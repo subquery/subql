@@ -31,6 +31,7 @@ describe('validateCommonProjectManifest', () => {
 
     try {
       validateCommonProjectManifest(invalidManifest);
+      fail('Expected validation to throw an error');
     } catch (error: any) {
       const errorMessage = error.message;
 
@@ -72,6 +73,7 @@ describe('validateCommonProjectManifest', () => {
 
     try {
       validateCommonProjectManifest(invalidManifest);
+      fail('Expected validation to throw an error');
     } catch (error: any) {
       const errorMessage = error.message;
 
@@ -104,6 +106,7 @@ describe('validateCommonProjectManifest', () => {
 
     try {
       validateCommonProjectManifest(invalidManifest);
+      fail('Expected validation to throw an error');
     } catch (error: any) {
       const errorMessage = error.message;
 
@@ -141,6 +144,7 @@ describe('validateCommonProjectManifest', () => {
 
     try {
       validateCommonProjectManifest(invalidManifest);
+      fail('Expected validation to throw an error');
     } catch (error: any) {
       const errorMessage = error.message;
 
@@ -268,12 +272,18 @@ describe('validateCommonProjectManifest', () => {
 
       // For nested array errors, the path should use bracket notation
       // Example: dataSources[0].mapping.handlers[1].filter.specVersion
-      // Note: The exact path depends on class-validator's error structure,
-      // but we verify that array indices are formatted with brackets
-      const hasArrayIndexFormat = /\[\d+\]/.test(errorMessage);
+      // Verify that array indices are formatted with brackets
+      expect(errorMessage).toMatch(/\[\d+\]/);
       
-      // The error message should be structured and readable
-      expect(errorMessage).toMatch(/  - .+:/);
+      // The error message should be structured and readable with full example
+      // Expected format: "  - dataSources[0].mapping.handlers[1].filter.specVersion: <constraint message>"
+      const errorLines = errorMessage.split('\n').filter((line: string) => line.trim().startsWith('-'));
+      expect(errorLines.length).toBeGreaterThan(0);
+      
+      // Verify at least one line contains array bracket notation and follows the expected format
+      const arrayErrorLine = errorLines.find((line: string) => /\[\d+\]/.test(line));
+      expect(arrayErrorLine).toBeDefined();
+      expect(arrayErrorLine).toMatch(/^\s+-\s+.+\[\d+\].+:\s+.+$/);
     }
   });
 });
