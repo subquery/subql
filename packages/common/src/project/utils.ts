@@ -205,7 +205,7 @@ export async function delay(sec: number): Promise<void> {
  * Handles nested errors (errors with children) by recursively processing them.
  * Formats array indices with brackets for better readability (e.g., dataSources[0].mapping.handlers[1].filter).
  */
-function formatValidationErrors(errors: ValidationError[], parentPath = ''): string[] {
+export function formatValidationErrors(errors: ValidationError[], parentPath = ''): string[] {
   const errorMessages: string[] = [];
   
   for (const error of errors) {
