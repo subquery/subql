@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - .data/postgres:/var/lib/postgresql/data
+      - ./config/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  grafana:
+      image: grafana/grafana
+      environment:
+        - "GF_AUTH_ANONYMOUS_ENABLED=true"
+        - "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin"
+        - "GF_AUTH_ANONYMOUS_HIDE_VERSION=true"
+        - "GF_SERVER_HTTP_PORT=3001"
+      volumes:
+        # Mount provisioning configuration
+        - "./config/grafana/provisioning:/etc/grafana/provisioning"
+      #   # Mount dashboards
+        - "./config/grafana/dashboards:/var/lib/grafana/dashboards"
+      ports: [ "3001:3001" ]
+  prometheus:
+    image: prom/prometheus
+    # Mount prometheus configuration
+    volumes: [ "./config/prometheus.yml:/etc/prometheus/prometheus.yml" ]
+    ports: [ "9090:9090" ]
+  subquery-node:
+    image: onfinality/subql-node
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    environment:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+    ports: [ "3000:3000" ]
+    volumes:
+      - ./:/app
+    command:
+      - -f=ipfs://QmV27Y8tRFMmAhioFutj1KX5EnEMVhybWuVFkGBLaWToA8
+      - --db-schema=app
+      - --network-endpoint=wss://kusama-rpc.polkadot.io/
+      - --disable-historical=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://subquery-node:3000/ready"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
