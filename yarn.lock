@@ -10274,7 +10274,7 @@ __metadata:
     source-map: "npm:^0.7.4"
     tar: "npm:^7.4.3"
     toposort-class: "npm:^1.0.1"
-    vm2: "npm:3.9.19"
+    vm2: "npm:3.10.2"
     yargs: "npm:^16.2.0"
   languageName: unknown
   linkType: soft
@@ -12591,7 +12591,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-walk@npm:^8.2.0":
+"acorn-walk@npm:^8.3.4":
   version: 8.3.4
   resolution: "acorn-walk@npm:8.3.4"
   dependencies:
@@ -12600,7 +12600,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.11.0, acorn@npm:^8.14.0, acorn@npm:^8.15.0, acorn@npm:^8.7.0":
+"acorn@npm:^8.11.0, acorn@npm:^8.14.0, acorn@npm:^8.14.1, acorn@npm:^8.15.0":
   version: 8.15.0
   resolution: "acorn@npm:8.15.0"
   bin:
@@ -28294,15 +28294,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vm2@npm:3.9.19":
-  version: 3.9.19
-  resolution: "vm2@npm:3.9.19"
+"vm2@npm:3.10.2":
+  version: 3.10.2
+  resolution: "vm2@npm:3.10.2"
   dependencies:
-    acorn: "npm:^8.7.0"
-    acorn-walk: "npm:^8.2.0"
+    acorn: "npm:^8.14.1"
+    acorn-walk: "npm:^8.3.4"
   bin:
     vm2: bin/vm2
-  checksum: 10/8526737abbfb0ce61bae3d0ffe9ecc96eb093c859c933ed4d9cf663c7663da8f73a733771b9b21251c4d82a28a0600a0fcfd0044b685686eeef7a75e632294e6
+  checksum: 10/9d06f98fda1b6288f9ed9607e33cb957a4431c9e3fd12fbbb0126ed2cb08cdd6071d0caa1a1f87184a22bdc045f02578a12bc7af58bd46f9a078052fcc3d5870
   languageName: node
   linkType: hard
 
