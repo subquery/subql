@@ -98,7 +98,7 @@ export class EthereumApi implements ApiWrapper {
 
   // This is used within the sandbox when HTTP is used
   private nonBatchClient?: JsonRpcProvider;
-  private _genesisBlock?: Record<string, any>;
+  private _genesisHash = '';
   private contractInterfaces: Record<string, Interface> = {};
   private chainId?: number;
   private name?: string;
@@ -152,13 +152,6 @@ export class EthereumApi implements ApiWrapper {
     }
   }
 
-  private get genesisBlock(): Record<string, any> {
-    if (!this._genesisBlock) {
-      throw new Error('Genesis block is not available');
-    }
-    return this._genesisBlock;
-  }
-
   private applyBatchSize(batchSize?: number): void {
     if (batchSize === null || batchSize === undefined) return;
 
@@ -187,14 +180,14 @@ export class EthereumApi implements ApiWrapper {
     }
 
     try {
-      const [genesisBlock, supportsFinalization, supportsSafe] =
+      const [genesisHash, supportsFinalization, supportsSafe] =
         await Promise.all([
-          this.getGenesisBlock(network.chainId),
+          this.fetchGenesisHash(network.chainId),
           this.getSupportsTag('finalized'),
           this.getSupportsTag('safe'),
         ]);
 
-      this._genesisBlock = genesisBlock;
+      this._genesisHash = genesisHash;
       this._supportsFinalization = supportsFinalization && supportsSafe;
       this.chainId = network.chainId;
       this.name = network.name;
@@ -240,12 +233,18 @@ export class EthereumApi implements ApiWrapper {
     });
   }
 
-  private async getGenesisBlock(chainId: number): Promise<Block> {
+  private async fetchGenesisHash(chainId: number): Promise<string> {
     const tag = () => {
       switch (chainId) {
         // BEVM Canary
         case 1501:
           return 4157986;
+        // Polkadot Hub mainnet - block 0x0 is not available via EVM RPC
+        case 420420419:
+          return 11405259;
+        // Polkadot Hub testnet - block 0x0 is not available via EVM RPC
+        case 420420417:
+          return 4367914;
         default:
           return 'earliest';
       }
@@ -253,9 +252,13 @@ export class EthereumApi implements ApiWrapper {
 
     const block = await this.client.getBlock(tag());
     if (block === null) {
-      throw new Error(`Getting genesis block returned null from tag: ${tag()}`);
+      logger.warn(
+        `Unable to fetch genesis block for chainId ${chainId}. ` +
+          `Using chainId as network identifier.`,
+      );
+      return '';
     }
-    return block;
+    return block.hash;
   }
 
   async getFinalizedBlock(): Promise<Block> {
@@ -298,7 +301,8 @@ export class EthereumApi implements ApiWrapper {
   }
 
   getGenesisHash(): string {
-    return this.genesisBlock.hash;
+    // Genesis hash is optional for EVM chains - chainId is the primary network identifier
+    return this._genesisHash;
   }
 
   getSpecName(): string {
