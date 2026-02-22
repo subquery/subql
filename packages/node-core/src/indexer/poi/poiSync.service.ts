@@ -5,7 +5,7 @@ import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {DEFAULT_FETCH_RANGE, delay, POI_AWAIT_TIME} from '@subql/common';
 import {hexToU8a} from '@subql/utils';
-import {Sequelize, Transaction} from '@subql/x-sequelize';
+import {Op, Sequelize, Transaction} from '@subql/x-sequelize';
 import {NodeConfig} from '../../configure';
 import {establishNewSequelize} from '../../db';
 import {PoiEvent} from '../../events';
@@ -211,6 +211,30 @@ export class PoiSyncService implements OnApplicationShutdown {
   }
 
   /**
+   * Search backward from startHeight to find the last valid synced POI (with both hash and parentHash).
+   * Uses direct model query for efficiency.
+   * @param startHeight The height to start searching backward from
+   * @private
+   */
+  private async findLastValidSyncedPoi(startHeight: number): Promise<ProofOfIndex | undefined> {
+    // Use raw SQL to avoid TypeScript issues with Op.ne and null
+    const result = await this.poiRepo.model.findOne({
+      where: {
+        id: {[Op.lte]: startHeight},
+        hash: {[Op.ne]: null} as any,
+        parentHash: {[Op.ne]: null} as any,
+      },
+      order: [['id', 'DESC']],
+    });
+
+    if (result) {
+      return result.toJSON<ProofOfIndex>();
+    }
+
+    return undefined;
+  }
+
+  /**
    * Get latestSyncedPoi from metadata, and find from the Poi table and set it into the service.
    * This should only been called when service sync been called and _latestSyncedPoi is not set.
    * @private
@@ -221,10 +245,49 @@ export class PoiSyncService implements OnApplicationShutdown {
     if (latestSyncedPoiHeight !== undefined) {
       const recordedPoi = await this.poiRepo.getPoiById(latestSyncedPoiHeight);
       if (recordedPoi) {
-        this.validateSyncedPoi(recordedPoi, 'syncLatestSyncedPoiFromDb');
-        this.setLatestSyncedPoi(recordedPoi);
+        try {
+          this.validateSyncedPoi(recordedPoi, 'syncLatestSyncedPoiFromDb');
+          this.setLatestSyncedPoi(recordedPoi);
+        } catch (e) {
+          // POI exists but is not valid (created state, not synced)
+          // Try to find the last valid synced POI
+          logger.warn(
+            `Metadata latestSyncedPoiHeight ${latestSyncedPoiHeight} points to an invalid POI (created state, not synced). Searching for last valid synced POI...`
+          );
+          const validPoi = await this.findLastValidSyncedPoi(latestSyncedPoiHeight);
+          if (validPoi) {
+            logger.info(`Found last valid synced POI at height ${validPoi.id}, updating metadata`);
+            const tx = await this.newTx();
+            await this.updateMetadataSyncedPoi(validPoi.id, tx);
+            await tx.commit();
+            this.setLatestSyncedPoi(validPoi);
+          } else {
+            // No valid synced POI found, clear metadata
+            logger.warn(`No valid synced POI found below height ${latestSyncedPoiHeight}, clearing metadata`);
+            const tx = await this.newTx();
+            await this.metadataRepo.destroy({where: {key: 'latestSyncedPoiHeight'}, transaction: tx});
+            await tx.commit();
+          }
+        }
       } else {
-        throw new Error(`Can not find latestSyncedPoiHeight ${latestSyncedPoiHeight}`);
+        // POI record doesn't exist at metadata height, search backward for valid POI
+        logger.warn(
+          `POI record not found at metadata height ${latestSyncedPoiHeight}, searching for last valid synced POI...`
+        );
+        const validPoi = await this.findLastValidSyncedPoi(latestSyncedPoiHeight);
+        if (validPoi) {
+          logger.info(`Found last valid synced POI at height ${validPoi.id}, updating metadata`);
+          const tx = await this.newTx();
+          await this.updateMetadataSyncedPoi(validPoi.id, tx);
+          await tx.commit();
+          this.setLatestSyncedPoi(validPoi);
+        } else {
+          // No valid synced POI found, clear metadata
+          logger.warn(`No valid synced POI found below height ${latestSyncedPoiHeight}, clearing metadata`);
+          const tx = await this.newTx();
+          await this.metadataRepo.destroy({where: {key: 'latestSyncedPoiHeight'}, transaction: tx});
+          await tx.commit();
+        }
       }
     }
   }
