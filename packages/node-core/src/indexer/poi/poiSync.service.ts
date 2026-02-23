@@ -14,7 +14,7 @@ import {exitWithError} from '../../process';
 import {hasValue, Queue} from '../../utils';
 import {Metadata, MetadataFactory, MetadataRepo} from '../entities';
 import {PoiFactory, ProofOfIndex, SyncedProofOfIndex} from '../entities/Poi.entity';
-import {PlainPoiModel} from '../storeModelProvider/poi';
+import {ensureProofOfIndexId, PlainPoiModel} from '../storeModelProvider/poi';
 import {ISubqueryProject} from '../types';
 import {PoiBlock} from './PoiBlock';
 
@@ -228,7 +228,7 @@ export class PoiSyncService implements OnApplicationShutdown {
     });
 
     if (result) {
-      return result.toJSON<ProofOfIndex>();
+      return ensureProofOfIndexId(result.toJSON<ProofOfIndex>());
     }
 
     return undefined;
