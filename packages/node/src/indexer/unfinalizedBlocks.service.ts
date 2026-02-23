@@ -125,9 +125,20 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
       if (!checkingHeader.parentHash) {
         throw new Error('Unable to get parent hash for header');
       }
-      checkingHeader = await this.blockchainService.getHeaderForHash(
-        checkingHeader.parentHash,
-      );
+      const parentHeight = checkingHeader.blockHeight - 1;
+      try {
+        checkingHeader = await this.blockchainService.getHeaderForHash(
+          checkingHeader.parentHash,
+        );
+      } catch {
+        // Parent block not found on chain (orphaned), fall back to height-based check
+        logger.warn(
+          `Failed to get block by hash, falling back to height-based check at height ${parentHeight}`,
+        );
+        checkingHeader = await this.blockchainService.getHeaderForHeight(
+          parentHeight,
+        );
+      }
     }
 
     try {

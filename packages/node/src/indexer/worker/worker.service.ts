@@ -16,7 +16,6 @@ import {
 import { EthereumProjectDs } from '../../configure/SubqueryProject';
 import { EthereumApi } from '../../ethereum';
 import SafeEthProvider from '../../ethereum/safe-api';
-import { ethereumBlockToHeader } from '../../ethereum/utils.ethereum';
 import { IndexerManager } from '../indexer.manager';
 import { BlockContent, getBlockSize } from '../types';
 
@@ -61,11 +60,8 @@ export class WorkerService extends BaseWorkerService<
     return block;
   }
 
-  protected toBlockResponse(block: BlockContent): Header {
-    return {
-      ...ethereumBlockToHeader(block),
-      parentHash: block.parentHash,
-    };
+  protected toBlockResponse(block: IBlock<BlockContent>): Header {
+    return block.getHeader();
   }
 
   protected async processFetchedBlock(
