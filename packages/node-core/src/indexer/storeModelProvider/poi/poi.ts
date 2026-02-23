@@ -21,7 +21,7 @@ export interface IPoi {
 
 // When using cockroach db, poi id is store in bigint format, and sequelize toJSON() can not convert id correctly (to string)
 // This will ensure after toJSON Poi id converted to number
-function ensureProofOfIndexId(poi: ProofOfIndex): ProofOfIndex {
+export function ensureProofOfIndexId(poi: ProofOfIndex): ProofOfIndex {
   if (typeof poi?.id === 'string') {
     poi.id = Number(poi.id);
   }
@@ -88,10 +88,13 @@ export class PlainPoiModel implements IPoi {
         proof.parentHash = u8aToBuffer(proof.parentHash);
       }
     }
+    // Only update hash/parentHash if the proof has synced values (not null)
+    // This prevents overwriting existing synced POI with created-only POI
+    const hasSyncedValues = proofs.some((p) => p.hash !== undefined && p.parentHash !== undefined);
     await this.model.bulkCreate(proofs, {
       transaction: tx,
       conflictAttributes: ['id'],
-      updateOnDuplicate: ['hash', 'parentHash'],
+      updateOnDuplicate: hasSyncedValues ? ['hash', 'parentHash'] : [],
     });
   }
 
