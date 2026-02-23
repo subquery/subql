@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [19.1.0] - 2026-02-23
+### Fixed
+- Recovery for invalid POI sync state on startup. Now it searches backward to find the last valid synced POI and updates
+  the metadata accordingly. (#3014)
+
 ## [19.0.0] - 2025-11-26
 ### Changed
 - Update the `toBlockResponse` function signature on the worker service to take an `IBlock<B>` instead of a `B` type (#2978)
