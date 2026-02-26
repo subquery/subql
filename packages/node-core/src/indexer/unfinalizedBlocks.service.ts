@@ -3,10 +3,12 @@
 
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
+import {OnEvent} from '@nestjs/event-emitter';
 import {Transaction} from '@subql/x-sequelize';
 import {isEqual, last} from 'lodash';
 import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
+import {IndexerEvent} from '../events';
 import {Header, IBlock} from '../indexer/types';
 import {getLogger} from '../logger';
 import {mainThreadOnly} from '../utils';
@@ -43,6 +45,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
   private _unfinalizedBlocks?: UnfinalizedBlocks;
   private _finalizedHeader?: Header;
   protected lastCheckedBlockHeight?: number;
+  private _latestBestHeight?: number;
 
   @mainThreadOnly()
   private blockToHeader(block: IBlock<B>): Header {
@@ -71,6 +74,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
     this._unfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
     this.lastCheckedBlockHeight = await this.getLastFinalizedVerifiedHeight();
     this._finalizedHeader = await this.blockchainService.getFinalizedHeader();
+    this._latestBestHeight = this._finalizedHeader.blockHeight;
 
     if (this.unfinalizedBlocks.length) {
       logger.info('Processing unfinalized blocks');
@@ -127,55 +131,70 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
     this._finalizedHeader = header;
   }
 
+  @OnEvent(IndexerEvent.BlockBest)
+  updateBestHeight(payload: {height: number}): void {
+    this._latestBestHeight = payload.height;
+  }
+
+  private get bestHeight(): number {
+    return this._latestBestHeight ?? this.finalizedBlockNumber;
+  }
+
   private async registerUnfinalizedBlock(header: Header): Promise<Header | undefined> {
     if (header.blockHeight <= this.finalizedBlockNumber) return;
 
+    const bestHeight = Math.max(this.bestHeight, header.blockHeight);
+    const safeHeight = Math.max(bestHeight - UNFINALIZED_THRESHOLD, 0);
+
+    const currentBlocks = this.unfinalizedBlocks;
+    if (currentBlocks.length) {
+      const filteredBlocks = currentBlocks.filter(({blockHeight}) => blockHeight >= safeHeight);
+      if (filteredBlocks.length !== currentBlocks.length) {
+        logger.info(
+          `Dropping ${currentBlocks.length - filteredBlocks.length} unfinalized blocks below safe height ${safeHeight}`
+        );
+        this._unfinalizedBlocks = filteredBlocks;
+      }
+    }
+
     const lastUnfinalized = last(this.unfinalizedBlocks);
-    const lastUnfinalizedHeight = last(this.unfinalizedBlocks)?.blockHeight;
+    const lastUnfinalizedHeight = lastUnfinalized?.blockHeight;
 
     // If this is the first unfinalized block or it's sequential, just add it
     if (lastUnfinalizedHeight === undefined || lastUnfinalizedHeight + 1 === header.blockHeight) {
       this.unfinalizedBlocks.push(header);
-      if (lastUnfinalized && lastUnfinalized.blockHash !== header.parentHash) {
+      if (lastUnfinalized && header.parentHash && lastUnfinalized.blockHash !== header.parentHash) {
         return header;
       }
       await this.saveUnfinalizedBlocks(this.unfinalizedBlocks);
       return;
     }
 
-    // Non-sequential block detected
-    const safeHeight = header.blockHeight - UNFINALIZED_THRESHOLD;
-
-    // If the last unfinalized block is below the safe height, it's already covered by finalization
-    // We can safely drop all existing unfinalized blocks and start fresh with the new block
-    if (lastUnfinalizedHeight < safeHeight) {
-      logger.info(
-        `Resetting unfinalized blocks chain. ` +
-          `Last unfinalized block ${lastUnfinalizedHeight} is below safe height ${safeHeight}. ` +
-          `Dropping ${this.unfinalizedBlocks.length} blocks and adding block ${header.blockHeight}`
-      );
-      this._unfinalizedBlocks = [];
-      this.unfinalizedBlocks.push(header);
-      await this.saveUnfinalizedBlocks(this.unfinalizedBlocks);
-      return;
-    }
-
-    // Gap is within threshold, need to backfill to maintain parentHash chain for fork detection
-    const gapStart = lastUnfinalizedHeight + 1;
+    // Calculate gap start, only backfill from safeHeight onwards
+    const gapStart = Math.max(lastUnfinalizedHeight + 1, safeHeight);
     const gapEnd = header.blockHeight - 1;
-    const gapSize = gapEnd - gapStart + 1;
 
-    logger.info(`Backfilling missing unfinalized blocks from ${gapStart} to ${gapEnd} (${gapSize} blocks)`);
+    // If there's still a gap to backfill
+    if (gapStart <= gapEnd) {
+      const gapSize = gapEnd - gapStart + 1;
+      logger.info(`Backfilling missing unfinalized blocks from ${gapStart} to ${gapEnd} (${gapSize} blocks)`);
 
-    // Backfill missing blocks
-    const backfillResult = await this.backfillBlocks(gapStart, gapEnd, header);
+      // Backfill missing blocks
+      const backfillResult = await this.backfillBlocks(gapStart, gapEnd, header);
 
-    // Add the original header after successful backfill
-    this.unfinalizedBlocks.push(header);
+      // Add the original header after successful backfill
+      // Note: We push even if fork was detected. The in-memory state will be reset
+      // when the caller processes the fork and triggers a reindex.
+      this.unfinalizedBlocks.push(header);
 
-    if (backfillResult.forkDetected) {
-      return backfillResult.forkHeader;
+      if (backfillResult.forkDetected) {
+        return backfillResult.forkHeader;
+      }
+    } else {
+      // No gap to backfill, just add the new header
+      this.unfinalizedBlocks.push(header);
     }
+
     await this.saveUnfinalizedBlocks(this.unfinalizedBlocks);
     return;
   }

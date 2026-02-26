@@ -15,6 +15,8 @@ import {
  * Block hashes all have the format '0xabc' + block number
  * If they are forked they will have an `f` at the end
  */
+let mockBestHeight = 150;
+
 const BlockchainService = {
   async getFinalizedHeader(): Promise<Header> {
     return Promise.resolve({
@@ -40,6 +42,10 @@ const BlockchainService = {
       parentHash: `0xabc${height - 1}f`,
       timestamp: new Date(),
     });
+  },
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getBestHeight(): Promise<number> {
+    return mockBestHeight;
   },
 } as IBlockchainService;
 
@@ -78,6 +84,7 @@ describe('UnfinalizedBlocksService', () => {
   let unfinalizedBlocksService: UnfinalizedBlocksService;
 
   beforeEach(async () => {
+    mockBestHeight = 150;
     unfinalizedBlocksService = new UnfinalizedBlocksService(
       {unfinalizedBlocks: true} as any,
       mockStoreCache(),
@@ -261,6 +268,23 @@ describe('UnfinalizedBlocksService', () => {
     expect(res).toMatchObject({blockHash: '0xabc110f', blockHeight: 110, parentHash: '0xabc109f'});
   });
 
+  it('discards unfinalized blocks older than best height window before backfill', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd').block.header);
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(201, '0xabc201'));
+    await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(202, '0xabc202'));
+
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toHaveLength(2);
+
+    mockBestHeight = 800;
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(650, '0xabc650'));
+
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toMatchObject([
+      mockBlock(650, '0xabc650').block.header,
+    ]);
+  });
+
   it('can rewind any unfinalized blocks when restarted and unfinalized blocks is disabled', async () => {
     const storeCache = new StoreCacheService(null as any, {storeCacheThreshold: 300} as any, new EventEmitter2());
 
@@ -388,7 +412,7 @@ describe('UnfinalizedBlocksService', () => {
 
       // Verify all blocks are present including backfilled ones
       const unfinalizedBlocks = (service as any).unfinalizedBlocks;
-      expect(unfinalizedBlocks.length).toBe(140); // 111 + 139 backfilled + 250
+      expect(unfinalizedBlocks.length).toBe(140); // 111 + 138 backfilled + 250
       expect(unfinalizedBlocks[0].blockHeight).toBe(111);
       expect(unfinalizedBlocks[139].blockHeight).toBe(250);
     });
