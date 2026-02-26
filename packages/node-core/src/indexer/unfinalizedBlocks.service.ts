@@ -74,7 +74,7 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
     this._unfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
     this.lastCheckedBlockHeight = await this.getLastFinalizedVerifiedHeight();
     this._finalizedHeader = await this.blockchainService.getFinalizedHeader();
-    this._latestBestHeight = this._finalizedHeader.blockHeight;
+    this._latestBestHeight = await this.blockchainService.getBestHeight();
 
     if (this.unfinalizedBlocks.length) {
       logger.info('Processing unfinalized blocks');
