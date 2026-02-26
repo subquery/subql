@@ -74,7 +74,6 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
     this._unfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
     this.lastCheckedBlockHeight = await this.getLastFinalizedVerifiedHeight();
     this._finalizedHeader = await this.blockchainService.getFinalizedHeader();
-    this._latestBestHeight = await this.blockchainService.getBestHeight();
 
     if (this.unfinalizedBlocks.length) {
       logger.info('Processing unfinalized blocks');
@@ -136,14 +135,14 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
     this._latestBestHeight = payload.height;
   }
 
-  private get bestHeight(): number {
-    return this._latestBestHeight ?? this.finalizedBlockNumber;
-  }
-
   private async registerUnfinalizedBlock(header: Header): Promise<Header | undefined> {
     if (header.blockHeight <= this.finalizedBlockNumber) return;
 
-    const bestHeight = Math.max(this.bestHeight, header.blockHeight);
+    if (this._latestBestHeight === undefined) {
+      this._latestBestHeight = await this.blockchainService.getBestHeight();
+    }
+
+    const bestHeight = Math.max(this._latestBestHeight, header.blockHeight);
     const safeHeight = Math.max(bestHeight - UNFINALIZED_THRESHOLD, 0);
 
     const currentBlocks = this.unfinalizedBlocks;
