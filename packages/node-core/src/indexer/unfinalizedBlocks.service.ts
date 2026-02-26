@@ -9,7 +9,6 @@ import {IBlockchainService} from '../blockchain.service';
 import {NodeConfig} from '../configure';
 import {Header, IBlock} from '../indexer/types';
 import {getLogger} from '../logger';
-import {exitWithError} from '../process';
 import {mainThreadOnly} from '../utils';
 import {ProofOfIndex} from './entities';
 import {PoiBlock} from './poi';
@@ -98,11 +97,13 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
 
   // If not for workers this could be private
   async processUnfinalizedBlockHeader(header?: Header): Promise<Header | undefined> {
+    let forkedHeader;
     if (header) {
-      await this.registerUnfinalizedBlock(header);
+      forkedHeader = await this.registerUnfinalizedBlock(header);
     }
-
-    const forkedHeader = await this.hasForked();
+    if (!forkedHeader) {
+      forkedHeader = await this.hasForked();
+    }
 
     if (!forkedHeader) {
       // Remove blocks that are now confirmed finalized
@@ -126,20 +127,113 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
     this._finalizedHeader = header;
   }
 
-  private async registerUnfinalizedBlock(header: Header): Promise<void> {
+  private async registerUnfinalizedBlock(header: Header): Promise<Header | undefined> {
     if (header.blockHeight <= this.finalizedBlockNumber) return;
 
-    // Ensure order
+    const lastUnfinalized = last(this.unfinalizedBlocks);
     const lastUnfinalizedHeight = last(this.unfinalizedBlocks)?.blockHeight;
-    if (lastUnfinalizedHeight !== undefined && lastUnfinalizedHeight + 1 !== header.blockHeight) {
-      exitWithError(
-        `Unfinalized block is not sequential, lastUnfinalizedBlock='${lastUnfinalizedHeight}', newUnfinalizedBlock='${header.blockHeight}'`,
-        logger
-      );
+
+    // If this is the first unfinalized block or it's sequential, just add it
+    if (lastUnfinalizedHeight === undefined || lastUnfinalizedHeight + 1 === header.blockHeight) {
+      this.unfinalizedBlocks.push(header);
+      if (lastUnfinalized && lastUnfinalized.blockHash !== header.parentHash) {
+        return header;
+      }
+      await this.saveUnfinalizedBlocks(this.unfinalizedBlocks);
+      return;
     }
 
+    // Non-sequential block detected
+    const safeHeight = header.blockHeight - UNFINALIZED_THRESHOLD;
+
+    // If the last unfinalized block is below the safe height, it's already covered by finalization
+    // We can safely drop all existing unfinalized blocks and start fresh with the new block
+    if (lastUnfinalizedHeight < safeHeight) {
+      logger.info(
+        `Resetting unfinalized blocks chain. ` +
+          `Last unfinalized block ${lastUnfinalizedHeight} is below safe height ${safeHeight}. ` +
+          `Dropping ${this.unfinalizedBlocks.length} blocks and adding block ${header.blockHeight}`
+      );
+      this._unfinalizedBlocks = [];
+      this.unfinalizedBlocks.push(header);
+      await this.saveUnfinalizedBlocks(this.unfinalizedBlocks);
+      return;
+    }
+
+    // Gap is within threshold, need to backfill to maintain parentHash chain for fork detection
+    const gapStart = lastUnfinalizedHeight + 1;
+    const gapEnd = header.blockHeight - 1;
+    const gapSize = gapEnd - gapStart + 1;
+
+    logger.info(`Backfilling missing unfinalized blocks from ${gapStart} to ${gapEnd} (${gapSize} blocks)`);
+
+    // Backfill missing blocks
+    const backfillResult = await this.backfillBlocks(gapStart, gapEnd, header);
+
+    // Add the original header after successful backfill
     this.unfinalizedBlocks.push(header);
+
+    if (backfillResult.forkDetected) {
+      return backfillResult.forkHeader;
+    }
     await this.saveUnfinalizedBlocks(this.unfinalizedBlocks);
+    return;
+  }
+
+  /**
+   * Backfills missing blocks between the last unfinalized block and a new block.
+   * Validates parentHash chain during backfill to detect forks.
+   *
+   * @param startHeight - The first missing block height
+   * @param endHeight - The last missing block height
+   * @param nextHeader - The next header that triggered backfill (for validation)
+   * @returns Object indicating if fork was detected and the fork header if so
+   */
+  private async backfillBlocks(
+    startHeight: number,
+    endHeight: number,
+    nextHeader: Header
+  ): Promise<{forkDetected: boolean; forkHeader?: Header}> {
+    // Fetch and validate each missing block
+    for (let height = startHeight; height <= endHeight; height++) {
+      try {
+        const header = await this.blockchainService.getHeaderForHeight(height);
+
+        // Validate parentHash chain
+        const previousHeader = last(this.unfinalizedBlocks);
+
+        if (previousHeader && header.parentHash !== previousHeader.blockHash) {
+          logger.warn(
+            `Fork detected during backfill at height ${height}. ` +
+              `Expected parentHash: ${previousHeader.blockHash}, ` +
+              `Got: ${header.parentHash}`
+          );
+          // Return the previous header (last valid block before the fork)
+          return {forkDetected: true, forkHeader: previousHeader};
+        }
+
+        this.unfinalizedBlocks.push(header);
+      } catch (e: any) {
+        logger.error(`Failed to fetch block ${height} during backfill: ${e.message}`);
+        throw new Error(`Failed to backfill missing unfinalized block at height ${height}: ${e.message}`);
+      }
+    }
+
+    // Validate the next header connects properly to the last backfilled block
+    const lastBackfilledHeader = last(this.unfinalizedBlocks);
+    if (lastBackfilledHeader && nextHeader.parentHash !== lastBackfilledHeader.blockHash) {
+      logger.warn(
+        `Fork detected: new block ${nextHeader.blockHeight} doesn't connect to backfilled chain. ` +
+          `Expected parentHash: ${lastBackfilledHeader.blockHash}, ` +
+          `Got: ${nextHeader.parentHash}`
+      );
+      // Return the last backfilled header as the fork point
+      return {forkDetected: true, forkHeader: lastBackfilledHeader};
+    }
+
+    logger.info(`Successfully backfilled ${endHeight - startHeight + 1} missing blocks`);
+
+    return {forkDetected: false};
   }
 
   private async deleteFinalizedBlock(): Promise<void> {
@@ -221,6 +315,10 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
 
     // Work backwards through the blocks until we find a matching hash
     for (const bestHeader of bestVerifiableBlocks.reverse()) {
+      assert(
+        bestHeader.blockHeight === checkingHeader.blockHeight,
+        'Expect best header and checking header to be at the same height'
+      );
       if (bestHeader.blockHash === checkingHeader.blockHash || bestHeader.blockHash === checkingHeader.parentHash) {
         return bestHeader;
       }
