@@ -15,6 +15,7 @@ import {mainThreadOnly} from '../utils';
 import {ProofOfIndex} from './entities';
 import {PoiBlock} from './poi';
 import {IStoreModelProvider} from './storeModelProvider';
+import util from 'node:util';
 
 const logger = getLogger('UnfinalizedBlocks');
 
@@ -82,7 +83,10 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
       const rewindHeight = await this.processUnfinalizedBlockHeader();
       if (rewindHeight !== undefined) {
         logger.info(
-          `Found un-finalized blocks from previous indexing but unverified, rolling back to last finalized block ${rewindHeight}`
+          `Found un-finalized blocks from previous indexing but unverified, rolling back to last finalized block rewindHeight=${util.inspect(
+            rewindHeight,
+            {depth: 6, colors: false}
+          )}`
         );
         await reindex(rewindHeight);
         logger.info(`Successful rewind to block ${rewindHeight.blockHeight}!`);
