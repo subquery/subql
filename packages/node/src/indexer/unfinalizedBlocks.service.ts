@@ -146,13 +146,13 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
       return poiHeader;
     } catch (e: any) {
       if (e.message === POI_NOT_ENABLED_ERROR_MESSAGE) {
-        return {
-          blockHeight: Math.max(
+        return this.blockchainService.getHeaderForHeight(
+          Math.max(
             0,
             forkedHeader.blockHeight -
               (this.nodeConfig as EthereumNodeConfig).blockForkReindex,
           ),
-        } as Header;
+        );
       }
       // TODO rewind back 1000+ blocks
       logger.info('Failed to use POI to rewind block');
