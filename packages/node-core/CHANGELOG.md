@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [19.2.0] - 2026-03-05
+### Changed
+- Improve logging of `rewindHeight` when handling un-finalized blocks (#3018)
+
+### Fixed
+- Handle non-sequential unfinalized blocks with backfill (#3016)
+
 ## [19.1.0] - 2026-02-23
 ### Fixed
 - Recovery for invalid POI sync state on startup. Now it searches backward to find the last valid synced POI and updates
@@ -1063,7 +1070,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/19.0.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/19.2.0...HEAD
+[19.2.0]: https://github.com/subquery/subql/compare/node-core/19.1.0...node-core/19.2.0
+[19.1.0]: https://github.com/subquery/subql/compare/node-core/19.0.0...node-core/19.1.0
 [19.0.0]: https://github.com/subquery/subql/compare/node-core/18.5.3...node-core/19.0.0
 [18.5.3]: https://github.com/subquery/subql/compare/node-core/18.5.2...node-core/18.5.3
 [18.5.2]: https://github.com/subquery/subql/compare/node-core/18.5.1...node-core/18.5.2
