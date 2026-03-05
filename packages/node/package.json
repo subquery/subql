@@ -31,7 +31,7 @@
     "@subql/types": "workspace:~",
     "@subql/utils": "workspace:~",
     "fetch-h2": "3.0.2",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
