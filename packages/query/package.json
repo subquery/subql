@@ -58,7 +58,7 @@
     "graphql": "^15.8.0",
     "graphql-query-complexity": "^0.11.0",
     "graphql-ws": "^5.16.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "pg": "^8.12.0",
     "pg-tsquery": "^8.4.2",
     "pino-http": "^5.8.0",
