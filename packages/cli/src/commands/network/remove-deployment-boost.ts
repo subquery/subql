@@ -4,7 +4,6 @@
 import {parseEther} from '@ethersproject/units';
 import {McpServer, RegisteredTool} from '@modelcontextprotocol/sdk/server/mcp';
 import {Command} from '@oclif/core';
-import {DeploymentBoosterAddedEvent} from '@subql/contract-sdk/typechain/contracts/RewardsBooster';
 import {z} from 'zod';
 import {
   commandLogger,
