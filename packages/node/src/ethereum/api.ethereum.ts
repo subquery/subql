@@ -36,6 +36,12 @@ import {
 import { JsonRpcBatchProvider } from './ethers/json-rpc-batch-provider';
 import { JsonRpcProvider } from './ethers/json-rpc-provider';
 import { OPFormatterMixin } from './ethers/op/op-provider';
+import {
+  TronJsonRpcBatchProvider,
+  TronJsonRpcProvider,
+  TronWsProvider,
+} from './ethers/tron/tron-provider';
+import { TRON_CHAIN_IDS } from './ethers/tron/tron-utils';
 import { ConnectionInfo } from './ethers/web';
 import SafeEthProvider from './safe-api';
 import {
@@ -171,10 +177,33 @@ export class EthereumApi implements ApiWrapper {
     //celo
     if (network.chainId === 42220) {
       if (this.client instanceof WebSocketProvider) {
-        this.client = new CeloWsProvider(this.client.connection.url);
+        this.client = new CeloWsProvider(this.client.connection.url, network);
       } else {
-        this.client = new CeloJsonRpcBatchProvider(this.client.connection);
-        this.nonBatchClient = new CeloJsonRpcProvider(this.client.connection);
+        this.client = new CeloJsonRpcBatchProvider(
+          this.client.connection,
+          network,
+        );
+        this.nonBatchClient = new CeloJsonRpcProvider(
+          this.client.connection,
+          network,
+        );
+        this.applyBatchSize(this.config?.batchSize);
+      }
+    }
+
+    //tron
+    if (TRON_CHAIN_IDS.includes(network.chainId)) {
+      if (this.client instanceof WebSocketProvider) {
+        this.client = new TronWsProvider(this.client.connection.url, network);
+      } else {
+        this.client = new TronJsonRpcBatchProvider(
+          this.client.connection,
+          network,
+        );
+        this.nonBatchClient = new TronJsonRpcProvider(
+          this.client.connection,
+          network,
+        );
         this.applyBatchSize(this.config?.batchSize);
       }
     }
@@ -328,7 +357,19 @@ export class EthereumApi implements ApiWrapper {
 
     const block = formatBlock(rawBlock);
 
-    block.stateRoot = this.client.formatter.hash(block.stateRoot);
+    // Tron sometimes returns '0x' as stateRoot, which fails the formatter
+    // We only want to apply this fix for Tron networks
+    // Mainnet: 728126428, Shasta: 2494104990, Nile: 3448148188
+    if (
+      this.chainId &&
+      TRON_CHAIN_IDS.includes(this.chainId) &&
+      block.stateRoot === '0x'
+    ) {
+      block.stateRoot =
+        '0x0000000000000000000000000000000000000000000000000000000000000000';
+    } else {
+      block.stateRoot = this.client.formatter.hash(block.stateRoot);
+    }
 
     return block;
   }
