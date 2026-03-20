@@ -21,7 +21,6 @@ const logger = getLogger('UnfinalizedBlocksService');
 
 @Injectable()
 export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<BlockContent> {
-  private supportsFinalization?: boolean;
   private startupCheck = true;
 
   constructor(
@@ -39,27 +38,22 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
 
   /**
    * @param reindex - the function to reindex back before a fork
-   * @param supportsFinalization - If the chain supports the 'finalized' block tag this should be true.
    * */
   // eslint-disable-next-line @typescript-eslint/require-await
   async init(
     reindex: (targetHeight: Header) => Promise<void>,
-    supportsFinalisation?: boolean,
   ): Promise<Header | undefined> {
-    this.supportsFinalization = supportsFinalisation;
     return super.init(reindex);
   }
+
   /**
-   * Checks if a fork has happened, this doesn't find the start of the fork just where it was detected
-   * @returns (Header | undefined) - The header may be the forked header but will most likely be the main header. Either way it should be used just for the block height
+   * Checks if a fork has happened during startup by verifying the last unfinalized block hash.
+   * Runtime fork detection is handled by node-core's registerUnfinalizedBlock which validates parentHash chain.
+   * @returns (Header | undefined) - The header if fork is detected at startup
    * */
   @profiler()
   protected async hasForked(): Promise<Header | undefined> {
-    if (this.supportsFinalization) {
-      return super.hasForked();
-    }
-
-    // Startup check helps speed up finding a fork by checking the hash of the last unfinalized block
+    // Startup check verifies the last unfinalized block hash against the chain
     if (this.startupCheck) {
       this.startupCheck = false;
       const lastUnfinalized = last(this.unfinalizedBlocks);
@@ -83,6 +77,7 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
     const current = this.unfinalizedBlocks[i];
     const parent = this.unfinalizedBlocks[i - 1];
 
+    // this now won't find fork as such cases has been covered when registerUnfinalizedBlock() is called
     if (current.parentHash !== parent.blockHash) {
       // We've found a fork now we need to find where the fork happened
       logger.warn(
@@ -102,10 +97,6 @@ export class UnfinalizedBlocksService extends BaseUnfinalizedBlocksService<Block
   protected async getLastCorrectFinalizedBlock(
     forkedHeader: Header,
   ): Promise<Header | undefined> {
-    if (this.supportsFinalization) {
-      return super.getLastCorrectFinalizedBlock(forkedHeader);
-    }
-
     const bestVerifiableBlocks = this.unfinalizedBlocks.filter(
       ({ blockHeight }) => blockHeight < forkedHeader.blockHeight,
     );
