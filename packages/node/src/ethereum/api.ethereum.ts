@@ -36,12 +36,7 @@ import {
 import { JsonRpcBatchProvider } from './ethers/json-rpc-batch-provider';
 import { JsonRpcProvider } from './ethers/json-rpc-provider';
 import { OPFormatterMixin } from './ethers/op/op-provider';
-import {
-  TronJsonRpcBatchProvider,
-  TronJsonRpcProvider,
-  TronWsProvider,
-} from './ethers/tron/tron-provider';
-import { TRON_CHAIN_IDS } from './ethers/tron/tron-utils';
+import { TRON_CHAIN_IDS } from './ethers/tron/tron-constants';
 import { ConnectionInfo } from './ethers/web';
 import SafeEthProvider from './safe-api';
 import {
@@ -184,23 +179,6 @@ export class EthereumApi implements ApiWrapper {
           network,
         );
         this.nonBatchClient = new CeloJsonRpcProvider(
-          this.client.connection,
-          network,
-        );
-        this.applyBatchSize(this.config?.batchSize);
-      }
-    }
-
-    //tron
-    if (TRON_CHAIN_IDS.includes(network.chainId)) {
-      if (this.client instanceof WebSocketProvider) {
-        this.client = new TronWsProvider(this.client.connection.url, network);
-      } else {
-        this.client = new TronJsonRpcBatchProvider(
-          this.client.connection,
-          network,
-        );
-        this.nonBatchClient = new TronJsonRpcProvider(
           this.client.connection,
           network,
         );
