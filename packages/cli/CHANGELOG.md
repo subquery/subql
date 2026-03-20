@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [6.6.3] - 2026-03-20
 ### Fixed
 - Issue initializing .env file endpoints array (#2997)
 
@@ -893,7 +895,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/6.6.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/6.6.3...HEAD
+[6.6.3]: https://github.com/subquery/subql/compare/cli/6.6.2...cli/6.6.3
 [6.6.2]: https://github.com/subquery/subql/compare/cli/6.6.1...cli/6.6.2
 [6.6.1]: https://github.com/subquery/subql/compare/cli/6.6.0...cli/6.6.1
 [6.6.0]: https://github.com/subquery/subql/compare/cli/6.5.1...cli/6.6.0
