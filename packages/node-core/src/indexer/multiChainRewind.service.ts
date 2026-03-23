@@ -214,6 +214,9 @@ export class MultiChainRewindService implements OnApplicationShutdown {
    */
   async releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, allowRewindTimestamp?: Date): Promise<number> {
     if (this.disableRewindLock) {
+      logger.info(
+        `Rewind lock disabled, skipping rewind release chainId: ${this.chainId}, rewindTimestamp: ${rewindTimestamp}`
+      );
       return 0;
     }
     const chainsCount = await this.globalModel.releaseChainRewindLock(tx, rewindTimestamp, allowRewindTimestamp);
