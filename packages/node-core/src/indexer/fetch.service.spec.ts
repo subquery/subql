@@ -342,6 +342,7 @@ describe('Fetch Service', () => {
   );
 
   afterEach(() => {
+    nodeConfig.merge({disableMultichainRewindLock: false});
     fetchService.onApplicationShutdown();
     jest.clearAllMocks();
   });
@@ -824,5 +825,15 @@ describe('Fetch Service', () => {
     (multichainRewindService as any).status = MultiChainRewindStatus.Complete;
     await fetchService.init(10);
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/Waiting for all chains to complete rewind/));
+  });
+
+  it('does not wait for multichain rewind when lock is disabled', async () => {
+    const logger = getLogger('FetchService');
+    const consoleSpy = jest.spyOn(logger, 'info');
+
+    nodeConfig.merge({disableMultichainRewindLock: true});
+    (multichainRewindService as any).status = MultiChainRewindStatus.Complete;
+    await fetchService.init(10);
+    expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringMatching(/Waiting for all chains to complete rewind/));
   });
 });

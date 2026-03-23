@@ -55,6 +55,10 @@ export class MultiChainRewindService implements OnApplicationShutdown {
     return this._chainId;
   }
 
+  get disableRewindLock(): boolean {
+    return this.nodeConfig.disableMultichainRewindLock;
+  }
+
   private set status(status: MultiChainRewindStatus) {
     this._status = status;
   }
@@ -88,7 +92,7 @@ export class MultiChainRewindService implements OnApplicationShutdown {
       // When using the reindex command, this parameter is not required.
       return;
     }
-    if (!this.storeService.isMultichain) return;
+    if (!this.storeService.isMultichain || this.disableRewindLock) return;
 
     await this.sequelize.query(`${createRewindTriggerFunction(this.dbSchema)}`);
     const rewindTriggers = await getTriggers(this.sequelize, this.rewindTriggerName);
@@ -184,6 +188,9 @@ export class MultiChainRewindService implements OnApplicationShutdown {
    */
   @mainThreadOnly()
   async acquireGlobalRewindLock(rewindTimestamp: Date): Promise<boolean> {
+    if (this.disableRewindLock) {
+      return true;
+    }
     const {lockTimestamp} = await this.globalModel.acquireGlobalRewindLock(rewindTimestamp);
 
     const existEarlierLock = lockTimestamp < rewindTimestamp;
@@ -202,6 +209,9 @@ export class MultiChainRewindService implements OnApplicationShutdown {
    * @returns the number of remaining rewind chains
    */
   async releaseChainRewindLock(tx: Transaction, rewindTimestamp: Date, allowRewindTimestamp?: Date): Promise<number> {
+    if (this.disableRewindLock) {
+      return 0;
+    }
     const chainsCount = await this.globalModel.releaseChainRewindLock(tx, rewindTimestamp, allowRewindTimestamp);
     // The current chain has completed the rewind, and we still need to wait for other chains to finish.
     // When fully synchronized, set the status back to normal by pgListener.
