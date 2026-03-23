@@ -834,6 +834,19 @@ describe('Fetch Service', () => {
     nodeConfig.merge({disableMultichainRewindLock: true});
     (multichainRewindService as any).status = MultiChainRewindStatus.Complete;
     await fetchService.init(10);
+    await new Promise<void>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        clearInterval(intervalId);
+        reject(new Error('Timed out waiting for fetch loop iteration'));
+      }, 1000);
+      const intervalId = setInterval(() => {
+        if (enqueueBlocksSpy.mock.calls.length > 0) {
+          clearTimeout(timeoutId);
+          clearInterval(intervalId);
+          resolve();
+        }
+      }, 10);
+    });
     expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringMatching(/Waiting for all chains to complete rewind/));
   });
 });
