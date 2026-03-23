@@ -92,7 +92,11 @@ export class MultiChainRewindService implements OnApplicationShutdown {
       // When using the reindex command, this parameter is not required.
       return;
     }
-    if (!this.storeService.isMultichain || this.disableRewindLock) return;
+    if (!this.storeService.isMultichain) return;
+    if (this.disableRewindLock) {
+      logger.info(`Multichain rewind lock is disabled, chainId: ${this.chainId}`);
+      return;
+    }
 
     await this.sequelize.query(`${createRewindTriggerFunction(this.dbSchema)}`);
     const rewindTriggers = await getTriggers(this.sequelize, this.rewindTriggerName);
