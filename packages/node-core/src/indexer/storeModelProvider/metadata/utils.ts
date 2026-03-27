@@ -25,9 +25,7 @@ export function APPEND_DS_QUERY(schemaTable: SchemaTable, items: DatasourceParam
   const VALUE = '"value"';
 
   const makeSet = (item: DatasourceParams, value: string, index = 1): string =>
-    `jsonb_set(${value}, array[(jsonb_array_length(${VALUE}) + ${index})::text], '${JSON.stringify(
-      item
-    )}'::jsonb, true)`;
+    `jsonb_set(${value}, array[(jsonb_array_length(${VALUE}) + ${index})::text], '${JSON.stringify(item).replace(/'/g, "''")}'::jsonb, true)`;
 
   return `
       UPDATE ${schemaTable}
