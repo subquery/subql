@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [19.3.0] - 2026-03-27
+### Changed
+- Optionally disable multichain rewind lock (#3028)
+
 ## [19.2.0] - 2026-03-05
 ### Changed
 - Improve logging of `rewindHeight` when handling un-finalized blocks (#3018)
@@ -1070,7 +1074,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/19.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/19.3.0...HEAD
+[19.3.0]: https://github.com/subquery/subql/compare/node-core/19.2.0...node-core/19.3.0
 [19.2.0]: https://github.com/subquery/subql/compare/node-core/19.1.0...node-core/19.2.0
 [19.1.0]: https://github.com/subquery/subql/compare/node-core/19.0.0...node-core/19.1.0
 [19.0.0]: https://github.com/subquery/subql/compare/node-core/18.5.3...node-core/19.0.0
