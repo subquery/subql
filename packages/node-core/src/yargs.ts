@@ -129,6 +129,13 @@ export function yargsBuilder<
                 describe: 'Enables indexing multiple subquery projects into the same database schema',
                 type: 'boolean',
               },
+              'disable-multichain-rewind-lock': {
+                demandOption: false,
+                default: false,
+                describe:
+                  'Disable multichain rewind lock coordination and process rewinds independently per chain',
+                type: 'boolean',
+              },
               'network-dictionary': {
                 alias: 'd',
                 demandOption: false,

@@ -80,4 +80,12 @@ describe('NodeConfig', () => {
     const config5 = new NodeConfig({historical: 'height', unfinalizedBlocks: true} as any, true);
     expect(config5.unfinalizedBlocks).toBe(false);
   });
+
+  it('Has the correct default behaviour for disableMultichainRewindLock', () => {
+    const config = new NodeConfig({subquery: 'test'} as any);
+    expect(config.disableMultichainRewindLock).toBe(false);
+
+    const config1 = new NodeConfig({subquery: 'test', disableMultichainRewindLock: true} as any);
+    expect(config1.disableMultichainRewindLock).toBe(true);
+  });
 });

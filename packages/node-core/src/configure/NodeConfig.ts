@@ -41,6 +41,7 @@ export interface IConfig {
   readonly subscription: boolean;
   readonly historical: HistoricalMode;
   readonly multiChain: boolean;
+  readonly disableMultichainRewindLock: boolean;
   readonly reindex?: number;
   readonly unfinalizedBlocks?: boolean;
   readonly pgCa?: string;
@@ -85,6 +86,7 @@ const DEFAULT_CONFIG = {
   subscription: false,
   historical: 'height',
   multiChain: false,
+  disableMultichainRewindLock: false,
   storeCacheThreshold: 1000,
   storeCacheUpperLimit: 10000,
   storeGetCacheSize: 500,
@@ -283,6 +285,10 @@ export class NodeConfig<C extends IConfig = IConfig> implements IConfig {
 
   get multiChain(): boolean {
     return this._config.multiChain;
+  }
+
+  get disableMultichainRewindLock(): boolean {
+    return this._config.disableMultichainRewindLock;
   }
 
   get unfinalizedBlocks(): boolean {
