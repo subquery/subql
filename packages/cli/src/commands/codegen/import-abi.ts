@@ -113,8 +113,14 @@ async function generateAdapter(
 
   const project = loadFromJsonOrYaml(yamlManifest) as ProjectManifestV1_0_0;
 
-  if (getProjectNetwork(project) !== NETWORK_FAMILY.ethereum) {
-    throw new Error('ABI generation is only supported for Ethereum projects');
+  const network = getProjectNetwork(project);
+  if (network !== NETWORK_FAMILY.ethereum) {
+    throw new Error(`ABI generation is only supported for Ethereum projects. Detected network: ${network}`);
+  }
+
+  const chainId = project.network.chainId;
+  if (!chainId) {
+    throw new Error('Network chainId is required for ABI generation');
   }
 
   if (!prompt && !args.events && !args.functions) {
@@ -162,8 +168,20 @@ async function generateAdapter(
   const ethModule = loadDependency(NETWORK_FAMILY.ethereum, args.location);
   const abiName = ethModule.parseContractPath(args.abiPath).name;
 
-  if (fs.existsSync(path.join(root, 'src/mappings/', `${abiName}Handlers.ts`))) {
-    throw new Error(`file: ${abiName}Handlers.ts already exists`);
+  const handlersPath = path.join(root, 'src/mappings/', `${abiName}Handlers.ts`);
+  if (fs.existsSync(handlersPath)) {
+    if (prompt) {
+      const shouldRegenerate = await prompt.prompt({
+        type: 'confirm',
+        message: `File ${abiName}Handlers.ts already exists. Do you want to regenerate it?`,
+        name: 'regenerate',
+      });
+      if (!shouldRegenerate) {
+        throw new Error('Aborted: existing handlers file was not regenerated');
+      }
+    } else {
+      logger.info(`File ${abiName}Handlers.ts already exists, regenerating...`);
+    }
   }
 
   await prepareAbiDirectory(args.abiPath, root);
