@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [19.3.1] - 2026-04-01
+### Fixed
+- SQL injection in dynamic datasource appending via unescaped json serialization (#3031)
+
 ## [19.3.0] - 2026-03-27
 ### Changed
 - Optionally disable multichain rewind lock (#3028)
@@ -1074,7 +1078,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/19.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/19.3.1...HEAD
+[19.3.1]: https://github.com/subquery/subql/compare/node-core/19.3.0...node-core/19.3.1
 [19.3.0]: https://github.com/subquery/subql/compare/node-core/19.2.0...node-core/19.3.0
 [19.2.0]: https://github.com/subquery/subql/compare/node-core/19.1.0...node-core/19.2.0
 [19.1.0]: https://github.com/subquery/subql/compare/node-core/19.0.0...node-core/19.1.0
