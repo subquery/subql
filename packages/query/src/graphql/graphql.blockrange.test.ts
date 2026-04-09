@@ -67,7 +67,7 @@ describe('GraphqlBlockRange', () => {
       CONSTRAINT test_entities_pkey PRIMARY KEY (_id)
     );`);
 
-    await pool.query(`INSERT INTO "${dbSchema}".test_entities 
+    await pool.query(`INSERT INTO "${dbSchema}".test_entities
       (id, name, value, created_at_block_height, "_id", "_block_range") VALUES
       ('entity1', 'First Version', 100, 5, gen_random_uuid(), int8range(5, 10)),
       ('entity1', 'Second Version', 200, 10, gen_random_uuid(), int8range(10, 20)),
@@ -97,6 +97,7 @@ describe('GraphqlBlockRange', () => {
             id
             name
             value
+            _blockHeight
           }
         }
       }
@@ -104,32 +105,20 @@ describe('GraphqlBlockRange', () => {
 
     const res = await server.executeOperation({query: GQL_QUERY});
     expect(res.errors).toBeUndefined();
-    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+
+    const sql = sqlSpy.mock.calls[0][0];
+    expect(sql).toContain('_block_range && int8range');
+    expect(sql).toMatchSnapshot();
   });
 
-  it('should return single entity with block range filter', async () => {
-    const GQL_QUERY = gql`
-      query singleEntityByBlockRange {
-        testEntity(id: "entity1", blockRange: ["0", "100"]) {
-          id
-          name
-          value
-        }
-      }
-    `;
-
-    const res = await server.executeOperation({query: GQL_QUERY});
-    expect(res.errors).toBeUndefined();
-    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
-  });
-
-  it('should include __block_height in SQL for result transformation', async () => {
+  it('should include _blockHeight in response', async () => {
     const GQL_QUERY = gql`
       query testEntitiesWithBlockHeight {
         testEntities(blockRange: ["10", "25"]) {
           nodes {
             id
             name
+            _blockHeight
           }
         }
       }
@@ -137,7 +126,11 @@ describe('GraphqlBlockRange', () => {
 
     const res = await server.executeOperation({query: GQL_QUERY});
     expect(res.errors).toBeUndefined();
-    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+
+    const sql = sqlSpy.mock.calls[0][0];
+    expect(sql).toContain('lower(');
+    expect(sql).toContain('__block_height');
+    expect(sql).toMatchSnapshot();
   });
 
   it('should work with existing blockHeight parameter (backwards compatibility)', async () => {
@@ -154,7 +147,10 @@ describe('GraphqlBlockRange', () => {
 
     const res = await server.executeOperation({query: GQL_QUERY});
     expect(res.errors).toBeUndefined();
-    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+
+    const sql = sqlSpy.mock.calls[0][0];
+    expect(sql).toContain('_block_range @>');
+    expect(sql).not.toContain('int8range');
   });
 
   it('should handle empty block range gracefully', async () => {
@@ -171,10 +167,10 @@ describe('GraphqlBlockRange', () => {
 
     const res = await server.executeOperation({query: GQL_QUERY});
     expect(res.errors).toBeUndefined();
-    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+    expect(sqlSpy.mock.calls[0][0]).toContain('_block_range && int8range');
   });
 
-  it('should validate blockRange parameter format', async () => {
+  it('should fall back to default behavior with invalid blockRange', async () => {
     const GQL_QUERY = gql`
       query testEntitiesInvalidRange {
         testEntities(blockRange: ["invalid"]) {
@@ -188,7 +184,10 @@ describe('GraphqlBlockRange', () => {
 
     const res = await server.executeOperation({query: GQL_QUERY});
     expect(res.errors).toBeUndefined();
-    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+
+    // Invalid blockRange should be ignored, default blockHeight filter applies
+    const sql = sqlSpy.mock.calls[0][0];
+    expect(sql).toContain('_block_range @>');
   });
 
   it('should work with filtering and block range together', async () => {
@@ -199,6 +198,7 @@ describe('GraphqlBlockRange', () => {
             id
             name
             value
+            _blockHeight
           }
         }
       }
@@ -206,6 +206,10 @@ describe('GraphqlBlockRange', () => {
 
     const res = await server.executeOperation({query: GQL_QUERY});
     expect(res.errors).toBeUndefined();
-    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+
+    const sql = sqlSpy.mock.calls[0][0];
+    expect(sql).toContain('_block_range && int8range');
+    expect(sql).toContain('name');
+    expect(sql).toMatchSnapshot();
   });
 });

@@ -67,7 +67,7 @@ describe('GraphqlBlockRange - Backwards Compatibility', () => {
       CONSTRAINT entities_pkey PRIMARY KEY (_id)
     );`);
 
-    await pool.query(`INSERT INTO "${dbSchema}".entities 
+    await pool.query(`INSERT INTO "${dbSchema}".entities
       (id, name, value, created_at_block_height, "_id", "_block_range") VALUES
       ('entity1', 'Current Version', 100, 10, gen_random_uuid(), int8range(10, null)),
       ('entity2', 'Another Entity', 200, 15, gen_random_uuid(), int8range(15, null));`);
@@ -107,7 +107,7 @@ describe('GraphqlBlockRange - Backwards Compatibility', () => {
     expect(sqlSpy.mock.calls[0][0]).not.toContain('int8range');
   });
 
-  it('should prevent using blockRange with blockHeight together', async () => {
+  it('should use blockHeight when both blockHeight and blockRange are provided', async () => {
     const GQL_QUERY = gql`
       query entitiesWithConflictingParams {
         entities(blockHeight: "15", blockRange: ["10", "20"]) {
@@ -122,13 +122,13 @@ describe('GraphqlBlockRange - Backwards Compatibility', () => {
     const res = await server.executeOperation({query: GQL_QUERY});
     expect(res.errors).toBeUndefined();
 
-    expect(sqlSpy.mock.calls[0][0]).not.toContain('_block_range @>');
-    expect(sqlSpy.mock.calls[0][0]).not.toContain('&&');
-
-    expect(res.data?.entities?.nodes).toBeDefined();
+    // blockHeight wins, blockRange is ignored
+    const sql = sqlSpy.mock.calls[0][0];
+    expect(sql).toContain('_block_range @>');
+    expect(sql).not.toContain('int8range');
   });
 
-  it('should validate blockRange parameters', async () => {
+  it('should ignore invalid blockRange and fall back to default', async () => {
     const GQL_QUERY = gql`
       query entitiesWithInvalidRange {
         entities(blockRange: ["20", "10"]) {
@@ -141,7 +141,11 @@ describe('GraphqlBlockRange - Backwards Compatibility', () => {
     `;
 
     const res = await server.executeOperation({query: GQL_QUERY});
-    expect(res.errors || sqlSpy.mock.calls[0]?.[0]).toBeDefined();
+    expect(res.errors).toBeUndefined();
+
+    // Invalid range (start > end) falls back to default blockHeight filter
+    const sql = sqlSpy.mock.calls[0][0];
+    expect(sql).toContain('_block_range @>');
   });
 
   it('should maintain existing query performance characteristics', async () => {
@@ -160,7 +164,6 @@ describe('GraphqlBlockRange - Backwards Compatibility', () => {
     const res = await server.executeOperation({query: GQL_QUERY});
     expect(res.errors).toBeUndefined();
 
-    // Should include pagination and aggregation
     expect(sqlSpy.mock.calls[0][0]).toContain('_block_range @>');
     expect(res.data?.entities?.totalCount).toBeDefined();
   });
@@ -181,7 +184,6 @@ describe('GraphqlBlockRange - Backwards Compatibility', () => {
     const res = await server.executeOperation({query: GQL_QUERY});
     expect(res.errors).toBeUndefined();
 
-    // Should combine block height with other filters
     expect(sqlSpy.mock.calls[0][0]).toContain('_block_range @>');
     expect(sqlSpy.mock.calls[0][0]).toContain('name');
   });
