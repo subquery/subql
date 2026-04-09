@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GraphqlBlockRange should filter entities by block range 1`] = `
+"with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id"), 'name'::text, (__local_1__."name"), 'value'::text, ((__local_1__."value"))::text, '__block_height'::text, lower(__local_1__._block_range)))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_blockrange_test"."test_entities" as __local_1__
+
+where (__local_1__._block_range && int8range($1::bigint, $2::bigint, '[]')) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_2__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_2__.data from __local_2__), '[]'::json) as "data" "
+`;
+
+exports[`GraphqlBlockRange should include _blockHeight in response 1`] = `
+"with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id"), 'name'::text, (__local_1__."name"), '__block_height'::text, lower(__local_1__._block_range)))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_blockrange_test"."test_entities" as __local_1__
+
+where (__local_1__._block_range && int8range($1::bigint, $2::bigint, '[]')) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_2__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_2__.data from __local_2__), '[]'::json) as "data" "
+`;
+
+exports[`GraphqlBlockRange should work with filtering and block range together 1`] = `
+"with __local_0__ as (select to_json((json_build_object('__identifiers'::text, json_build_array(__local_1__."_id"), 'id'::text, (__local_1__."id"), 'name'::text, (__local_1__."name"), 'value'::text, ((__local_1__."value"))::text, '__block_height'::text, lower(__local_1__._block_range)))) as "@nodes" from (select 
+__local_1__.*
+from "subquery_blockrange_test"."test_entities" as __local_1__
+
+where (__local_1__._block_range && int8range($1::bigint, $2::bigint, '[]')) and (((__local_1__."name" LIKE $3))) and (TRUE) and (TRUE)
+order by __local_1__."_id" ASC
+
+) __local_1__), __local_2__ as (select json_agg(to_json(__local_0__)) as data from __local_0__) select coalesce((select __local_2__.data from __local_2__), '[]'::json) as "data" "
+`;
