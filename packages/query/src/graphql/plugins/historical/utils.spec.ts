@@ -1,7 +1,7 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {makeRangeQuery, makeBlockRangeQuery, extractBlockHeightFromRange} from './utils';
+import {makeRangeQuery, makeBlockRangeQuery} from './utils';
 
 describe('Historical Utils', () => {
   const mockSql = {
@@ -45,19 +45,4 @@ describe('Historical Utils', () => {
     });
   });
 
-  describe('extractBlockHeightFromRange', () => {
-    it('should create correct PostgreSQL lower() function call', () => {
-      const columnName = 'test_table._block_range';
-      const result = extractBlockHeightFromRange(columnName);
-
-      expect(result).toBe('lower(test_table._block_range)');
-    });
-
-    it('should work with different column names', () => {
-      const columnName = 'alias._block_range';
-      const result = extractBlockHeightFromRange(columnName);
-
-      expect(result).toBe('lower(alias._block_range)');
-    });
-  });
 });

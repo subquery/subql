@@ -14,8 +14,18 @@ export function makeBlockRangeQuery(tableName: SQL, blockRange: [string, string]
   return sql.fragment`${tableName}._block_range && int8range(${sql.value(startBlock)}::bigint, ${sql.value(endBlock)}::bigint, '[]')`;
 }
 
-export function extractBlockHeightFromRange(blockRangeColumn: string): string {
-  return `lower(${blockRangeColumn})`;
+export function validateBlockRange(blockRange: string[]): [string, string] | null {
+  if (!blockRange || blockRange.length !== 2) return null;
+
+  const [start, end] = blockRange;
+  const startNum = parseInt(start, 10);
+  const endNum = parseInt(end, 10);
+
+  if (isNaN(startNum) || isNaN(endNum)) return null;
+  if (startNum < 0 || endNum < 0) return null;
+  if (startNum > endNum) return null;
+
+  return [start, end];
 }
 
 export function hasBlockRange(entity?: PgEntity): boolean {
