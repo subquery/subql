@@ -3,7 +3,6 @@
 
 import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
 import {PgBlockRangePlugin} from './PgBlockRangePlugin';
-import {PgBlockRangeTransformPlugin} from './PgBlockRangeTransformPlugin';
 import PgConnectionArgFilterBackwardRelationsPlugin from './PgConnectionArgFilterBackwardRelationsPlugin';
 import PgConnectionArgFilterForwardRelationsPlugin from './PgConnectionArgFilterForwardRelationsPlugin';
 
@@ -12,7 +11,6 @@ const historicalPlugins = [
   PgBlockRangePlugin,
   PgConnectionArgFilterBackwardRelationsPlugin,
   PgConnectionArgFilterForwardRelationsPlugin,
-  PgBlockRangeTransformPlugin,
 ];
 
 export default historicalPlugins;

@@ -4,44 +4,63 @@
 import {QueryBuilder} from '@subql/x-graphile-build-pg';
 import {Plugin, Context} from 'graphile-build';
 import {GraphQLList, GraphQLString} from 'graphql';
-import {fetchFromTable} from '../GetMetadataPlugin';
-import {hasBlockRange, makeBlockRangeQuery, extractBlockHeightFromRange} from './utils';
+import {hasBlockRange, makeBlockRangeQuery, validateBlockRange} from './utils';
 
 function addBlockRangeQuery(queryBuilder: QueryBuilder, sql: any, blockRange: [string, string]) {
   const tableAlias = queryBuilder.getTableAlias();
-  const rangeQuery = makeBlockRangeQuery(tableAlias, blockRange, sql);
-  queryBuilder.where(rangeQuery);
+  queryBuilder.where(makeBlockRangeQuery(tableAlias, blockRange, sql));
 }
 
-function addBlockRangeContext(queryBuilder: QueryBuilder, sql: any, blockRange: [string, string]) {
+function addBlockRangeContext(queryBuilder: QueryBuilder, blockRange: [string, string]) {
   if (!queryBuilder.context.args?.blockRange || !queryBuilder.parentQueryBuilder) {
     queryBuilder.context.args = {
       ...queryBuilder.context.args,
-      blockRange: [
-        sql.fragment`${sql.value(blockRange[0])}::bigint`,
-        sql.fragment`${sql.value(blockRange[1])}::bigint`,
-      ],
-      isBlockRangeQuery: true,
+      blockRange,
     };
   }
 }
 
-function enhanceQueryForBlockRange(queryBuilder: QueryBuilder, sql: any) {
-  const alias = queryBuilder.getTableAlias();
-  queryBuilder.select(sql.fragment`lower(${alias}._block_range)`, '__block_height');
-}
+export const PgBlockRangePlugin: Plugin = (builder) => {
+  // Add _blockHeight field to entity types that have _block_range
+  builder.hook(
+    'GraphQLObjectType:fields',
+    (fields, build, context) => {
+      const {
+        scope: {isPgRowType, pgIntrospection: table},
+        fieldWithHooks,
+      } = context;
+      const {pgSql: sql, extend} = build;
 
-export const PgBlockRangePlugin: Plugin = async (builder, options) => {
-  let historicalMode: boolean | 'height' | 'timestamp' = 'height';
-  const [schemaName] = options.pgSchemas;
+      if (!isPgRowType || !table || table.kind !== 'class') return fields;
+      if (!hasBlockRange(table)) return fields;
 
-  try {
-    const {historicalStateEnabled} = await fetchFromTable(options.pgConfig, schemaName, undefined, false);
-    historicalMode = historicalStateEnabled;
-  } catch (e) {
-    /* Do nothing, default value is already set */
-  }
+      return extend(fields, {
+        _blockHeight: fieldWithHooks(
+          '_blockHeight',
+          ({addDataGenerator}: {addDataGenerator: any}) => {
+            addDataGenerator(() => ({
+              pgQuery: (queryBuilder: QueryBuilder) => {
+                queryBuilder.select(
+                  sql.fragment`lower(${queryBuilder.getTableAlias()}._block_range)`,
+                  '__block_height'
+                );
+              },
+            }));
+            return {
+              type: GraphQLString,
+              resolve: (data: any) => {
+                const val = data['__block_height'];
+                return val != null ? String(val) : null;
+              },
+            };
+          },
+          {isPgBlockHeightField: true}
+        ),
+      });
+    }
+  );
 
+  // Propagate blockRange to relation fields
   builder.hook(
     'GraphQLObjectType:fields:field',
     (
@@ -64,43 +83,14 @@ export const PgBlockRangePlugin: Plugin = async (builder, options) => {
         return field;
       }
 
-      addArgDataGenerator(({blockHeight, blockRange, timestamp}) => {
-        if (!blockRange || blockRange.length !== 2) {
-          return {};
-        }
-
-        const hasExplicitBlockHeight = blockHeight && blockHeight !== '9223372036854775807';
-        const hasExplicitTimestamp = timestamp && timestamp !== '9223372036854775807';
-
-        if (hasExplicitBlockHeight || hasExplicitTimestamp) {
-          console.warn('blockRange cannot be used together with blockHeight or timestamp. blockRange will be ignored.');
-          return {};
-        }
-
-        const [start, end] = blockRange;
-        const startNum = parseInt(start, 10);
-        const endNum = parseInt(end, 10);
-
-        if (isNaN(startNum) || isNaN(endNum)) {
-          console.warn('blockRange values must be valid numbers. blockRange will be ignored.');
-          return {};
-        }
-
-        if (startNum < 0 || endNum < 0) {
-          console.warn('blockRange values must be non-negative. blockRange will be ignored.');
-          return {};
-        }
-
-        if (startNum > endNum) {
-          console.warn('blockRange start must be less than or equal to end. blockRange will be ignored.');
-          return {};
-        }
+      addArgDataGenerator(({blockRange}: {blockRange?: string[]}) => {
+        const validated = validateBlockRange(blockRange as string[]);
+        if (!validated) return {};
 
         return {
           pgQuery: (queryBuilder: QueryBuilder) => {
-            addBlockRangeContext(queryBuilder, sql, [start, end]);
-            addBlockRangeQuery(queryBuilder, sql, [start, end]);
-            enhanceQueryForBlockRange(queryBuilder, sql);
+            addBlockRangeContext(queryBuilder, validated);
+            addBlockRangeQuery(queryBuilder, sql, validated);
           },
         };
       });
@@ -108,6 +98,7 @@ export const PgBlockRangePlugin: Plugin = async (builder, options) => {
     }
   );
 
+  // Add blockRange argument to connection queries
   builder.hook(
     'GraphQLObjectType:fields:field:args',
     (
@@ -115,54 +106,29 @@ export const PgBlockRangePlugin: Plugin = async (builder, options) => {
       {extend, pgSql: sql},
       {
         addArgDataGenerator,
-        scope: {isPgFieldConnection, isPgRowByUniqueConstraintField, pgFieldIntrospection},
+        scope: {isPgFieldConnection, pgFieldIntrospection},
       }: Context<any>
     ) => {
-      if (!isPgRowByUniqueConstraintField && !isPgFieldConnection) {
+      if (!isPgFieldConnection) {
         return args;
       }
       if (!hasBlockRange(pgFieldIntrospection)) {
         return args;
       }
 
-      addArgDataGenerator(({blockHeight, blockRange, timestamp}) => {
-        if (!blockRange || blockRange.length !== 2) {
-          return {};
-        }
+      addArgDataGenerator(({blockHeight, blockRange, timestamp}: any) => {
+        const validated = validateBlockRange(blockRange);
+        if (!validated) return {};
 
-        // Check for explicit blockHeight/timestamp (ignore default values)
+        // Don't combine with explicit blockHeight/timestamp
         const hasExplicitBlockHeight = blockHeight && blockHeight !== '9223372036854775807';
         const hasExplicitTimestamp = timestamp && timestamp !== '9223372036854775807';
-
-        if (hasExplicitBlockHeight || hasExplicitTimestamp) {
-          console.warn('blockRange cannot be used together with blockHeight or timestamp. blockRange will be ignored.');
-          return {};
-        }
-
-        const [start, end] = blockRange;
-        const startNum = parseInt(start, 10);
-        const endNum = parseInt(end, 10);
-
-        if (isNaN(startNum) || isNaN(endNum)) {
-          console.warn('blockRange values must be valid numbers. blockRange will be ignored.');
-          return {};
-        }
-
-        if (startNum < 0 || endNum < 0) {
-          console.warn('blockRange values must be non-negative. blockRange will be ignored.');
-          return {};
-        }
-
-        if (startNum > endNum) {
-          console.warn('blockRange start must be less than or equal to end. blockRange will be ignored.');
-          return {};
-        }
+        if (hasExplicitBlockHeight || hasExplicitTimestamp) return {};
 
         return {
           pgQuery: (queryBuilder: QueryBuilder) => {
-            addBlockRangeContext(queryBuilder, sql, [start, end]);
-            addBlockRangeQuery(queryBuilder, sql, [start, end]);
-            enhanceQueryForBlockRange(queryBuilder, sql);
+            addBlockRangeContext(queryBuilder, validated);
+            addBlockRangeQuery(queryBuilder, sql, validated);
           },
         };
       });
@@ -170,8 +136,8 @@ export const PgBlockRangePlugin: Plugin = async (builder, options) => {
       return extend(args, {
         blockRange: {
           description:
-            'When specified, returns all historical states within this block range [start, end]. Results will be keyed by block height.',
-          type: new GraphQLList(GraphQLString), // array of two strings: [start, end]
+            'Filter by block range [start, end]. Returns all historical entity versions within this range. Use _blockHeight field to see each version\'s block.',
+          type: new GraphQLList(GraphQLString),
         },
       });
     }

@@ -5,7 +5,7 @@ import {QueryBuilder} from '@subql/x-graphile-build-pg';
 import {Plugin, Context} from 'graphile-build';
 import {GraphQLString} from 'graphql';
 import {fetchFromTable} from '../GetMetadataPlugin';
-import {makeRangeQuery, hasBlockRange} from './utils';
+import {makeRangeQuery, hasBlockRange, validateBlockRange} from './utils';
 
 function addRangeQuery(queryBuilder: QueryBuilder, sql: any) {
   queryBuilder.where(makeRangeQuery(queryBuilder.getTableAlias(), queryBuilder.context.args.blockHeight, sql));
@@ -54,18 +54,12 @@ export const PgBlockHeightPlugin: Plugin = async (builder, options) => {
       }
 
       addArgDataGenerator(({blockHeight, blockRange, timestamp}) => {
-        if (blockRange) {
+        // Defer to PgBlockRangePlugin only when blockRange is valid and no explicit blockHeight/timestamp
+        const isExplicit = (blockHeight && blockHeight !== '9223372036854775807') ||
+          (timestamp && timestamp !== '9223372036854775807');
+        if (!isExplicit && validateBlockRange(blockRange)) {
           return {};
         }
-
-        // Only process explicit blockHeight/timestamp (not default values)
-        const hasExplicitBlockHeight = blockHeight && blockHeight !== '9223372036854775807';
-        const hasExplicitTimestamp = timestamp && timestamp !== '9223372036854775807';
-
-        if (!hasExplicitBlockHeight && !hasExplicitTimestamp) {
-          return {};
-        }
-
         return {
           pgQuery: (queryBuilder: QueryBuilder) => {
             addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
@@ -95,22 +89,14 @@ export const PgBlockHeightPlugin: Plugin = async (builder, options) => {
       }
 
       addArgDataGenerator(({blockHeight, blockRange, timestamp}) => {
-        // If blockRange is provided, let PgBlockRangePlugin handle it
-        if (blockRange) {
+        // Defer to PgBlockRangePlugin only when blockRange is valid and no explicit blockHeight/timestamp
+        const isExplicit = (blockHeight && blockHeight !== '9223372036854775807') ||
+          (timestamp && timestamp !== '9223372036854775807');
+        if (!isExplicit && validateBlockRange(blockRange)) {
           return {};
         }
-
-        // Only process explicit blockHeight/timestamp (not default values)
-        const hasExplicitBlockHeight = blockHeight && blockHeight !== '9223372036854775807';
-        const hasExplicitTimestamp = timestamp && timestamp !== '9223372036854775807';
-
-        if (!hasExplicitBlockHeight && !hasExplicitTimestamp) {
-          return {};
-        }
-
         return {
           pgQuery: (queryBuilder: QueryBuilder) => {
-            // If timestamp provided use that as the value
             addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
             addRangeQuery(queryBuilder, sql);
           },
