@@ -7405,7 +7405,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:1.8.0, @noble/hashes@npm:^1.1.2, @noble/hashes@npm:^1.4.0, @noble/hashes@npm:^1.5.0, @noble/hashes@npm:^1.8.0, @noble/hashes@npm:~1.8.0":
+"@noble/hashes@npm:1.8.0, @noble/hashes@npm:^1.4.0, @noble/hashes@npm:^1.5.0, @noble/hashes@npm:^1.7.0, @noble/hashes@npm:^1.8.0, @noble/hashes@npm:~1.8.0":
   version: 1.8.0
   resolution: "@noble/hashes@npm:1.8.0"
   checksum: 10/474b7f56bc6fb2d5b3a42132561e221b0ea4f91e590f4655312ca13667840896b34195e2b53b7f097ec080a1fdd3b58d902c2a8d0fbdf51d2e238b53808a177e
@@ -8628,6 +8628,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@signinwithethereum/siwe-parser@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@signinwithethereum/siwe-parser@npm:4.1.0"
+  dependencies:
+    "@noble/hashes": "npm:^1.7.0"
+    apg-js: "npm:^4.4.0"
+  checksum: 10/35f97335717491482c6a1b615a2d6d67bf9384fe0e613db3de5c6c42e600cb913cef93cecb8bf1725afa5560ba56aa2aa45be8d22da147b0de2b290610a09cfc
+  languageName: node
+  linkType: hard
+
+"@signinwithethereum/siwe@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@signinwithethereum/siwe@npm:4.1.0"
+  dependencies:
+    "@signinwithethereum/siwe-parser": "npm:^4.1.0"
+  peerDependencies:
+    ethers: ^5.7.0 || ^6.13.0
+    viem: ^2.7.0
+  peerDependenciesMeta:
+    ethers:
+      optional: true
+    viem:
+      optional: true
+  checksum: 10/28317bb8038664f3b236ba7b218f10d1a66267a3eb78b003f6c102e4d13ba4df584a379dc8b2730d3a884546d868557ee508b8600aea76f6db9517d2e20ef51a
+  languageName: node
+  linkType: hard
+
 "@sinclair/typebox@npm:^0.24.1":
   version: 0.24.51
   resolution: "@sinclair/typebox@npm:0.24.51"
@@ -9820,49 +9847,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@spruceid/siwe-parser@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@spruceid/siwe-parser@npm:3.0.0"
-  dependencies:
-    "@noble/hashes": "npm:^1.1.2"
-    apg-js: "npm:^4.4.0"
-  checksum: 10/19239d4a18a953812e4a5cd25c51a9869b67643b00cf9b6f36091b0d7b8be09934d1ba41c7df60f6e05307ba5cbc7c4812c69b5d3de64a132ea08b80a35cb87f
-  languageName: node
-  linkType: hard
-
-"@stablelib/binary@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/binary@npm:1.0.1"
-  dependencies:
-    "@stablelib/int": "npm:^1.0.1"
-  checksum: 10/c5ed769e2b5d607a5cdb72d325fcf98db437627862fade839daad934bd9ccf02a6f6e34f9de8cb3b18d72fce2ba6cc019a5d22398187d7d69d2607165f27f8bf
-  languageName: node
-  linkType: hard
-
-"@stablelib/int@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/int@npm:1.0.1"
-  checksum: 10/65bfbf50a382eea70c68e05366bf379cfceff8fbc076f1c267ef2f2411d7aed64fd140c415cb6c29f19a3910d3b8b7805d4b32ad5721a5007a8e744a808c7ae3
-  languageName: node
-  linkType: hard
-
-"@stablelib/random@npm:^1.0.1":
-  version: 1.0.2
-  resolution: "@stablelib/random@npm:1.0.2"
-  dependencies:
-    "@stablelib/binary": "npm:^1.0.1"
-    "@stablelib/wipe": "npm:^1.0.1"
-  checksum: 10/f5ace0a588dc4c21f01cb85837892d4c872e994ae77a58a8eb7dd61aa0b26fb1e9b46b0445e71af57d963ef7d9f5965c64258fc0d04df7b2947bc48f2d3560c5
-  languageName: node
-  linkType: hard
-
-"@stablelib/wipe@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@stablelib/wipe@npm:1.0.1"
-  checksum: 10/287802eb146810a46ba72af70b82022caf83a8aeebde23605f5ee0decf64fe2b97a60c856e43b6617b5801287c30cfa863cfb0469e7fcde6f02d143cf0c6cbf4
-  languageName: node
-  linkType: hard
-
 "@starknet-io/starknet-types-07@npm:@starknet-io/types-js@~0.7.10":
   version: 0.7.10
   resolution: "@starknet-io/types-js@npm:0.7.10"
@@ -9929,6 +9913,7 @@ __metadata:
     "@inquirer/prompts": "npm:^5.3.6"
     "@modelcontextprotocol/sdk": "npm:1.24.3"
     "@oclif/core": "npm:^4.8.0"
+    "@signinwithethereum/siwe": "npm:^4.1.0"
     "@subql/common": "workspace:~"
     "@subql/common-algorand": "npm:^4.4.3"
     "@subql/common-concordium": "npm:^4.0.1"
@@ -9970,7 +9955,6 @@ __metadata:
     rimraf: "npm:^5.0.10"
     semver: "npm:^7.6.3"
     simple-git: "npm:^3.28.0"
-    siwe: "npm:^3.0.0"
     swagger-typescript-api: "npm:^13.2.15"
     terser-webpack-plugin: "npm:^5.3.14"
     ts-loader: "npm:^9.5.1"
@@ -25839,18 +25823,6 @@ __metadata:
   version: 1.0.5
   resolution: "sisteransi@npm:1.0.5"
   checksum: 10/aba6438f46d2bfcef94cf112c835ab395172c75f67453fe05c340c770d3c402363018ae1ab4172a1026a90c47eaccf3af7b6ff6fa749a680c2929bd7fa2b37a4
-  languageName: node
-  linkType: hard
-
-"siwe@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "siwe@npm:3.0.0"
-  dependencies:
-    "@spruceid/siwe-parser": "npm:^3.0.0"
-    "@stablelib/random": "npm:^1.0.1"
-  peerDependencies:
-    ethers: ^5.6.8 || ^6.0.8
-  checksum: 10/9be89fe6163be6508c4a65594002a2841cc2ea5cbf3bdb25ca26a214ad08a7a7ad21915b1fe6dd23bdd2f02c61992e1b7676b24d70e1ae85e5cb0e832470c7cc
   languageName: node
   linkType: hard
 
