@@ -89,7 +89,7 @@ export abstract class BaseIndexerManager<
     const blockHeight = block.getHeader().blockHeight;
     monitorWrite(`- BlockHash: ${block.getHeader().blockHash}`);
 
-    let filteredDataSources = this.filterDataSources(blockHeight, dataSources);
+    const filteredDataSources = this.filterDataSources(blockHeight, dataSources);
 
     this.assertDataSources(filteredDataSources, blockHeight);
 
@@ -125,8 +125,13 @@ export abstract class BaseIndexerManager<
         vm.freeze(async (templateName: string, index: number) => {
           await this.dynamicDsService.destroyDynamicDatasource(templateName, blockHeight, index);
 
-          // Re-filter datasources to exclude the destroyed one
-          filteredDataSources = this.filterDataSources(blockHeight, filteredDataSources);
+          // Re-filter and mutate the array in-place so that indexBlockData's reference
+          // sees the change. A simple reassignment (filteredDataSources = ...) would only
+          // update this closure's variable, leaving the dataSources parameter in
+          // indexBlockData pointing at the stale array.
+          const refiltered = this.filterDataSources(blockHeight, filteredDataSources);
+          filteredDataSources.length = 0;
+          filteredDataSources.push(...refiltered);
         }, 'destroyDynamicDatasource');
 
         return vm;
@@ -148,6 +153,10 @@ export abstract class BaseIndexerManager<
   private filterDataSources(nextProcessingHeight: number, dataSources: DS[]): DS[] {
     let filteredDs: DS[];
 
+    // Strict `>` (not `>=`) is intentional: destroyDynamicDatasource sets
+    // endBlock = currentBlockHeight, and the destroyed DS must be excluded
+    // when re-filtering within the same block. With `>=` the DS would pass
+    // the filter and remain active for the rest of the block.
     filteredDs = dataSources.filter(
       (ds) =>
         ds.startBlock !== undefined &&
