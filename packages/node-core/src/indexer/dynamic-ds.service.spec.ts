@@ -198,8 +198,8 @@ describe('DynamicDsService', () => {
 
     const datasources = await service.getDynamicDatasources();
     expect(datasources).toHaveLength(2);
-    expect((datasources[0] as any).endBlock).toBe(100);
-    expect((datasources[1] as any).endBlock).toBeUndefined();
+    expect(datasources[0].endBlock).toBe(100);
+    expect(datasources[1].endBlock).toBeUndefined();
   });
 
   it('updates metadata correctly when destroying datasource', async () => {
@@ -232,7 +232,7 @@ describe('DynamicDsService', () => {
     const template = service.getTemplate('Test', 1, 100);
 
     expect(template.startBlock).toBe(1);
-    expect((template as any).endBlock).toBe(100);
+    expect(template.endBlock).toBe(100);
     expect((template as any).name).toBeUndefined();
   });
 
@@ -452,7 +452,7 @@ describe('DynamicDsService', () => {
       // Verify the internal _datasources array also has endBlock set
       const datasources = (service as any)._datasources;
       expect(datasources[1]).toBeDefined();
-      expect((datasources[1] as any).endBlock).toBe(50);
+      expect(datasources[1].endBlock).toBe(50);
     });
 
     it('destroyed datasource is filtered out in subsequent block processing', async () => {
@@ -468,7 +468,7 @@ describe('DynamicDsService', () => {
           (ds) =>
             ds.startBlock !== undefined &&
             ds.startBlock <= blockHeight &&
-            ((ds as any).endBlock ?? Number.MAX_SAFE_INTEGER) > blockHeight
+            (ds.endBlock ?? Number.MAX_SAFE_INTEGER) > blockHeight
         );
       };
 
@@ -488,40 +488,45 @@ describe('DynamicDsService', () => {
       expect(filteredDs[1].startBlock).toBe(2); // DS2
 
       // Verify DS3 was destroyed
-      expect((datasources[2] as any).endBlock).toBe(blockHeight);
+      expect(datasources[2].endBlock).toBe(blockHeight);
     });
 
-    it('demonstrates traditional for loop pattern works with array reassignment', async () => {
+    it('demonstrates traditional for loop with in-place mutation stops processing destroyed datasources', async () => {
       const meta = mockMetadata([testParam1, testParam2, testParam3]);
       await service.init(meta);
 
       const blockHeight = 100;
-      let datasources = (service as any)._datasources;
+      // Work on a filtered copy, same as internalIndexBlock does (filterDataSources returns a new array)
+      const allDs: BaseDataSource[] = (service as any)._datasources;
+      const filtered = [...allDs];
 
       const processed: number[] = [];
 
-      for (let i = 0; i < datasources.length; i++) {
-        const ds = datasources[i];
-        processed.push(ds.startBlock);
+      for (let i = 0; i < filtered.length; i++) {
+        const ds = filtered[i];
+        processed.push(ds.startBlock!);
 
-        // When processing DS2, destroy DS3 and re-filter
+        // When processing DS2, destroy DS3 and re-filter in-place
         if (ds.startBlock === 2) {
           await service.destroyDynamicDatasource('Test', blockHeight, 2);
 
-          // Re-filter datasources using filter and reassignment
-          datasources = datasources.filter(
-            (d: any) =>
+          // Mutate the filtered array in-place (same pattern as internalIndexBlock)
+          const refiltered = filtered.filter(
+            (d) =>
               d.startBlock !== undefined &&
               d.startBlock <= blockHeight &&
               (d.endBlock ?? Number.MAX_SAFE_INTEGER) > blockHeight
           );
+          filtered.length = 0;
+          filtered.push(...refiltered);
         }
       }
+      // DS3 is never processed because the array shrank before the loop reached it
       expect(processed).toEqual([1, 2]);
 
-      // Verify DS3 has endBlock set
-      const allDs = (service as any)._datasources;
-      expect((allDs[2] as any).endBlock).toBe(blockHeight);
+      // The services internal state still has all 3 entries, but DS3 has endBlock set
+      expect(allDs).toHaveLength(3);
+      expect(allDs[2].endBlock).toBe(blockHeight);
     });
   });
 });
