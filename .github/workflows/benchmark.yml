@@ -5,42 +5,42 @@ on:
       cpus:
         description: "docker cpus "
         default: 2
-        require: true
+        required: true
       memory:
         description: "docker memory"
         default: "4g"
-        require: true
+        required: true
       benchmark-time:
         description: "Benchmark time(h/m/s)"
         default: 30m
-        require: true
+        required: true
       indexerVersion:
         description: "indexer version"
         default: "latest"
-        require: true
+        required: true
       deployment:
         description: "Deployment"
         default: "QmakYyTWzTxaDU842CczyDWV51Ay9E55k7kbRRXTB3f395"
-        require: false
+        required: false
       network-endpoint:
         description: "Network endpoint"
         default: "wss://rpc-polkadot.luckyfriday.io"
-        require: true
+        required: true
       disableHistorical:
         description: "Disable historical"
         default: "true"
-        require: false
+        required: false
       batch-size:
         description: "batch-size"
         default: 30
-        require: false
+        required: false
       workers:
         description: "workers"
         default: 4
-        require: false
+        required: false
       others:
         description: "Other flags"
-        require: false
+        required: false
 
 jobs:
   # Label of the container job
