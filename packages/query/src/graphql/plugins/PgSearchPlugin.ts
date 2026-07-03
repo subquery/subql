@@ -1,32 +1,49 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {PgEntity, PgEntityKind, PgProc} from '@subql/x-graphile-build-pg';
-import {Plugin, Context} from 'graphile-build';
 import {Tsquery} from 'pg-tsquery';
 
 const parser = new Tsquery();
 
-function isProcedure(entity?: PgEntity): entity is PgProc {
-  return entity?.kind === PgEntityKind.PROCEDURE;
-}
-
-export const PgSearchPlugin: Plugin = (builder) => {
-  // Sanitises the search argument for fulltext search using pg-tsquery
-  builder.hook('GraphQLObjectType:fields:field', (field, build, {scope: {pgFieldIntrospection}}: Context<any>) => {
-    if (isProcedure(pgFieldIntrospection) && pgFieldIntrospection.argNames.includes('search')) {
-      pgFieldIntrospection.tags.sortable = true;
-      return {
-        ...field,
-        resolve(source, args, ctx, info) {
-          if (args.search !== undefined) {
-            args.search = parser.parse(args.search)?.toString();
+export const PgSearchPlugin: GraphileConfig.Plugin = {
+  name: 'PgSearchPlugin',
+  version: '0.0.0',
+  schema: {
+    hooks: {
+      GraphQLObjectType_fields_field(field, _build, context) {
+        const {
+          scope: {pgFieldResource},
+        } = context;
+        if (!pgFieldResource?.parameters?.some((p: any) => p.name === 'search')) {
+          return field;
+        }
+        const origPlan = field.plan;
+        if (!origPlan) return field;
+        field.plan = ($root, args: any, info) => {
+          if (args?.search !== undefined) {
+            // In v5, args are AccessorExpressions (lazy wrappers), not plain values.
+            // Evaluate to get the raw string, sanitize it, then create a modified copy.
+            const searchVal = typeof args.search === 'object' && args.search?.eval ? args.search.eval() : args.search;
+            if (searchVal !== null && searchVal !== undefined) {
+              try {
+                const parsed = parser.parse(String(searchVal));
+                const sanitized = parsed?.toString();
+                if (sanitized !== undefined && sanitized !== null) {
+                  args = {...args, search: sanitized};
+                } else {
+                  // parse returned null — unsafe to pass raw input, use empty
+                  args = {...args, search: ''};
+                }
+              } catch {
+                // parse threw — unsafe to pass raw input, use empty
+                args = {...args, search: ''};
+              }
+            }
           }
-          return field.resolve?.(source, args, ctx, info);
-        },
-      };
-    }
-
-    return field;
-  });
+          return origPlan.call(field, $root, args, info);
+        };
+        return field;
+      },
+    },
+  },
 };

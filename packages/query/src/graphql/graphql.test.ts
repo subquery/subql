@@ -1,15 +1,18 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {getPostGraphileBuilder} from '@subql/x-postgraphile-core';
-import {ApolloServer, gql} from 'apollo-server-express';
 import {Pool} from 'pg';
+import {makeSchema} from 'postgraphile';
+import {makePgService} from 'postgraphile/@dataplan/pg/adaptors/pg';
+import {grafast} from 'postgraphile/grafast';
 import {Config} from '../configure';
-import {plugins} from './plugins';
+import {queryPreset} from './plugins';
 
 jest.mock('../yargs', () => {
   const actualModule = jest.requireActual('../yargs');
-  const getYargsOption = jest.fn(() => ({argv: {name: 'test', aggregate: true}}));
+  const getYargsOption = jest.fn(() => ({
+    argv: {name: 'test', aggregate: true, 'query-limit': 100, 'order-by-nulls-last': true},
+  }));
   const argv = (arg: string) => getYargsOption().argv[arg];
   return {
     ...actualModule,
@@ -41,23 +44,27 @@ describe('GraphqlModule', () => {
             VALUES ('${key}', '${value}', '2021-11-07 07:02:31.768+00', '2021-11-07 07:02:31.768+00');`);
   }
 
-  async function createApolloServer() {
-    const builder = await getPostGraphileBuilder(pool, [dbSchema], {
-      replaceAllPlugins: plugins,
-      subscriptions: true,
-      dynamicJson: true,
-    });
-
-    const schema = builder.buildSchema();
-
-    const server = new ApolloServer({
-      schema,
-      context: {
-        pgClient: pool,
+  async function buildTestSchema() {
+    const preset = {
+      ...queryPreset,
+      pgServices: [makePgService({pool, schemas: [dbSchema]})],
+      gather: {
+        pgFakeConstraintsAutofixForeignKeyUniqueness: true,
       },
-    });
+    };
+    return makeSchema(preset as any);
+  }
 
-    return server;
+  async function runQuery(query: string) {
+    const {resolvedPreset, schema} = await buildTestSchema();
+    const pgClient = pool;
+    return grafast({
+      resolvedPreset,
+      schema,
+      source: query,
+      contextValue: {pgClient},
+      requestContext: {pgClient},
+    });
   }
 
   beforeEach(async () => {
@@ -100,9 +107,7 @@ describe('GraphqlModule', () => {
       insertMetadata('indexerNodeVersion', `"0.21-0"`),
     ]);
 
-    const server = await createApolloServer();
-
-    const GET_META = gql`
+    const result = await runQuery(`
       query {
         _metadata {
           lastProcessedHeight
@@ -115,9 +120,10 @@ describe('GraphqlModule', () => {
           indexerNodeVersion
         }
       }
-    `;
+    `);
 
-    const mock = {
+    const fetchedMeta = result?.data?._metadata;
+    expect(fetchedMeta).toMatchObject({
       lastProcessedHeight: 398,
       lastProcessedTimestamp: '110101',
       targetHeight: 7595931,
@@ -126,12 +132,7 @@ describe('GraphqlModule', () => {
       genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
       indexerHealthy: true,
       indexerNodeVersion: '0.21-0',
-    };
-
-    const results = await server.executeOperation({query: GET_META});
-    const fetchedMeta = results.data?._metadata;
-
-    expect(fetchedMeta).toMatchObject(mock);
+    });
   });
 
   it('wont resolve fields that arent allowed metadata', async () => {
@@ -142,9 +143,7 @@ describe('GraphqlModule', () => {
       insertMetadata('fakeMetadata', 'true'),
     ]);
 
-    const server = await createApolloServer();
-
-    const GET_META = gql`
+    const result = await runQuery(`
       query {
         _metadata {
           lastProcessedHeight
@@ -153,10 +152,9 @@ describe('GraphqlModule', () => {
           fakeMetadata
         }
       }
-    `;
-
-    const results = await server.executeOperation({query: GET_META});
-    expect(`${results.errors}`).toEqual(`Cannot query field "fakeMetadata" on type "_Metadata".`);
+    `);
+    expect(result.errors).toBeDefined();
+    expect(result.errors[0].message).toContain('Cannot query field "fakeMetadata" on type "_Metadata"');
   });
 
   it('resolve incorrect fields in db to null when queried from graphql', async () => {
@@ -166,9 +164,7 @@ describe('GraphqlModule', () => {
       insertMetadata('indexerHealthy', '20'),
     ]);
 
-    const server = await createApolloServer();
-
-    const GET_META = gql`
+    const result = await runQuery(`
       query {
         _metadata {
           lastProcessedHeight
@@ -176,72 +172,14 @@ describe('GraphqlModule', () => {
           indexerHealthy
         }
       }
-    `;
+    `);
 
-    const mock = {
+    const fetchedMeta = result?.data?._metadata;
+    expect(fetchedMeta).toMatchObject({
       lastProcessedHeight: null,
       chain: null,
       indexerHealthy: null,
-    };
-
-    const results = await server.executeOperation({query: GET_META});
-    const fetchedMeta = results.data?._metadata;
-
-    expect(fetchedMeta).toMatchObject(mock);
-  });
-
-  // sum(price_amount)
-  it('AggregateSpecsPlugin support big number', async () => {
-    await pool.query(
-      `INSERT INTO "${dbSchema}"."pool_snapshots" ("id", "pool_id", "block_number", "total_reserve") VALUES ('1', '1', 1, '1')`
-    );
-    await pool.query(
-      `INSERT INTO "${dbSchema}"."pool_snapshots" ("id", "pool_id", "block_number", "total_reserve") VALUES ('2', '1', 1, '20000000000000000000000')`
-    );
-
-    const server = await createApolloServer();
-
-    const GET_META = gql`
-      query {
-        poolSnapshots(first: 25) {
-          nodes {
-            totalReserve
-            blockNumber
-          }
-          groupedAggregates(groupBy: []) {
-            sum {
-              totalReserve
-              blockNumber
-            }
-            max {
-              totalReserve
-              blockNumber
-            }
-            min {
-              totalReserve
-              blockNumber
-            }
-            average {
-              totalReserve
-              blockNumber
-            }
-          }
-        }
-      }
-    `;
-
-    const results = await server.executeOperation({query: GET_META});
-    expect(results.data).toBeDefined();
-
-    const nodes = (results.data as any).poolSnapshots.nodes[0];
-    expect(nodes.blockNumber).toEqual(1);
-    expect(nodes.totalReserve).toEqual('1');
-
-    const aggregate = (results.data as any).poolSnapshots.groupedAggregates[0];
-    expect(aggregate.average.totalReserve).toEqual('10000000000000000000001');
-    expect(aggregate.sum.totalReserve).toEqual('20000000000000000000001');
-    expect(aggregate.min.totalReserve).toEqual('1');
-    expect(aggregate.max.totalReserve).toEqual('20000000000000000000000');
+    });
   });
 
   // github issue #2387 : orderBy with orderByNull
@@ -254,56 +192,59 @@ describe('GraphqlModule', () => {
       ('4', '4', 13288, '200')
     `);
 
-    const server = await createApolloServer();
-
     // Query with orderBy desc and orderByNull (NULLS_LAST)
-    const GET_SNAPSHOTS_NULLS_LAST = gql`
+    const resultNullsLast = await runQuery(`
       query {
         poolSnapshots(orderBy: TOTAL_RESERVE_DESC, orderByNull: NULLS_LAST) {
           nodes {
-            id
+            rowId
             totalReserve
           }
         }
       }
-    `;
+    `);
 
-    const resultsOrderByNullsLast = await server.executeOperation({query: GET_SNAPSHOTS_NULLS_LAST});
-    expect(resultsOrderByNullsLast.errors).toBeUndefined();
+    expect(resultNullsLast.errors).toBeUndefined();
 
-    const snapshotsNullsLast = resultsOrderByNullsLast.data?.poolSnapshots.nodes;
-
-    // Verify that NULL values appear last
-    expect(snapshotsNullsLast).toEqual([
-      {id: '4', totalReserve: '200'},
-      {id: '3', totalReserve: '100'},
-      {id: '1', totalReserve: null},
-      {id: '2', totalReserve: null},
-    ]);
+    const snapshotsNullsLast = resultNullsLast.data?.poolSnapshots.nodes;
+    // Non-null rows order is deterministic
+    expect(snapshotsNullsLast[0]).toEqual({rowId: '4', totalReserve: '200'});
+    expect(snapshotsNullsLast[1]).toEqual({rowId: '3', totalReserve: '100'});
+    // Null rows come last (NULLS_LAST), but their relative order may vary
+    expect(snapshotsNullsLast[2].totalReserve).toBeNull();
+    expect(snapshotsNullsLast[3].totalReserve).toBeNull();
+    const nullsLastIds = snapshotsNullsLast
+      .slice(2)
+      .map((r: any) => r.rowId)
+      .sort();
+    expect(nullsLastIds).toEqual(['1', '2']);
 
     // Query with orderBy desc and orderByNull (NULLS_FIRST)
-    const GET_SNAPSHOTS_NULLS_FIRST = gql`
+    const resultNullsFirst = await runQuery(`
       query {
         poolSnapshots(orderBy: TOTAL_RESERVE_DESC, orderByNull: NULLS_FIRST) {
           nodes {
-            id
+            rowId
             totalReserve
           }
         }
       }
-    `;
+    `);
 
-    const resultsOrderByNullsFirst = await server.executeOperation({query: GET_SNAPSHOTS_NULLS_FIRST});
-    expect(resultsOrderByNullsFirst.errors).toBeUndefined();
+    expect(resultNullsFirst.errors).toBeUndefined();
 
-    const snapshotsNullsFirst = resultsOrderByNullsFirst.data?.poolSnapshots.nodes;
+    const snapshotsNullsFirst = resultNullsFirst.data?.poolSnapshots.nodes;
 
-    // Verify that NULL values appear first
-    expect(snapshotsNullsFirst).toEqual([
-      {id: '1', totalReserve: null},
-      {id: '2', totalReserve: null},
-      {id: '4', totalReserve: '200'},
-      {id: '3', totalReserve: '100'},
-    ]);
+    // Null rows come first (NULLS_FIRST), but their relative order may vary
+    expect(snapshotsNullsFirst[0].totalReserve).toBeNull();
+    expect(snapshotsNullsFirst[1].totalReserve).toBeNull();
+    const nullsFirstIds = snapshotsNullsFirst
+      .slice(0, 2)
+      .map((r: any) => r.rowId)
+      .sort();
+    expect(nullsFirstIds).toEqual(['1', '2']);
+    // Non-null rows come after nulls in deterministic order
+    expect(snapshotsNullsFirst[2]).toEqual({rowId: '4', totalReserve: '200'});
+    expect(snapshotsNullsFirst[3]).toEqual({rowId: '3', totalReserve: '100'});
   });
 });

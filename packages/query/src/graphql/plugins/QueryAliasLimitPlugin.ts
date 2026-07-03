@@ -1,32 +1,31 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import type {ApolloServerPlugin} from 'apollo-server-plugin-base';
-import {GraphQLSchema, GraphQLError, DocumentNode, visit} from 'graphql';
+import {GraphQLError, DocumentNode, visit} from 'graphql';
 
-function checkLimit(document: DocumentNode, limit: number): void {
+export function checkAliasLimit(document: DocumentNode, limit: number): number {
   let aliasCount = 0;
   visit(document, {
     Field(node) {
       if (node.alias) {
         aliasCount += 1;
-        if (aliasCount > limit) throw new GraphQLError('Alias limit exceeded');
+        if (aliasCount > limit) {
+          throw new GraphQLError(`Alias limit exceeded. Current count: ${aliasCount}, Limit: ${limit}`);
+        }
       }
     },
   });
+  return aliasCount;
 }
 
-export function queryAliasLimit(options: {schema: GraphQLSchema; limit?: number}): ApolloServerPlugin {
-  return {
-    requestDidStart: () => {
-      return {
-        didResolveOperation(context: {document: DocumentNode}) {
-          if (options?.limit === undefined) {
-            return;
-          }
-          checkLimit(context.document, options.limit);
-        },
-      };
+export function getAliasCount(document: DocumentNode): number {
+  let aliasCount = 0;
+  visit(document, {
+    Field(node) {
+      if (node.alias) {
+        aliasCount += 1;
+      }
     },
-  } as unknown as ApolloServerPlugin;
+  });
+  return aliasCount;
 }

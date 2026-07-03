@@ -135,6 +135,11 @@ export function getYargsOption() {
         describe: 'Explain query in SQL statement',
         type: 'boolean',
       },
+      'order-by-nulls-last': {
+        demandOption: false,
+        describe: 'Default null ordering for ORDER BY (true: NULLS LAST, false: NULLS FIRST)',
+        type: 'boolean',
+      },
       unsafe: {
         demandOption: false,
         describe: 'Disable limits on query depth and allowable number returned query records',
