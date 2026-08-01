@@ -28,7 +28,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - id: get_commit_message
+      - name: Resolve commit message
+        id: get_commit_message
         run: |
           if [ -n "${{ github.event.head_commit.message }}" ]
           then
