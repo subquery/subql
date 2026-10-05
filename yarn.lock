@@ -10250,7 +10250,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/node-core@workspace:packages/node-core"
   dependencies:
-    "@apollo/client": "npm:^3.14.0"
     "@nestjs/common": "npm:^11.0.16"
     "@nestjs/event-emitter": "npm:^3.0.0"
     "@nestjs/schedule": "npm:^5.0.1"
@@ -10283,7 +10282,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/node@workspace:packages/node"
   dependencies:
-    "@apollo/client": "npm:^3.14.0"
     "@nestjs/common": "npm:^11.0.16"
     "@nestjs/core": "npm:^11.0.7"
     "@nestjs/event-emitter": "npm:^3.0.0"
