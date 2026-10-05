@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Dictionary v1 queries kept every parsed query document in memory: each batch's query text is new, and both `graphql-tag`'s cache and Apollo Client's `QueryManager.transformCache` retained it, so a long sync's memory grew without bound. Queries are now posted as plain GraphQL over HTTP and nothing is parsed or cached (#3048)
+
+### Changed
+- `DictionaryV1` sends queries with a protected `query()` method instead of an Apollo `client`, and `@apollo/client` is no longer a dependency (#3048)
 
 ## [19.3.1] - 2026-04-01
 ### Fixed
