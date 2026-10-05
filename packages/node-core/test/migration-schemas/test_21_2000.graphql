@@ -1,0 +1,17 @@
+type Transfer @entity {
+  id: ID!
+  amount: BigInt!
+  blockNumber: Int!
+  memo: String
+  fee: BigInt! @default(value: "0")
+  retries: Int! @default(value: "-1")
+  ratio: Float! @default(value: "0.5")
+  settled: Boolean! @default(value: "false")
+  label: String! @default(value: "it's")
+  status: TransferStatus! @default(value: "PENDING")
+}
+
+enum TransferStatus {
+  PENDING
+  DONE
+}

@@ -493,6 +493,75 @@ WHERE event_object_table = :table AND event_object_schema = :schema ;
     expect(result[0]).toEqual({trigger_name: '0x36bc022fc662d7ff'});
   });
 
+  describe('non-nullable fields with @default', () => {
+    it('fills every existing row version and leaves the column NOT NULL without a default', async () => {
+      schemaName = 'test-migrations-21';
+
+      const initialSchema = loadGqlSchema('test_21_1.graphql');
+      const migrationService = await setup(schemaName, initialSchema, sequelize);
+
+      // Two historical versions of one entity, written before the fields existed.
+      await sequelize.query(
+        `INSERT INTO "${schemaName}"."transfers" (id, amount, block_number, _id, _block_range) VALUES
+           ('t1', 1, 10, gen_random_uuid(), int8range(10, 20)),
+           ('t1', 2, 10, gen_random_uuid(), int8range(20, NULL));`
+      );
+
+      const tx = await sequelize.transaction();
+      await migrationService.run(initialSchema, loadGqlSchema('test_21_2000.graphql'), tx);
+      await tx.commit();
+
+      const rows = await sequelize.query(
+        `SELECT fee, retries, ratio, settled, label, status FROM "${schemaName}"."transfers" ORDER BY lower(_block_range);`,
+        {type: QueryTypes.SELECT}
+      );
+      expect(rows).toEqual([
+        {fee: '0', retries: -1, ratio: 0.5, settled: false, label: "it's", status: 'PENDING'},
+        {fee: '0', retries: -1, ratio: 0.5, settled: false, label: "it's", status: 'PENDING'},
+      ]);
+
+      const columns = await sequelize.query<{column_name: string; is_nullable: string; column_default: string | null}>(
+        `SELECT column_name, is_nullable, column_default FROM information_schema.columns
+         WHERE table_schema = :schema AND table_name = 'transfers' AND column_name IN (:columns);`,
+        {
+          type: QueryTypes.SELECT,
+          replacements: {schema: schemaName, columns: ['fee', 'retries', 'ratio', 'settled', 'label', 'status']},
+        }
+      );
+      expect(columns).toHaveLength(6);
+      columns.forEach((column) => {
+        expect(column.is_nullable).toBe('NO');
+        expect(column.column_default).toBeNull();
+      });
+    });
+
+    it('still refuses a non-nullable field without @default', async () => {
+      schemaName = 'test-migrations-23';
+
+      const initialSchema = loadGqlSchema('test_22_1.graphql');
+      const migrationService = await setup(schemaName, initialSchema, sequelize);
+
+      const tx = await sequelize.transaction();
+      await expect(migrationService.run(initialSchema, loadGqlSchema('test_23_2000.graphql'), tx)).rejects.toThrow(
+        'Non-nullable field creation is not supported: fee on Transfer'
+      );
+      await tx.rollback();
+    });
+
+    it('refuses to fill a field that changed from nullable, rather than replace its data', async () => {
+      schemaName = 'test-migrations-22';
+
+      const initialSchema = loadGqlSchema('test_22_1.graphql');
+      const migrationService = await setup(schemaName, initialSchema, sequelize);
+
+      const tx = await sequelize.transaction();
+      await expect(migrationService.run(initialSchema, loadGqlSchema('test_22_2000.graphql'), tx)).rejects.toThrow(
+        'Non-nullable field creation is not supported: memo on Transfer'
+      );
+      await tx.rollback();
+    });
+  });
+
   describe('enum migrations', () => {
     async function queryEnums(): Promise<{enum_type: string; enum_value: string}[]> {
       return sequelize.query<{enum_type: string; enum_value: string}>(
