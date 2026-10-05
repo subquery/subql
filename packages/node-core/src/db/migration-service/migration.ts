@@ -34,6 +34,7 @@ export class Migration {
   /* Models that are added or modified during the migration */
   private modifiedModels: ModelStatic<any>[] = [];
   private removedModels: string[] = [];
+  private droppedColumns = new Set<string>();
   /*
   mainQueries are used for executions, that are not reliant on any prior db operations
   extraQueries are executions, that are reliant on certain db operations, e.g. comments on foreignKeys or comments on tables, should be executed only after the table has been created
@@ -212,17 +213,35 @@ export class Migration {
       throw new Error('Primary Key migration upgrade is not allowed');
     }
 
-    if (!columnOptions.allowNull) {
-      throw new Error(`Non-nullable field creation is not supported: ${field.name} on ${model.name}`);
-    }
-
     const dbTableName = modelToTableName(model.name);
     const dbColumnName = formatColumnName(field.name);
 
+    if (!columnOptions.allowNull) {
+      // A changed field arrives as drop + add: filling it with a default would silently replace the dropped data.
+      if (field.defaultValue === undefined || this.droppedColumns.has(`${dbTableName}.${dbColumnName}`)) {
+        throw new Error(`Non-nullable field creation is not supported: ${field.name} on ${model.name}`);
+      }
+    }
+
     const formattedAttributes = formatAttributes(columnOptions, this.schemaName, false);
-    this.mainQueries.push(
-      syncHelper.createColumnQuery(this.schemaName, dbTableName, dbColumnName, formattedAttributes)
-    );
+    if (columnOptions.allowNull) {
+      this.mainQueries.push(
+        syncHelper.createColumnQuery(this.schemaName, dbTableName, dbColumnName, formattedAttributes)
+      );
+    } else {
+      // A constant default is stored once in the catalog, so every existing row and historical version reads it
+      // without a table rewrite or row triggers. Dropping it afterwards leaves new rows to the mappings.
+      this.mainQueries.push(
+        syncHelper.createColumnWithDefaultQuery(
+          this.schemaName,
+          dbTableName,
+          dbColumnName,
+          formattedAttributes,
+          field.defaultValue as string
+        ),
+        syncHelper.dropColumnDefaultQuery(this.schemaName, dbTableName, dbColumnName)
+      );
+    }
 
     if (columnOptions.comment) {
       this.extraQueries.push(
@@ -237,6 +256,7 @@ export class Migration {
     const columnName = formatColumnName(field.name);
     const tableName = modelToTableName(model.name);
     this.mainQueries.push(syncHelper.dropColumnQuery(this.schemaName, columnName, tableName));
+    this.droppedColumns.add(`${tableName}.${columnName}`);
     this.addModelToSequelizeCache(this.createSequelizeModel(model));
   }
 

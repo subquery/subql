@@ -90,7 +90,12 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
   );
 
   const modelRelations = {models: [], relations: [], enums: [...enums.values()]} as GraphQLModelsRelationsEnums;
-  const [derivedFrom, indexDirective, idDbType] = getDirectives(schema, ['derivedFrom', 'index', 'dbType']);
+  const [derivedFrom, indexDirective, idDbType, defaultDirective] = getDirectives(schema, [
+    'derivedFrom',
+    'index',
+    'dbType',
+    'default',
+  ]);
   for (const entity of entities) {
     const newModel: GraphQLModelsType = {
       name: entity.name,
@@ -113,6 +118,8 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
       const derivedFromDirectValues = field.astNode ? getDirectiveValues(derivedFrom, field.astNode) : undefined;
       const indexDirectiveVal = field.astNode ? getDirectiveValues(indexDirective, field.astNode) : undefined;
       const dbTypeDirectiveVal = field.astNode ? getDirectiveValues(idDbType, field.astNode) : undefined;
+      const defaultDirectiveVal = field.astNode ? getDirectiveValues(defaultDirective, field.astNode) : undefined;
+      const fieldCountBefore = newModel.fields.length;
 
       //If is a basic scalar type
       const typeClass = getTypeByScalarName(typeString);
@@ -210,6 +217,10 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string | null):
         }
       } else {
         throw new Error(`${typeString} is not a valid type`);
+      }
+      if (defaultDirectiveVal) {
+        const packed = newModel.fields.length > fieldCountBefore ? newModel.fields[fieldCountBefore] : undefined;
+        setDefaultValue(entity.name, field.name, packed, defaultDirectiveVal.value, enums.get(typeString)?.values);
       }
       // handle indexes
       if (indexDirectiveVal) {
@@ -352,6 +363,41 @@ function getJoinIndexFields(
     }
     return j;
   });
+}
+
+const defaultValuePatterns: Record<string, RegExp> = {
+  [FieldScalar.Int]: /^-?\d+$/,
+  [FieldScalar.BigInt]: /^-?\d+$/,
+  [FieldScalar.Float]: /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/,
+  [FieldScalar.Boolean]: /^(true|false)$/,
+  [FieldScalar.String]: /^/,
+};
+
+// `@default` exists so a migration can add a non-nullable field to a table that already has rows, so it is only
+// accepted where that column can be filled with one literal.
+function setDefaultValue(
+  entityName: string,
+  fieldName: string,
+  field: GraphQLEntityField | undefined,
+  value: string,
+  enumValues: string[] | undefined
+): void {
+  const where = `"@default" on ${entityName}.${fieldName}`;
+  if (!field || field.isArray || field.jsonInterface || field.name !== fieldName || field.type === FieldScalar.ID) {
+    throw new Error(`${where} is only supported on scalar and enum fields`);
+  }
+  if (field.nullable) {
+    throw new Error(`${where} is only supported on non-nullable fields`);
+  }
+  const valid = field.isEnum ? enumValues?.includes(value) : defaultValuePatterns[field.type]?.test(value);
+  if (!valid) {
+    throw new Error(`${where}: "${value}" is not a valid ${field.type} value`);
+  }
+  // Int is stored as a Postgres integer.
+  if (field.type === FieldScalar.Int && Math.abs(Number(value)) > 2147483647) {
+    throw new Error(`${where}: "${value}" is not a valid Int value`);
+  }
+  field.defaultValue = value;
 }
 
 function packEntityField(
