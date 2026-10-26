@@ -2,10 +2,10 @@
   "name": "@subql/query",
   "version": "2.25.0",
   "description": "",
+  "homepage": "https://github.com/subquery/subql",
   "bin": {
     "subql-query": "./bin/run"
   },
-  "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
   "scripts": {
     "prebuild": "rimraf dist",
