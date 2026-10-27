@@ -342,11 +342,23 @@ describe('Dictionary V1 queries', () => {
     fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(new Response('<html>Forbidden</html>', {status: 403}));
 
     await expect(queryableDictionary().runQuery('query{_metadata{lastProcessedHeight}}')).rejects.toThrow(
-      'Dictionary returned HTTP 403 without a JSON body'
+      'Dictionary returned HTTP 403 without a JSON body: <html>Forbidden</html>'
     );
   });
 
-  it('retries a query without distinct when the dictionary does not support it', async () => {
+  it.each([null, {data: null}])('throws when the dictionary answers %j', async (body) => {
+    fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(jsonResponse(body));
+
+    await expect(queryableDictionary().runQuery('query{_metadata{lastProcessedHeight}}')).rejects.toThrow(
+      'Dictionary returned HTTP 200 without data'
+    );
+  });
+
+  it.each<[string, () => Response]>([
+    ['GraphQL errors', () => jsonResponse({errors: distinctUnsupported}, 400)],
+    ['errors that are not an array', () => jsonResponse({errors: distinctUnsupported[0].message}, 400)],
+    ['a plain-text body', () => new Response(distinctUnsupported[0].message, {status: 400})],
+  ])('retries a query without distinct when the dictionary reports it unsupported in %s', async (_, unsupported) => {
     const queries: string[] = [];
     fetchSpy = jest.spyOn(global, 'fetch').mockImplementation((_url, init) => {
       const {query} = JSON.parse(String(init?.body)) as {query: string};
@@ -355,7 +367,7 @@ describe('Dictionary V1 queries', () => {
         return Promise.resolve(jsonResponse({data: {_metadata: metadata}}));
       }
       if (query.includes('distinct')) {
-        return Promise.resolve(jsonResponse({errors: distinctUnsupported}, 400));
+        return Promise.resolve(unsupported());
       }
       return Promise.resolve(
         jsonResponse({data: {_metadata: metadata, events: {nodes: [{blockHeight: '150'}, {blockHeight: '170'}]}}})
@@ -368,5 +380,35 @@ describe('Dictionary V1 queries', () => {
     expect(result?.batchBlocks).toEqual([150, 170]);
     const batchQueries = queries.filter((query) => query.includes('events'));
     expect(batchQueries.map((query) => query.includes('distinct'))).toEqual([true, false]);
+  });
+
+  it('aborts a request after callers have timed out on it', async () => {
+    let signal: AbortSignal | undefined;
+    fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(
+      (_url, init) =>
+        new Promise<Response>((_resolve, reject) => {
+          signal = init?.signal ?? undefined;
+          signal?.addEventListener('abort', () => reject(new Error('aborted')));
+        })
+    );
+    const dictionary = new QueryableDictionaryV1(
+      DICTIONARY_ENDPOINT,
+      DICTIONARY_CHAINID,
+      new NodeConfig({
+        subquery: 'asdf',
+        subqueryName: 'asdf',
+        networkEndpoint: {'wss://polkadot.api.onfinality.io/public-ws': {}},
+        dictionaryTimeout: 0.1,
+      }),
+      HAPPY_PATH_CONDITIONS
+    );
+
+    // Callers still get `timeout()`'s error, before the request is aborted
+    await expect((dictionary as any).init()).rejects.toThrow('Dictionary metadata query timeout in 0.1 seconds');
+    assert(signal);
+    expect(signal.aborted).toBe(false);
+
+    await new Promise((resolve) => signal?.addEventListener('abort', resolve));
+    expect(signal.reason).toMatchObject({name: 'TimeoutError'});
   });
 });
