@@ -346,7 +346,7 @@ describe('Dictionary V1 queries', () => {
     );
   });
 
-  it.each([null, {data: null}])('throws when the dictionary answers %j', async (body) => {
+  it.each([null, {data: null}, {data: []}])('throws when the dictionary answers %j', async (body) => {
     fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(jsonResponse(body));
 
     await expect(queryableDictionary().runQuery('query{_metadata{lastProcessedHeight}}')).rejects.toThrow(

@@ -92,7 +92,7 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
       );
     }
     const data = body?.data;
-    if (!response.ok || typeof data !== 'object' || data === null) {
+    if (!response.ok || typeof data !== 'object' || data === null || Array.isArray(data)) {
       throw new DictionaryQueryError(
         `Dictionary returned HTTP ${response.status} without data: ${text.slice(0, 500)}`,
         response.status,
