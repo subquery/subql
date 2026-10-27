@@ -202,6 +202,21 @@ describe('UnfinalizedBlocksService', () => {
     expect(res).toMatchObject({blockHash: '0xabc110f', blockHeight: 110, parentHash: '0xabc109f'});
   });
 
+  it('can handle a fork when latest unfinalized block has different parent and a block is finalized', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd').block.header);
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(111, '0xabc111f', '0xabc110f'));
+    // Forked block
+    await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(112, '0xabc112', '0xabc111f'));
+
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(111, '0xabc111f', '0xabc110f').block.header);
+
+    const res = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(113, '0xabc113f', '0xabc112f'));
+
+    // Last valid block
+    expect(res).toMatchObject({blockHash: '0xabc111f', blockHeight: 111});
+  });
+
   it('can handle a fork when all unfinalized blocks are invalid', async () => {
     unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd').block.header);
 
@@ -494,6 +509,19 @@ describe('UnfinalizedBlocksService', () => {
       // and getLastCorrectFinalizedBlock falls back to finalizedHeader
       expect(result).toBeDefined();
       expect(result?.blockHeight).toBe(110);
+    });
+
+    it('detects fork after backfill when new block has wrong parentHash and a block is finalized', async () => {
+      unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd').block.header);
+
+      await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(111, '0xabc111f', '0xabc110f'));
+
+      unfinalizedBlocksService.registerFinalizedBlock(mockBlock(111, '0xabc111f', '0xabc110f').block.header);
+
+      // Register block 115 with wrong parentHash (should connect to 0xabc114f)
+      const result = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(115, '0xabc115', '0xwrong'));
+
+      expect(result).toMatchObject({blockHash: '0xabc111f', blockHeight: 111});
     });
 
     it('throws error when block fetch fails during backfill', async () => {

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import util from 'node:util';
 import {Inject, Injectable} from '@nestjs/common';
 import {OnEvent} from '@nestjs/event-emitter';
 import {Transaction} from '@subql/x-sequelize';
@@ -15,7 +16,6 @@ import {mainThreadOnly} from '../utils';
 import {ProofOfIndex} from './entities';
 import {PoiBlock} from './poi';
 import {IStoreModelProvider} from './storeModelProvider';
-import util from 'node:util';
 
 const logger = getLogger('UnfinalizedBlocks');
 
@@ -337,17 +337,15 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
 
     // Work backwards through the blocks until we find a matching hash
     for (const bestHeader of bestVerifiableBlocks.reverse()) {
-      assert(
-        bestHeader.blockHeight === checkingHeader.blockHeight,
-        'Expect best header and checking header to be at the same height'
-      );
-      if (bestHeader.blockHash === checkingHeader.blockHash || bestHeader.blockHash === checkingHeader.parentHash) {
+      // A fork found when registering a block is reported above the finalized height, so walk the
+      // chain down to each block's height before comparing
+      while (checkingHeader.blockHeight > bestHeader.blockHeight) {
+        assert(checkingHeader.parentHash, 'Expect checking header parentHash to be exist');
+        checkingHeader = await this.blockchainService.getHeaderForHash(checkingHeader.parentHash);
+      }
+      if (bestHeader.blockHash === checkingHeader.blockHash) {
         return bestHeader;
       }
-
-      // Get the new parent
-      assert(checkingHeader.parentHash, 'Expect checking header parentHash to be exist');
-      checkingHeader = await this.blockchainService.getHeaderForHash(checkingHeader.parentHash);
     }
 
     if (!this.lastCheckedBlockHeight) {
