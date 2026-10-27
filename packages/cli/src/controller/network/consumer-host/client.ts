@@ -1,10 +1,10 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
+import {SiweMessage, generateNonce} from '@signinwithethereum/siwe';
 import {SQNetworks} from '@subql/network-config';
 import {IKeyValueStorage} from '@walletconnect/keyvaluestorage';
 import {Signer, utils} from 'ethers';
-import {SiweMessage, generateNonce} from 'siwe';
 import {Logger} from '../../../adapters/utils';
 import {CONSUMER_HOST_STORE_PATH} from '../../../constants';
 import {WALLET_DOMAIN} from '../constants';
@@ -88,6 +88,7 @@ export class ConsumerHostClient {
       version: '1',
       chainId,
       nonce: generateNonce(),
+      issuedAt: new Date().toISOString(),
     });
 
     const msg = newMsg.prepareMessage();
