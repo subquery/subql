@@ -19,54 +19,62 @@ jobs:
 
       - run: yarn install
 
+      # Created after install, so its third-party code never sees a write token
+      - name: Create release app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
       # Create github releases
 
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/utils
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/types-core
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/types
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/common
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/common-substrate
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/cli
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/node-core
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/node
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/query
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/testing
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
