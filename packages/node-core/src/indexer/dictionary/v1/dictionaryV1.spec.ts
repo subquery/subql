@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client/core';
-import fetch from 'cross-fetch';
 import {range} from 'lodash';
 import {NodeConfig} from '../../../configure';
 import {BlockHeightMap} from '../../../utils/blockHeightMap';
 import {dsMap, mockDS, TestDictionaryV1, HAPPY_PATH_CONDITIONS} from '../dictionary.fixtures';
-import {getGqlType} from './utils';
+import {DictionaryQueryError} from './dictionaryV1';
+import {distinctErrorEscaped, getGqlType} from './utils';
 
 const DICTIONARY_ENDPOINT = `https://gateway.subquery.network/query/QmSxAgGGpaMrYzooWpydmwzutREwomL5nupLZqxURzuJTo`;
 const DICTIONARY_CHAINID = `0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3`;
@@ -191,19 +190,8 @@ describe('Individual dictionary V1 test', () => {
     // Create a new dictionary for this test so we don't break other instances
     const dictionary = await prepareDictionary();
 
-    // Replace client with one that wont work
-    (dictionary as any)._client = new ApolloClient({
-      cache: new InMemoryCache({resultCaching: true}),
-      link: new HttpLink({uri: 'https://api.subquery.network/sq/subquery/dictionary-not-exist', fetch}),
-      defaultOptions: {
-        watchQuery: {
-          fetchPolicy: 'no-cache',
-        },
-        query: {
-          fetchPolicy: 'no-cache',
-        },
-      },
-    });
+    // Point it at an endpoint that won't work
+    (dictionary as any).dictionaryEndpoint = 'https://api.subquery.network/sq/subquery/dictionary-not-exist';
 
     const batchSize = 30;
     const startBlock = 1;
@@ -298,5 +286,87 @@ describe('Individual dictionary V1 test', () => {
     const dic = await dictionary.getData(startBlock, endBlock, batchSize);
     // with dictionary distinct, this should give last block at 339186
     expect(dic?.batchBlocks[dic.batchBlocks.length - 1]).toBe(339186);
+  });
+});
+
+/** Exposes the protected `query` to the tests. */
+class QueryableDictionaryV1 extends TestDictionaryV1 {
+  async runQuery<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+    return this.query<T>(query, variables);
+  }
+}
+
+describe('Dictionary V1 queries', () => {
+  const metadata = {lastProcessedHeight: 10000, genesisHash: DICTIONARY_CHAINID};
+  const distinctUnsupported = [{message: 'Unknown argument "distinct" on field "Query.events".'}];
+
+  const jsonResponse = (body: unknown, status = 200): Response =>
+    new Response(JSON.stringify(body), {status, headers: {'content-type': 'application/json'}});
+
+  const queryableDictionary = (): QueryableDictionaryV1 =>
+    new QueryableDictionaryV1(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig, HAPPY_PATH_CONDITIONS);
+
+  let fetchSpy: jest.SpyInstance<Promise<Response>, Parameters<typeof fetch>>;
+
+  afterEach(() => {
+    fetchSpy.mockRestore();
+  });
+
+  it('posts the query text and variables, and returns the data', async () => {
+    fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(jsonResponse({data: {_metadata: metadata}}));
+    const query = 'query($a:String!){_metadata{lastProcessedHeight}}';
+
+    const data = await queryableDictionary().runQuery(query, {a: 'b'});
+
+    expect(data).toEqual({_metadata: metadata});
+    expect(fetchSpy).toHaveBeenCalledWith(
+      DICTIONARY_ENDPOINT,
+      expect.objectContaining({method: 'POST', body: JSON.stringify({query, variables: {a: 'b'}})})
+    );
+  });
+
+  it('throws the GraphQL errors the dictionary returns', async () => {
+    fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(jsonResponse({errors: distinctUnsupported}, 400));
+
+    const error = await queryableDictionary()
+      .runQuery('query{events{nodes{blockHeight}}}')
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(DictionaryQueryError);
+    expect(error).toMatchObject({status: 400, graphQLErrors: distinctUnsupported});
+    // what `getData` checks to retry without `distinct`
+    expect(JSON.stringify(error)).toContain(distinctErrorEscaped);
+  });
+
+  it('throws when the dictionary does not answer with JSON', async () => {
+    fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(new Response('<html>Forbidden</html>', {status: 403}));
+
+    await expect(queryableDictionary().runQuery('query{_metadata{lastProcessedHeight}}')).rejects.toThrow(
+      'Dictionary returned HTTP 403 without a JSON body'
+    );
+  });
+
+  it('retries a query without distinct when the dictionary does not support it', async () => {
+    const queries: string[] = [];
+    fetchSpy = jest.spyOn(global, 'fetch').mockImplementation((_url, init) => {
+      const {query} = JSON.parse(String(init?.body)) as {query: string};
+      queries.push(query);
+      if (!query.includes('events')) {
+        return Promise.resolve(jsonResponse({data: {_metadata: metadata}}));
+      }
+      if (query.includes('distinct')) {
+        return Promise.resolve(jsonResponse({errors: distinctUnsupported}, 400));
+      }
+      return Promise.resolve(
+        jsonResponse({data: {_metadata: metadata, events: {nodes: [{blockHeight: '150'}, {blockHeight: '170'}]}}})
+      );
+    });
+    const dictionary = await prepareDictionary();
+
+    const result = await dictionary.getData(100, 400, 10);
+
+    expect(result?.batchBlocks).toEqual([150, 170]);
+    const batchQueries = queries.filter((query) => query.includes('events'));
+    expect(batchQueries.map((query) => query.includes('distinct'))).toEqual([true, false]);
   });
 });

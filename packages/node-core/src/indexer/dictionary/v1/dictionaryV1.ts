@@ -1,7 +1,6 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import {ApolloClient, gql, HttpLink, InMemoryCache, NormalizedCacheObject} from '@apollo/client/core';
 import {DictionaryQueryCondition, DictionaryQueryEntry as DictionaryV1QueryEntry} from '@subql/types-core';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData as DictionaryV1Metadata} from '@subql/utils';
 import {NodeConfig} from '../../../configure';
@@ -14,13 +13,32 @@ import {buildDictQueryFragment, distinctErrorEscaped, startHeightEscaped} from '
 
 const logger = getLogger('dictionary-v1');
 
+type GraphQLError = {message: string; [key: string]: unknown};
+
+/** A `getData` query's result: the dictionary's metadata, and each queried entity's matching block heights. */
+type DictionaryV1BatchResult = {_metadata: DictionaryV1Metadata} & Record<string, {nodes: {blockHeight: string}[]}>;
+
+/**
+ * A dictionary query that failed. `graphQLErrors` holds the errors the dictionary returned, if any,
+ * which callers inspect to tell an unsupported argument from a failed request.
+ */
+export class DictionaryQueryError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly graphQLErrors: GraphQLError[] = []
+  ) {
+    super(message);
+    this.name = 'DictionaryQueryError';
+  }
+}
+
 export abstract class DictionaryV1<DS> extends CoreDictionary<
   DS,
   undefined,
   DictionaryV1Metadata,
   DictionaryV1QueryEntry[]
 > {
-  private _client: ApolloClient<NormalizedCacheObject>;
   private useDistinct = true;
   private useStartHeight = true;
 
@@ -32,34 +50,56 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
     protected buildQueryFragment: typeof buildDictQueryFragment = buildDictQueryFragment
   ) {
     super(chainId, nodeConfig);
+  }
 
-    this._client = new ApolloClient({
-      cache: new InMemoryCache({resultCaching: true}),
-      link: new HttpLink({uri: dictionaryEndpoint}),
-      defaultOptions: {
-        watchQuery: {
-          fetchPolicy: 'no-cache',
-        },
-        query: {
-          fetchPolicy: 'no-cache',
-        },
-      },
+  /**
+   * Posts a GraphQL query to the dictionary and returns its `data`.
+   *
+   * Sent without a GraphQL client: each batch's query text differs, and a client parses and caches
+   * a document for every one.
+   */
+  protected async query<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+    const response = await fetch(this.dictionaryEndpoint, {
+      method: 'POST',
+      headers: {'content-type': 'application/json', accept: 'application/json'},
+      body: JSON.stringify({query, variables}),
     });
+
+    let body: {data?: T; errors?: GraphQLError[]};
+    try {
+      body = (await response.json()) as typeof body;
+    } catch {
+      throw new DictionaryQueryError(
+        `Dictionary returned HTTP ${response.status} without a JSON body`,
+        response.status
+      );
+    }
+
+    if (body.errors?.length) {
+      throw new DictionaryQueryError(
+        `Dictionary query failed: ${body.errors.map((e) => e.message).join('; ')}`,
+        response.status,
+        body.errors
+      );
+    }
+    if (!response.ok || body.data === undefined) {
+      throw new DictionaryQueryError(`Dictionary returned HTTP ${response.status} without data`, response.status);
+    }
+
+    return body.data;
   }
 
   protected async init(): Promise<void> {
     const {query} = this.metadataQuery();
     try {
-      const resp = await timeout(
-        this.client.query({
-          query: gql(query),
-        }),
+      const data = await timeout(
+        this.query<{_metadata: DictionaryV1Metadata}>(query),
         this.nodeConfig.dictionaryTimeout,
         `Dictionary metadata query timeout in ${
           this.nodeConfig.dictionaryTimeout
         } seconds. Please increase --dictionary-timeout. ${this.nodeConfig.debug ? `\n GraphQL: ${query}` : ''}`
       );
-      this._metadata = resp.data._metadata;
+      this._metadata = data._metadata;
       this.setDictionaryStartHeight(this.metadata.startHeight);
     } catch (err: any) {
       if (JSON.stringify(err).includes(startHeightEscaped)) {
@@ -75,13 +115,6 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
 
   getQueryEndBlock(targetBlockHeight: number, apiFinalizedHeight: number): number {
     return Math.min(targetBlockHeight, apiFinalizedHeight, this.metadata.lastProcessedHeight);
-  }
-
-  protected get client(): ApolloClient<NormalizedCacheObject> {
-    if (!this._client) {
-      throw new Error('Dictionary service has not been initialized');
-    }
-    return this._client;
   }
 
   /**
@@ -108,11 +141,8 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
     logger.debug(`query: ${query}`);
     logger.debug(`variables: ${JSON.stringify(variables, null, 2)}`);
     try {
-      const resp = await timeout(
-        this.client.query({
-          query: gql(query),
-          variables,
-        }),
+      const {_metadata, ...entities} = await timeout(
+        this.query<DictionaryV1BatchResult>(query, variables),
         this.nodeConfig.dictionaryTimeout,
         `Dictionary query timeout in ${
           this.nodeConfig.dictionaryTimeout
@@ -122,15 +152,12 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
       );
       const blockHeightSet = new Set<number>();
       const entityEndBlock: {[entity: string]: number} = {};
-      for (const entity of Object.keys(resp.data)) {
-        if (entity !== '_metadata' && resp.data[entity].nodes.length >= 0) {
-          for (const node of resp.data[entity].nodes) {
-            blockHeightSet.add(Number(node.blockHeight));
-            entityEndBlock[entity] = Number(node.blockHeight); //last added event blockHeight
-          }
+      for (const [entity, {nodes}] of Object.entries(entities)) {
+        for (const node of nodes) {
+          blockHeightSet.add(Number(node.blockHeight));
+          entityEndBlock[entity] = Number(node.blockHeight); //last added event blockHeight
         }
       }
-      const _metadata = resp.data._metadata;
       const endBlock = Math.min(...Object.values(entityEndBlock).map((height) => (isNaN(height) ? Infinity : height)));
       const batchBlocks = Array.from(blockHeightSet)
         .filter((block) => block <= endBlock)

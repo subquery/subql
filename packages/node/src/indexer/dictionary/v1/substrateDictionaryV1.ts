@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
-import { gql } from '@apollo/client/core';
 import {
   isCustomDs,
   isRuntimeDs,
@@ -252,15 +251,11 @@ export class SubstrateDictionaryV1 extends DictionaryV1<SubstrateDataSource> {
   async getSpecVersionsRaw(): Promise<SpecVersionDictionary | undefined> {
     const { query } = this.specVersionQuery();
     try {
-      const resp = await timeout(
-        this.client.query({
-          query: gql(query),
-        }),
+      const { _metadata, specVersions } = await timeout(
+        this.query<SpecVersionDictionary>(query),
         this.nodeConfig.dictionaryTimeout,
       );
 
-      const _metadata = resp.data._metadata;
-      const specVersions = resp.data.specVersions;
       return { _metadata, specVersions };
     } catch (err: any) {
       logger.warn(err, `failed to fetch specVersion result`);
