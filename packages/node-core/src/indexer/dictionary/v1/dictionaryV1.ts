@@ -19,14 +19,16 @@ type GraphQLError = {message: string; [key: string]: unknown};
 type DictionaryV1BatchResult = {_metadata: DictionaryV1Metadata} & Record<string, {nodes: {blockHeight: string}[]}>;
 
 /**
- * A dictionary query that failed. `graphQLErrors` holds the errors the dictionary returned, if any,
- * which callers inspect to tell an unsupported argument from a failed request.
+ * A dictionary query that failed. `graphQLErrors` holds the errors the dictionary returned, if any, and `body` the
+ * response body when it isn't a GraphQL error response. Callers inspect both to tell an unsupported argument from a
+ * failed request.
  */
 export class DictionaryQueryError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    readonly graphQLErrors: GraphQLError[] = []
+    readonly graphQLErrors: GraphQLError[] = [],
+    readonly body?: unknown
   ) {
     super(message);
     this.name = 'DictionaryQueryError';
@@ -63,30 +65,43 @@ export abstract class DictionaryV1<DS> extends CoreDictionary<
       method: 'POST',
       headers: {'content-type': 'application/json', accept: 'application/json'},
       body: JSON.stringify({query, variables}),
+      // Callers give up on a query through `timeout()`, which doesn't cancel it. Abort it a second later so it doesn't
+      // keep its connection and body, while callers still get `timeout()`'s error.
+      signal: AbortSignal.timeout((this.nodeConfig.dictionaryTimeout + 1) * 1000),
     });
 
-    let body: {data?: T; errors?: GraphQLError[]};
+    const text = await response.text();
+    let body: {data?: unknown; errors?: unknown} | null;
     try {
-      body = (await response.json()) as typeof body;
+      body = JSON.parse(text);
     } catch {
       throw new DictionaryQueryError(
-        `Dictionary returned HTTP ${response.status} without a JSON body`,
-        response.status
-      );
-    }
-
-    if (body.errors?.length) {
-      throw new DictionaryQueryError(
-        `Dictionary query failed: ${body.errors.map((e) => e.message).join('; ')}`,
+        `Dictionary returned HTTP ${response.status} without a JSON body: ${text.slice(0, 500)}`,
         response.status,
-        body.errors
+        [],
+        text
       );
     }
-    if (!response.ok || body.data === undefined) {
-      throw new DictionaryQueryError(`Dictionary returned HTTP ${response.status} without data`, response.status);
+
+    const errors = body?.errors;
+    if (Array.isArray(errors) && errors.length) {
+      throw new DictionaryQueryError(
+        `Dictionary query failed: ${errors.map((e) => e?.message).join('; ')}`,
+        response.status,
+        errors
+      );
+    }
+    const data = body?.data;
+    if (!response.ok || typeof data !== 'object' || data === null || Array.isArray(data)) {
+      throw new DictionaryQueryError(
+        `Dictionary returned HTTP ${response.status} without data: ${text.slice(0, 500)}`,
+        response.status,
+        [],
+        body
+      );
     }
 
-    return body.data;
+    return data as T;
   }
 
   protected async init(): Promise<void> {

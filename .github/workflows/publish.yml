@@ -28,19 +28,24 @@ jobs:
         with:
           fetch-depth: 0
 
+      # The commit message is passed through env, not interpolated into the script, so it can't inject shell code
       - id: get_commit_message
+        env:
+          HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          if [ -n "${{ github.event.head_commit.message }}" ]
+          if [ -n "$HEAD_COMMIT_MESSAGE" ]
           then
-            echo "commit-message=${{ github.event.head_commit.message }}" | head -n 1 >> "$GITHUB_OUTPUT"
+            echo "commit-message=$HEAD_COMMIT_MESSAGE" | head -n 1 >> "$GITHUB_OUTPUT"
           else
             commit_message=$(git log -1 --pretty=%B | head -n 1)
             echo "commit-message=$commit_message" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Debug commit message
+        env:
+          COMMIT_MESSAGE: ${{ steps.get_commit_message.outputs.commit-message }}
         run: |
-          echo "Commit message: ${{ steps.get_commit_message.outputs.commit-message }}"
+          echo "Commit message: $COMMIT_MESSAGE"
 
   setup:
     name: Setup & Detect Changes
@@ -138,76 +143,85 @@ jobs:
       - name: build
         run: yarn build
 
+      # Created after install and build, so their third-party code never sees a write token
+      - name: Create release app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
       # Publish to npm and github releases
       - name: Publish Utils
         if: needs.setup.outputs.changed-utils == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/utils
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - name: Publish Types-core
         if: needs.setup.outputs.changed-types-core == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/types-core
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - name: Publish Types
         if: needs.setup.outputs.changed-types == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/types
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - name: Publish Common
         if: needs.setup.outputs.changed-common == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/common
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - name: Publish Common Substrate
         if: needs.setup.outputs.changed-common-substrate == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/common-substrate
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - name: Publish Testing
         if: needs.setup.outputs.changed-testing == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/testing
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - name: Publish Node Core
         if: needs.setup.outputs.changed-node-core == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/node-core
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - name: Publish Node
         if: needs.setup.outputs.changed-node == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/node
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - name: Publish Query
         if: needs.setup.outputs.changed-query == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/query
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
       - name: Publish Cli
         if: needs.setup.outputs.changed-cli == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/cli
-          repo-token: ${{ secrets.REPO_TOKEN }}
+          repo-token: ${{ steps.app-token.outputs.token }}
 
   prerelease:
     name: Prerelease Publish
@@ -221,7 +235,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.REPO_TOKEN }} # Needed to push changes back to repo
+          persist-credentials: false # The push at the end uses its own short-lived token
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v5
@@ -297,8 +311,24 @@ jobs:
         with:
           package-path: packages/cli
 
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v9
+      # Created after install, build and publish, so their third-party code never sees a write token
+      - name: Create release app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
         with:
-          message: "[SKIP CI] Prerelease"
-          default_author: github_actions
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Commit changes
+        env:
+          TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git -c user.name="github-actions" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "[SKIP CI] Prerelease"
+          git push "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${GITHUB_REF_NAME}"
