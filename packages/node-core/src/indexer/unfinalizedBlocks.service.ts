@@ -104,23 +104,23 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
 
   // If not for workers this could be private
   async processUnfinalizedBlockHeader(header?: Header): Promise<Header | undefined> {
-    let forkedHeader;
-    if (header) {
-      forkedHeader = await this.registerUnfinalizedBlock(header);
-    }
-    if (!forkedHeader) {
-      forkedHeader = await this.hasForked();
-    }
+    // A fork found while registering only signals a rewind. It can be reported from above the
+    // finalized height or from a stored fork block, so hasForked decides where to rewind to
+    const registrationFork = header ? await this.registerUnfinalizedBlock(header) : undefined;
 
-    if (!forkedHeader) {
-      // Remove blocks that are now confirmed finalized
-      await this.deleteFinalizedBlock();
-    } else {
+    const forkedHeader = await this.hasForked();
+    if (forkedHeader) {
       // Get the last unfinalized block that is now finalized
       return this.getLastCorrectFinalizedBlock(forkedHeader);
     }
 
-    return;
+    if (registrationFork) {
+      // The fork is above the finalized height, and hasForked has verified the highest stored block at or below it
+      return this.getClosestRecord(this.finalizedBlockNumber) ?? this.finalizedHeader;
+    }
+
+    // Remove blocks that are now confirmed finalized
+    await this.deleteFinalizedBlock();
   }
 
   async processUnfinalizedBlocks(block: IBlock<B>): Promise<Header | undefined> {
@@ -337,15 +337,17 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
 
     // Work backwards through the blocks until we find a matching hash
     for (const bestHeader of bestVerifiableBlocks.reverse()) {
-      // A fork found when registering a block is reported above the finalized height, so walk the
-      // chain down to each block's height before comparing
-      while (checkingHeader.blockHeight > bestHeader.blockHeight) {
-        assert(checkingHeader.parentHash, 'Expect checking header parentHash to be exist');
-        checkingHeader = await this.blockchainService.getHeaderForHash(checkingHeader.parentHash);
-      }
-      if (bestHeader.blockHash === checkingHeader.blockHash) {
+      assert(
+        bestHeader.blockHeight === checkingHeader.blockHeight,
+        'Expect best header and checking header to be at the same height'
+      );
+      if (bestHeader.blockHash === checkingHeader.blockHash || bestHeader.blockHash === checkingHeader.parentHash) {
         return bestHeader;
       }
+
+      // Get the new parent
+      assert(checkingHeader.parentHash, 'Expect checking header parentHash to be exist');
+      checkingHeader = await this.blockchainService.getHeaderForHash(checkingHeader.parentHash);
     }
 
     if (!this.lastCheckedBlockHeight) {

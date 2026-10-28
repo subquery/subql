@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - Dictionary v1 queries kept every parsed query document in memory: each batch's query text is new, and both `graphql-tag`'s cache and Apollo Client's `QueryManager.transformCache` retained it, so a long sync's memory grew without bound. Queries are now posted as plain GraphQL over HTTP and nothing is parsed or cached (#3048)
-- Rewinding a fork found while registering an unfinalized block failed the assertion `Expect best header and checking header to be at the same height` whenever a stored block was at or below the finalized height, so the node exited instead of rewinding. The search for the last valid block now walks the chain down to each stored block's height before comparing hashes
+- Rewinding a fork found while registering an unfinalized block failed the assertion `Expect best header and checking header to be at the same height` whenever a stored block was at or below the finalized height, so the node exited instead of rewinding. A fork found while registering now only signals a rewind: the stored blocks at or below the finalized height are checked against the finalized chain as for any other block, and the highest of them that matches, or the finalized block, is the rewind target. This also stops a stored fork block being chosen as the target when the backfill reports the fork
 
 ### Changed
 - `DictionaryV1` sends queries with a protected `query()` method instead of an Apollo `client`, and `@apollo/client` is no longer a dependency (#3048)
