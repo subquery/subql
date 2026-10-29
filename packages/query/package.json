@@ -1,6 +1,6 @@
 {
   "name": "@subql/query",
-  "version": "2.25.0",
+  "version": "2.25.1-0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "bin": {
@@ -78,5 +78,6 @@
     "@types/ws": "^8",
     "@types/yargs": "^16.0.9",
     "nodemon": "^3.1.4"
-  }
+  },
+  "stableVersion": "2.25.0"
 }
