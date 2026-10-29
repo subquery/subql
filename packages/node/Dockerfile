@@ -1,5 +1,5 @@
 # Build stage
-FROM node:lts-alpine as builder
+FROM node:26-alpine as builder
 # Set working directory
 WORKDIR /app
 
@@ -16,13 +16,14 @@ COPY ./scripts/build.sh ./scripts/build.sh
 RUN ./scripts/build.sh packages/node
 
 # Production stage
-FROM node:lts-alpine
+FROM node:26-alpine
 
 # Copy .tgz file from builder
 COPY --from=builder /app/packages/node/app.tgz /app.tgz
 
 # Install production dependencies
 RUN apk add --no-cache tini curl git && \
+  npm install -g --force yarn@latest && \
   tar -xzvf /app.tgz --strip 1 && \
   rm /app.tgz && \
   yarn install --production && \
