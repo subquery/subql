@@ -1,5 +1,5 @@
 # Build stage
-FROM node:lts-alpine as builder
+FROM node:24-alpine as builder
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY ./scripts/build.sh ./scripts/build.sh
 RUN ./scripts/build.sh packages/query
 
 # Production stage
-FROM node:lts-alpine
+FROM node:24-alpine
 
 # Copy .tgz file from builder
 COPY --from=builder /app/packages/query/app.tgz /app.tgz
