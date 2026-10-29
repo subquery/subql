@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import assert from 'assert';
+import util from 'node:util';
 import {Inject, Injectable} from '@nestjs/common';
 import {OnEvent} from '@nestjs/event-emitter';
 import {Transaction} from '@subql/x-sequelize';
@@ -15,7 +16,6 @@ import {mainThreadOnly} from '../utils';
 import {ProofOfIndex} from './entities';
 import {PoiBlock} from './poi';
 import {IStoreModelProvider} from './storeModelProvider';
-import util from 'node:util';
 
 const logger = getLogger('UnfinalizedBlocks');
 
@@ -104,23 +104,23 @@ export class UnfinalizedBlocksService<B = any> implements IUnfinalizedBlocksServ
 
   // If not for workers this could be private
   async processUnfinalizedBlockHeader(header?: Header): Promise<Header | undefined> {
-    let forkedHeader;
-    if (header) {
-      forkedHeader = await this.registerUnfinalizedBlock(header);
-    }
-    if (!forkedHeader) {
-      forkedHeader = await this.hasForked();
-    }
+    // A fork found while registering only signals a rewind. It can be reported from above the
+    // finalized height or from a stored fork block, so hasForked decides where to rewind to
+    const registrationFork = header ? await this.registerUnfinalizedBlock(header) : undefined;
 
-    if (!forkedHeader) {
-      // Remove blocks that are now confirmed finalized
-      await this.deleteFinalizedBlock();
-    } else {
+    const forkedHeader = await this.hasForked();
+    if (forkedHeader) {
       // Get the last unfinalized block that is now finalized
       return this.getLastCorrectFinalizedBlock(forkedHeader);
     }
 
-    return;
+    if (registrationFork) {
+      // The fork is above the finalized height, and hasForked has verified the highest stored block at or below it
+      return this.getClosestRecord(this.finalizedBlockNumber) ?? this.finalizedHeader;
+    }
+
+    // Remove blocks that are now confirmed finalized
+    await this.deleteFinalizedBlock();
   }
 
   async processUnfinalizedBlocks(block: IBlock<B>): Promise<Header | undefined> {

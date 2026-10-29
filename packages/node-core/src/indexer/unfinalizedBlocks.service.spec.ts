@@ -16,6 +16,8 @@ import {
  * If they are forked they will have an `f` at the end
  */
 let mockBestHeight = 150;
+// Headers off the canonical chain, by hash. Any other hash is canonical
+let forkHeaders: Record<string, Header> = {};
 
 const BlockchainService = {
   async getFinalizedHeader(): Promise<Header> {
@@ -27,6 +29,9 @@ const BlockchainService = {
     });
   },
   async getHeaderForHash(hash: string): Promise<Header> {
+    if (forkHeaders[hash]) {
+      return Promise.resolve(forkHeaders[hash]);
+    }
     const num = Number(hash.toString().replace('0xabc', '').replace('f', ''));
     return Promise.resolve({
       blockHeight: num,
@@ -85,6 +90,7 @@ describe('UnfinalizedBlocksService', () => {
 
   beforeEach(async () => {
     mockBestHeight = 150;
+    forkHeaders = {};
     unfinalizedBlocksService = new UnfinalizedBlocksService(
       {unfinalizedBlocks: true} as any,
       mockStoreCache(),
@@ -198,8 +204,23 @@ describe('UnfinalizedBlocksService', () => {
     await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(115, '0xabc115', '0xabc114'));
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(116, '0xabc116', '0xabc115f'));
 
+    // The finalized block, as no stored block is at or below it
+    expect(res).toMatchObject({blockHash: '0xabcd', blockHeight: 110});
+  });
+
+  it('can handle a fork when latest unfinalized block has different parent and a block is finalized', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd').block.header);
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(111, '0xabc111f', '0xabc110f'));
+    // Forked block
+    await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(112, '0xabc112', '0xabc111f'));
+
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(111, '0xabc111f', '0xabc110f').block.header);
+
+    const res = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(113, '0xabc113f', '0xabc112f'));
+
     // Last valid block
-    expect(res).toMatchObject({blockHash: '0xabc110f', blockHeight: 110, parentHash: '0xabc109f'});
+    expect(res).toMatchObject({blockHash: '0xabc111f', blockHeight: 111});
   });
 
   it('can handle a fork when all unfinalized blocks are invalid', async () => {
@@ -494,6 +515,57 @@ describe('UnfinalizedBlocksService', () => {
       // and getLastCorrectFinalizedBlock falls back to finalizedHeader
       expect(result).toBeDefined();
       expect(result?.blockHeight).toBe(110);
+    });
+
+    it('detects fork after backfill when new block has wrong parentHash and a block is finalized', async () => {
+      unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd').block.header);
+
+      await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(111, '0xabc111f', '0xabc110f'));
+
+      unfinalizedBlocksService.registerFinalizedBlock(mockBlock(111, '0xabc111f', '0xabc110f').block.header);
+
+      // Register block 115 with wrong parentHash (should connect to 0xabc114f)
+      const result = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(115, '0xabc115', '0xwrong'));
+
+      expect(result).toMatchObject({blockHash: '0xabc111f', blockHeight: 111});
+    });
+
+    it('does not rewind to a stored fork block when the backfill finds the fork', async () => {
+      // 111x and 112x branch off the canonical 110
+      const fork111 = mockBlock(111, '0xabc111x', '0xabc110f');
+      const fork112 = mockBlock(112, '0xabc112x', '0xabc111x');
+      forkHeaders = {'0xabc111x': fork111.getHeader(), '0xabc112x': fork112.getHeader()};
+
+      unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd').block.header);
+
+      await unfinalizedBlocksService.processUnfinalizedBlocks(fork111);
+      await unfinalizedBlocksService.processUnfinalizedBlocks(fork112);
+
+      unfinalizedBlocksService.registerFinalizedBlock(mockBlock(111, '0xabc111f', '0xabc110f').block.header);
+
+      // Backfilling 113 finds that its parent is not the stored 112x
+      const result = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(115, '0xabc115f', '0xabc114f'));
+
+      expect(result).toMatchObject({blockHash: '0xabc110f', blockHeight: 110});
+    });
+
+    it('does not rewind to a stored fork block at the height the backfill reports', async () => {
+      // 111x and 112x branch off the canonical 110
+      const fork111 = mockBlock(111, '0xabc111x', '0xabc110f');
+      const fork112 = mockBlock(112, '0xabc112x', '0xabc111x');
+      forkHeaders = {'0xabc111x': fork111.getHeader(), '0xabc112x': fork112.getHeader()};
+
+      unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd').block.header);
+
+      await unfinalizedBlocksService.processUnfinalizedBlocks(fork111);
+      await unfinalizedBlocksService.processUnfinalizedBlocks(fork112);
+
+      unfinalizedBlocksService.registerFinalizedBlock(mockBlock(113, '0xabc113f', '0xabc112f').block.header);
+
+      // Backfilling 113 finds that its parent is not the stored 112x, which is below the finalized height
+      const result = await unfinalizedBlocksService.processUnfinalizedBlocks(mockBlock(115, '0xabc115f', '0xabc114f'));
+
+      expect(result).toMatchObject({blockHash: '0xabc110f', blockHeight: 110});
     });
 
     it('throws error when block fetch fails during backfill', async () => {
