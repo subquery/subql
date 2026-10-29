@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [19.4.0] - 2026-10-29
 ### Fixed
 - Dictionary v1 queries kept every parsed query document in memory: each batch's query text is new, and both `graphql-tag`'s cache and Apollo Client's `QueryManager.transformCache` retained it, so a long sync's memory grew without bound. Queries are now posted as plain GraphQL over HTTP and nothing is parsed or cached (#3048)
 - Dictionary v1 queries threw a `TypeError` on a `null` body, `{data: null}` or `errors` that isn't an array, and their errors dropped the response body, so the `distinct` fallback missed non-standard error responses. The error now keeps the body and includes it in its message (#3051)
@@ -1086,7 +1088,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-core/19.3.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-core/19.4.0...HEAD
+[19.4.0]: https://github.com/subquery/subql/compare/node-core/19.3.1...node-core/19.4.0
 [19.3.1]: https://github.com/subquery/subql/compare/node-core/19.3.0...node-core/19.3.1
 [19.3.0]: https://github.com/subquery/subql/compare/node-core/19.2.0...node-core/19.3.0
 [19.2.0]: https://github.com/subquery/subql/compare/node-core/19.1.0...node-core/19.2.0
