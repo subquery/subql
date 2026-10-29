@@ -2,18 +2,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {getMetadataTableName, MetaData, METADATA_REGEX, MULTI_METADATA_REGEX, TableEstimate} from '@subql/utils';
-import {PgIntrospectionResultsByKind} from '@subql/x-graphile-build-pg';
-import {Build} from '@subql/x-postgraphile-core';
-import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import {FieldNode, SelectionNode} from 'graphql';
 import {uniq} from 'lodash';
-import {Client} from 'pg';
+import {extendSchema, gql} from 'postgraphile/utils';
 import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const {version: packageVersion} = require('../../../package.json');
 const META_JSON_FIELDS = ['deployments'];
-const METADATA_TYPES = {
+const METADATA_TYPES: Record<string, string> = {
   lastProcessedHeight: 'number',
   lastProcessedBlockTimestamp: 'number',
   lastProcessedTimestamp: 'number',
@@ -39,18 +37,11 @@ const METADATA_TYPES = {
 const METADATA_KEYS = Object.keys(METADATA_TYPES);
 
 type MetaType = number | string | boolean;
-
 type MetaEntry = {key: string; value: MetaType};
 
-type MetadatasConnection = {
-  totalCount?: number;
-  nodes?: MetaData[];
-  // edges?: any; // TODO
-};
-
-const metaCache = {
+const metaCache: Record<string, any> = {
   queryNodeVersion: packageVersion,
-} as MetaData;
+};
 
 async function fetchFromApi(): Promise<void> {
   let health: Response;
@@ -81,45 +72,54 @@ function matchMetadataTableName(name: string): boolean {
 }
 
 async function fetchMetadataFromTable(
-  pgClient: Client,
+  pgClient: {query: (opts: {text: string; values?: any[]}) => Promise<{rows: any[]}>},
   schemaName: string,
   tableName: string,
   useRowEst: boolean
 ): Promise<MetaData> {
-  const {rows} = await pgClient.query(`select * from "${schemaName}".${tableName} WHERE key = ANY ($1)`, [
-    METADATA_KEYS,
-  ]);
+  const {rows} = await pgClient.query({
+    text: `select * from "${schemaName}".${tableName} WHERE key = ANY ($1)`,
+    values: [METADATA_KEYS],
+  });
 
   const dbKeyValue = rows.reduce((array: MetaEntry[], curr: MetaEntry) => {
-    array[curr.key] = curr.value;
+    (array as any)[curr.key] = curr.value;
     return array;
-  }, {}) as {[key: string]: MetaType};
+  }, []) as {[key: string]: MetaType};
 
   const metadata = {} as MetaData;
 
   for (const key in METADATA_TYPES) {
     if (typeof dbKeyValue[key] === METADATA_TYPES[key]) {
-      //JSON object are stored in string type, filter here and parse
       if (META_JSON_FIELDS.includes(key)) {
-        metadata[key] = JSON.parse(dbKeyValue[key].toString());
+        try {
+          metadata[key] = JSON.parse(dbKeyValue[key].toString());
+        } catch {
+          console.warn(`GetMetadataPlugin: failed to parse JSON for key "${key}"`);
+          metadata[key] = undefined;
+        }
       } else {
         metadata[key] = dbKeyValue[key];
       }
+    } else if (dbKeyValue[key] !== undefined && dbKeyValue[key] !== null) {
+      console.warn(
+        `GetMetadataPlugin: type mismatch for key "${key}" — expected ${METADATA_TYPES[key]}, got ${typeof dbKeyValue[key]}`
+      );
     }
   }
   metadata.queryNodeVersion = packageVersion;
 
   if (useRowEst) {
     const tableEstimates = await pgClient
-      .query<TableEstimate>(
-        `select relname as table , reltuples::bigint as estimate from pg_class
+      .query({
+        text: `select relname as table , reltuples::bigint as estimate from pg_class
       where relnamespace in
             (select oid from pg_namespace where nspname = $1)
       and relname in
           (select table_name from information_schema.tables
            where table_schema = $1)`,
-        [schemaName]
-      )
+        values: [schemaName],
+      })
       .catch((e) => {
         throw new Error(`Unable to estimate table row count: ${e}`);
       });
@@ -129,11 +129,10 @@ async function fetchMetadataFromTable(
   return metadata;
 }
 
-// Store default metadata name in table avoid query system table
 let defaultMetadataName: string;
 
-export async function fetchFromTable(
-  pgClient: Client,
+async function fetchFromTable(
+  pgClient: {query: (opts: {text: string; values?: any[]}) => Promise<{rows: any[]}>},
   schemaName: string,
   chainId: string | undefined,
   useRowEst: boolean
@@ -141,11 +140,10 @@ export async function fetchFromTable(
   let metadataTableName: string;
 
   if (!chainId) {
-    // return first metadata entry you find.
     if (defaultMetadataName === undefined) {
-      const {rows} = await pgClient.query(
-        `SELECT table_name FROM information_schema.tables where table_schema='${schemaName}'`
-      );
+      const {rows} = await pgClient.query({
+        text: `SELECT table_name FROM information_schema.tables where table_schema='${schemaName}'`,
+      });
       const {table_name} = rows.find((obj: {table_name: string}) => matchMetadataTableName(obj.table_name));
       defaultMetadataName = table_name;
     }
@@ -157,17 +155,17 @@ export async function fetchFromTable(
   return fetchMetadataFromTable(pgClient, schemaName, metadataTableName, useRowEst);
 }
 
-function metadataTableSearch(build: Build): boolean {
-  return !!(build.pgIntrospectionResultsByKind as PgIntrospectionResultsByKind).attribute.find((attr) =>
-    matchMetadataTableName(attr.class.name)
-  );
+function metadataTableSearch(build: any): boolean {
+  const pgRegistry = build?.input?.pgRegistry;
+  if (!pgRegistry) return false;
+  const resources = Object.values(pgRegistry.pgResources) as any[];
+  return resources.some((r: any) => matchMetadataTableName(r.name));
 }
 
 function isFieldNode(node: SelectionNode): node is FieldNode {
   return node.kind === 'Field';
 }
 
-/* Recursively work down the AST to find a node with a matching path */
 function findNodePath(nodes: readonly SelectionNode[], path: string[]): FieldNode | undefined {
   if (!path.length) {
     throw new Error('Path must have a length');
@@ -178,18 +176,28 @@ function findNodePath(nodes: readonly SelectionNode[], path: string[]): FieldNod
 
   if (found && isFieldNode(found)) {
     const newPath = path.slice(1);
-
     if (!newPath.length) return found;
-
     if (!found.selectionSet) return;
     return findNodePath(found.selectionSet.selections, newPath);
   }
 }
 
-export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) => {
-  const [schemaName] = options.pgSchemas;
+export const GetMetadataPlugin = extendSchema((build: any) => {
+  // Get the schema name from the first pgService's pgResource, fallback to 'subquery_1'
+  const pgRegistry = build?.input?.pgRegistry;
+  const resources = Object.values(pgRegistry?.pgResources || {}) as any[];
+  // In v5, resources don't have a `namespace` property; extract schema name from `from` SQL text
+  const firstResource = resources[0];
+  let schemaName = 'subquery_1';
+  if (firstResource) {
+    const fromText = (firstResource as any).from?.t;
+    const schemaMatch = typeof fromText === 'string' && fromText.match(/^"([^"]+)"/);
+    if (schemaMatch) {
+      schemaName = schemaMatch[1];
+    }
+  }
 
-  if (argv(`indexer`)) {
+  if (argv('indexer')) {
     setAsyncInterval(fetchFromApi, 10000);
   }
 
@@ -230,44 +238,50 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
       type _Metadatas {
         totalCount: Int!
         nodes: [_Metadata]!
-        # edges: [_MetadatasEdge]
       }
 
       extend type Query {
         _metadata(chainId: String): _Metadata
-
-        _metadatas(
-          after: Cursor
-          before: Cursor # distinct: [_mmr_distinct_enum] = null # filter: _MetadataFilter # first: Int # offset: Int
-          # last: Int
-        ): # orderBy: [_MetadatasOrderBy!] = [PRIMARY_KEY_ASC]
-        _Metadatas
+        _metadatas(chainId: String): _Metadatas
       }
     `,
     resolvers: {
       Query: {
-        _metadata: async (_parentObject, args, context, info): Promise<MetaData | undefined> => {
+        _metadata: ($root: any, args: any, context: any, info: any) => {
           const tableExists = metadataTableSearch(build);
           if (tableExists) {
             let rowCountFound = false;
-            if (info.fieldName === '_metadata') {
+            if (info && info.fieldName === '_metadata') {
               rowCountFound = !!findNodePath(info.fieldNodes, ['_metadata', 'rowCountEstimate']);
             }
-            const metadata = await fetchFromTable(context.pgClient, schemaName, args.chainId, rowCountFound);
-            if (Object.keys(metadata).length > 0) {
-              return metadata;
-            }
+            return resolvePgClient(context, async (pgClient) => {
+              const metadata = await fetchFromTable(pgClient, schemaName, args.chainId, rowCountFound);
+              if (Object.keys(metadata).length > 0) {
+                return metadata;
+              }
+              if (argv('indexer')) {
+                return metaCache;
+              }
+              return undefined;
+            });
           }
-          if (argv(`indexer`)) {
+          if (argv('indexer')) {
             return metaCache;
           }
-          return;
+          return undefined;
         },
-        _metadatas: async (_parentObject, args, context, info): Promise<MetadatasConnection> => {
+        _metadatas: ($root: any, args: any, context: any, info: any) => {
+          const pgRegistry = build?.input?.pgRegistry;
+          const resources = Object.values(pgRegistry?.pgResources || []) as any[];
           const tableNames = uniq<string>(
-            (build.pgIntrospectionResultsByKind as PgIntrospectionResultsByKind).attribute
-              .filter((attr) => attr.class.namespaceName === schemaName && matchMetadataTableName(attr.class.name))
-              .map((attr) => attr.class.name)
+            resources
+              .filter((r: any) => {
+                // v5 resources don't have `namespace`; extract schema from `from` SQL text
+                const fromText = r.from?.t;
+                const rSchema = typeof fromText === 'string' ? fromText.match(/^"([^"]+)"/)?.[1] : undefined;
+                return rSchema === schemaName && matchMetadataTableName(r.name);
+              })
+              .map((r: any) => r.name)
           );
 
           let totalCount = false;
@@ -278,16 +292,29 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build: Build, options) 
             rowCountEstimate = !!findNodePath(info.fieldNodes, ['_metadatas', 'nodes', 'rowCountEstimate']);
           }
 
-          const metadatas = await Promise.all(
-            tableNames.map((name) => fetchMetadataFromTable(context.pgClient, schemaName, name, rowCountEstimate))
-          );
-
-          return {
-            totalCount: totalCount ? tableNames.length : undefined,
-            nodes: metadatas,
-          };
+          return resolvePgClient(context, async (pgClient) => {
+            const metadatas = await Promise.all(
+              tableNames.map((name) => fetchMetadataFromTable(pgClient, schemaName, name, rowCountEstimate))
+            );
+            return {
+              totalCount: totalCount ? tableNames.length : undefined,
+              nodes: metadatas,
+            };
+          });
         },
       },
     },
   };
-});
+}, 'GetMetadataPlugin');
+
+// Helper to obtain a pgClient from context (v5 compat).
+// In v5 with the /v4 Express adapter, context.pgClient is available directly.
+// If not provided, the callback is skipped (returns undefined).
+async function resolvePgClient(context: any, fn: (pgClient: any) => Promise<any>): Promise<any> {
+  const pgClient = context?.pgClient;
+  if (!pgClient) {
+    // No pgClient in context — cannot execute query
+    return undefined;
+  }
+  return fn(pgClient);
+}
