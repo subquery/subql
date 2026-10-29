@@ -711,6 +711,20 @@ export const dropColumnQuery = (schema: string, columnName: string, tableName: s
 export const createColumnQuery = (schema: string, table: string, columnName: string, attributes: string): string =>
   `ALTER TABLE ${escapedName(schema, table)} ADD COLUMN IF NOT EXISTS "${columnName}" ${attributes};`;
 
+export const createColumnWithDefaultQuery = (
+  schema: string,
+  table: string,
+  columnName: string,
+  attributes: string,
+  defaultValue: string
+): Query => ({
+  sql: `ALTER TABLE ${escapedName(schema, table)} ADD COLUMN IF NOT EXISTS "${columnName}" ${attributes} DEFAULT ?;`,
+  replacements: [defaultValue],
+});
+
+export const dropColumnDefaultQuery = (schema: string, table: string, columnName: string): string =>
+  `ALTER TABLE ${escapedName(schema, table)} ALTER COLUMN "${columnName}" DROP DEFAULT;`;
+
 // fullTextSearch
 const TS_VECTOR_COL = '_tsv';
 

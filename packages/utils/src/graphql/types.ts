@@ -55,6 +55,11 @@ export interface GraphQLEntityField {
 
   isEnum: boolean;
 
+  /**
+   * Set by `@default`. Only used by schema migrations, to fill existing rows when a non-nullable field is added.
+   */
+  defaultValue?: string;
+
   description?: string;
 }
 

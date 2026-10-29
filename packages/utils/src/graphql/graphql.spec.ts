@@ -535,4 +535,74 @@ describe('utils that handle schema.graphql', () => {
       }
     });
   });
+
+  describe('default directive', () => {
+    function parseFields(fields: string) {
+      const schema = buildSchemaFromDocumentNode(gql`
+        type StarterEntity @entity {
+          id: ID!
+          ${fields}
+        }
+
+        type Other @entity {
+          id: ID!
+        }
+
+        enum Status {
+          OPEN
+          CLOSED
+        }
+      `);
+      return getAllEntitiesRelations(schema).models.find((m) => m.name === 'StarterEntity')?.fields;
+    }
+
+    it('sets defaultValue on non-nullable scalar and enum fields', () => {
+      const fields = parseFields(`
+        amount: BigInt! @default(value: "-5")
+        count: Int! @default(value: "0")
+        ratio: Float! @default(value: "1.5e3")
+        done: Boolean! @default(value: "false")
+        note: String! @default(value: "")
+        status: Status! @default(value: "OPEN")
+        plain: Int!
+      `);
+
+      expect(Object.fromEntries((fields ?? []).map((f) => [f.name, f.defaultValue]))).toEqual({
+        id: undefined,
+        amount: '-5',
+        count: '0',
+        ratio: '1.5e3',
+        done: 'false',
+        note: '',
+        status: 'OPEN',
+        plain: undefined,
+      });
+    });
+
+    it('rejects values that do not fit the field type', () => {
+      const cases: [string, string][] = [
+        ['count: Int! @default(value: "1.5")', '"1.5" is not a valid Int value'],
+        ['count: Int! @default(value: "99999999999999999999")', 'is not a valid Int value'],
+        ['amount: BigInt! @default(value: "1e3")', '"1e3" is not a valid BigInt value'],
+        ['done: Boolean! @default(value: "no")', '"no" is not a valid Boolean value'],
+        ['status: Status! @default(value: "LOST")', '"LOST" is not a valid Status value'],
+        ['day: Date! @default(value: "2020-01-01")', 'is not a valid Date value'],
+      ];
+      for (const [field, message] of cases) {
+        expect(() => parseFields(field)).toThrow(message);
+      }
+    });
+
+    it('rejects fields a single literal cannot fill', () => {
+      expect(() => parseFields('note: String @default(value: "x")')).toThrow(
+        '"@default" on StarterEntity.note is only supported on non-nullable fields'
+      );
+      expect(() => parseFields('tags: [String]! @default(value: "x")')).toThrow(
+        '"@default" on StarterEntity.tags is only supported on scalar and enum fields'
+      );
+      expect(() => parseFields('other: Other! @default(value: "x")')).toThrow(
+        '"@default" on StarterEntity.other is only supported on scalar and enum fields'
+      );
+    });
+  });
 });
