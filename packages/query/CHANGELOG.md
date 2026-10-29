@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
-- Docker image build failing with `yarn: not found` since `node:lts-alpine` moved to Node 26. The image now uses `node:24-alpine`
+- Docker image build failing with `yarn: not found` since `node:lts-alpine` moved to Node 26. The image now uses `node:24-alpine` (#3055)
 
 ## [2.25.0] - 2025-11-05
 ### Changed
