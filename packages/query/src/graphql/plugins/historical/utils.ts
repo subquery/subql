@@ -3,7 +3,11 @@
 
 import {PgEntity, PgEntityKind, SQL} from '@subql/x-graphile-build-pg';
 
-export function makeRangeQuery(tableName: SQL, blockHeight: SQL, sql: any): SQL {
+export function makeRangeQuery(tableName: SQL, blockHeight: SQL, sql: any, isBlockRangeQuery = false): SQL {
+  if (isBlockRangeQuery) {
+    // For block range queries, we need to check if the table's _block_range overlaps with the provided range
+    return sql.fragment`${tableName}._block_range && ${blockHeight}`;
+  }
   return sql.fragment`${tableName}._block_range @> ${blockHeight}`;
 }
 

@@ -3,18 +3,27 @@
 
 import {QueryBuilder} from '@subql/x-graphile-build-pg';
 import {Plugin, Context} from 'graphile-build';
-import {GraphQLString} from 'graphql';
+import {GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString} from 'graphql';
 import {fetchFromTable} from '../GetMetadataPlugin';
 import {makeRangeQuery, hasBlockRange} from './utils';
 
 function addRangeQuery(queryBuilder: QueryBuilder, sql: any) {
-  queryBuilder.where(makeRangeQuery(queryBuilder.getTableAlias(), queryBuilder.context.args.blockHeight, sql));
+  if (queryBuilder.context.args.blockRange) {
+    queryBuilder.where(makeRangeQuery(queryBuilder.getTableAlias(), queryBuilder.context.args.blockRange, sql, true));
+  } else if (queryBuilder.context.args.blockHeight) {
+    queryBuilder.where(makeRangeQuery(queryBuilder.getTableAlias(), queryBuilder.context.args.blockHeight, sql));
+  }
 }
 
-// Save blockHeight to context, so it gets passed down to children
-function addQueryContext(queryBuilder: QueryBuilder, sql: any, blockHeight: any) {
-  if (!queryBuilder.context.args?.blockHeight || !queryBuilder.parentQueryBuilder) {
-    queryBuilder.context.args = {blockHeight: sql.fragment`${sql.value(blockHeight)}::bigint`};
+// Save blockHeight/blockRange to context, so it gets passed down to children
+function addQueryContext(queryBuilder: QueryBuilder, sql: any, blockFilter: any, isBlockRangeQuery = false) {
+  // check if it's a 'blockRange' type query
+  if (isBlockRangeQuery) {
+    if (!queryBuilder.context.args?.blockRange || !queryBuilder.parentQueryBuilder) {
+      queryBuilder.context.args = {blockRange: [sql.value(blockFilter[0]), sql.value(blockFilter[1])]};
+    }
+  } else if (!queryBuilder.context.args?.blockHeight || !queryBuilder.parentQueryBuilder) {
+    queryBuilder.context.args = {blockHeight: sql.fragment`${sql.value(blockFilter)}::bigint`};
   }
 }
 
@@ -30,7 +39,7 @@ export const PgBlockHeightPlugin: Plugin = async (builder, options) => {
     /* Do nothing, default value is already set */
   }
 
-  // Adds blockHeight condition to join clause when joining a table that has _block_range column
+  // Adds blockHeight or blockRange condition to join clause when joining a table that has _block_range column
   builder.hook(
     'GraphQLObjectType:fields:field',
     (
@@ -53,17 +62,20 @@ export const PgBlockHeightPlugin: Plugin = async (builder, options) => {
         return field;
       }
 
-      addArgDataGenerator(({blockHeight, timestamp}) => ({
+      addArgDataGenerator(({blockHeight, blockRange, timestamp}) => ({
         pgQuery: (queryBuilder: QueryBuilder) => {
-          // If timestamp provided use that as the value
-          addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
+          if (blockRange && Array.isArray(blockRange)) {
+            addQueryContext(queryBuilder, sql, blockRange, true);
+          } else if (blockHeight) {
+            addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
+          }
           addRangeQuery(queryBuilder, sql);
         },
       }));
       return field;
     }
   );
-  // Adds blockHeight argument to single entity and connection queries for tables with _block_range column
+  // Adds blockHeight and blockRange arguments to single entity and connection queries for tables with _block_range column
   builder.hook(
     'GraphQLObjectType:fields:field:args',
     (
@@ -81,10 +93,13 @@ export const PgBlockHeightPlugin: Plugin = async (builder, options) => {
         return args;
       }
 
-      addArgDataGenerator(({blockHeight, timestamp}) => ({
+      addArgDataGenerator(({blockHeight, blockRange, timestamp}) => ({
         pgQuery: (queryBuilder: QueryBuilder) => {
-          // If timestamp provided use that as the value
-          addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
+          if (blockRange && Array.isArray(blockRange)) {
+            addQueryContext(queryBuilder, sql, blockRange, true);
+          } else if (blockHeight) {
+            addQueryContext(queryBuilder, sql, blockHeight ?? timestamp);
+          }
           addRangeQuery(queryBuilder, sql);
         },
       }));
@@ -104,6 +119,10 @@ export const PgBlockHeightPlugin: Plugin = async (builder, options) => {
           description: 'When specified, the query will return results as of this block height',
           defaultValue: '9223372036854775807',
           type: GraphQLString, // String because of int overflow
+        },
+        blockRange: {
+          description: 'Filter by a range of block heights',
+          type: new GraphQLList(new GraphQLNonNull(GraphQLInt)),
         },
       });
     }
