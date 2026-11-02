@@ -1,14 +1,13 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
+//
+// PgConnectionArgFilter{Forward,Backward}RelationsPlugin from the
+// historical filter pattern are now provided by
+// postgraphile-plugin-connection-filter, so no need to register them here.
 
 import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
-import PgConnectionArgFilterBackwardRelationsPlugin from './PgConnectionArgFilterBackwardRelationsPlugin';
-import PgConnectionArgFilterForwardRelationsPlugin from './PgConnectionArgFilterForwardRelationsPlugin';
+import {PgConnectionFilterBlockHeightPlugin} from './PgConnectionFilterBlockHeightPlugin';
 
-const historicalPlugins = [
-  PgBlockHeightPlugin, // This must be before the other plugins to ensure the context is set
-  PgConnectionArgFilterBackwardRelationsPlugin,
-  PgConnectionArgFilterForwardRelationsPlugin,
-];
+const historicalPlugins: GraphileConfig.Plugin[] = [PgBlockHeightPlugin, PgConnectionFilterBlockHeightPlugin];
 
 export default historicalPlugins;

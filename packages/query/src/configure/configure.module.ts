@@ -8,7 +8,6 @@ import {Pool, PoolConfig} from 'pg';
 import {getLogger} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {Config} from './config';
-import {debugPgClient} from './x-postgraphile/debugClient';
 
 async function ensurePool(poolConfig: PoolConfig): Promise<Pool> {
   const pgPool = new Pool(poolConfig);
@@ -78,13 +77,9 @@ export class ConfigureModule {
       // tslint:disable-next-line no-console
       getLogger('db').error('PostgreSQL client generated error: ', err.message);
     });
-    if (opts['query-explain']) {
-      pgPool.on('connect', (pgClient) => {
-        // Enhance our Postgres client with debugging stuffs.
-        debugPgClient(pgClient, getLogger('explain'));
-        pgClient._explainResults = [];
-      });
-    }
+    // In v5, query explain is controlled via the preset's `grafast.explain`
+    // option (set in graphql.module.ts) and gated by the `x-graphql-explain`
+    // HTTP header per-request. The `--query-explain` CLI flag is wired there.
     return {
       module: ConfigureModule,
       providers: [

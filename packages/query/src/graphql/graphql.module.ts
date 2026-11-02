@@ -1,55 +1,104 @@
 // Copyright 2020-2025 SubQuery Pte Ltd authors & contributors
 // SPDX-License-Identifier: GPL-3.0
 
-import assert from 'assert';
-import {setInterval} from 'timers';
-import PgPubSub from '@graphile/pg-pubsub';
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
 import {delay} from '@subql/common';
-import {hashName} from '@subql/utils';
-import {getPostGraphileBuilder, Plugin, PostGraphileCoreOptions} from '@subql/x-postgraphile-core';
-import {ApolloServerPluginCacheControl, ApolloServerPluginLandingPageDisabled} from 'apollo-server-core';
-import {ApolloServer, UserInputError} from 'apollo-server-express';
 import compression from 'compression';
 import {NextFunction, Request, Response} from 'express';
-import {GraphQLSchema} from 'graphql';
-import {useServer} from 'graphql-ws/lib/use/ws';
-import {set} from 'lodash';
-import {Pool, PoolClient} from 'pg';
+import {parse} from 'graphql';
+import {Pool} from 'pg';
 import pinoLogger from 'pino-http';
-import {makePluginHook} from 'postgraphile';
-import {WebSocketServer} from 'ws';
+import {PostGraphileInstance, postgraphile} from 'postgraphile';
+import {makePgService} from 'postgraphile/@dataplan/pg/adaptors/pg';
+import {ExpressGrafserv} from 'postgraphile/grafserv/express/v4';
+import {GraphQLError} from 'postgraphile/graphql';
 import {Config} from '../configure';
-import {queryExplainPlugin} from '../configure/x-postgraphile/debugClient';
 import {getLogger, PinoConfig} from '../utils/logger';
 import {getYargsOption} from '../yargs';
-import {plugins} from './plugins';
-import {PgSubscriptionPlugin} from './plugins/PgSubscriptionPlugin';
-import {playgroundPlugin} from './plugins/PlaygroundPlugin';
-import {queryAliasLimit} from './plugins/QueryAliasLimitPlugin';
-import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
-import {queryDepthLimitPlugin} from './plugins/QueryDepthLimitPlugin';
+import {queryPreset} from './plugins';
+import {checkAliasLimit, getAliasCount} from './plugins/QueryAliasLimitPlugin';
+import {validateQueryComplexity, getComplexityValue} from './plugins/QueryComplexityPlugin';
+import {validateQueryDepth, getQueryDepth} from './plugins/QueryDepthLimitPlugin';
 import {ProjectService} from './project.service';
 
 const {argv} = getYargsOption();
 const logger = getLogger('graphql-module');
 
-const SCHEMA_RETRY_INTERVAL = 10; //seconds
+// Module-level ref to the current PostGraphileInstance for middleware access
+let currentPgInstance: PostGraphileInstance | null = null;
+
+const SCHEMA_RETRY_INTERVAL = 10;
 const SCHEMA_RETRY_NUMBER = 5;
-const WS_ROUTE = '/';
+
+// Export for testability — allows middleware tests to inject a mock schema
+export function setMockPgInstance(instance: PostGraphileInstance | null): void {
+  currentPgInstance = instance;
+}
+
+/**
+ * CORS middleware — replaces v4 `cors: true` on ApolloServer.applyMiddleware.
+ * Handles preflight OPTIONS and sets permissive CORS headers.
+ */
+export function corsMiddleware(req: Request, res: Response, next: NextFunction): void {
+  const origin = req.headers?.origin ?? '*';
+
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept');
+  res.setHeader('Access-Control-Max-Age', '86400');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
+
+  next();
+}
+
+/**
+ * Cache-Control middleware — replaces v4 ApolloServerPluginCacheControl({defaultMaxAge: 5}).
+ * Patches res.writeHead to inject Cache-Control header right before headers are sent,
+ * AFTER downstream (grafserv) sets the status code and any custom cache headers.
+ */
+export function cacheControlMiddleware(_req: Request, res: Response, next: NextFunction): void {
+  const origWriteHead = res.writeHead.bind(res);
+  res.writeHead = function (statusCode: number, ...args: any[]) {
+    if (statusCode < 400 && !res.headersSent) {
+      if (!res.getHeader('Cache-Control')) {
+        res.setHeader('Cache-Control', 'public, max-age=5');
+      }
+    }
+    return origWriteHead(statusCode, ...args);
+  } as typeof res.writeHead;
+  next();
+}
+
+/**
+ * Error boundary middleware — replaces v4 ApolloServer error formatting.
+ * Catches unhandled errors from middleware chain (before grafserv) and returns
+ * a proper GraphQL error response instead of crashing the process.
+ */
+export function errorBoundaryMiddleware(err: Error, _req: Request, res: Response, _next: NextFunction): void {
+  logger.error({err}, 'Unhandled middleware error');
+  if (res.headersSent) {
+    return;
+  }
+  res.status(500).json({errors: [new GraphQLError(err.message)]});
+}
 
 class NoInitError extends Error {
   constructor() {
     super('GraphqlModule has not been initialized');
   }
 }
+
 @Module({
   providers: [ProjectService],
 })
 export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
-  private _apolloServer?: ApolloServer;
-  private wsCleanup?: ReturnType<typeof useServer>;
+  private _pgInstance?: PostGraphileInstance;
+
   constructor(
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly config: Config,
@@ -57,77 +106,63 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     private readonly projectService: ProjectService
   ) {}
 
-  private get apolloServer(): ApolloServer {
-    assert(this._apolloServer, new NoInitError());
-    return this._apolloServer;
-  }
-
   async onModuleInit(): Promise<void> {
     if (!this.httpAdapterHost) {
       return;
     }
     try {
-      this._apolloServer = await this.createServer();
+      await this.createServer();
     } catch (e: any) {
-      throw new Error(`create apollo server failed, ${e.message}`);
-    }
-  }
-
-  async schemaListener(dbSchema: string, options: PostGraphileCoreOptions): Promise<void> {
-    // In order to apply hotSchema Reload without using apollo Gateway, must access the private method, hence the need to use set()
-    try {
-      const schema = await this.buildSchema(dbSchema, options);
-      if (schema && !!(this.apolloServer as any)?.generateSchemaDerivedData) {
-        const schemaDerivedData = await (this.apolloServer as any).generateSchemaDerivedData(schema);
-        set(this.apolloServer, 'schema', schema);
-        set(this.apolloServer, 'state.schemaManager.schemaDerivedData', schemaDerivedData);
-        logger.info('Schema updated');
-      }
-    } catch (e: any) {
-      logger.error(e, `Failed to hot reload Schema`);
-      process.exit(1);
+      throw new Error(`create postgraphile server failed, ${e.message}`);
     }
   }
 
   async onModuleDestroy(): Promise<void> {
-    await Promise.all([this.apolloServer?.stop(), this.wsCleanup?.dispose()]);
+    await this._pgInstance?.release();
   }
 
-  private async buildSchema(
-    dbSchema: string,
-    options: PostGraphileCoreOptions,
-    retries = SCHEMA_RETRY_NUMBER
-  ): Promise<GraphQLSchema> {
-    if (retries > 0) {
-      try {
-        const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], options);
+  private makeRuntimePreset(dbSchema: string) {
+    const pgService = makePgService({
+      pool: this.pgPool,
+      schemas: [dbSchema],
+    });
 
-        const graphqlSchema = builder.buildSchema();
-        return graphqlSchema;
-      } catch (e: any) {
-        await delay(SCHEMA_RETRY_INTERVAL);
-        if (retries === 1) {
-          logger.error(e);
-        }
-        return this.buildSchema(dbSchema, options, --retries);
-      }
-    } else {
+    // NOTE: v4 had `graphileBuildOptions.pgUsePartitionedParent: true` for CockroachDB.
+    // v5 PgTablesPlugin handles partition tables natively (partitionExclude in plugin),
+    // so this compat flag is no longer needed.
+    const preset: any = {
+      ...queryPreset,
+      pgServices: [pgService],
+      grafserv: {
+        graphqlPath: '/',
+        graphiql: this.config.get('playground') ?? true,
+        // v5 built-in schema watching — replaces manual LISTEN/NOTIFY
+        watch: !argv['disable-hot-schema'],
+      },
+    };
+
+    if (argv['query-explain']) {
+      preset.grafast = {explain: true};
+    }
+
+    return preset;
+  }
+
+  private async buildSchema(dbSchema: string, retries = SCHEMA_RETRY_NUMBER): Promise<PostGraphileInstance> {
+    if (retries <= 0) {
       throw new Error(`Failed to build schema ${dbSchema} ${SCHEMA_RETRY_NUMBER} times`);
     }
-  }
 
-  private setupKeepAlive(pgClient: PoolClient) {
-    const interval = argv['sl-keep-alive-interval'] || 180000;
-    logger.info(`Setup PG Pool keep alive. interval ${interval} ms`);
-    setInterval(() => {
-      void (async () => {
-        try {
-          await pgClient.query('SELECT 1');
-        } catch (err) {
-          getLogger('db').error('Schema listener client keep-alive query failed: ', err);
-        }
-      })();
-    }, interval);
+    try {
+      const preset = this.makeRuntimePreset(dbSchema);
+      return postgraphile(preset as any);
+    } catch (e: any) {
+      await delay(SCHEMA_RETRY_INTERVAL);
+      if (retries === 1) {
+        logger.error(e);
+      }
+      return this.buildSchema(dbSchema, --retries);
+    }
   }
 
   private async createServer() {
@@ -138,117 +173,147 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     if (!schemaName) throw new Error('Unable to get schema name from config');
 
     const dbSchema = await this.projectService.getProjectSchema(schemaName);
-    let options: PostGraphileCoreOptions = {
-      replaceAllPlugins: plugins,
-      subscriptions: true,
-      dynamicJson: true,
-      graphileBuildOptions: {
-        connectionFilterRelations: false, // We use our own forked version with historical support
 
-        // cockroach db does not support pgPartition
-        pgUsePartitionedParent: true,
-      },
-    };
+    const instance = await this.buildSchema(dbSchema);
+    this._pgInstance = instance;
+    currentPgInstance = instance;
 
-    if (argv.subscription) {
-      const pluginHook = makePluginHook([PgPubSub]);
-      // Must be called manually to init PgPubSub since we're using Apollo Server and not postgraphile
-      options = pluginHook('postgraphile:options', options, {pgPool: this.pgPool});
-      options.replaceAllPlugins ??= [];
-      options.appendPlugins ??= [];
-      options.replaceAllPlugins.push(PgSubscriptionPlugin as Plugin);
-      while (options.appendPlugins.length) {
-        const replaceAllPlugin = options.appendPlugins.pop();
-        if (replaceAllPlugin) options.replaceAllPlugins.push(replaceAllPlugin);
-      }
+    // Build the schema eagerly so we fail fast if introspection is broken
+    try {
+      await instance.getSchema();
+    } catch (e: any) {
+      throw new Error(`Failed to build schema for ${dbSchema}: ${e.message}`);
     }
 
-    if (!argv['disable-hot-schema']) {
-      try {
-        const pgClient = await this.pgPool.connect();
-        await pgClient.query(`LISTEN "${hashName(dbSchema, 'schema_channel', '_metadata')}"`);
+    // v5's grafserv.watch handles schema watching internally —
+    // no manual LISTEN/NOTIFY setup needed.
 
-        // Set up a keep-alive interval to prevent the connection from being killed
-        this.setupKeepAlive(pgClient);
+    // Create grafserv and mount on Express
+    const grafserv = instance.createServ(
+      ({preset, schema}) =>
+        new ExpressGrafserv({
+          preset,
+          schema,
+        })
+    ) as ExpressGrafserv;
 
-        pgClient.on('error', (err: Error) => {
-          getLogger('db').error('PostgreSQL schema listener client error: ', err);
-          process.exit(1);
-        });
-
-        pgClient.on('notification', (msg) => {
-          if (msg.payload === 'schema_updated') {
-            void this.schemaListener(dbSchema, options);
-          }
-        });
-      } catch (e) {
-        logger.warn('Failed to init hot-schema reload', e);
-      }
-    }
-    const schema = await this.buildSchema(dbSchema, options);
-
-    const apolloServerPlugins = [
-      ApolloServerPluginCacheControl({
-        defaultMaxAge: 5,
-        calculateHttpHeaders: true,
-      }),
-      this.config.get('playground')
-        ? playgroundPlugin({url: '/', subscriptionUrl: argv.subscription ? WS_ROUTE : undefined})
-        : ApolloServerPluginLandingPageDisabled(),
-      queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
-      queryDepthLimitPlugin({schema, maxDepth: argv['query-depth-limit']}),
-      queryAliasLimit({schema, limit: argv['query-alias-limit']}),
-    ];
-
-    if (argv['query-explain']) {
-      apolloServerPlugins.push(queryExplainPlugin(getLogger('explain')));
-    }
-
-    const server = new ApolloServer({
-      schema,
-      context: {
-        pgClient: this.pgPool,
-      },
-      plugins: apolloServerPlugins,
-      debug: this.config.get('NODE_ENV') !== 'production',
-    });
-
-    if (argv.subscription) {
-      const wsServer = new WebSocketServer({
-        server: httpServer,
-        path: WS_ROUTE,
-      });
-
-      this.wsCleanup = useServer({schema, context: {pgClient: this.pgPool}}, wsServer);
-    }
-
+    // Mount middleware (order matters: external middleware before grafserv)
+    // CORS must be first to handle preflight OPTIONS before any other logic
+    app.use(corsMiddleware);
+    app.use(cacheControlMiddleware);
     app.use(pinoLogger(PinoConfig));
     app.use(limitBatchedQueries);
+    app.use(limitQueryComplexity);
+    app.use(limitQueryDepth);
+    app.use(limitQueryAliases);
     app.use(compression());
 
-    await server.start();
-    server.applyMiddleware({
-      app,
-      path: '/',
-      cors: true,
-    });
-    return server;
+    grafserv.addTo(app, httpServer, true);
+
+    // Error boundary must be last — catches errors from all prior middleware + grafserv
+    app.use(errorBoundaryMiddleware);
   }
 }
-function limitBatchedQueries(req: Request, res: Response, next: NextFunction): void {
-  const errors: UserInputError[] = [];
-  if (argv['query-batch-limit'] && argv['query-batch-limit'] > 0) {
-    if (req.method === 'POST') {
+
+export function limitQueryComplexity(req: Request, res: Response, next: NextFunction): void {
+  const maxComplexity = argv['query-complexity'] as number | undefined;
+  if (maxComplexity === undefined || req.method !== 'POST') return next();
+
+  // Get current schema from the live instance (grafserv.watch keeps it updated)
+  const sr = currentPgInstance?.getSchemaResult();
+  const schema = sr && !(sr instanceof Promise) ? (sr as any).schema : null;
+  if (!schema) return next();
+
+  const queries = Array.isArray(req.body) ? req.body : [req.body];
+  for (const q of queries) {
+    if (q?.query) {
       try {
-        const queries = req.body;
-        if (Array.isArray(queries) && queries.length > argv['query-batch-limit']) {
-          errors.push(new UserInputError('Batch query limit exceeded'));
-          // eslint-disable-next-line @typescript-eslint/only-throw-error
-          throw errors;
+        const doc = parse(q.query);
+        // Validate and get complexity value
+        const complexity = validateQueryComplexity(doc, q.operationName, q.variables, maxComplexity, schema);
+
+        // Always send complexity header
+        res.setHeader('X-Query-Complexity', complexity);
+        if (maxComplexity !== undefined) {
+          res.setHeader('X-Max-Query-Complexity', maxComplexity);
         }
-      } catch (error: any) {
-        res.status(500).json({errors: [...error]});
-        return next(error);
+      } catch (e: any) {
+        res.status(400).json({errors: [new GraphQLError(e.message)]});
+        return next(e);
+      }
+    }
+  }
+  next();
+}
+
+export function limitQueryDepth(req: Request, res: Response, next: NextFunction): void {
+  const maxDepth = argv['query-depth-limit'] as number | undefined;
+  if (maxDepth !== undefined && req.method === 'POST') {
+    const queries = Array.isArray(req.body) ? req.body : [req.body];
+    for (const q of queries) {
+      if (q?.query) {
+        try {
+          const doc = parse(q.query);
+          // Validate and get depth value
+          validateQueryDepth(maxDepth, doc.definitions);
+
+          // Get the actual query depth for the header
+          const actualDepth = getQueryDepth(doc);
+          res.setHeader('X-Query-Depth', actualDepth);
+          if (maxDepth !== undefined) {
+            res.setHeader('X-Max-Query-Depth', maxDepth);
+          }
+        } catch (e: any) {
+          res.status(400).json({errors: [new GraphQLError(e.message)]});
+          return next(e);
+        }
+      }
+    }
+  }
+  next();
+}
+
+export function limitQueryAliases(req: Request, res: Response, next: NextFunction): void {
+  const maxAliases = argv['query-alias-limit'] as number | undefined;
+  if (maxAliases !== undefined && req.method === 'POST') {
+    const queries = Array.isArray(req.body) ? req.body : [req.body];
+    for (const q of queries) {
+      if (q?.query) {
+        try {
+          const doc = parse(q.query);
+          // Validate and get alias count
+          checkAliasLimit(doc, maxAliases);
+
+          // Get the actual alias count for the header
+          const actualAliases = getAliasCount(doc);
+          res.setHeader('X-Query-Aliases', actualAliases);
+          if (maxAliases !== undefined) {
+            res.setHeader('X-Max-Query-Aliases', maxAliases);
+          }
+        } catch (e: any) {
+          res.status(400).json({errors: [new GraphQLError(e.message)]});
+          return next(e);
+        }
+      }
+    }
+  }
+  next();
+}
+
+export function limitBatchedQueries(req: Request, res: Response, next: NextFunction): void {
+  const batchLimit = argv['query-batch-limit'] as number | undefined;
+  if (batchLimit !== undefined && req.method === 'POST') {
+    const queries = req.body;
+    if (Array.isArray(queries) && queries.length > batchLimit) {
+      const error = new GraphQLError('Batch query limit exceeded');
+      res.status(500).json({errors: [error]});
+      return next(error);
+    }
+    // Always send batch limit header on POST requests
+    if (req.method === 'POST') {
+      res.setHeader('X-Query-Batches', Array.isArray(queries) ? queries.length : 1);
+      if (batchLimit !== undefined) {
+        res.setHeader('X-Max-Query-Batches', batchLimit);
       }
     }
   }
