@@ -52,6 +52,7 @@ describe('HTTP interface', () => {
     });
   }
 
+  // Building the schema can take longer than Jest's default when the tests run in parallel
   beforeAll(async () => {
     await pool.query(`DROP SCHEMA IF EXISTS "${dbSchema}" CASCADE`);
     await pool.query(`CREATE SCHEMA "${dbSchema}"`);
@@ -61,7 +62,7 @@ describe('HTTP interface', () => {
     app = await NestFactory.create(AppModule, {logger: false});
     await app.listen(0, '127.0.0.1');
     url = `http://127.0.0.1:${(app.getHttpServer().address() as AddressInfo).port}/`;
-  });
+  }, 60000);
 
   afterAll(async () => {
     await app?.close();
