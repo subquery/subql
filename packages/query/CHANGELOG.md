@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - The docker image uses `node:26-alpine` instead of `node:lts-alpine`, and installs yarn itself because the Node 26 image no longer includes it (#3055)
 
+### Fixed
+- Cursor pagination losing rows when sorting by a column with NULL values, and `hasNextPage`/`hasPreviousPage` being wrong for those rows
+- `last` returning the wrong rows when used with `orderByNull`
+
 ## [2.25.0] - 2025-11-05
 ### Changed
 - Replace `express-pino-logger` with the underlying `pino-http` (#2957)
