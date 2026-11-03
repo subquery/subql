@@ -223,6 +223,14 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       this.wsCleanup = useServer({schema, context: {pgClient: this.pgPool}}, wsServer);
     }
 
+    // Express 5 defaults to the simple query parser, which would change how GET params like `variables[x]=1` are read
+    app.set('query parser', 'extended');
+
+    // Express 5 leaves req.body unset when there is nothing to parse, but the logger and Apollo need an object
+    app.use((req: Request, _res: Response, next: NextFunction) => {
+      req.body ??= {};
+      next();
+    });
     app.use(pinoLogger(PinoConfig));
     app.use(limitBatchedQueries);
     app.use(compression());
@@ -232,6 +240,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       app,
       path: '/',
       cors: true,
+      // Nest already parses the body, and the older body-parser in Apollo would try to read the stream again
+      bodyParserConfig: false,
     });
     return server;
   }

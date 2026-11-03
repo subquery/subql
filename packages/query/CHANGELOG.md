@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - The docker image uses `node:26-alpine` instead of `node:lts-alpine`, and installs yarn itself because the Node 26 image no longer includes it (#3055)
+- Upgrade NestJS from 9 to 11, which also moves to Express 5. The key order in Nest's JSON error responses, such as for invalid JSON bodies, is different but the values are not
 
 ### Fixed
 - Cursor pagination losing rows when sorting by a column with NULL values, and `hasNextPage`/`hasPreviousPage` being wrong for those rows
