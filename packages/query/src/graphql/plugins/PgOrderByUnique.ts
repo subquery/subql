@@ -125,7 +125,7 @@ const PgConnectionArgOrderBy: Plugin = (builder, {orderByNullsLast}) => {
         return null;
       };
 
-      addArgDataGenerator(function connectionOrderBy({orderBy: rawOrderBy, orderByNull}: any) {
+      addArgDataGenerator(function connectionOrderBy({last, orderBy: rawOrderBy, orderByNull}: any) {
         const orderBy = rawOrderBy ? (Array.isArray(rawOrderBy) ? rawOrderBy : [rawOrderBy]) : null;
         return {
           pgCursorPrefix: cursorPrefixFromOrderBy(orderBy),
@@ -151,6 +151,11 @@ const PgConnectionArgOrderBy: Plugin = (builder, {orderByNullsLast}) => {
                     nullsFirst = !orderByNullsLast;
                   } else {
                     nullsFirst = undefined; // Leave it to the default behaviour
+                  }
+
+                  // To read the last rows QueryBuilder flips ASC and DESC, but leaves NULLS FIRST and NULLS LAST as given
+                  if (last && nullsFirst !== null && nullsFirst !== undefined) {
+                    nullsFirst = !nullsFirst;
                   }
 
                   queryBuilder.orderBy(expr, ascending, nullsFirst);

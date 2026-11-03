@@ -10,7 +10,8 @@ export function queryComplexityPlugin(options: {schema: GraphQLSchema; maxComple
     requestDidStart: () => {
       let complexity: number;
       return {
-        didResolveOperation({document, request}) {
+        // eslint-disable-next-line @typescript-eslint/require-await -- Apollo runs these hooks together and expects promises
+        async didResolveOperation({document, request}) {
           complexity = getComplexity({
             schema: options.schema,
             query: request.operationName ? separateOperations(document)[request.operationName] : document,

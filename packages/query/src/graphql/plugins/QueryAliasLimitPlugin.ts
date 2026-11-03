@@ -20,7 +20,8 @@ export function queryAliasLimit(options: {schema: GraphQLSchema; limit?: number}
   return {
     requestDidStart: () => {
       return {
-        didResolveOperation(context: {document: DocumentNode}) {
+        // eslint-disable-next-line @typescript-eslint/require-await -- Apollo runs these hooks together and expects promises
+        async didResolveOperation(context: {document: DocumentNode}) {
           if (options?.limit === undefined) {
             return;
           }
