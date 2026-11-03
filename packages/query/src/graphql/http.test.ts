@@ -15,7 +15,9 @@ jest.mock('../yargs', () => {
   const args: Record<string, unknown> = {
     name: 'subquery_http',
     'disable-hot-schema': true,
+    'query-alias-limit': 1,
     'query-batch-limit': 2,
+    'query-depth-limit': 5,
     'query-limit': 100,
   };
   return {
@@ -97,6 +99,24 @@ describe('HTTP interface', () => {
     const {errors} = await res.json();
     // qs turns this into {n: '1'}, which the Int variable then rejects. The simple parser would drop it instead.
     expect(errors[0].message).toContain('Int cannot represent non-integer value');
+  });
+
+  it.each([
+    ['a mutation', 'mutation{x}'],
+    ['a subscription', 'subscription{x}'],
+    ['a mutation over the alias limit', 'mutation{a:x b:x}'],
+    ['a mutation over the depth limit', 'mutation{a{b{c{d{e{f{g}}}}}}}'],
+  ])('rejects %s over GET', async (_, source) => {
+    const res = await fetch(`${url}?query=${encodeURIComponent(source)}`, {headers: {accept: 'application/json'}});
+    expect(res.status).toBe(405);
+    expect(res.headers.get('allow')).toBe('POST');
+    expect((await res.json()).errors[0].message).toBe('GET supports only query operation');
+  });
+
+  it('rejects mutations over POST', async () => {
+    const res = await post({query: 'mutation{x}'});
+    expect(res.status).toBe(400);
+    expect((await res.json()).data).toBeUndefined();
   });
 
   it('serves batched queries', async () => {

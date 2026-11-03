@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cursor pagination losing rows when sorting by a column with NULL values, and `hasNextPage`/`hasPreviousPage` being wrong for those rows
 - `last` returning the wrong rows when used with `orderByNull`
 - Unbounded Apollo cache for persisted queries, which could exhaust memory
+- Errors from the query limit plugins not always being handled
 
 ## [2.25.0] - 2025-11-05
 ### Changed
