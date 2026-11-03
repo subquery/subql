@@ -7,13 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - The docker image uses `node:26-alpine` instead of `node:lts-alpine`, and installs yarn itself because the Node 26 image no longer includes it (#3055)
-- Upgrade NestJS from 9 to 11, which also moves to Express 5. The key order in Nest's JSON error responses, such as for invalid JSON bodies, is different but the values are not
+- Upgrade NestJS from 9 to 11, which also moves to Express 5. The key order in Nest's JSON error responses, such as for invalid JSON bodies, is different but the values are not (#3056)
 
 ### Fixed
-- Cursor pagination losing rows when sorting by a column with NULL values, and `hasNextPage`/`hasPreviousPage` being wrong for those rows
-- `last` returning the wrong rows when used with `orderByNull`
-- Unbounded Apollo cache for persisted queries, which could exhaust memory
-- Errors from the query limit plugins not always being handled
+- Cursor pagination losing rows when sorting by a column with NULL values, and `hasNextPage`/`hasPreviousPage` being wrong for those rows (#3056)
+- `last` returning the wrong rows when used with `orderByNull` (#3056)
+- Unbounded Apollo cache for persisted queries, which could exhaust memory (#3056)
+- Errors from the query limit plugins not always being handled (#3056)
 
 ## [2.25.0] - 2025-11-05
 ### Changed
