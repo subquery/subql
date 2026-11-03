@@ -210,6 +210,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         pgClient: this.pgPool,
       },
       plugins: apolloServerPlugins,
+      cache: 'bounded',
       debug: this.config.get('NODE_ENV') !== 'production',
     });
 
