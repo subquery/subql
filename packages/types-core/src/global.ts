@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import type Pino from 'pino';
-import {Cache, DynamicDatasourceCreator} from './interfaces';
+import {Cache, DynamicDatasourceCreator, DynamicDatasourceDestructor, DynamicDatasourceGetter} from './interfaces';
 import {Store} from './store';
 
 // base global
@@ -12,4 +12,6 @@ declare global {
   const cache: Cache;
   const chainId: string;
   const createDynamicDatasource: DynamicDatasourceCreator;
+  const destroyDynamicDatasource: DynamicDatasourceDestructor;
+  const getDynamicDatasources: DynamicDatasourceGetter;
 }

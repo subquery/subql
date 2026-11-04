@@ -190,7 +190,11 @@ export class IndexerManager extends BaseIndexerManager<
     getVM: (d: SubstrateProjectDs) => Promise<IndexerSandbox>,
   ) => Promise<void> {
     return async (content, dataSources, getVM) => {
-      for (const ds of dataSources) {
+      // Traditional for-loop (not for...of) because dataSources may be mutated
+      // in-place when a handler destroys a dynamic datasource. The length check
+      // on each iteration picks up the shorter array.
+      for (let i = 0; i < dataSources.length; i++) {
+        const ds = dataSources[i];
         await this.indexData(kind, content, ds, getVM);
       }
     };

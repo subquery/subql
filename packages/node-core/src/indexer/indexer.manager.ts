@@ -116,6 +116,24 @@ export abstract class BaseIndexerManager<
           dynamicDsCreated = true;
         }, 'createDynamicDatasource');
 
+        // Inject function to get dynamic datasources by template into vm
+        vm.freeze((templateName: string) => {
+          return this.dynamicDsService.getDynamicDatasourcesByTemplate(templateName);
+        }, 'getDynamicDatasources');
+
+        // Inject function to destroy ds into vm
+        vm.freeze(async (templateName: string, index: number) => {
+          await this.dynamicDsService.destroyDynamicDatasource(templateName, blockHeight, index);
+
+          // Re-filter and mutate the array in-place so that indexBlockData's reference
+          // sees the change. A simple reassignment (filteredDataSources = ...) would only
+          // update this closure's variable, leaving the dataSources parameter in
+          // indexBlockData pointing at the stale array.
+          const refiltered = this.filterDataSources(blockHeight, filteredDataSources);
+          filteredDataSources.length = 0;
+          filteredDataSources.push(...refiltered);
+        }, 'destroyDynamicDatasource');
+
         return vm;
       });
     }
@@ -135,11 +153,15 @@ export abstract class BaseIndexerManager<
   private filterDataSources(nextProcessingHeight: number, dataSources: DS[]): DS[] {
     let filteredDs: DS[];
 
+    // Strict `>` (not `>=`) is intentional: destroyDynamicDatasource sets
+    // endBlock = currentBlockHeight, and the destroyed DS must be excluded
+    // when re-filtering within the same block. With `>=` the DS would pass
+    // the filter and remain active for the rest of the block.
     filteredDs = dataSources.filter(
       (ds) =>
         ds.startBlock !== undefined &&
         ds.startBlock <= nextProcessingHeight &&
-        (ds.endBlock ?? Number.MAX_SAFE_INTEGER) >= nextProcessingHeight
+        (ds.endBlock ?? Number.MAX_SAFE_INTEGER) > nextProcessingHeight
     );
 
     // perform filter for custom ds
