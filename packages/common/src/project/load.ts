@@ -10,7 +10,7 @@ import yaml from 'js-yaml';
 import {gte} from 'semver';
 import {CommonProjectManifestV1_0_0Impl} from '../';
 import {NETWORK_FAMILY, runnerMapping} from '../constants';
-import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsYamlOrJSON} from './utils';
+import {DEFAULT_MANIFEST, DEFAULT_TS_MANIFEST, extensionIsYamlOrJSON, formatValidationErrors} from './utils';
 export function loadFromJsonOrYaml(file: string): unknown {
   const {ext} = path.parse(file);
   if (!extensionIsYamlOrJSON(ext)) {
@@ -91,8 +91,7 @@ export function validateCommonProjectManifest(raw: unknown): void {
   const projectManifest = plainToClass<CommonProjectManifestV1_0_0Impl, unknown>(CommonProjectManifestV1_0_0Impl, raw);
   const errors = validateSync(projectManifest, {whitelist: true});
   if (errors?.length) {
-    // TODO: print error details
-    const errorMsgs = errors.map((e) => e.toString()).join('\n');
+    const errorMsgs = formatValidationErrors(errors).join('\n');
     throw new Error(`project validation failed.\n${errorMsgs}`);
   }
 }
