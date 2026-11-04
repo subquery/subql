@@ -5,7 +5,7 @@ import {SQL} from '@subql/x-graphile-build-pg';
 import type {PgEntity, PgAttribute, PgClass, PgConstraint, QueryBuilder} from '@subql/x-graphile-build-pg';
 import type {Plugin} from 'graphile-build';
 import {ConnectionFilterResolver} from 'postgraphile-plugin-connection-filter/dist/PgConnectionArgFilterPlugin';
-import {makeRangeQuery, hasBlockRange} from './utils';
+import {makeRangeQuery, makeBlockRangeQuery, hasBlockRange} from './utils';
 
 /* This is a modification from the original function where a block range condition is added */
 export function buildWhereConditionBackward(
@@ -23,8 +23,13 @@ export function buildWhereConditionBackward(
     )}`;
   });
 
-  if (queryBuilder.context.args?.blockHeight && hasBlockRange(table)) {
-    fkMatches.push(makeRangeQuery(foreignTableAlias, queryBuilder.context.args.blockHeight, sql));
+  if (hasBlockRange(table)) {
+    if (queryBuilder.context.args?.blockRange) {
+      const [start, end] = queryBuilder.context.args.blockRange;
+      fkMatches.push(makeBlockRangeQuery(foreignTableAlias, [start, end], sql));
+    } else if (queryBuilder.context.args?.blockHeight) {
+      fkMatches.push(makeRangeQuery(foreignTableAlias, queryBuilder.context.args.blockHeight, sql));
+    }
   }
 
   return sql.query`(${sql.join(fkMatches, ') and (')})`;
@@ -51,14 +56,26 @@ export function connectionFilterResolveBlockHeight(
     return null;
   }
 
-  if (queryBuilder.context.args?.blockHeight === undefined || !hasBlockRange(foreignTable)) {
+  if (!hasBlockRange(foreignTable)) {
     return sqlFragment;
   }
 
-  return sql.join(
-    [sqlFragment, makeRangeQuery(foreignTableAlias, queryBuilder.context.args.blockHeight, sql)],
-    ') and ('
-  );
+  if (queryBuilder.context.args?.blockRange) {
+    const [start, end] = queryBuilder.context.args.blockRange;
+    return sql.join(
+      [sqlFragment, makeBlockRangeQuery(foreignTableAlias, [start, end], sql)],
+      ') and ('
+    );
+  }
+
+  if (queryBuilder.context.args?.blockHeight !== undefined) {
+    return sql.join(
+      [sqlFragment, makeRangeQuery(foreignTableAlias, queryBuilder.context.args.blockHeight, sql)],
+      ') and ('
+    );
+  }
+
+  return sqlFragment;
 }
 
 const PgConnectionArgFilterBackwardRelationsPlugin: Plugin = (

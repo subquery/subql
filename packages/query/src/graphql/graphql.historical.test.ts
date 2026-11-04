@@ -188,4 +188,104 @@ describe('GraphqlHistorical', () => {
 
     expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
   });
+
+  it('should include blockRange parameter in schema for collections', async () => {
+    const GQL_QUERY = gql`
+      query {
+        items(blockRange: ["10", "20"]) {
+          nodes {
+            id
+            ownerId
+          }
+        }
+      }
+    `;
+
+    const res = await server.executeOperation({query: GQL_QUERY});
+    expect(res.errors).toBeUndefined();
+
+    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+  });
+
+  it('should generate block range SQL for entity queries', async () => {
+    const GQL_QUERY = gql`
+      query {
+        listings(blockRange: ["5", "15"]) {
+          nodes {
+            id
+            priceAmount
+          }
+        }
+      }
+    `;
+
+    const res = await server.executeOperation({query: GQL_QUERY});
+    expect(res.errors).toBeUndefined();
+
+    expect(sqlSpy.mock.calls[0][0]).toContain('_block_range && int8range');
+    expect(sqlSpy.mock.calls[0][0]).toContain('$1::bigint, $2::bigint');
+    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+  });
+
+  it('should work with block range and filtering together', async () => {
+    const GQL_QUERY = gql`
+      query {
+        items(blockRange: ["10", "50"], filter: {approved: {equalTo: true}}) {
+          nodes {
+            id
+            approved
+          }
+        }
+      }
+    `;
+
+    const res = await server.executeOperation({query: GQL_QUERY});
+    expect(res.errors).toBeUndefined();
+    expect(sqlSpy.mock.calls[0][0]).toContain('_block_range && int8range');
+    expect(sqlSpy.mock.calls[0][0]).toContain('approved');
+    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+  });
+
+  it('should support block range in nested relations', async () => {
+    const GQL_QUERY = gql`
+      query {
+        items(blockRange: ["1", "100"]) {
+          nodes {
+            id
+            listings(blockRange: ["10", "20"]) {
+              nodes {
+                id
+                priceAmount
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const res = await server.executeOperation({query: GQL_QUERY});
+    expect(res.errors).toBeUndefined();
+
+    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+  });
+
+  it('should maintain backwards compatibility with existing blockHeight', async () => {
+    const GQL_QUERY = gql`
+      query {
+        items(blockHeight: "25") {
+          nodes {
+            id
+            ownerId
+          }
+        }
+      }
+    `;
+
+    const res = await server.executeOperation({query: GQL_QUERY});
+    expect(res.errors).toBeUndefined();
+
+    expect(sqlSpy.mock.calls[0][0]).toContain('_block_range @>');
+    expect(sqlSpy.mock.calls[0][0]).not.toContain('&&');
+    expect(sqlSpy.mock.calls[0][0]).toMatchSnapshot();
+  });
 });
