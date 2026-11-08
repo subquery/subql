@@ -20,7 +20,7 @@
     "flatted": "^3.3.3",
     "graphql": "^15.8.0",
     "graphql-tag": "^2.12.6",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "pino": "^6.13.3",
     "rotating-file-stream": "^3.2.3"
   },
