@@ -3,7 +3,9 @@
 
 import fs from 'fs';
 import path from 'path';
-import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi';
+import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment, Interface} from '@ethersproject/abi';
+import {keccak256} from '@ethersproject/keccak256';
+import {toUtf8Bytes} from '@ethersproject/strings';
 import {NETWORK_FAMILY} from '@subql/common';
 import type {
   EthereumDatasourceKind,
@@ -56,6 +58,271 @@ export const DEFAULT_ABI_DIR = '/abis';
 
 export function removeKeyword(inputString: string): string {
   return inputString.replace(/^(event|function) /, '');
+}
+
+interface AbiCustomType {
+  name: string;
+  type: 'enum' | 'struct';
+  resolvedType: string;
+}
+
+export function extractCustomTypesFromAbi(abiInterface: Interface): Map<string, AbiCustomType> {
+  const customTypes = new Map<string, AbiCustomType>();
+
+  try {
+    // Process event fragments
+    Object.values(abiInterface.events).forEach((eventFragment: EventFragment) => {
+      eventFragment.inputs.forEach((input) => {
+        extractCustomTypeFromInput(input, customTypes);
+      });
+    });
+
+    // Process function fragments
+    Object.values(abiInterface.functions).forEach((functionFragment: FunctionFragment) => {
+      functionFragment.inputs.forEach((input) => {
+        extractCustomTypeFromInput(input, customTypes);
+      });
+    });
+  } catch (error) {
+    console.warn(
+      `Warning: Failed to extract custom types from ABI: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+
+  return customTypes;
+}
+
+function extractCustomTypeFromInput(input: any, customTypes: Map<string, AbiCustomType>): void {
+  // Handle tuple types (structs)
+  if (input.type === 'tuple' && input.internalType) {
+    // Extract struct name from internal type (e.g., "struct MoreData" -> "MoreData", "contract.MoreData" -> "MoreData")
+    let structName = input.internalType;
+    if (structName.startsWith('struct ')) {
+      structName = structName.substring(7); // Remove "struct " prefix
+    } else {
+      structName = structName.split('.').pop() || structName; // Handle dotted names
+    }
+
+    if (!customTypes.has(structName) && input.components) {
+      const tupleType = `(${input.components.map((comp: any) => resolveBaseType(comp.type)).join(',')})`;
+      customTypes.set(structName, {
+        name: structName,
+        type: 'struct',
+        resolvedType: tupleType,
+      });
+    }
+  }
+
+  // Handle enum types - look for custom internal types that aren't standard solidity types
+  if (input.internalType && input.internalType !== input.type) {
+    // Extract enum name from internal type (e.g., "enum DisputeType" -> "DisputeType", "contract.DisputeType" -> "DisputeType")
+    let enumName = input.internalType;
+    if (enumName.startsWith('enum ')) {
+      enumName = enumName.substring(5); // Remove "enum " prefix
+    } else {
+      enumName = enumName.split('.').pop() || enumName; // Handle dotted names
+    }
+
+    // Check if it's likely an enum (uint8/uint256 type with custom internal type)
+    if (
+      (input.type === 'uint8' || input.type === 'uint256') &&
+      !enumName.startsWith('struct ') &&
+      !isStandardSolidityType(enumName)
+    ) {
+      if (!customTypes.has(enumName)) {
+        customTypes.set(enumName, {
+          name: enumName,
+          type: 'enum',
+          resolvedType: 'uint8', // Standard enum encoding
+        });
+      }
+    }
+  }
+
+  // Recursively handle components for nested tuples
+  if (input.components) {
+    input.components.forEach((comp: any) => {
+      extractCustomTypeFromInput(comp, customTypes);
+    });
+  }
+}
+
+function resolveBaseType(type: string): string {
+  // Map common type aliases to their canonical forms
+  const typeMapping: Record<string, string> = {
+    uint: 'uint256',
+    int: 'int256',
+  };
+  return typeMapping[type] || type;
+}
+
+function isStandardSolidityType(type: string): boolean {
+  const standardTypes = [
+    'address',
+    'bool',
+    'string',
+    'bytes',
+    // uint variants
+    'uint',
+    'uint8',
+    'uint16',
+    'uint24',
+    'uint32',
+    'uint40',
+    'uint48',
+    'uint56',
+    'uint64',
+    'uint72',
+    'uint80',
+    'uint88',
+    'uint96',
+    'uint104',
+    'uint112',
+    'uint120',
+    'uint128',
+    'uint136',
+    'uint144',
+    'uint152',
+    'uint160',
+    'uint168',
+    'uint176',
+    'uint184',
+    'uint192',
+    'uint200',
+    'uint208',
+    'uint216',
+    'uint224',
+    'uint232',
+    'uint240',
+    'uint248',
+    'uint256',
+    // int variants
+    'int',
+    'int8',
+    'int16',
+    'int24',
+    'int32',
+    'int40',
+    'int48',
+    'int56',
+    'int64',
+    'int72',
+    'int80',
+    'int88',
+    'int96',
+    'int104',
+    'int112',
+    'int120',
+    'int128',
+    'int136',
+    'int144',
+    'int152',
+    'int160',
+    'int168',
+    'int176',
+    'int184',
+    'int192',
+    'int200',
+    'int208',
+    'int216',
+    'int224',
+    'int232',
+    'int240',
+    'int248',
+    'int256',
+    // bytes variants
+    'bytes1',
+    'bytes2',
+    'bytes3',
+    'bytes4',
+    'bytes5',
+    'bytes6',
+    'bytes7',
+    'bytes8',
+    'bytes9',
+    'bytes10',
+    'bytes11',
+    'bytes12',
+    'bytes13',
+    'bytes14',
+    'bytes15',
+    'bytes16',
+    'bytes17',
+    'bytes18',
+    'bytes19',
+    'bytes20',
+    'bytes21',
+    'bytes22',
+    'bytes23',
+    'bytes24',
+    'bytes25',
+    'bytes26',
+    'bytes27',
+    'bytes28',
+    'bytes29',
+    'bytes30',
+    'bytes31',
+    'bytes32',
+  ];
+
+  // Also handle array types
+  const baseType = type.replace(/\[\d*\]$/, '');
+  return standardTypes.includes(baseType);
+}
+
+export function resolveCustomTypesInSignature(signature: string, customTypes: Map<string, AbiCustomType>): string {
+  let resolvedSignature = signature;
+  const unresolvedTypes: string[] = [];
+
+  // Replace custom types in the signature
+  customTypes.forEach((customType, typeName) => {
+    // Create regex to match the custom type name as a parameter type
+    // This handles both "TypeName param" and "TypeName indexed param" patterns
+    const regex = new RegExp(`\\b${escapeRegex(typeName)}\\b`, 'g');
+    const hasMatch = regex.test(resolvedSignature);
+
+    if (hasMatch) {
+      resolvedSignature = resolvedSignature.replace(
+        new RegExp(`\\b${escapeRegex(typeName)}\\b`, 'g'),
+        customType.resolvedType
+      );
+    }
+  });
+
+  // Check for any remaining unresolved custom types
+  const possibleCustomTypes = signature.match(/\b[A-Z][a-zA-Z0-9_]*\b/g) || [];
+  possibleCustomTypes.forEach((type) => {
+    if (!isStandardSolidityType(type) && !customTypes.has(type) && type !== 'indexed') {
+      // Check if this type appears in a type position (not as a parameter name)
+      const typeInPosition = new RegExp(`\\b${escapeRegex(type)}\\s+(?:indexed\\s+)?[a-z]`, 'i').test(signature);
+      if (typeInPosition) {
+        unresolvedTypes.push(type);
+      }
+    }
+  });
+
+  if (unresolvedTypes.length > 0) {
+    console.warn(
+      `Warning: Found unresolved custom types in signature '${signature}': ${unresolvedTypes.join(', ')}. These types may need to be defined in the ABI or manually resolved.`
+    );
+  }
+
+  return resolvedSignature;
+}
+
+function escapeRegex(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function generateTopic0Hash(eventSignature: string): string {
+  // Remove any indexed keywords and extra whitespace for canonical form
+  const canonicalSignature = eventSignature
+    .replace(/\s+indexed\s+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Generate keccak256 hash
+  return keccak256(toUtf8Bytes(canonicalSignature));
 }
 
 /**
@@ -161,9 +428,13 @@ export function generateHandlerName(name: string, abiName: string, type: 'tx' | 
 function generateFormattedHandlers(
   userInput: UserInput,
   abiName: string,
-  kindModifier: (kind: string) => EthereumHandlerKind | string
+  kindModifier: (kind: string) => EthereumHandlerKind | string,
+  abiInterface?: Interface
 ): SubqlRuntimeHandler[] {
   const formattedHandlers: SubqlRuntimeHandler[] = [];
+
+  // Extract custom types from ABI if available
+  const customTypes = abiInterface ? extractCustomTypesFromAbi(abiInterface) : new Map<string, AbiCustomType>();
 
   userInput.functions.forEach((fn) => {
     const handler: SubqlRuntimeHandler = {
@@ -177,11 +448,22 @@ function generateFormattedHandlers(
   });
 
   userInput.events.forEach((event) => {
+    let eventTopic = event.method;
+
+    // Only apply custom type resolution and hashing if we have custom types
+    if (customTypes.size > 0) {
+      const resolvedSignature = resolveCustomTypesInSignature(event.method, customTypes);
+      // Only hash if the signature was actually changed (contains custom types)
+      if (resolvedSignature !== event.method) {
+        eventTopic = generateTopic0Hash(resolvedSignature);
+      }
+    }
+
     const handler: SubqlRuntimeHandler = {
       handler: generateHandlerName(event.name, abiName, 'log'),
       kind: kindModifier('EthereumHandlerKind.Event') as any, // Should be union type
       filter: {
-        topics: [event.method],
+        topics: [eventTopic],
       },
     };
     formattedHandlers.push(handler);
@@ -193,7 +475,17 @@ function generateFormattedHandlers(
 export function constructDatasourcesTs(userInput: UserInput, projectPath: string): string {
   const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
-  const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => kind);
+
+  // Try to load ABI interface for custom type resolution, but don't fail if not available
+  let abiInterface: Interface | undefined;
+  try {
+    abiInterface = ethModule.getAbiInterface(projectPath, abiName);
+  } catch (error) {
+    // ABI file may not exist in test scenarios, continue without custom type resolution
+    console.warn(`Warning: Could not load ABI interface for ${abiName}, custom type resolution disabled`);
+  }
+
+  const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => kind, abiInterface);
   const handlersString = tsStringify(formattedHandlers);
 
   return `{
@@ -214,10 +506,25 @@ export function constructDatasourcesTs(userInput: UserInput, projectPath: string
 export function constructDatasourcesYaml(userInput: UserInput, projectPath: string): EthereumDs {
   const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
-  const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => {
-    if (kind === 'EthereumHandlerKind.Call') return 'ethereum/TransactionHandler' as EthereumHandlerKind.Call;
-    return 'ethereum/LogHandler' as EthereumHandlerKind.Event;
-  });
+
+  // Try to load ABI interface for custom type resolution, but don't fail if not available
+  let abiInterface: Interface | undefined;
+  try {
+    abiInterface = ethModule.getAbiInterface(projectPath, abiName);
+  } catch (error) {
+    // ABI file may not exist in test scenarios, continue without custom type resolution
+    console.warn(`Warning: Could not load ABI interface for ${abiName}, custom type resolution disabled`);
+  }
+
+  const formattedHandlers = generateFormattedHandlers(
+    userInput,
+    abiName,
+    (kind) => {
+      if (kind === 'EthereumHandlerKind.Call') return 'ethereum/TransactionHandler' as EthereumHandlerKind.Call;
+      return 'ethereum/LogHandler' as EthereumHandlerKind.Event;
+    },
+    abiInterface
+  );
   const assets = new Map([[abiName, {file: userInput.abiPath}]]);
 
   return {
