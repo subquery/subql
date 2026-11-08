@@ -67,7 +67,14 @@ export class HealthService {
 
   getHealth(): void {
     if (this.recordBlockTimestamp && Date.now() - this.recordBlockTimestamp > this.blockTime * 10) {
-      throw new Error('Endpoint is not healthy');
+      //check if current processing height reached target height
+      if (
+        this.recordBlockHeight &&
+        this.currentProcessingHeight &&
+        this.recordBlockHeight > this.currentProcessingHeight
+      ) {
+        throw new Error('Endpoint is not healthy');
+      }
     }
     if (this.currentProcessingTimestamp && Date.now() - this.currentProcessingTimestamp > this.healthTimeout) {
       throw new Error('Indexer is not healthy');
