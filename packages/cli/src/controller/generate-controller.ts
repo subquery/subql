@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment} from '@ethersproject/abi';
+import type {ConstructorFragment, EventFragment, Fragment, FunctionFragment, Interface} from '@ethersproject/abi';
 import {NETWORK_FAMILY} from '@subql/common';
 import type {
   EthereumDatasourceKind,
@@ -25,6 +25,7 @@ import {
   resolveToAbsolutePath,
   splitArrayString,
 } from '../utils';
+import {EthereumTypeResolver} from '../utils/ethereum-type-resolver';
 
 export interface SelectedMethod {
   name: string;
@@ -161,27 +162,29 @@ export function generateHandlerName(name: string, abiName: string, type: 'tx' | 
 function generateFormattedHandlers(
   userInput: UserInput,
   abiName: string,
-  kindModifier: (kind: string) => EthereumHandlerKind | string
+  kindModifier: (kind: string) => EthereumHandlerKind | string,
+  abiInterface?: Interface
 ): SubqlRuntimeHandler[] {
   const formattedHandlers: SubqlRuntimeHandler[] = [];
-
-  userInput.functions.forEach((fn) => {
-    const handler: SubqlRuntimeHandler = {
-      handler: generateHandlerName(fn.name, abiName, 'tx'),
-      kind: kindModifier('EthereumHandlerKind.Call') as any, // union type
-      filter: {
-        function: fn.method,
-      },
-    };
-    formattedHandlers.push(handler);
-  });
+  const typeResolver = abiInterface ? new EthereumTypeResolver(abiInterface) : null;
 
   userInput.events.forEach((event) => {
+    let topicFilter = event.method;
+
+    if (typeResolver) {
+      try {
+        const resolved = typeResolver.resolveEventSignature(event.method);
+        topicFilter = resolved.keccak256Hash;
+      } catch (e: any) {
+        throw new Error(`Failed to resolve custom types in event signature: ${event.method}\n${e.message}`);
+      }
+    }
+
     const handler: SubqlRuntimeHandler = {
       handler: generateHandlerName(event.name, abiName, 'log'),
       kind: kindModifier('EthereumHandlerKind.Event') as any, // Should be union type
       filter: {
-        topics: [event.method],
+        topics: [topicFilter],
       },
     };
     formattedHandlers.push(handler);
@@ -190,10 +193,10 @@ function generateFormattedHandlers(
   return formattedHandlers;
 }
 
-export function constructDatasourcesTs(userInput: UserInput, projectPath: string): string {
+export function constructDatasourcesTs(userInput: UserInput, projectPath: string, abiInterface?: Interface): string {
   const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
-  const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => kind);
+  const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => kind, abiInterface);
   const handlersString = tsStringify(formattedHandlers);
 
   return `{
@@ -211,13 +214,22 @@ export function constructDatasourcesTs(userInput: UserInput, projectPath: string
   }`;
 }
 
-export function constructDatasourcesYaml(userInput: UserInput, projectPath: string): EthereumDs {
+export function constructDatasourcesYaml(
+  userInput: UserInput,
+  projectPath: string,
+  abiInterface?: Interface
+): EthereumDs {
   const ethModule = loadDependency(NETWORK_FAMILY.ethereum, projectPath);
   const abiName = ethModule.parseContractPath(userInput.abiPath).name;
-  const formattedHandlers = generateFormattedHandlers(userInput, abiName, (kind) => {
-    if (kind === 'EthereumHandlerKind.Call') return 'ethereum/TransactionHandler' as EthereumHandlerKind.Call;
-    return 'ethereum/LogHandler' as EthereumHandlerKind.Event;
-  });
+  const formattedHandlers = generateFormattedHandlers(
+    userInput,
+    abiName,
+    (kind) => {
+      if (kind === 'EthereumHandlerKind.Call') return 'ethereum/TransactionHandler' as EthereumHandlerKind.Call;
+      return 'ethereum/LogHandler' as EthereumHandlerKind.Event;
+    },
+    abiInterface
+  );
   const assets = new Map([[abiName, {file: userInput.abiPath}]]);
 
   return {
@@ -403,9 +415,10 @@ export function prependDatasources(dsStr: string, toPendStr: string): string {
 export async function generateManifestTs(
   manifestPath: string,
   userInput: UserInput,
-  existingManifestData: string
+  existingManifestData: string,
+  abiInterface?: Interface
 ): Promise<void> {
-  const inputDs = constructDatasourcesTs(userInput, manifestPath);
+  const inputDs = constructDatasourcesTs(userInput, manifestPath, abiInterface);
 
   const extractedDs = extractFromTs(existingManifestData, {dataSources: undefined}) as {dataSources: string};
   const v = prependDatasources(extractedDs.dataSources, inputDs);
@@ -416,9 +429,10 @@ export async function generateManifestTs(
 export async function generateManifestYaml(
   manifestPath: string,
   userInput: UserInput,
-  existingManifestData: Document
+  existingManifestData: Document,
+  abiInterface?: Interface
 ): Promise<void> {
-  const inputDs = constructDatasourcesYaml(userInput, manifestPath);
+  const inputDs = constructDatasourcesYaml(userInput, manifestPath, abiInterface);
   const dsNode = existingManifestData.get('dataSources') as YAMLSeq;
   if (!dsNode || !dsNode.items.length) {
     // To ensure output is in yaml format
@@ -460,7 +474,8 @@ export function constructHandlerProps(methods: [SelectedMethod[], SelectedMethod
 export async function generateHandlers(
   selectedMethods: [SelectedMethod[], SelectedMethod[]],
   projectPath: string,
-  abiName: string
+  abiName: string,
+  abiInterface?: Interface
 ): Promise<void> {
   const abiProps = constructHandlerProps(selectedMethods, abiName);
 
